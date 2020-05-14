@@ -35,7 +35,8 @@ INSTALLED_APPS = [
     "webpack_loader",
     "import_export",
     "common",
-    "insemble-terminal"
+    "insemble-terminal",
+    'rest_framework'
 ]
 
 MIDDLEWARE = [

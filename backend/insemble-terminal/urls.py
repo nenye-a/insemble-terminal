@@ -5,8 +5,18 @@ from django.shortcuts import redirect
 
 import django_js_reverse.views
 
+from rest_framework import routers
+from .api import BasicAPI
+
+router = routers.DefaultRouter()
 
 urlpatterns = [
-    path("admin/", admin.site.urls, name="admin"),
-    path("jsreverse/", django_js_reverse.views.urls_js, name="js_reverse"),
+    path(r'admin/', admin.site.urls, name="admin"),
+    path(r'jsreverse/', django_js_reverse.views.urls_js, name="js_reverse"),
+
+    # enable backend routes
+    url(r'^', include(router.urls)),
+
+    # NOTE: Test Route, please remove in future
+    path(r'api/test', BasicAPI.as_view(), name="test"),
 ]
