@@ -13,13 +13,13 @@ class ScraperTests():
     @staticmethod
     def request_test():
         my_scraper = GenericScraper('Test Scraper 1')
-        result = my_scraper.request('https://43b36a02.ngrok.io/api/test', quality_proxy=True)
+        result = my_scraper.request(GOOGLE_TEST_URL1, quality_proxy=True)
         print(result)
 
     @staticmethod
     def async_request_test():
         my_scraper = GenericScraper('Test Scraper 1')
-        test_url_list = ['https://43b36a02.ngrok.io/api/test' for x in range(10)]
+        test_url_list = [GOOGLE_TEST_URL1 for x in range(10)]
         test1 = my_scraper.async_request(test_url_list, quality_proxy=True)
         print(test1, '\n')
 
@@ -92,9 +92,9 @@ def dictify(list_words):
 
 if __name__ == "__main__":
 
-    # ScraperTests.request_test()
+    ScraperTests.request_test()
     # ScraperTests.async_request_test()
-    ScraperTests.google_request_test()
+    # ScraperTests.google_request_test()
     # ScraperTests.google_async_request_test()
     # ScraperTests.async_request_test()
     # ScraperTests.yelp_request_test()
