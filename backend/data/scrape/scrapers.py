@@ -143,7 +143,7 @@ class GenericScraper(object):
             return lambda res: res.headers if res.status_code == 200 else None
 
     def async_request(self, queries, pool_limit=20, timeout=30, quality_proxy=False, us_only=False, headers=None,
-                      proxies=None):
+                      proxies=None, res_parser=None):
         """
         Provided a list of queries, will multi-process teh quries.
         """
@@ -175,7 +175,8 @@ class GenericScraper(object):
                         quality_proxy=quality_proxy,
                         us_only=us_only,
                         headers=headers,
-                        proxies=proxies
+                        proxies=proxies,
+                        res_parser=res_parser
                     ),
                     queries
                 ):
