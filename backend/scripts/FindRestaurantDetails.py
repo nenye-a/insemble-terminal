@@ -10,7 +10,8 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100
 HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\]'
 REGEX_24_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\]'
-GOOG_KEY = "AIzaSyCJjsXi3DbmlB1soI9kHzANRqVkiWj3P2U"
+REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
+GOOG_KEY = "your google api key"
 
 def parse_opentable_result(response):
     """
@@ -153,6 +154,14 @@ def get_google_activity(name, address):
         data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, html_text)]
     return data
 
+def get_nearby(venue_type, lat, lng):
+    # returns a set of nearby venue addresses
+    venue_type = venue_type.replace(" ", "+")
+    ZOOM = 17
+    url = 'https://www.google.com/maps/search/{}/@{},{},{}z'.format(venue_type,lat,lng,ZOOM)
+    venues = set(re.findall(REGEX_ADDRESS, requests.get(url, headers=HEADERS).text))
+    return venues
+
 if __name__ == "__main__":
     def parse_opentable_result_test():
         URL = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=Pasha+Restaurant+and+Bar&source=dtp-form&covers=2&dateTime=2020-05-07&latitude=33.828395&longitude=-84.365395'
@@ -172,5 +181,11 @@ if __name__ == "__main__":
              sbts[i].bar(range(len(data[i])), data[i])
         plt.show()
 
-    get_google_activity_test()
+    def get_nearby_test():
+        venue_type = 'restaurants'
+        lat = 33.840617
+        lng = -84.3715611
+        print(get_nearby(venue_type, lat, lng))
+
+    get_nearby_test()
     #pprint(find_restaurant_details("The Capital Grille", "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"))
