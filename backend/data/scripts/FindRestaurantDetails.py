@@ -16,8 +16,8 @@ GOOG_KEY = "your google api key"
 
 def get_google_activity(name, address):
     # returns the google activity graph for a search of an establishment
-    url, headers = build_google_activity_request(name, address)
-    return parse_google_activity(requests.get(url, headers=headers))
+    url = build_google_activity_request(name, address)
+    return parse_google_activity(requests.get(url, headers=HEADERS))
 
 
 def build_google_activity_request(name, address):
@@ -25,7 +25,7 @@ def build_google_activity_request(name, address):
 
     formatted_input = format_search(name, address)
     url = 'https://www.google.com/search?q=' + formatted_input
-    return url, HEADERS
+    return url
 
 
 def parse_google_activity(response):
