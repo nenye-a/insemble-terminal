@@ -13,7 +13,11 @@ class ScraperTests():
     @staticmethod
     def request_test():
         my_scraper = GenericScraper('Test Scraper 1')
-        result = my_scraper.request(GOOGLE_TEST_URL1, quality_proxy=True)
+        result = my_scraper.request(
+            GOOGLE_TEST_URL1,
+            quality_proxy=True,
+            res_parser='headers'
+        )
         print(result)
 
     @staticmethod

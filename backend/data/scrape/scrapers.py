@@ -43,13 +43,39 @@ class GenericScraper(object):
 
         if response.status_code != 200:
             return None
-        html = response.content
-        return html  # subclasses should return objects of information
+
+        return response
 
     def request(self, url, timeout=30, quality_proxy=False, us_only=False, headers=None,
-                proxies=None):
+                proxies=None, res_parser=None):
+        """
+
+        Performs a proxied GET request on the provided url, with the provided parameters. 
+
+        Parameters:
+            url: string - the url to perform ghe GET request on
+            timeout: int - the number of seconds to wait before timing out the rqeuest
+            quality-proxy: boolean - whether to use the quality, paid proxy, or to use free
+                                     potentially faulty proxies
+            us_only: boolean - whether to restrict queries to us proxies
+            headers: dict - headers to use for this request, if not provided, a custom or
+                            inherited header will be used
+            proxies: dict - proxies to use for this request, if not provided, paid or free
+                            proxies will be automatically used
+            res_parser: function | string - function that will be used to parse the response, if not
+                                            provided, the default class parser will be used. Alternatively
+                                            a string request can be provided to use pre-defined functions
+
+                                            json - returns json if possible, otherwise throws error
+                                            content - returns content
+                                            text - returns text
+                                            headers - returns headers
+
+        """
 
         https = 'https' in url
+        if isinstance(res_parser, str):
+            res_parser = self._determine_parser(res_parser)
 
         try:
             # Find random proxy for HTML request.
@@ -70,10 +96,9 @@ class GenericScraper(object):
                 verify=CRAWLERA_CERT if https and quality_proxy else None
             )
 
-            result = self.response_parse(response)
+            result = res_parser(response) if res_parser else self.response_parse(response)
             scrape_utils.trash_proxy(proxy, self.fail_token) if not result else None
-            processed_result = self.post_process(result) if result else None
-            return processed_result
+            return result
 
         except requests.exceptions.HTTPError as e:
             self.logger.exception('HTTPError {} while requesting "{}"'.format(
@@ -103,21 +128,19 @@ class GenericScraper(object):
             self.logger.exception('Failed to parse JSON "{}" while requesting "{}".'.format(
                 e, url))
 
-    def post_process(self, result):
-        """
-        Function to to post result actions on the object. Should be modified by subclass. Otherwise
-        will simply return the result of result returned by the html parse.
-
-        required return is either the original return, or the main result.
-        """
-
-        # Place action to post process (store, modify, etc.) the result.
-
-        return result
-
     # def _process_request(self, *args, **kwargs):
     #     result = list(self.request(*args, **kwargs))
     #     return result if results else []
+
+    def _determine_parser(self, parser_string):
+        if parser_string == 'content':
+            return lambda res: res.content if res.status_code == 200 else None
+        if parser_string == 'text':
+            return lambda res: res.text if res.status_code == 200 else None
+        if parser_string == 'json':
+            return lambda res: res.json() if res.status_code == 200 else None
+        if parser_string == 'headers':
+            return lambda res: res.headers if res.status_code == 200 else None
 
     def async_request(self, queries, pool_limit=20, timeout=30, quality_proxy=False, us_only=False, headers=None,
                       proxies=None):
