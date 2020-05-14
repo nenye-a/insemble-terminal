@@ -22,3 +22,5 @@ bs4
 wheel
 pymongo
 dnspython
+matplotlib
+psycopg2

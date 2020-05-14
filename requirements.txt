@@ -16,6 +16,7 @@ celery[redis]==4.4.2      # via -r requirements.in
 certifi==2020.4.5.1       # via requests, sentry-sdk
 cffi==1.14.0              # via brotlipy
 chardet==3.0.4            # via requests
+cycler==0.10.0            # via matplotlib
 decorator==4.4.2          # via ipython, traitlets
 defusedxml==0.6.0         # via odfpy
 diff-match-patch==20181111  # via django-import-export
@@ -36,10 +37,12 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==7.14.0           # via -r requirements.in
 jdcal==1.4.1              # via openpyxl
 jedi==0.17.0              # via ipython
+kiwisolver==1.2.0         # via matplotlib
 kombu==4.6.8              # via celery
 markuppy==1.14            # via tablib
+matplotlib==3.2.1         # via -r requirements.in
 mccabe==0.6.1             # via flake8
-numpy==1.18.4             # via pandas
+numpy==1.18.4             # via matplotlib, pandas
 odfpy==1.4.1              # via tablib
 openpyxl==3.0.3           # via tablib
 pandas==1.0.3             # via -r requirements.in
@@ -48,20 +51,22 @@ pexpect==4.8.0            # via ipython
 pickleshare==0.7.5        # via ipython
 prompt-toolkit==3.0.5     # via ipython
 psutil==5.7.0             # via -r requirements.in
+psycopg2==2.8.5           # via -r requirements.in
 ptyprocess==0.6.0         # via pexpect
 pycodestyle==2.6.0        # via autopep8, flake8
 pycparser==2.20           # via cffi
 pyflakes==2.2.0           # via flake8
 pygments==2.6.1           # via ipython
 pymongo==3.10.1           # via -r requirements.in
-python-dateutil==2.8.1    # via pandas
+pyparsing==2.4.7          # via matplotlib
+python-dateutil==2.8.1    # via matplotlib, pandas
 python-decouple==3.3      # via -r requirements.in
 pytz==2020.1              # via celery, django, pandas
 pyyaml==5.3.1             # via tablib
 redis==3.5.1              # via celery
 requests==2.23.0          # via -r requirements.in
 sentry-sdk==0.14.4        # via -r requirements.in
-six==1.14.0               # via python-dateutil, traitlets
+six==1.14.0               # via cycler, python-dateutil, traitlets
 soupsieve==2.0            # via beautifulsoup4
 sqlparse==0.3.1           # via django
 tablib[html,ods,xls,xlsx,yaml]==1.1.0  # via django-import-export
