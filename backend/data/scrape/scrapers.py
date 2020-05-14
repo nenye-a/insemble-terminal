@@ -47,7 +47,8 @@ class GenericScraper(object):
         character_limit = 500  # for readability
         return {"html": str(html[:character_limit])}  # subclasses should return objects of information
 
-    def request(self, url, timeout=30, quality_proxy=False, us_only=False):
+    def request(self, url, timeout=30, quality_proxy=False, us_only=False, headers=None,
+                proxies=None):
 
         https = 'https' in url
 
@@ -57,13 +58,19 @@ class GenericScraper(object):
                 print('Using Quality Proxy')
                 proxy = scrape_utils.get_proxy(paid=True, https=https, us_only=us_only, fail_token=self.fail_token)
                 self.logger.info('Requesting with the premium proxy API - {}'.format(proxy))
-                response = requests.get(url, headers=self.get_header(), proxies=proxy, timeout=timeout,
-                                        verify=CRAWLERA_CERT if https else None)
             else:
-                print('Using Bad Proxy')
+                print('Using Generic Proxy')
                 proxy = scrape_utils.get_proxy(https=https, us_only=us_only, fail_token=self.fail_token)
                 self.logger.info('Requesting with the following proxy - {}'.format(proxy))
-                response = requests.get(url, headers=self.get_header(), proxies=proxy, timeout=timeout)
+
+            response = requests.get(
+                url,
+                headers=headers if headers else self.get_header(),
+                proxies=proxies if proxies else proxy,
+                timeout=timeout,
+                verify=CRAWLERA_CERT if https and quality_proxy else None
+            )
+
             result = self.response_parse(response)
             scrape_utils.trash_proxy(proxy, self.fail_token) if not result else None
             processed_result = self.post_process(result) if result else None
@@ -113,7 +120,8 @@ class GenericScraper(object):
     #     result = list(self.request(*args, **kwargs))
     #     return result if results else []
 
-    def async_request(self, queries, pool_limit=20, timeout=30, quality_proxy=False, us_only=False):
+    def async_request(self, queries, pool_limit=20, timeout=30, quality_proxy=False, us_only=False, headers=None,
+                      proxies=None):
         """
         Provided a list of queries, will multi-process teh quries.
         """
@@ -139,8 +147,16 @@ class GenericScraper(object):
             self.logger.info('Executing multi-queries starting with {}'.format(queries[0]))
             try:
                 for new_result in pool.imap_unordered(
-                        partial(self.request, timeout=timeout, quality_proxy=quality_proxy, us_only=us_only),
-                        queries):
+                    partial(
+                        self.request,
+                        timeout=timeout,
+                        quality_proxy=quality_proxy,
+                        us_only=us_only,
+                        headers=headers,
+                        proxies=proxies
+                    ),
+                    queries
+                ):
                     if new_result is not None:
                         results.append(new_result)
                         self.logger.info('Got {} results ({} new).'.format(

@@ -48,7 +48,7 @@ def pull_proxies(https=False, us_only=False):
             return True
 
         response = requests.get(PROXY_URL)
-        soup = BeautifulSoup(response.text, 'lxml')
+        soup = BeautifulSoup(response.text, 'html.parser')
         table = soup.find('table', id='proxylisttable')
         list_tr = table.find_all('tr')
         list_td = [elem.find_all('td') for elem in list_tr]

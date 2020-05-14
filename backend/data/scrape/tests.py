@@ -27,7 +27,7 @@ class ScraperTests():
     def google_request_test():
 
         google_scraper = GoogleVenueScraper('GOOG SCRAPER')
-        result = google_scraper.request(GOOGLE_TEST_URL1, quality_proxy=True)
+        result = google_scraper.request(GOOGLE_TEST_URL1, quality_proxy=False)
         # result = google_scraper.request(GoogleVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street Los Angeles'))
         print(result)
 
