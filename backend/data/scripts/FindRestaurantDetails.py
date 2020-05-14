@@ -13,17 +13,20 @@ REGEX_24_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\
 REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
 GOOG_KEY = "your google api key"
 
+
 def get_google_activity(name, address):
     # returns the google activity graph for a search of an establishment
-    url, headers = build_google_activity_request(name, address)
-    return parse_google_activity(requests.get(url, headers=headers))
+    url = build_google_activity_request(name, address)
+    return parse_google_activity(requests.get(url, headers=HEADERS))
+
 
 def build_google_activity_request(name, address):
     # builds the google activity request params
 
     formatted_input = format_search(name, address)
     url = 'https://www.google.com/search?q=' + formatted_input
-    return url, HEADERS
+    return url
+
 
 def parse_google_activity(response):
     # returns the google activity graph for a search of an establishment, based on google maps response
@@ -35,10 +38,12 @@ def parse_google_activity(response):
         data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, html_text)]
     return data
 
+
 def get_nearby(venue_type, lat, lng):
     # returns a set of nearby venue addresses
     url, headers = build_nearby_request(venue_type, lat, lng)
     return parse_nearby(requests.get(url, headers=headers))
+
 
 def build_nearby_request(venue_type, lat, lng):
     # returns params for which to scrape nearby
@@ -47,9 +52,11 @@ def build_nearby_request(venue_type, lat, lng):
     url = 'https://www.google.com/maps/search/{}/@{},{},{}z'.format(venue_type, lat, lng, ZOOM)
     return url, HEADERS
 
+
 def parse_nearby(response):
     # returns a set of nearby venue addresses, based on google maps nearby search response\
     return set(re.findall(REGEX_ADDRESS, response.text))
+
 
 def parse_opentable_result(response):
     """
@@ -126,7 +133,7 @@ def parse_opentable_result(response):
         dist_from_query = None
 
     try:
-        #TODO: check that the results are of the format 'Booked x times today'
+        # TODO: check that the results are of the format 'Booked x times today'
         bookings = top_result.find('div', class_="booking").text
     except Exception:
         bookings = None
@@ -147,40 +154,50 @@ def parse_opentable_result(response):
 
     return store
 
+
 def find_restaurant_details(name, address):
     # returns the opentable details for a restaurant search
 
     lat, lng = get_lat_lng(name, address)
     date = today_formatted()
     formatted_name = name.replace(" ", "+")
-    url = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
+    url = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
+        '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
 
     resp = requests.get(url, headers=HEADERS)
     return parse_opentable_result(resp)
 
 #### Util type functions ####
+
+
 def get_lat_lng(name, address):
     # TODO: avoid using google keys to get lat/lng
     # TODO: hide keys and save searches
 
     formatted_input = format_search(name, address)
-    url = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={}&input={}&inputtype={}&fields=formatted_address,geometry'.format(GOOG_KEY, formatted_input, "textquery")
+    url = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={}&input={}&inputtype={}&fields=formatted_address,geometry'.format(
+        GOOG_KEY, formatted_input, "textquery")
     resp = requests.get(url)
     lat = resp.json()['candidates'][0]['geometry']['location']['lat']
     lng = resp.json()['candidates'][0]['geometry']['location']['lng']
     return lat, lng
 
+
 def today_formatted():
     return dt.datetime.now().strftime("%Y-%m-%d")
+
 
 def format_search(name, address):
     return name.replace(" ", "+") + "+" + address.replace(" ", "+")
 
+
 def get_one_int_from_str(text):
     return int(re.search(r'\d+', text).group())
 
+
 def get_one_float_from_str(text):
     return float(re.search(r'\d+\.\d+', text).group())
+
 
 if __name__ == "__main__":
     def parse_opentable_result_test():
@@ -198,7 +215,7 @@ if __name__ == "__main__":
         print(data)
         fig, sbts = plt.subplots(len(data))
         for i in range(len(sbts)):
-             sbts[i].bar(range(len(data[i])), data[i])
+            sbts[i].bar(range(len(data[i])), data[i])
         plt.show()
 
     def get_nearby_test():
