@@ -44,8 +44,7 @@ class GenericScraper(object):
         if response.status_code != 200:
             return None
         html = response.content
-        character_limit = 500  # for readability
-        return {"html": str(html[:character_limit])}  # subclasses should return objects of information
+        return {"html": html}  # subclasses should return objects of information
 
     def request(self, url, timeout=30, quality_proxy=False, us_only=False, headers=None,
                 proxies=None):
