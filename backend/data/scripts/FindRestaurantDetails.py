@@ -11,7 +11,11 @@ HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\]'
 REGEX_24_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\]'
 REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
+REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
+REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 GOOG_KEY = "your google api key"
+LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
+LNG_VIEWPORT_MULTIPLIER = 0.00000072025608
 
 
 def get_google_activity(name, address):
@@ -158,7 +162,7 @@ def parse_opentable_result(response):
 def find_restaurant_details(name, address):
     # returns the opentable details for a restaurant search
 
-    lat, lng = get_lat_lng(name, address)
+    lat, lng, x = get_lat_lng(format_search(name, address))
     date = today_formatted()
     formatted_name = name.replace(" ", "+")
     url = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
@@ -168,20 +172,6 @@ def find_restaurant_details(name, address):
     return parse_opentable_result(resp)
 
 #### Util type functions ####
-
-
-def get_lat_lng(name, address):
-    # TODO: avoid using google keys to get lat/lng
-    # TODO: hide keys and save searches
-
-    formatted_input = format_search(name, address)
-    url = 'https://maps.googleapis.com/maps/api/place/findplacefromtext/json?key={}&input={}&inputtype={}&fields=formatted_address,geometry'.format(
-        GOOG_KEY, formatted_input, "textquery")
-    resp = requests.get(url)
-    lat = resp.json()['candidates'][0]['geometry']['location']['lat']
-    lng = resp.json()['candidates'][0]['geometry']['location']['lng']
-    return lat, lng
-
 
 def today_formatted():
     return dt.datetime.now().strftime("%Y-%m-%d")
@@ -198,6 +188,27 @@ def get_one_int_from_str(text):
 def get_one_float_from_str(text):
     return float(re.search(r'\d+\.\d+', text).group())
 
+def get_viewport(lat, lng, goog_size_var):
+    # gets the viewport of a particular region given lat, lng, and size_var
+    # goog_size_var is the variable that google adds to the initialization state when loading google maps for a particular region
+    nw = (lat+goog_size_var*LAT_VIEWPORT_MULTIPLIER, lng-goog_size_var*LNG_VIEWPORT_MULTIPLIER)
+    se = (lat-goog_size_var*LAT_VIEWPORT_MULTIPLIER, lng+goog_size_var*LNG_VIEWPORT_MULTIPLIER)
+    return nw, se
+
+def build_lat_lng_request(query):
+    query = query.replace(" ", "+")
+    url = 'https://www.google.com/maps/search/{}/'.format(query)
+    return url
+
+def parse_lat_lng(response):
+    #gets the lat, lng, and the google size variable from a request to google maps for a particular place
+    first_parse = re.findall(REGEX_LATLNG_1, response.text)
+    match = re.findall(REGEX_LATLNG_2, first_parse[0])
+    [goog_size_var, lng, lat] = ast.literal_eval(match[0])
+    return lat, lng, goog_size_var
+
+def get_lat_lng(query):
+    return parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
 
 if __name__ == "__main__":
     def parse_opentable_result_test():
@@ -224,5 +235,15 @@ if __name__ == "__main__":
         lng = -84.3715611
         print(get_nearby(venue_type, lat, lng))
 
-    get_google_activity_test()
+    def get_lat_lng_test():
+        name = "Souvla Hayes Valley SF"
+        print(name, get_lat_lng(name))
+
+    def get_viewport_test():
+        name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
+        lat, lng, goog_size_var = get_lat_lng(name)
+        nw, se = get_viewport(lat, lng, goog_size_var)
+        print(name, lat, lng, "nw:", nw, "se:", se)
+
+    get_viewport_test()
     #pprint(find_restaurant_details("The Capital Grille", "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"))
