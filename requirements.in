@@ -18,3 +18,7 @@ flake8
 requests
 pandas
 djangorestframework
+bs4
+wheel
+pymongo
+dnspython

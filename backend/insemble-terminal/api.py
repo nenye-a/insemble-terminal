@@ -6,6 +6,7 @@ Insemble-terminal Django API.
 
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
+from data.scrape import scrapers
 
 
 class BasicAPI(generics.GenericAPIView):

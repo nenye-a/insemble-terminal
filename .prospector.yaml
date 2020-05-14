@@ -20,6 +20,8 @@ pep8:
     - D205
     - D400
     - N802  # function name should be lowercase, breaks on tests
+    - E402
+    - E731
   options:
     max-line-length: 100
 
