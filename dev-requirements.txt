@@ -24,8 +24,6 @@ gitdb==4.0.5              # via gitpython
 gitpython==3.1.2          # via bandit
 identify==1.4.15          # via pre-commit
 idna==2.9                 # via requests
-importlib-metadata==1.6.0  # via importlib-resources, pre-commit, virtualenv
-importlib-resources==1.5.0  # via pre-commit, virtualenv
 isort==4.3.21             # via -r dev-requirements.in, pylint
 lazy-object-proxy==1.4.3  # via astroid
 mccabe==0.6.1             # via prospector, pylint
@@ -58,12 +56,11 @@ smmap==3.0.4              # via gitdb
 snowballstemmer==2.0.0    # via pydocstyle
 sqlparse==0.3.1           # via django
 stevedore==1.32.0         # via bandit
-toml==0.10.0              # via black, dparse, pre-commit
-typed-ast==1.4.1          # via astroid, black
+toml==0.10.1              # via black, dparse, pre-commit
+typed-ast==1.4.1          # via black
 urllib3==1.25.9           # via requests
 virtualenv==20.0.20       # via pre-commit
 wrapt==1.11.2             # via astroid
-zipp==3.1.0               # via importlib-metadata, importlib-resources
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
