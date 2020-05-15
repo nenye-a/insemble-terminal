@@ -1,6 +1,6 @@
 import os
 import re
-import mongo_connect
+import mongo
 import pandas as pd
 
 '''
@@ -14,13 +14,13 @@ EARTHS_RADIUS_MILES = 3958.8
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
 
-SYSTEM_MONGO = mongo_connect.Connect()  # client, MongoDB connection
-DB_ZIPS = SYSTEM_MONGO.get_collection(mongo_connect.ZIPS)
-DB_LABRANDS = SYSTEM_MONGO.get_collection(mongo_connect.LABRANDS)
-DB_PLACES = SYSTEM_MONGO.get_collection(mongo_connect.PLACES)
-DB_VENUES = SYSTEM_MONGO.get_collection(mongo_connect.VENUES)
-DB_PLOTS = SYSTEM_MONGO.get_collection(mongo_connect.PLOTS)
-DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo_connect.PROXY_LOG)
+SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
+DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
+DB_LABRANDS = SYSTEM_MONGO.get_collection(mongo.LABRANDS)
+DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
+DB_VENUES = SYSTEM_MONGO.get_collection(mongo.VENUES)
+DB_PLOTS = SYSTEM_MONGO.get_collection(mongo.PLOTS)
+DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 
 
 def meters_to_miles(meters):
