@@ -16,3 +16,7 @@ export const THEME_COLOR = PURPLE;
 
 // Text colors
 export const DEFAULT_TEXT_COLOR = DARKER_GRAY;
+
+// DataTable colors
+export const TABLE_BORDER_COLOR = DARK_GRAY;
+export const TABLE_HEADER_BACKGROUND = DARKER_PURPLE;
