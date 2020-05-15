@@ -1,9 +1,10 @@
 import React from 'react';
 
+import MainRoute from './router/MainRoute';
 import './App.css';
 
 function App() {
-  return <div className="App">Hello World</div>;
+  return <MainRoute />;
 }
 
 export default App;
