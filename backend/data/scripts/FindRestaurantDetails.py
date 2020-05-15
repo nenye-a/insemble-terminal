@@ -3,6 +3,8 @@ import requests
 import datetime as dt
 import re
 import ast
+import random
+import time
 import matplotlib.pyplot as plt
 from pprint import pprint
 
@@ -49,18 +51,16 @@ def get_nearby(venue_type, lat, lng):
     return parse_nearby(requests.get(url, headers=headers))
 
 
-def build_nearby_request(venue_type, lat, lng):
+def build_nearby_request(venue_type, lat, lng, zoom=17):
     # returns params for which to scrape nearby
     venue_type = venue_type.replace(" ", "+")
-    ZOOM = 17
-    url = 'https://www.google.com/maps/search/{}/@{},{},{}z'.format(venue_type, lat, lng, ZOOM)
+    url = 'https://www.google.com/maps/search/{}/@{},{},{}z'.format(venue_type, lat, lng, zoom)
     return url, HEADERS
 
 
 def parse_nearby(response):
     # returns a set of nearby venue addresses, based on google maps nearby search response\
     return set(re.findall(REGEX_ADDRESS, response.text))
-
 
 def parse_opentable_result(response):
     """
@@ -210,6 +210,33 @@ def parse_lat_lng(response):
 def get_lat_lng(query):
     return parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
 
+def query_region_random(region, search_terms, num_results):
+    # using a region (city, state, etc), this queries the region for the specified search terms at random
+    # returning a set of establishments with their addresses as a string
+    # TODO: use mongo to geofence calls to avoid repeats
+    # TODO: set limit to return if the num of results is never achieved
+
+    results = set()
+    lat, lng, goog_size_var = get_lat_lng(region)
+    viewport = get_viewport(lat, lng, goog_size_var)
+    while len(results) < num_results:
+        # choose random coordinates in viewport
+        r_lat, r_lng = get_random_latlng(viewport[0], viewport[1])
+        for term in search_terms:
+            #TODO: remove wait if scraping under multiple proxies
+            time.sleep(3)
+            results.update(get_nearby(term, r_lat, r_lng))
+            if len(results) > num_results:
+                return results
+            print("queried {} results".format(len(results)))
+    return results
+
+def get_random_latlng(nw, se):
+    #nw: (33.84052626832547, -84.38138020826983) se: (33.83714933167453, -84.37660639173015)
+    lat = se[0]+random.random()*(nw[0]-se[0])
+    lng = se[1]-random.random()*(se[1]-nw[1])
+    return lat, lng
+
 if __name__ == "__main__":
     def parse_opentable_result_test():
         URL = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=Pasha+Restaurant+and+Bar&source=dtp-form&covers=2&dateTime=2020-05-07&latitude=33.828395&longitude=-84.365395'
@@ -245,5 +272,13 @@ if __name__ == "__main__":
         nw, se = get_viewport(lat, lng, goog_size_var)
         print(name, lat, lng, "nw:", nw, "se:", se)
 
-    get_viewport_test()
+    def get_random_latlng_test():
+        nw = (33.84052626832547, -84.38138020826983)
+        se = (33.83714933167453, -84.37660639173015)
+        lat, lng = get_random_latlng(nw, se)
+        print("Lat", lat, se[0]<=lat<=nw[0])
+        print("Lng", lng, nw[1]<=lng<=se[1])
+
+
+    get_random_latlng_test()
     #pprint(find_restaurant_details("The Capital Grille", "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"))
