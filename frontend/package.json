@@ -6,8 +6,10 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "typecheck": "tsc --noEmit -p ."
-  },  
+    "typecheck": "tsc --noEmit -p .",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\""
+  },
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
@@ -23,10 +25,17 @@
   },
   "devDependencies": {
     "@types/react-test-renderer": "^16.9.2",
+    "prettier": "^2.0.5",
     "react-test-renderer": "^16.13.1"
   },
   "eslintConfig": {
     "extends": "react-app"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "always",
+    "tabWidth": 2
   },
   "browserslist": {
     "production": [
