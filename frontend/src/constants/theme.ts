@@ -13,3 +13,5 @@ export const FONT_WEIGHT_NORMAL = '400';
 export const FONT_WEIGHT_MEDIUM = '500';
 export const FONT_WEIGHT_BOLD = '700';
 export const FONT_WEIGHT_HEAVY = '900';
+
+export const NAVBAR_HEIGHT = '65px';

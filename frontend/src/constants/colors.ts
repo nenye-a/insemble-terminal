@@ -20,3 +20,5 @@ export const DEFAULT_TEXT_COLOR = DARKER_GRAY;
 // DataTable colors
 export const TABLE_BORDER_COLOR = DARK_GRAY;
 export const TABLE_HEADER_BACKGROUND = DARKER_PURPLE;
+
+export const HEADER_SHADOW_COLOR = 'rgba(103, 76, 167, 0.17)';
