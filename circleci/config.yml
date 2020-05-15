@@ -19,7 +19,7 @@ jobs:
           command: sudo chown -R circleci:circleci /usr/local/lib/python3.7/site-packages
       - run:
           command: pip install requests pip-tools --upgrade
-      
+
       - restore_cache:
           keys:
             - v1-pip-cache-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
@@ -47,7 +47,7 @@ jobs:
           key: npm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
           paths:
             - node_modules
-      
+
       - run:
           command: npm run build
       - run:
@@ -92,3 +92,24 @@ jobs:
           path: test-reports
       - store_artifacts:
           path: test-reports
+  build_frontend:
+    docker:
+      - image: circleci/node:12.13
+    working_directory: ~/frontend
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "frontend/yarn.lock" }}
+            - v1-dependencies-
+      - run:
+          command: |
+            yarn install
+      - save_cache:
+          paths:
+            - frontend/node_modules
+          key: v1-dependencies-{{ checksum "frontend/yarn.lock" }}
+      - run:
+          command: cd frontend
+      - run:
+          command: yarn test
