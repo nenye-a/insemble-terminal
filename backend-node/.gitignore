@@ -1,0 +1,17 @@
+node_modules/**/*
+npm-debug.*
+lib/
+package-lock.json
+yarn-error.log
+.env
+!.env.example
+
+# prisma
+generated
+yarn-error.log
+
+# macOS
+.DS_Store
+
+# Jest
+coverage/
