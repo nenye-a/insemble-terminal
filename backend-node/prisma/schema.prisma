@@ -1,10 +1,40 @@
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://prisma:prisma@localhost:5432/insemble-terminal?schema=public"
+  url      = "postgres://tfmnjwyjgfjfua:d8ce0a348958b0d0c486088a7998cb65ce633783822a167e5536150411473943@ec2-34-194-198-176.compute-1.amazonaws.com:5432/df62bp2hpll710"
 }
 
 generator client {
   provider = "prisma-client-js"
+}
+
+enum LocationTagType {
+  ADDRESS
+  STATE
+  NATION
+}
+
+enum TargetObjectTagType {
+  BUSSINESS
+  CATEGORY
+}
+
+enum PerformanceType {
+  LOCATION
+  STATE
+  OVERALL
+  BY_ADDRESS
+}
+
+model LocationTag {
+  id     String          @default(cuid()) @id
+  type   LocationTagType
+  params String
+}
+
+model TargetObjectTag {
+  id     String          @default(cuid()) @id
+  type   TargetObjectTagType
+  params String
 }
 
 model User {
@@ -44,4 +74,21 @@ model UserEmailVerification {
   user       User
   verified   Boolean @default(false)
   tokenEmail String
+}
+
+model PerformanceData {
+  id            String          @default(cuid()) @id
+  name          String
+  avgRating     String
+  totalSales    String
+  numReview     Int
+  numLocation   Int? 
+}
+
+model Performance {
+  id              String          @default(cuid()) @id
+  type            PerformanceType
+  locationTag     LocationTag?
+  targetObjectTag TargetObjectTag?
+  data            PerformanceData[]
 }
