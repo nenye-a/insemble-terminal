@@ -15,8 +15,8 @@ from pprint import pprint
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
-REGEX_18_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\]'
-REGEX_24_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\]'
+REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
+REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
@@ -68,6 +68,7 @@ def parse_nearby(response):
     # returns a set of nearby venue addresses, based on google maps nearby search response\
     return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
 
+
 def query_region_random(region, search_terms, num_results):
     # using a region (city, state, etc), this queries the region for the specified search terms at random
     # returning a set of establishments with their addresses as a string
@@ -75,20 +76,20 @@ def query_region_random(region, search_terms, num_results):
     # TODO: use mongo to geofence calls to avoid repeats
     # TODO: set limit to return if the num of results is never achieved
 
-    #build scraper
+    # build scraper
     results = set()
     scraper = GenericScraper('query_region_random scraper')
 
-    #get lat, lng, and viewport of the region that's being queried
+    # get lat, lng, and viewport of the region that's being queried
     lat, lng, goog_size_var = scraper.request(build_lat_lng_request(region), quality_proxy=True, res_parser=parse_lat_lng)
     viewport = get_viewport(lat, lng, goog_size_var)
 
-    #choose random points in the viewport to run nearby requests on until reaching the desired number of results
+    # choose random points in the viewport to run nearby requests on until reaching the desired number of results
     while len(results) < num_results:
         # choose random coordinates in viewport
         r_lat, r_lng = get_random_latlng(viewport[0], viewport[1])
         for term in search_terms:
-            #TODO: scrape asynchronously
+            # TODO: scrape asynchronously
             results.update(scraper.request(build_nearby_request(term, r_lat, r_lng), quality_proxy=True,
                                            res_parser=parse_nearby))
             #results.update(get_nearby(term, r_lat, r_lng))
@@ -97,18 +98,21 @@ def query_region_random(region, search_terms, num_results):
             print("queried {} results".format(len(results)))
     return results
 
+
 def find_restaurant_details(name, address):
     # returns the opentable details for a restaurant search
     url = build_restaurant_details_request(name, address)
     resp = requests.get(url, headers=HEADERS)
     return parse_opentable_result(resp)
 
+
 def build_restaurant_details_request(name, address):
     lat, lng = get_lat_lng(format_search(name, address))
     date = today_formatted()
     formatted_name = name.replace(" ", "+")
     return 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
-          '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
+        '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
+
 
 def parse_opentable_result(response):
     """
@@ -208,6 +212,7 @@ def parse_opentable_result(response):
 
 #### Util type functions ####
 
+
 def today_formatted():
     return dt.datetime.now().strftime("%Y-%m-%d")
 
@@ -223,24 +228,28 @@ def get_one_int_from_str(text):
 def get_one_float_from_str(text):
     return float(re.search(r'\d+\.\d+', text).group())
 
+
 def get_viewport(lat, lng, goog_size_var):
     # gets the viewport of a particular region given lat, lng, and size_var
     # goog_size_var is the variable that google adds to the initialization state when loading google maps for a particular region
-    nw = (lat+goog_size_var*LAT_VIEWPORT_MULTIPLIER, lng-goog_size_var*LNG_VIEWPORT_MULTIPLIER)
-    se = (lat-goog_size_var*LAT_VIEWPORT_MULTIPLIER, lng+goog_size_var*LNG_VIEWPORT_MULTIPLIER)
+    nw = (lat + goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng - goog_size_var * LNG_VIEWPORT_MULTIPLIER)
+    se = (lat - goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng + goog_size_var * LNG_VIEWPORT_MULTIPLIER)
     return nw, se
+
 
 def build_lat_lng_request(query):
     query = query.replace(" ", "+")
     url = 'https://www.google.com/maps/search/{}/'.format(query)
     return url
 
+
 def parse_lat_lng(response):
-    #gets the lat, lng, and the google size variable from a request to google maps for a particular place
+    # gets the lat, lng, and the google size variable from a request to google maps for a particular place
     first_parse = re.findall(REGEX_LATLNG_1, response.text)
     match = re.findall(REGEX_LATLNG_2, first_parse[0])
     [goog_size_var, lng, lat] = ast.literal_eval(match[0])
     return lat, lng, goog_size_var
+
 
 def get_lat_lng(query, include_sizevar=False):
     lat, lng, goog_size_var = parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
@@ -249,11 +258,13 @@ def get_lat_lng(query, include_sizevar=False):
     else:
         return lat, lng
 
+
 def get_random_latlng(nw, se):
-    #nw: (33.84052626832547, -84.38138020826983) se: (33.83714933167453, -84.37660639173015)
-    lat = se[0]+random.random()*(nw[0]-se[0])
-    lng = se[1]-random.random()*(se[1]-nw[1])
+    # nw: (33.84052626832547, -84.38138020826983) se: (33.83714933167453, -84.37660639173015)
+    lat = se[0] + random.random() * (nw[0] - se[0])
+    lng = se[1] - random.random() * (se[1] - nw[1])
     return lat, lng
+
 
 if __name__ == "__main__":
     def parse_opentable_result_test():
@@ -285,7 +296,6 @@ if __name__ == "__main__":
         print(name, get_lat_lng(name))
         print(name, "size var option", get_lat_lng(name, True))
 
-
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
         lat, lng, goog_size_var = get_lat_lng(name)
@@ -296,8 +306,8 @@ if __name__ == "__main__":
         nw = (33.84052626832547, -84.38138020826983)
         se = (33.83714933167453, -84.37660639173015)
         lat, lng = get_random_latlng(nw, se)
-        print("Lat", lat, se[0]<=lat<=nw[0])
-        print("Lng", lng, nw[1]<=lng<=se[1])
+        print("Lat", lat, se[0] <= lat <= nw[0])
+        print("Lng", lng, nw[1] <= lng <= se[1])
 
     def query_region_random_test():
         region = "Culver City, CA"

@@ -36,7 +36,7 @@ class GenericScraper(object):
     def get_header(self):
         return {'User-Agent': random.choice(self.user_agents)}
 
-    def response_parse(self, response) -> dict:
+    def response_parse(self, response):
         """
         Function to parse the response into the right format. Should be overwritten in subclassess.
         """
@@ -64,7 +64,7 @@ class GenericScraper(object):
                             proxies will be automatically used
             res_parser: function | string - function that will be used to parse the response, if not
                                             provided, the default class parser will be used. Alternatively
-                                            a string request can be provided to use pre-defined functions
+                                            a string request can be provided to use pre-defined functions:
 
                                             json - returns json if possible, otherwise throws error
                                             content - returns content
@@ -187,11 +187,11 @@ class GenericScraper(object):
                     else:
                         self.logger.info('Failed result, returned None')
             except KeyboardInterrupt:
-                self.logger.info('Program interrupted by user. Returning all tweets '
+                self.logger.info('Program interrupted by user. Returning all details '
                                  'gathered so far.')
                 return
             except poolexceptions.WorkerLostError:
-                self.logger.error('Worker crashed and exited prematurelty. Closing pool '
+                self.logger.error('Worker crashed and exited prematurely. Closing pool '
                                   'and restarting request.')
                 worker_crash = True
         finally:
