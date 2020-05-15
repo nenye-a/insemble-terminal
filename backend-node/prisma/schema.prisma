@@ -91,4 +91,6 @@ model Performance {
   locationTag     LocationTag?
   targetObjectTag TargetObjectTag?
   data            PerformanceData[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }
