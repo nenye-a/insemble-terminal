@@ -1,4 +1,4 @@
-from scrapers import GenericScraper, GoogleVenueScraper, YelpVenueScraper
+from scraper import GenericScraper, GoogleVenueScraper, YelpVenueScraper
 
 # GENERIC SCRAPER TEST SUITE
 

@@ -1,14 +1,11 @@
 from rest_framework import serializers
+from .constants import LOCATION_TYPES, BUSINESS_TYPES, DATA_TYPES
 
 '''
 
 Insemble-terminal serializers to enforce request & response structure.
 
 '''
-
-LOCATION_TYPES = ['ADDRESS', 'CITY', 'COUNTY', 'STATE', 'NATION']
-BUSINESS_TYPES = ['BUSINESS', 'CATEGORY']
-DATA_TYPES = ['BRAND', 'CATEGORY', 'OVERALL', 'ADDRESS', 'CITY', 'STATE']
 
 
 class LocationSerializer(serializers.Serializer):

@@ -2,7 +2,7 @@
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
-from data.scrape import scrapers
+from data.scrape import scraper
 from .serializers import PerformanceSerializer
 
 '''
@@ -91,7 +91,12 @@ class PerformanceAPI(BasicAPI):
 
         serializer = self.get_serializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
 
-        validated_params = serializer.validated_data
+        location = params['location']
+        business = params['business']
+        data_type = params['dataType']
 
-        return Response(validated_params, status=status.HTTP_200_OK)
+        # Determine which case we are in right now.
+
+        return Response(params, status=status.HTTP_200_OK)
