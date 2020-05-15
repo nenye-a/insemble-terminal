@@ -1,6 +1,0 @@
-{
-  "devDependencies": {
-    "eslint": "^7.0.0",
-    "eslint-config-kodefox": "^0.2.2"
-  }
-}

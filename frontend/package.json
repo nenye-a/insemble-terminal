@@ -4,12 +4,13 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
     "eject": "react-scripts eject",
     "typecheck": "tsc --noEmit -p .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
-    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\""
+    "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
+    "jest": "jest --coverage --passWithNoTests",
+    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest"
   },
   "dependencies": {
     "@testing-library/jest-dom": "^4.2.4",
@@ -21,13 +22,15 @@
     "@types/react-dom": "^16.9.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-scripts": "3.4.1",
-    "typescript": "~3.7.2"
+    "react-scripts": "3.4.1"
   },
   "devDependencies": {
     "@types/react-test-renderer": "^16.9.2",
+    "eslint": "^6.6.0",
+    "eslint-config-kodefox": "^0.2.2",
     "prettier": "^2.0.5",
-    "react-test-renderer": "^16.13.1"
+    "react-test-renderer": "^16.13.1",
+    "typescript": "^3.9.2"
   },
   "eslintConfig": {
     "extends": "kodefox/react"
@@ -35,8 +38,7 @@
   "prettier": {
     "singleQuote": true,
     "trailingComma": "all",
-    "arrowParens": "always",
-    "tabWidth": 2
+    "arrowParens": "always"
   },
   "browserslist": {
     "production": [
