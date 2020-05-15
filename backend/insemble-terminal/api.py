@@ -1,12 +1,15 @@
+
+from rest_framework import status, generics, permissions, serializers
+from rest_framework.response import Response
+
+from data.scrape import scrapers
+from .serializers import PerformanceSerializer
+
 '''
 
 Insemble-terminal Django API.
 
 '''
-
-from rest_framework import status, generics, permissions, serializers
-from rest_framework.response import Response
-from data.scrape import scrapers
 
 
 class BasicAPI(generics.GenericAPIView):
@@ -36,6 +39,8 @@ class PerformanceAPI(BasicAPI):
 
     """
 
+    serializer_class = PerformanceSerializer
+
     def get(self, request, *args, **kwargs):
         """
 
@@ -43,11 +48,11 @@ class PerformanceAPI(BasicAPI):
 
         Parameters: {
             location: {
-                type: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
                 params: string          
             }
             business: {
-                type: 'BUSINESS' | 'CATEGORY'
+                businessType: 'BUSINESS' | 'CATEGORY'
                 params: string          
             }
             dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
@@ -60,11 +65,11 @@ class PerformanceAPI(BasicAPI):
                 updatedAt: Date,
                 serachTag: {
                     location: {
-                        type: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                        locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
                         params: string                                              
                     }
                     business: {
-                        type: 'BUSINESS' | 'CATEGORY'
+                        businessType: 'BUSINESS' | 'CATEGORY'
                         params: string                                              
                     }
                 }
@@ -84,4 +89,9 @@ class PerformanceAPI(BasicAPI):
 
         """
 
-        return Response({}, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        validated_params = serializer.validated_data
+
+        return Response(validated_params, status=status.HTTP_200_OK)
