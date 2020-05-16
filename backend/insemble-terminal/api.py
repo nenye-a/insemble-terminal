@@ -35,7 +35,7 @@ class PerformanceAPI(BasicAPI):
     """
 
     All functions related to performance data.
-    Performance API path: /performance
+    Performance API path: api/performance
 
     """
 
@@ -81,7 +81,6 @@ class PerformanceAPI(BasicAPI):
                         avgRating?: number,
                         avgReviews?: number,
                         numLocations?: number,
-                        location?: number,
                     }
                 ]
             }
