@@ -14,15 +14,8 @@ MONGO_USER = config('MONGO_USER')
 MONGO_PASS = config('MONGO_DB_PASS')
 
 # Databases
-NEWS = "news"
-FEEDS = "news.feeds"
-PLOTS = "news.plots"
-ZIPS = "news.zipcodes"
 PROXY_LOG = "news.proxy_log"
-VENUES = "news.venues"
 PLACES = "appData.places"
-LABRANDS = "appData.brands"
-UNSUBSCRIBED = "news.unsubscribed"
 
 
 class Connect(object):

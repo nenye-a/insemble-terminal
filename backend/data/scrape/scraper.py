@@ -13,7 +13,6 @@ import scrape_utils
 from functools import partial
 from billiard import exceptions as poolexceptions
 from billiard.pool import Pool
-from scrape_parser import parse_stores_google, parse_stores_yelp
 
 CRAWLERA_CERT = THIS_DIR + '/crawlera-ca.crt'
 requests.packages.urllib3.disable_warnings()
@@ -36,7 +35,7 @@ class GenericScraper(object):
     def get_header(self):
         return {'User-Agent': random.choice(self.user_agents)}
 
-    def response_parse(self, response) -> dict:
+    def response_parse(self, response):
         """
         Function to parse the response into the right format. Should be overwritten in subclassess.
         """
@@ -64,7 +63,7 @@ class GenericScraper(object):
                             proxies will be automatically used
             res_parser: function | string - function that will be used to parse the response, if not
                                             provided, the default class parser will be used. Alternatively
-                                            a string request can be provided to use pre-defined functions
+                                            a string request can be provided to use pre-defined functions:
 
                                             json - returns json if possible, otherwise throws error
                                             content - returns content
@@ -187,11 +186,11 @@ class GenericScraper(object):
                     else:
                         self.logger.info('Failed result, returned None')
             except KeyboardInterrupt:
-                self.logger.info('Program interrupted by user. Returning all tweets '
+                self.logger.info('Program interrupted by user. Returning all details '
                                  'gathered so far.')
                 return
             except poolexceptions.WorkerLostError:
-                self.logger.error('Worker crashed and exited prematurelty. Closing pool '
+                self.logger.error('Worker crashed and exited prematurely. Closing pool '
                                   'and restarting request.')
                 worker_crash = True
         finally:
@@ -206,72 +205,3 @@ class GenericScraper(object):
                     return self.async_request(queries, pool_limit)
 
         return results
-
-
-class GoogleVenueScraper(GenericScraper):
-
-    # the following headers are the only ones that generate google results in the right format
-    GOOGLE_HEADER_LIST = [
-        'Mozilla/5.0 (Windows NT 5.2; RW; rv:7.0a1) Gecko/20091211 SeaMonkey/9.23a1pre',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0',
-        'Mozilla/5.0 (compatible, MSIE 11, Windows NT 6.3; Trident/7.0; rv:11.0) like Gecko'
-    ]
-    BASE_URL = 'https://www.google.com/search?q={}&sourceid=chrome&ie=UTF-8'
-
-    def __init__(self, name, header=None):
-        super().__init__(name)
-        self.user_agents = GoogleVenueScraper.GOOGLE_HEADER_LIST
-        self.fail_token = 'google'
-
-    def response_parse(self, response):
-        if response.status_code == 200:
-            return parse_stores_google(response)
-        return {}
-
-    def get_header(self):
-        user_agent = random.choice(self.user_agents)
-        referer = "https://www.google.com/"
-        return {
-            'User-Agent': user_agent,
-            'referer': referer,
-        }
-
-    @staticmethod
-    def generate_url(name, address):
-        """
-        Provided name, address, and url_type of website, will format the URL.
-        """
-
-        name = urllib.parse.quote(name.strip().replace(' ', '+').lower().encode('utf-8'))
-        address = urllib.parse.quote(address.strip().replace(' ', '+').lower().encode('utf-8'))
-        url = GoogleVenueScraper.BASE_URL.format(name + '+near+' + address)
-        return url
-
-
-class YelpVenueScraper(GenericScraper):
-
-    BASE_URL = 'https://www.yelp.com/search?find_desc={name}&find_loc={address}'
-
-    def __init__(self, name, header=None):
-        super().__init__(name, header=header)
-        self.fail_token = 'yelp'
-
-    def response_parse(self, response):
-        if response.status_code == 200:
-            return parse_stores_yelp(response)
-        return {}
-
-    @staticmethod
-    def generate_url(name, address):
-        """
-        Provided name, address, and url_type of website, will format the URL.
-        """
-
-        name = urllib.parse.quote(name.strip().replace(' ', '+').lower().encode('utf-8'))
-        address = urllib.parse.quote(address.strip().replace(' ', '+').lower().encode('utf-8'))
-        url = YelpVenueScraper.BASE_URL.format(name=name, address=address)
-        return url
-
-
-# print(GoogleVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street'))
-# print(YelpVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street los angeles'))

@@ -10,7 +10,7 @@ sys.path.append(BASE_DIR)
 import utils
 import urllib
 import FindRestaurantDetails as details
-from scrape.scrapers import GenericScraper
+from scrape.scraper import GenericScraper
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 GENERATED_PATH = THIS_DIR + '/activity_generated/'
