@@ -1,13 +1,8 @@
-from bs4 import BeautifulSoup
-import requests
-import datetime as dt
+
 import re
 import ast
 import utils
-import random
-import time
 import matplotlib.pyplot as plt
-from pprint import pprint
 from decouple import config
 
 from scrape.scraper import GenericScraper

@@ -2,7 +2,6 @@ import os
 import re
 import random
 import urllib
-import pandas as pd
 import datetime as dt
 from fuzzywuzzy import fuzz
 

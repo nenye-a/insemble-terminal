@@ -6,7 +6,6 @@ sys.path.append(THIS_DIR)
 import requests
 import json
 import random
-import urllib
 import scrape_utils
 
 
