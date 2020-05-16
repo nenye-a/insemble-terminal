@@ -10,9 +10,9 @@ import google
 # Helper Functions
 
 
-def find_restaurant_details(name, address):
+def find_restaurant_details(name, address, projection=None):
     table_scraper = OpenTableDetails('table scraper')
-    return table_scraper.restaurant_details(name, address)
+    return table_scraper.restaurant_details(name, address, projection)
 
 
 class OpenTableDetails(GenericScraper):
@@ -29,16 +29,21 @@ class OpenTableDetails(GenericScraper):
         return 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
             '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
 
-    def restaurant_details(self, name, address):
+    def restaurant_details(self, name, address, projection=None):
         """
         Gets all the restaurant details for a provided name
         and address
         """
         url = OpenTableDetails.build_request(name, address)
-        return self.request(
+        data = self.request(
             url,
             quality_proxy=True,
         )
+        projection_list = projection.strip().split(',') if projection else None
+        if projection_list:
+            data = {key: data[key] for key in projection_list}
+
+        return data
 
     def response_parse(self, response):
         """

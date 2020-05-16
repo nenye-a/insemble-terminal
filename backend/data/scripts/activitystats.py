@@ -95,12 +95,14 @@ def calculate_volumes(week_activity):
                 return True
 
     fill_week(week_activity)
+    active_weeks = len([day for day in week_activity if day])
+
     week_volume = sum([sum(day_activity) for day_activity in week_activity])
     avg_day_volume = float(sum([
         float(sum(day_activity)) / len([
             hour for hour in day_activity if hour != 0
         ]) if has_activity(day_activity) else 0 for day_activity in week_activity
-    ])) / len(week_activity)
+    ])) / active_weeks if active_weeks != 0 else 0
 
     return {
         'week_volume': week_volume,
@@ -117,4 +119,4 @@ def fill_week(week):
 
 
 if __name__ == "__main__":
-    activity_statistics(3000)
+    activity_statistics(150)

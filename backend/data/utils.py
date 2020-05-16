@@ -143,6 +143,11 @@ def format_search(name, address):
     return encode_word(name) + "+" + encode_word(address)
 
 
+def get_alternative_source(key, preffered_dict, default_dict):
+    """pull detail from a preferred dict, if not will pull from default dict or return none"""
+    return preffered_dict[key] if key in preffered_dict else default_dict.get(key, None)
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():

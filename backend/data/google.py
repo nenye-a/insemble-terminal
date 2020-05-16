@@ -87,6 +87,7 @@ class GoogleActivity(GenericScraper):
         return self.request(
             url,
             quality_proxy=True,
+            timeout=5
         )
 
 
@@ -117,7 +118,8 @@ class GoogleNearby(GenericScraper):
         return self.request(
             url,
             quality_proxy=True,
-            headers=HEADERS
+            headers=HEADERS,
+            timeout=5
         )
 
 
@@ -143,7 +145,8 @@ class GeoCode(GenericScraper):
         lat, lng, goog_size_var = self.request(
             url,
             headers=HEADERS,
-            quality_proxy=True
+            quality_proxy=True,
+            timeout=5
         )
         if include_sizevar:
             return lat, lng, goog_size_var
@@ -204,7 +207,8 @@ class GoogleDetails(GenericScraper):
         url = GoogleDetails.build_request(name, address)
         data = self.request(
             url,
-            quality_proxy=True
+            quality_proxy=True,
+            timeout=5
         )
         projection_list = projection.strip().split(',') if projection else None
         if projection_list:
@@ -310,4 +314,5 @@ if __name__ == "__main__":
         num_results = 10
         print(query_region_random(region, terms, num_results))
 
-    get_google_details_test()
+    get_google_activity_test()
+    # get_google_details_test()

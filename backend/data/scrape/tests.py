@@ -1,4 +1,4 @@
-from scraper import GenericScraper, GoogleVenueScraper, YelpVenueScraper
+from scraper import GenericScraper
 
 # GENERIC SCRAPER TEST SUITE
 
@@ -26,46 +26,6 @@ class ScraperTests():
         test_url_list = [GOOGLE_TEST_URL1 for x in range(10)]
         test1 = my_scraper.async_request(test_url_list, quality_proxy=True)
         print(test1, '\n')
-
-    @staticmethod
-    def google_request_test():
-
-        google_scraper = GoogleVenueScraper('GOOG SCRAPER')
-        result = google_scraper.request(GOOGLE_TEST_URL1, quality_proxy=False)
-        # result = google_scraper.request(GoogleVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street Los Angeles'))
-        print(result)
-
-    @staticmethod
-    def google_async_request_test():
-        num_requests = 80
-
-        google_scraper = GoogleVenueScraper('GOOG SCRAPER')
-        test_url_list = [GOOGLE_TEST_URL1 for x in range(num_requests)]
-        test1 = google_scraper.async_request(test_url_list, quality_proxy=True)
-        num_results = len(test1)
-        print(test1[0], '\n')
-        print(test1[-1], '\n')
-        print('Total Results Received: {}/{}'.format(num_results, num_requests))
-
-    @staticmethod
-    def yelp_request_test():
-
-        yelp_scraper = YelpVenueScraper('YELP SCRAPER')
-        result = yelp_scraper.request(YELP_TEST_URL2)
-        # result = yelp_scraper.request(YelpVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street los angeles'))
-        print(result)
-
-    @staticmethod
-    def yelp_async_request_test():
-        num_requests = 80
-
-        yelp_scraper = YelpVenueScraper('YELP SCRAPER')
-        test_url_list = [YELP_TEST_URL1 for x in range(num_requests)]
-        test1 = yelp_scraper.async_request(test_url_list, quality_proxy=True)
-        num_results = len(test1)
-        print(test1[0], '\n')
-        print(test1[-1], '\n')
-        print('Total Results Received: {}/{}'.format(num_results, num_requests))
 
 
 def doc_distance(str1, str2):
@@ -96,10 +56,5 @@ def dictify(list_words):
 
 if __name__ == "__main__":
 
-    ScraperTests.request_test()
-    # ScraperTests.async_request_test()
-    # ScraperTests.google_request_test()
-    # ScraperTests.google_async_request_test()
-    # ScraperTests.async_request_test()
-    # ScraperTests.yelp_request_test()
-    # ScraperTests.yelp_async_request_test()
+    # ScraperTests.request_test()
+    ScraperTests.async_request_test()
