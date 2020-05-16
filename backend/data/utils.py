@@ -2,9 +2,11 @@ import os
 import re
 import random
 import urllib
-import pandas as pd
 import datetime as dt
+from fuzzywuzzy import fuzz
+
 import mongo
+
 
 '''
 Utility methods for this project
@@ -136,11 +138,24 @@ def literal_int(string_number):
 
 
 def encode_word(word):
-    return urllib.parse.quote(word.strip().replace(' ', '+').lower().encode('utf-8'))
+    return urllib.parse.quote(word.strip().lower().replace(' ', '+').encode('utf-8'))
 
 
 def format_search(name, address):
     return encode_word(name) + "+" + encode_word(address)
+
+
+def get_alternative_source(key, preffered_dict, default_dict):
+    """pull detail from a preferred dict, if not will pull from default dict or return none"""
+    return preffered_dict[key] if key in preffered_dict and preffered_dict[key] else default_dict.get(key, None)
+
+
+def fuzzy_match(query, target):
+    ratio = fuzz.WRatio(query, target)
+    if ratio > 88:
+        return True
+    else:
+        return False
 
 
 if __name__ == "__main__":

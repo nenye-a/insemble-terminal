@@ -1,4 +1,6 @@
-from scraper import GenericScraper, GoogleVenueScraper, YelpVenueScraper
+import random
+from scraper import GenericScraper
+
 
 # GENERIC SCRAPER TEST SUITE
 
@@ -28,44 +30,35 @@ class ScraperTests():
         print(test1, '\n')
 
     @staticmethod
-    def google_request_test():
-
-        google_scraper = GoogleVenueScraper('GOOG SCRAPER')
-        result = google_scraper.request(GOOGLE_TEST_URL1, quality_proxy=False)
-        # result = google_scraper.request(GoogleVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street Los Angeles'))
+    def test_meta():
+        my_scraper = GenericScraper()
+        result = my_scraper.request(
+            GOOGLE_TEST_URL1,
+            quality_proxy=True,
+            res_parser='text',
+            meta=100,
+            meta_function=lambda res, meta: res[:meta]
+        )
         print(result)
 
     @staticmethod
-    def google_async_request_test():
-        num_requests = 80
+    def test_meta_async():
+        my_scraper = GenericScraper()
 
-        google_scraper = GoogleVenueScraper('GOOG SCRAPER')
-        test_url_list = [GOOGLE_TEST_URL1 for x in range(num_requests)]
-        test1 = google_scraper.async_request(test_url_list, quality_proxy=True)
-        num_results = len(test1)
-        print(test1[0], '\n')
-        print(test1[-1], '\n')
-        print('Total Results Received: {}/{}'.format(num_results, num_requests))
-
-    @staticmethod
-    def yelp_request_test():
-
-        yelp_scraper = YelpVenueScraper('YELP SCRAPER')
-        result = yelp_scraper.request(YELP_TEST_URL2)
-        # result = yelp_scraper.request(YelpVenueScraper.generate_url('Spitz - Little Tokyo', '371 E 2nd Street los angeles'))
-        print(result)
+        test_url_list = [{'url': GOOGLE_TEST_URL1, 'meta': random.choice([
+            2, 10, 30, 10, 9, 89
+        ])} for x in range(10)]
+        results = my_scraper.async_request(
+            test_url_list,
+            quality_proxy=True,
+            res_parser='text',
+            meta_function=ScraperTests.func
+        )
+        print(results)
 
     @staticmethod
-    def yelp_async_request_test():
-        num_requests = 80
-
-        yelp_scraper = YelpVenueScraper('YELP SCRAPER')
-        test_url_list = [YELP_TEST_URL1 for x in range(num_requests)]
-        test1 = yelp_scraper.async_request(test_url_list, quality_proxy=True)
-        num_results = len(test1)
-        print(test1[0], '\n')
-        print(test1[-1], '\n')
-        print('Total Results Received: {}/{}'.format(num_results, num_requests))
+    def func(res, meta):
+        return res[:meta]
 
 
 def doc_distance(str1, str2):
@@ -91,15 +84,13 @@ def dictify(list_words):
 
     return my_dict
 
+
 # TEST
 
 
 if __name__ == "__main__":
 
-    ScraperTests.request_test()
+    # ScraperTests.request_test()
     # ScraperTests.async_request_test()
-    # ScraperTests.google_request_test()
-    # ScraperTests.google_async_request_test()
-    # ScraperTests.async_request_test()
-    # ScraperTests.yelp_request_test()
-    # ScraperTests.yelp_async_request_test()
+    # ScraperTests.test_meta()
+    ScraperTests.test_meta_async()

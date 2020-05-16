@@ -31,6 +31,7 @@ djangorestframework==3.11.0  # via -r requirements.in
 dnspython==1.16.0         # via -r requirements.in
 et-xmlfile==1.0.1         # via openpyxl
 flake8==3.8.1             # via -r requirements.in
+fuzzywuzzy==0.18.0        # via -r requirements.in
 gunicorn==20.0.4          # via -r requirements.in
 idna==2.9                 # via requests
 ipython-genutils==0.2.0   # via traitlets
@@ -61,6 +62,7 @@ pymongo==3.10.1           # via -r requirements.in
 pyparsing==2.4.7          # via matplotlib
 python-dateutil==2.8.1    # via matplotlib, pandas
 python-decouple==3.3      # via -r requirements.in
+python-levenshtein==0.12.0  # via -r requirements.in
 pytz==2020.1              # via celery, django, pandas
 pyyaml==5.3.1             # via tablib
 redis==3.5.1              # via celery

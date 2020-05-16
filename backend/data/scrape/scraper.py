@@ -6,7 +6,6 @@ sys.path.append(THIS_DIR)
 import requests
 import json
 import random
-import urllib
 import scrape_utils
 
 
@@ -20,7 +19,7 @@ requests.packages.urllib3.disable_warnings()
 
 class GenericScraper(object):
 
-    def __init__(self, name, header=None):
+    def __init__(self, name='default scraper', header=None):
         """
         Generic scraper object, will instantiate a scrapper that can be used to scrape
         a variety of different web sources.
@@ -46,7 +45,7 @@ class GenericScraper(object):
         return response
 
     def request(self, url, timeout=30, quality_proxy=False, us_only=False, headers=None,
-                proxies=None, res_parser=None):
+                proxies=None, res_parser=None, meta=None, meta_function=None):
         """
 
         Performs a proxied GET request on the provided url, with the provided parameters. 
@@ -69,8 +68,21 @@ class GenericScraper(object):
                                             content - returns content
                                             text - returns text
                                             headers - returns headers
+            meta: any - any object that you wish to follow the response. If provided, will modify
+                        the result to a dictionary
+
+        Response:
+            Response Object
+            or if a meta object is provided
+            {
+                'data': Response(),
+                'meta': meta ()
+            }
 
         """
+
+        if isinstance(url, dict):
+            url, meta = self._extract_meta(url)
 
         https = 'https' in url
         if isinstance(res_parser, str):
@@ -97,7 +109,13 @@ class GenericScraper(object):
 
             result = res_parser(response) if res_parser else self.response_parse(response)
             scrape_utils.trash_proxy(proxy, self.fail_token) if not result else None
-            return result
+            if meta and result:
+                result = meta_function(result, meta) if meta_function else self.use_meta(result, meta)
+
+            return result if not meta else {
+                'data': result,
+                'meta': meta
+            }
 
         except requests.exceptions.HTTPError as e:
             self.logger.exception('HTTPError {} while requesting "{}"'.format(
@@ -127,9 +145,18 @@ class GenericScraper(object):
             self.logger.exception('Failed to parse JSON "{}" while requesting "{}".'.format(
                 e, url))
 
-    # def _process_request(self, *args, **kwargs):
-    #     result = list(self.request(*args, **kwargs))
-    #     return result if results else []
+    def use_meta(self, result, meta):
+        """inheritable function to modify the data based on the provided meta"""
+        # Modify the result based on the meta
+        return result
+
+    def _extract_meta(self, url_dict):
+        try:
+            url = url_dict['url']
+            meta = url_dict['meta']
+            return url, meta
+        except BaseException:
+            raise Exception("url dictionary should contain url and meta.")
 
     def _determine_parser(self, parser_string):
         if parser_string == 'content':
@@ -142,9 +169,17 @@ class GenericScraper(object):
             return lambda res: res.headers if res.status_code == 200 else None
 
     def async_request(self, queries, pool_limit=20, timeout=30, quality_proxy=False, us_only=False, headers=None,
-                      proxies=None, res_parser=None):
+                      proxies=None, res_parser=None, meta_function=None, remove_nones=True):
         """
-        Provided a list of queries, will multi-process teh quries.
+        Provided a list of queries, will multi-process the quries. Queries
+        can either be a list of urls or a list of dictionaries with the meta
+        tag. the data in the meta tag will follow the request to completion
+
+        queries: string or {
+            url: string,
+            meta: any
+        }
+
         """
 
         num_queries = len(queries)
@@ -153,6 +188,14 @@ class GenericScraper(object):
         if num_queries < 1:
             self.logger.warning('atleast one query must be provided.')
             return []
+
+        has_meta = False
+        if isinstance(queries[0], dict):
+            if 'meta' in queries[0]:
+                has_meta = True
+            else:
+                self.logger.warining('queries can only be dict if they contain meta tags')
+                return []
 
         if num_queries == 1:
             # if length of list is one, no need to multi-process
@@ -175,11 +218,15 @@ class GenericScraper(object):
                         us_only=us_only,
                         headers=headers,
                         proxies=proxies,
-                        res_parser=res_parser
+                        res_parser=res_parser,
+                        meta_function=meta_function
                     ),
                     queries
                 ):
                     if new_result is not None:
+                        if has_meta and remove_nones and new_result['data'] is None:
+                            continue
+
                         results.append(new_result)
                         self.logger.info('Got {} results ({} new).'.format(
                             len(results), 1))
