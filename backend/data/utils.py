@@ -21,6 +21,7 @@ DB_PLACES = SYSTEM_MONGO.get_collection(mongo_connect.PLACES)
 DB_VENUES = SYSTEM_MONGO.get_collection(mongo_connect.VENUES)
 DB_PLOTS = SYSTEM_MONGO.get_collection(mongo_connect.PLOTS)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo_connect.PROXY_LOG)
+DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo_connect.CITY_TEST)
 
 
 def meters_to_miles(meters):

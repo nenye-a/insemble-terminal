@@ -23,6 +23,7 @@ VENUES = "news.venues"
 PLACES = "appData.places"
 LABRANDS = "appData.brands"
 UNSUBSCRIBED = "news.unsubscribed"
+CITY_TEST = "terminal.city_test"
 
 
 class Connect(object):
