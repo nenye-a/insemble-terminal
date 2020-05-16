@@ -158,6 +158,13 @@ def fuzzy_match(query, target):
         return False
 
 
+def split_name_address(name_address):
+    """Will split a string structured "name, adress, with, many, commas""""
+    name = name_address.split(",")[0]
+    address = name_address.replace(name + ", ", "")
+    return (name, address)
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():

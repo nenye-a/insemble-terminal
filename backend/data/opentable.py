@@ -15,6 +15,11 @@ def find_restaurant_details(name, address, projection=None):
     return table_scraper.restaurant_details(name, address, projection)
 
 
+def find_many_restaurant_details(restaurant_list, projection=None):
+    table_scraper = OpenTableDetails('table scraper')
+    return table_scraper.many_restaurant_details(restaurant_list, projection)
+
+
 class OpenTableDetails(GenericScraper):
 
     @staticmethod
@@ -47,6 +52,29 @@ class OpenTableDetails(GenericScraper):
             data = {key: data[key] for key in projection_list}
 
         return data
+
+    def many_restaurant_details(self, restaurant_list, projection=None):
+        """
+        Provided a list of objects containing a name and address,
+        will return their results, tagged with the name and address
+        """
+        queries = [{
+            'url': OpenTableDetails.build_request(restaurant['name'], restaurant['address']),
+            'meta': restaurant
+        } for restaurant in restaurant_list]
+
+        result = self.async_request(
+            queries,
+            quality_proxy=True
+        )
+
+        projection_list = projection.strip().split(',') if projection else None
+        if projection_list:
+            for data in result:
+                if data['data']:
+                    data['data'] = {key: data['data'][key] for key in projection_list}
+
+        return result
 
     def use_meta(self, result, meta):
         if 'name' in meta and result:
@@ -165,4 +193,12 @@ if __name__ == "__main__":
         address = '4444 Westheimer Rd, Houston, TX 77027, United States'
         print(find_restaurant_details(name, address))
 
-    find_restaurant_details_test()
+    def find_many_restaurant_details_test():
+        nearby = google.get_nearby('restaurant', 33.7490, -84.3880)
+        name = 'Le Colonial - Houston'
+        address = '4444 Westheimer Rd, Houston, TX 77027, United States'
+        my_list = [{'name': name, 'address': address} for _ in range(15)]
+        print(find_many_restaurant_details(my_list))
+
+    # find_restaurant_details_test()
+    find_many_restaurant_details_test()
