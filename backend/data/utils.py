@@ -1,6 +1,7 @@
 import os
 import re
 import random
+import urllib
 import pandas as pd
 import datetime as dt
 import mongo
@@ -132,6 +133,14 @@ def literal_int(string_number):
     Will turn string of an integer into an integer, even if the number has commas. Assumes that all numbers
     '''
     return int("".join(string_number.split(',')))
+
+
+def encode_word(word):
+    return urllib.parse.quote(word.strip().replace(' ', '+').lower().encode('utf-8'))
+
+
+def format_search(name, address):
+    return encode_word(name) + "+" + encode_word(address)
 
 
 if __name__ == "__main__":

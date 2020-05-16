@@ -13,7 +13,6 @@ import scrape_utils
 from functools import partial
 from billiard import exceptions as poolexceptions
 from billiard.pool import Pool
-from scrape_parser import parse_stores_google, parse_stores_yelp
 
 CRAWLERA_CERT = THIS_DIR + '/crawlera-ca.crt'
 requests.packages.urllib3.disable_warnings()
