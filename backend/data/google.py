@@ -9,10 +9,10 @@ from scrape.scraper import GenericScraper
 from parsers import google_detail_parser
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
-HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
+HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
-REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
+REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 AMPERSAND = '\\\\u0026'
@@ -24,7 +24,7 @@ DEFALT_SCRAPER = GenericScraper('Default Scraper')
 
 # Helper Functions
 
-def get_google_activity(name, address):
+def get_activity(name, address):
     activity_scraper = GoogleActivity('activity scraper')
     return activity_scraper.get_activity(name, address)
 
@@ -276,7 +276,7 @@ if __name__ == "__main__":
     def get_google_activity_test():
         name = "Atlanta Breakfast Club"
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        data = get_google_activity(name, address)
+        data = get_activity(name, address)
         print(data)
         fig, sbts = plt.subplots(len(data))
         for i in range(len(sbts)):
@@ -320,5 +320,6 @@ if __name__ == "__main__":
         num_results = 10
         print(query_region_random(region, terms, num_results))
 
-    get_google_activity_test()
+    # get_google_activity_test()
+    # get_nearby_test()
     # get_google_details_test()
