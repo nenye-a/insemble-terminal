@@ -1,4 +1,9 @@
 from bs4 import BeautifulSoup
+import sys
+import os
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+from scrape.scrapers import GenericScraper
 import requests
 import datetime as dt
 import re
@@ -15,6 +20,7 @@ REGEX_24_HOURS = r'\[\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\,\d+\
 REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
+AMPERSAND = '\\\\u0026'
 GOOG_KEY = "your google api key"
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
 LNG_VIEWPORT_MULTIPLIER = 0.00000072025608
@@ -60,7 +66,49 @@ def build_nearby_request(venue_type, lat, lng, zoom=17):
 
 def parse_nearby(response):
     # returns a set of nearby venue addresses, based on google maps nearby search response\
-    return set(re.findall(REGEX_ADDRESS, response.text))
+    return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
+
+def query_region_random(region, search_terms, num_results):
+    # using a region (city, state, etc), this queries the region for the specified search terms at random
+    # returning a set of establishments with their addresses as a string
+    # TODO: break up into subfunctions to optimize for scraping
+    # TODO: use mongo to geofence calls to avoid repeats
+    # TODO: set limit to return if the num of results is never achieved
+
+    #build scraper
+    results = set()
+    scraper = GenericScraper('query_region_random scraper')
+
+    #get lat, lng, and viewport of the region that's being queried
+    lat, lng, goog_size_var = scraper.request(build_lat_lng_request(region), quality_proxy=True, res_parser=parse_lat_lng)
+    viewport = get_viewport(lat, lng, goog_size_var)
+
+    #choose random points in the viewport to run nearby requests on until reaching the desired number of results
+    while len(results) < num_results:
+        # choose random coordinates in viewport
+        r_lat, r_lng = get_random_latlng(viewport[0], viewport[1])
+        for term in search_terms:
+            #TODO: scrape asynchronously
+            results.update(scraper.request(build_nearby_request(term, r_lat, r_lng), quality_proxy=True,
+                                           res_parser=parse_nearby))
+            #results.update(get_nearby(term, r_lat, r_lng))
+            if len(results) > num_results:
+                return results
+            print("queried {} results".format(len(results)))
+    return results
+
+def find_restaurant_details(name, address):
+    # returns the opentable details for a restaurant search
+    url = build_restaurant_details_request(name, address)
+    resp = requests.get(url, headers=HEADERS)
+    return parse_opentable_result(resp)
+
+def build_restaurant_details_request(name, address):
+    lat, lng = get_lat_lng(format_search(name, address))
+    date = today_formatted()
+    formatted_name = name.replace(" ", "+")
+    return 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
+          '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
 
 def parse_opentable_result(response):
     """
@@ -158,19 +206,6 @@ def parse_opentable_result(response):
 
     return store
 
-
-def find_restaurant_details(name, address):
-    # returns the opentable details for a restaurant search
-
-    lat, lng, x = get_lat_lng(format_search(name, address))
-    date = today_formatted()
-    formatted_name = name.replace(" ", "+")
-    url = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
-        '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
-
-    resp = requests.get(url, headers=HEADERS)
-    return parse_opentable_result(resp)
-
 #### Util type functions ####
 
 def today_formatted():
@@ -207,29 +242,12 @@ def parse_lat_lng(response):
     [goog_size_var, lng, lat] = ast.literal_eval(match[0])
     return lat, lng, goog_size_var
 
-def get_lat_lng(query):
-    return parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
-
-def query_region_random(region, search_terms, num_results):
-    # using a region (city, state, etc), this queries the region for the specified search terms at random
-    # returning a set of establishments with their addresses as a string
-    # TODO: use mongo to geofence calls to avoid repeats
-    # TODO: set limit to return if the num of results is never achieved
-
-    results = set()
-    lat, lng, goog_size_var = get_lat_lng(region)
-    viewport = get_viewport(lat, lng, goog_size_var)
-    while len(results) < num_results:
-        # choose random coordinates in viewport
-        r_lat, r_lng = get_random_latlng(viewport[0], viewport[1])
-        for term in search_terms:
-            #TODO: remove wait if scraping under multiple proxies
-            time.sleep(3)
-            results.update(get_nearby(term, r_lat, r_lng))
-            if len(results) > num_results:
-                return results
-            print("queried {} results".format(len(results)))
-    return results
+def get_lat_lng(query, include_sizevar=False):
+    lat, lng, goog_size_var = parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
+    if include_sizevar:
+        return lat, lng, goog_size_var
+    else:
+        return lat, lng
 
 def get_random_latlng(nw, se):
     #nw: (33.84052626832547, -84.38138020826983) se: (33.83714933167453, -84.37660639173015)
@@ -265,6 +283,8 @@ if __name__ == "__main__":
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
         print(name, get_lat_lng(name))
+        print(name, "size var option", get_lat_lng(name, True))
+
 
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
@@ -279,6 +299,16 @@ if __name__ == "__main__":
         print("Lat", lat, se[0]<=lat<=nw[0])
         print("Lng", lng, nw[1]<=lng<=se[1])
 
+    def query_region_random_test():
+        region = "Culver City, CA"
+        terms = ["stores", "restaurants"]
+        num_results = 10
+        print(query_region_random(region, terms, num_results))
 
-    get_random_latlng_test()
+    def find_restaurant_details_test():
+        name = 'Le Colonial - Houston'
+        address = '4444 Westheimer Rd, Houston, TX 77027, United States'
+        print(find_restaurant_details(name, address))
+
+    find_restaurant_details_test()
     #pprint(find_restaurant_details("The Capital Grille", "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"))
