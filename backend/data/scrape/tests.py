@@ -1,4 +1,6 @@
+import random
 from scraper import GenericScraper
+
 
 # GENERIC SCRAPER TEST SUITE
 
@@ -26,6 +28,35 @@ class ScraperTests():
         test_url_list = [GOOGLE_TEST_URL1 for x in range(10)]
         test1 = my_scraper.async_request(test_url_list, quality_proxy=True)
         print(test1, '\n')
+
+    @staticmethod
+    def test_meta():
+        my_scraper = GenericScraper()
+        result = my_scraper.request(
+            GOOGLE_TEST_URL1,
+            quality_proxy=True,
+            res_parser='text',
+            meta=100,
+            meta_function=lambda res, meta: res[:meta]
+        )
+        print(result)
+
+    @staticmethod
+    def test_meta_async():
+        my_scraper = GenericScraper()
+
+        def func(res, meta):
+            return res[:meta]
+        test_url_list = [{'url': GOOGLE_TEST_URL1, 'meta': random.choice([
+            2, 10, 30, 10, 9, 89
+        ])} for x in range(10)]
+        results = my_scraper.async_request(
+            test_url_list,
+            quality_proxy=True,
+            res_parser='text',
+            meta_function=func
+        )
+        print(results)
 
 
 def doc_distance(str1, str2):
@@ -57,4 +88,6 @@ def dictify(list_words):
 if __name__ == "__main__":
 
     # ScraperTests.request_test()
-    ScraperTests.async_request_test()
+    # ScraperTests.async_request_test()
+    # ScraperTests.test_meta()
+    ScraperTests.test_meta_async()
