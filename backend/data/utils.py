@@ -1,7 +1,9 @@
 import os
 import re
-import mongo
+import random
 import pandas as pd
+import datetime as dt
+import mongo
 
 '''
 Utility methods for this project
@@ -15,11 +17,7 @@ TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
 
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
-DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
-DB_LABRANDS = SYSTEM_MONGO.get_collection(mongo.LABRANDS)
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
-DB_VENUES = SYSTEM_MONGO.get_collection(mongo.VENUES)
-DB_PLOTS = SYSTEM_MONGO.get_collection(mongo.PLOTS)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 
 
@@ -83,8 +81,57 @@ def round_object(obj, num=0):
     return obj
 
 
-def get_la_brands():
-    return DB_LABRANDS.find()
+def today_formatted():
+    return dt.datetime.now().strftime("%Y-%m-%d")
+
+
+def get_one_int_from_str(text):
+    return int(re.search(r'\d+', text).group())
+
+
+def get_one_float_from_str(text):
+    return float(re.search(r'\d+\.\d+', text).group())
+
+
+def get_random_latlng(nw, se):
+    # nw: (33.84052626832547, -84.38138020826983) se: (33.83714933167453, -84.37660639173015)
+    lat = se[0] + random.random() * (nw[0] - se[0])
+    lng = se[1] - random.random() * (se[1] - nw[1])
+    return lat, lng
+
+
+def translate(value, left_min, left_max, right_min, right_max):
+    """Translates value from one range to another"""
+    left_span = left_max - left_min
+    right_span = right_max - right_min
+    value_scaled = float(value - left_min) / float(left_span)
+    return right_min + (value_scaled * right_span)
+
+
+def is_number(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
+def list_matches_condition(bool_func, eval_list):
+    """
+    Provided a function and a list, will return True if at least one of the items in the list meets the
+    condition specified by the function
+    """
+    for item in eval_list:
+        if bool_func(item):
+            return True
+    return False
+
+
+def literal_int(string_number):
+    '''
+    Will turn string of an integer into an integer, even if the number has commas. Assumes that all numbers
+    '''
+    return int("".join(string_number.split(',')))
 
 
 if __name__ == "__main__":

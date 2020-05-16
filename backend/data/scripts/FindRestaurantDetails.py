@@ -3,7 +3,7 @@ import sys
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
-from scrape.scrapers import GenericScraper
+from scrape.scraper import GenericScraper
 import requests
 import datetime as dt
 import re

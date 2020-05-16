@@ -1,4 +1,4 @@
-import scripts.FindRestaurantDetails
+import data.scripts.activitystats
 
 '''
 
