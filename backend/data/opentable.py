@@ -1,6 +1,6 @@
-from bs4 import BeautifulSoup
 import datetime as dt
-import requests
+from bs4 import BeautifulSoup
+
 
 from scrape.scraper import GenericScraper
 
@@ -38,12 +38,21 @@ class OpenTableDetails(GenericScraper):
         data = self.request(
             url,
             quality_proxy=True,
-        )
+            meta={
+                'name': name
+            },
+        )['data']
         projection_list = projection.strip().split(',') if projection else None
-        if projection_list:
+        if projection_list and data:
             data = {key: data[key] for key in projection_list}
 
         return data
+
+    def use_meta(self, result, meta):
+        if 'name' in meta and result:
+            if not utils.fuzzy_match(meta['name'], result['name']):
+                return None
+        return result
 
     def response_parse(self, response):
         """

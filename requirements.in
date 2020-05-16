@@ -24,3 +24,4 @@ pymongo
 dnspython
 matplotlib
 psycopg2
+fuzzywuzzy[speedup]

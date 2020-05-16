@@ -113,7 +113,7 @@ class GenericScraper(object):
             if meta and result:
                 result = meta_function(result, meta) if meta_function else self.use_meta(result, meta)
 
-            return result if not meta or not result else {
+            return result if not meta else {
                 'data': result,
                 'meta': meta
             }

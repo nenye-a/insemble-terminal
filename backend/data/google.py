@@ -208,10 +208,13 @@ class GoogleDetails(GenericScraper):
         data = self.request(
             url,
             quality_proxy=True,
-            timeout=5
-        )
+            timeout=5,
+            meta={
+                'name': name
+            }
+        )['data']
         projection_list = projection.strip().split(',') if projection else None
-        if projection_list:
+        if projection_list and data:
             data = {key: data[key] for key in projection_list}
 
         return data
@@ -224,6 +227,14 @@ class GoogleDetails(GenericScraper):
         if response.status_code != 200:
             return None
         return google_detail_parser(response)
+
+    def use_meta(self, result, meta):
+        print(result)
+        if 'name' in meta and result:
+            print(utils.fuzzy_match(meta['name'], result['name']))
+            if not utils.fuzzy_match(meta['name'], result['name']):
+                return None
+        return result
 
 
 def query_region_random(region, search_terms, num_results):

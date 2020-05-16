@@ -57,6 +57,9 @@ def get_details(name, address):
         name, address, projection
     ) or {}
 
+    print(opentable_details)
+    print(google_details)
+
     keys = projection.split(',')
     return {
         key: utils.get_alternative_source(

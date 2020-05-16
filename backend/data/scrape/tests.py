@@ -45,8 +45,6 @@ class ScraperTests():
     def test_meta_async():
         my_scraper = GenericScraper()
 
-        def func(res, meta):
-            return res[:meta]
         test_url_list = [{'url': GOOGLE_TEST_URL1, 'meta': random.choice([
             2, 10, 30, 10, 9, 89
         ])} for x in range(10)]
@@ -54,9 +52,13 @@ class ScraperTests():
             test_url_list,
             quality_proxy=True,
             res_parser='text',
-            meta_function=func
+            meta_function=ScraperTests.func
         )
         print(results)
+
+    @staticmethod
+    def func(res, meta):
+        return res[:meta]
 
 
 def doc_distance(str1, str2):
@@ -81,6 +83,7 @@ def dictify(list_words):
         my_dict[word] = my_dict.get(word, 0) + 1
 
     return my_dict
+
 
 # TEST
 
