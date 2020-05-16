@@ -245,7 +245,7 @@ def query_region_random(region, search_terms, num_results):
 
     # get lat, lng, and viewport of the region that's being queried
     lat, lng, goog_size_var = get_lat_lng(region, include_sizevar=True)
-    viewport = _get_viewport(lat, lng, goog_size_var)
+    viewport = get_viewport(lat, lng, goog_size_var)
 
     # choose random points in the viewport to run nearby requests on until reaching the desired number of results
     while len(results) < num_results:
@@ -260,12 +260,13 @@ def query_region_random(region, search_terms, num_results):
     return results
 
 
-def _get_viewport(lat, lng, goog_size_var):
+def get_viewport(lat, lng, goog_size_var):
     """
     Get the viewport of a particular reigon given lat, lng, and size_var.
     goog_size_var is the variable that google adds to the initialization
     state when loading google maps for a particular region
     """
+    # TODO: pull this into the lat, lng or add helper function
     nw = (lat + goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng - goog_size_var * LNG_VIEWPORT_MULTIPLIER)
     se = (lat - goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng + goog_size_var * LNG_VIEWPORT_MULTIPLIER)
     return nw, se
@@ -304,7 +305,7 @@ if __name__ == "__main__":
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
         lat, lng, goog_size_var = get_lat_lng(name)
-        nw, se = _get_viewport(lat, lng, goog_size_var)
+        nw, se = get_viewport(lat, lng, goog_size_var)
         print(name, lat, lng, "nw:", nw, "se:", se)
 
     def get_random_latlng_test():
