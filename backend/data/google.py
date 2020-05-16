@@ -226,6 +226,3 @@ if __name__ == "__main__":
         print(query_region_random(region, terms, num_results))
 
     get_nearby_test()
-    # get_lat_lng_test()
-
-    #pprint(find_restaurant_details("The Capital Grille", "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"))
