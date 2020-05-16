@@ -11,6 +11,7 @@ from pprint import pprint
 from decouple import config
 
 from scrape.scraper import GenericScraper
+from parsers import google_detail_parser
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
@@ -41,6 +42,12 @@ def get_nearby(venue_type, lat, lng):
 def get_lat_lng(query, include_sizevar=False):
     geocoder = GeoCode('geocoder')
     return geocoder.get_lat_lng(query, include_sizevar)
+
+
+def get_details(name, address, projection=None):
+    detailer = GoogleDetails('detailer')
+    return detailer.get_details(name, address, projection=projection)
+
 
 # Classes
 
@@ -144,6 +151,77 @@ class GeoCode(GenericScraper):
             return lat, lng
 
 
+class GoogleDetails(GenericScraper):
+
+    BASE_URL = 'https://www.google.com/search?q={}&sourceid=chrome&ie=UTF-8'
+
+    @staticmethod
+    def build_request(name, address):
+
+        name = utils.encode_word(name)
+        address = utils.encode_word(address)
+        url = GoogleDetails.BASE_URL.format(name + '+near+' + address)
+        return url
+
+    def get_details(self, name, address, projection=None):
+        """
+
+        Parameters:
+            name: string
+            address: string
+            projection: string - example: 'name,num_stars,num_reviews'
+
+        Return:
+            returns an object that contains the projected fields. If no fields
+            are projected, will return the entire details:
+
+            name: string - establishment name (as detailed on google)
+            rating: number - rating out of 5 ex. 5.5
+            num_reviews: number - number of ratings of the establishment ex. 4.4
+            price: string - ex. "$$"
+            type: string
+            description: string
+            operations: {   - strings determining the actual details
+                'dine_in': string,
+                'takeout': string,
+                'delivery': string
+            }
+            address: string - formated address , ex. "371 E 2nd St, Los Angeles, CA 90012"
+            current_hours: string, ex. Closes 9PM (hours that it closes on the day that it was pulled)
+            menu_link: string, ex. "spitzrestaurant.com"
+            phone: string, ex. "(213) 613-0101"
+            online_ordering_platforms: list[string] - ex. ["spitzrestaurant.com", "trycaviar.com", 
+                                                         "doordash.com", "postmates.com"]
+            top_review_comments: list[string] - ex. ["Good fries and nice ambiance for drinks 
+                                                     and food after long day at work",
+                                                    "Good rotating selection of draught beers, 
+                                                     greekish type flavors in the menu."]
+            self_description: string - ex. "Spitz = Healthy & flavorful wraps, döners, salads and our famous fries..."
+            time_of_scrape: string - ex. '04-17-2020_20:39:36'
+
+        """
+
+        url = GoogleDetails.build_request(name, address)
+        data = self.request(
+            url,
+            quality_proxy=True
+        )
+        projection_list = projection.strip().split(',') if projection else None
+        if projection_list:
+            data = {key: data[key] for key in projection_list}
+
+        return data
+
+    def response_parse(self, response):
+        """
+        Parses detail results into the required fields
+        """
+
+        if response.status_code != 200:
+            return None
+        return google_detail_parser(response)
+
+
 def query_region_random(region, search_terms, num_results):
     # using a region (city, state, etc), this queries the region for the specified search terms at random
     # returning a set of establishments with their addresses as a string
@@ -195,6 +273,13 @@ if __name__ == "__main__":
             sbts[i].bar(range(len(data[i])), data[i])
         plt.show()
 
+    def get_google_details_test():
+        name = "Atlanta Breakfast Club"
+        address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
+        print(get_details(name, address))
+        print(get_details(name, address, 'address'))
+        print(get_details(name, address, 'address,name,rating'))
+
     def get_nearby_test():
         venue_type = 'restaurants'
         lat = 33.840617
@@ -225,4 +310,4 @@ if __name__ == "__main__":
         num_results = 10
         print(query_region_random(region, terms, num_results))
 
-    get_nearby_test()
+    get_google_details_test()

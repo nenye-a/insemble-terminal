@@ -20,7 +20,7 @@ requests.packages.urllib3.disable_warnings()
 
 class GenericScraper(object):
 
-    def __init__(self, name, header=None):
+    def __init__(self, name='default scraper', header=None):
         """
         Generic scraper object, will instantiate a scrapper that can be used to scrape
         a variety of different web sources.

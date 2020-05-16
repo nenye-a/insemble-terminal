@@ -136,7 +136,7 @@ def literal_int(string_number):
 
 
 def encode_word(word):
-    return urllib.parse.quote(word.strip().replace(' ', '+').lower().encode('utf-8'))
+    return urllib.parse.quote(word.strip().lower().replace(' ', '+').lower().encode('utf-8'))
 
 
 def format_search(name, address):
