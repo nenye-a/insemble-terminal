@@ -159,7 +159,7 @@ def fuzzy_match(query, target):
 
 
 def split_name_address(name_address):
-    """Will split a string structured "name, adress, with, many, commas""""
+    """Will split a string structured "name, adress, with, many, commas"""
     name = name_address.split(",")[0]
     address = name_address.replace(name + ", ", "")
     return (name, address)
