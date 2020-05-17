@@ -65,13 +65,19 @@ def scrape_save_region(region, terms, num_results, batchsize=300):
 
         for goog_activity in activities:
             week_activity = goog_activity['week_activity']
-            goog_name_address = goog_url_to_name_address[goog_activity['url']]
-            uploadable_result[goog_name_address]["google_activity"] = week_activity
+            try:
+                goog_name_address = goog_url_to_name_address[goog_activity['url']]
+                uploadable_result[goog_name_address]["google_activity"] = week_activity
+            except Exception:
+                print("Could not find google url in name to address:", goog_activity['url'])
 
         for tbl_result in opentable_results:
             store_info = tbl_result['store_info']
-            table_name_address = opentable_url_to_name_address[tbl_result['url']]
-            uploadable_result[table_name_address]["opentable_results"] = store_info
+            try:
+                table_name_address = opentable_url_to_name_address[tbl_result['url']]
+                uploadable_result[table_name_address]["opentable_results"] = store_info
+            except Exception:
+                print("Could not find opentable url in name to address:", tbl_result['url'])
         print("Packaged results")
 
         # add the batch results to mongo
@@ -84,7 +90,7 @@ if __name__ == "__main__":
         region = "Atlanta, GA"
         terms = ["restaurants", "stores"]
         num_results = 3000
-        batchsize = 300
+        batchsize = 50
         scrape_save_region(region, terms, num_results, batchsize)
 
     scrape_save_region_test()

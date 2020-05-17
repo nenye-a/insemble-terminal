@@ -6,6 +6,7 @@ from scrape.scrapers import GenericScraper
 import datetime as dt
 import matplotlib.pyplot as plt
 from pprint import pprint
+import time
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
@@ -254,7 +255,11 @@ def parse_lat_lng(response):
     return lat, lng, goog_size_var
 
 def get_lat_lng(query, include_sizevar=False):
-    lat, lng, goog_size_var = parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
+    scraper = GenericScraper('get_lat_lng scraper')
+
+    # get lat, lng, and viewport of the region that's being queried
+    lat, lng, goog_size_var = scraper.request(build_lat_lng_request(query), quality_proxy=True,
+                                              headers={"referer":"https://www.google.com/"}, res_parser=parse_lat_lng)
     if include_sizevar:
         return lat, lng, goog_size_var
     else:
@@ -323,7 +328,7 @@ if __name__ == "__main__":
 
 
     # parse_opentable_result_test()
-    # get_google_activity_test()
+    get_google_activity_test()
     # get_nearby_test()
     # get_lat_lng_test()
     # get_viewport_test()
@@ -333,6 +338,6 @@ if __name__ == "__main__":
     # address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
     # pprint(find_restaurant_details(name, address))
 
-    name = 'Le Colonial - Houston'
-    address = '4444 Westheimer Rd, Houston, TX 77027, United States'
-    print(build_restaurant_details_request(name, address))
+    # name = 'Le Colonial - Houston'
+    # address = '4444 Westheimer Rd, Houston, TX 77027, United States'
+    # print(build_restaurant_details_request(name, address))
