@@ -34,9 +34,19 @@ def get_nearby(venue_type, lat, lng):
     return nearby_scraper.get_nearby(venue_type, lat, lng)
 
 
+def get_many_nearby(nearby_search_list):
+    nearby_scraper = GoogleNearby('nearby scraper')
+    return nearby_scraper.get_many_nearby(nearby_search_list)
+
+
 def get_lat_lng(query, include_sizevar=False):
     geocoder = GeoCode('geocoder')
     return geocoder.get_lat_lng(query, include_sizevar)
+
+
+def get_many_lat_lng(queries, include_sizevar=False):
+    geocoder = GeoCode('geocoder')
+    return geocoder.get_many_lat_lng(queries, include_sizevar)
 
 
 def get_details(name, address, projection=None):
@@ -117,13 +127,33 @@ class GoogleNearby(GenericScraper):
             timeout=5
         )
 
+    def get_many_nearby(self, nearby_search_list):
+        queries = [
+            GoogleNearby.build_request(
+                venue_type=term['venue_type'],
+                lat=term['lat'],
+                lng=term['lng']
+            ) for term in nearby_search_list
+        ]
+        nearby = set()
+        results = self.async_request(
+            queries,
+            quality_proxy=True,
+            headers=HEADERS,
+            timeout=5
+        )
+        for result in results:
+            nearby.update(result)
+        return list(nearby)
+
 
 class GeoCode(GenericScraper):
 
     @staticmethod
     def build_request(query):
-        query = utils.encode_word(query)
+        query = query.replace(" ", "+")
         url = 'https://www.google.com/maps/search/{}/'.format(query)
+        print(url)
         return url
 
     def response_parse(self, response):
@@ -147,6 +177,23 @@ class GeoCode(GenericScraper):
             return lat, lng, goog_size_var
         else:
             return lat, lng
+
+    def get_many_lat_lng(self, query_list, inclde_sizevar=False):
+        queries = [{
+            'url': GeoCode.build_request(query),
+            'meta': query,
+        } for query in query_list]
+
+        result = self.async_request(
+            queries,
+            quality_proxy=True
+        )
+
+        if not inclde_sizevar:
+            for data in result:
+                if data['data']:
+                    data['data'] = data['data'][:2]
+        return result
 
 
 class GoogleDetails(GenericScraper):
@@ -302,6 +349,10 @@ if __name__ == "__main__":
         print(name, get_lat_lng(name))
         print(name, "size var option", get_lat_lng(name, True))
 
+    def get_many_lat_lng_test():
+        my_list = ["Souvla Hayes Valley SF", "Souvla Hayes Valley SF", "Souvla Hayes Valley SF"]
+        print(get_many_lat_lng(my_list))
+
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
         lat, lng, goog_size_var = get_lat_lng(name)
@@ -322,5 +373,6 @@ if __name__ == "__main__":
         print(query_region_random(region, terms, num_results))
 
     # get_google_activity_test()
+    get_many_lat_lng_test()
     # get_nearby_test()
     # get_google_details_test()
