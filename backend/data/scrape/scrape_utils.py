@@ -135,14 +135,16 @@ def linspace(start, stop, n):
 def get_logger(name):
 
     logger = logging.getLogger(name)
-    formatter = logging.Formatter('%(name)s - %(levelname)s: %(message)s')
+    if not logger.handlers:
 
-    handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+        formatter = logging.Formatter('%(name)s - %(levelname)s: %(message)s')
 
-    level = logging.INFO
-    logger.setLevel(level)
+        handler = logging.StreamHandler()
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+
+        level = logging.INFO
+        logger.setLevel(level)
 
     return logger
 

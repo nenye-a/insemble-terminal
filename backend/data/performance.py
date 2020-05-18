@@ -30,42 +30,31 @@ def performance(name, address):
 
     """
 
-    sales_index = get_sales_index(name, address)
     place_details = get_details(name, address)
+    if place_details:
+        sales_index = activity_score(place_details['activity'])
 
-    return {
-        'name': place_details['name'],
-        'salesVolumeIndex': sales_index,
-        'rating': place_details['rating'],
-        'numReviews': place_details['num_reviews'],
-        'numLocations': None
-    }
-
-
-def get_sales_index(name, address):
-    week_activity = google.get_activity(name, address)  # TODO: fix (get_activity was removed)
-    sales_index = activity_score(week_activity)
-    return sales_index if sales_index != 0 else None
+        return {
+            'name': place_details['name'],
+            'salesVolumeIndex': sales_index if sales_index != 0 else None,
+            'rating': place_details['rating'],
+            'numReviews': place_details['num_reviews'],
+            'numLocations': None
+        }
+    else:
+        return None
 
 
 def get_details(name, address):
-    projection = 'name,rating,num_reviews'
-    opentable_details = opentable.find_restaurant_details(
-        name, address, projection
-    ) or {}
-    google_details = google.get_details(
-        name, address, projection
-    ) or {}
+    projection = 'name,rating,num_reviews,activity'
+    try:
+        google_details = google.get_google_details(
+            name, address, projection
+        ) or {}
 
-    print(opentable_details)
-    print(google_details)
-
-    keys = projection.split(',')
-    return {
-        key: utils.get_alternative_source(
-            key, opentable_details, google_details
-        ) for key in keys
-    }
+        return google_details
+    except Exception:
+        return None
 
 
 def activity_score(week_activity):
