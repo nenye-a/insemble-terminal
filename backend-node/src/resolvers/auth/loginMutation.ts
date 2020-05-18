@@ -26,7 +26,7 @@ let login = mutationField('login', {
     }
     return {
       token: createSession(user),
-      user: { ...user },
+      user,
     };
   },
 });
