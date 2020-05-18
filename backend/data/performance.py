@@ -43,7 +43,7 @@ def performance(name, address):
 
 
 def get_sales_index(name, address):
-    week_activity = google.get_activity(name, address)
+    week_activity = google.get_activity(name, address)  # TODO: fix (get_activity was removed)
     sales_index = activity_score(week_activity)
     return sales_index if sales_index != 0 else None
 

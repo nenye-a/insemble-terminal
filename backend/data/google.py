@@ -24,11 +24,6 @@ DEFALT_SCRAPER = GenericScraper('Default Scraper')
 
 # Helper Functions
 
-def get_activity(name, address):
-    activity_scraper = GoogleActivity('activity scraper')
-    return activity_scraper.get_activity(name, address)
-
-
 def get_nearby(venue_type, lat, lng):
     nearby_scraper = GoogleNearby('nearby scraper')
     return nearby_scraper.get_nearby(venue_type, lat, lng)
@@ -55,46 +50,6 @@ def get_details(name, address, projection=None):
 
 
 # Classes
-
-
-class GoogleActivity(GenericScraper):
-
-    @staticmethod
-    def build_request(name, address):
-        """
-        Builds the activity request
-        (formally build_google_activity_request)
-        """
-        formatted_input = utils.format_search(name, address)
-        url = 'https://www.google.com/search?q=' + formatted_input
-        return url
-
-    def response_parse(self, response):
-        """
-        Parse response into a list of activity lists.
-        (Formally parse_google_activity)
-        """
-        if response.status_code != 200:
-            return None
-        html_text = response.text
-        # find the 18 or 24 hour activity distribution,depending on which is present
-        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, html_text)]
-        if len(data) == 0:
-            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, html_text)]
-        return data
-
-    def get_activity(self, name, address):
-        """
-        Provided a name and address, will return a list
-        of activity levels for retailer at that address
-        """
-        url = self.build_request(name, address)
-        return self.request(
-            url,
-            quality_proxy=True,
-            timeout=5
-        )
-
 
 class GoogleNearby(GenericScraper):
 
@@ -225,6 +180,8 @@ class GoogleDetails(GenericScraper):
             price: string - ex. "$$"
             type: string
             description: string
+            activity: list[list[int]] - list of lists of hourly activity of the establishment =
+                        ex. [[],[],[],[]]
             operations: {   - strings determining the actual details
                 'dine_in': string,
                 'takeout': string,
@@ -335,7 +292,7 @@ if __name__ == "__main__":
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
         print(get_details(name, address))
         print(get_details(name, address, 'address'))
-        print(get_details(name, address, 'address,name,rating'))
+        print(get_details(name, address, 'address,name,rating,activity'))
 
     def get_nearby_test():
         venue_type = 'restaurants'
@@ -372,6 +329,6 @@ if __name__ == "__main__":
         print(query_region_random(region, terms, num_results))
 
     # get_google_activity_test()
-    get_many_lat_lng_test()
+    # get_many_lat_lng_test()
     # get_nearby_test()
     # get_google_details_test()
