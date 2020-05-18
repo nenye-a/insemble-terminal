@@ -1,6 +1,7 @@
 import { queryType, stringArg, makeSchema } from 'nexus';
 import { nexusPrismaPlugin } from 'nexus-prisma';
 import * as path from 'path';
+
 import * as Types from './typeSchemas';
 import * as Resolvers from './resolvers';
 

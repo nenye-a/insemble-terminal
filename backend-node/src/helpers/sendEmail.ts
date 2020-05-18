@@ -20,7 +20,7 @@ async function sendVerificationEmail(
   });
   let msg = {
     to: receiver.email,
-    from: 'Insemble <no-reply@insemble.co>',
+    from: 'Insemble Terminal <no-reply@insemble.co>',
     subject: 'Verify your email with Insemble Terminal',
     text: `Please verify your email by clicking this link ${link}`,
     html: htmlContent,
@@ -38,7 +38,7 @@ async function sendForgotPasswordEmail(
   });
   let msg = {
     to: receiver.email,
-    from: 'Insemble <no-reply@insemble.co>',
+    from: 'Insemble Terminal <no-reply@insemble.co>',
     subject: 'Forgot password user Insemble Terminal',
     text: `We received a request to reset the password directed to this e-mail address. Please proceed by clicking this link : ${link}`,
     html: htmlContent,

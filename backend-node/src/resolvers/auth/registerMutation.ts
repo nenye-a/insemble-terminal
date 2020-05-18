@@ -1,5 +1,6 @@
 import { mutationField, arg } from 'nexus';
 import bcrypt from 'bcrypt';
+
 import { Context } from 'serverTypes';
 import { NODE_ENV, HOST } from '../../constants/constants';
 import { sendVerificationEmail } from '../../helpers/sendEmail';
