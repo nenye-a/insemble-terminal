@@ -1,5 +1,6 @@
 export const FONT_FAMILY_NORMAL = 'Avenir';
 
+export const FONT_SIZE_XSMALL = '12px';
 export const FONT_SIZE_SMALL = '13px';
 export const FONT_SIZE_NORMAL = '14px';
 export const FONT_SIZE_SEMI_MEDIUM = '15px';
