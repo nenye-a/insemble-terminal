@@ -22,6 +22,7 @@ SPACE_RE = re.compile(r' +')
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
+DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 
 
 def meters_to_miles(meters):

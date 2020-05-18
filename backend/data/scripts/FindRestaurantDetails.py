@@ -1,23 +1,25 @@
 from bs4 import BeautifulSoup
 import sys
 import os
+import re
+import ast
+import random
+import urllib
+import requests
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 from scrape.scraper import GenericScraper
 import requests
 import datetime as dt
-import re
-import ast
-import random
-import time
 import matplotlib.pyplot as plt
 from pprint import pprint
+import time
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
-REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
+REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 AMPERSAND = '\\\\u0026'
@@ -53,15 +55,15 @@ def parse_google_activity(response):
 
 def get_nearby(venue_type, lat, lng):
     # returns a set of nearby venue addresses
-    url, headers = build_nearby_request(venue_type, lat, lng)
-    return parse_nearby(requests.get(url, headers=headers))
+    url = build_nearby_request(venue_type, lat, lng)
+    return parse_nearby(requests.get(url, headers=HEADERS))
 
 
 def build_nearby_request(venue_type, lat, lng, zoom=17):
     # returns params for which to scrape nearby
     venue_type = venue_type.replace(" ", "+")
     url = 'https://www.google.com/maps/search/{}/@{},{},{}z'.format(venue_type, lat, lng, zoom)
-    return url, HEADERS
+    return url
 
 
 def parse_nearby(response):
@@ -112,6 +114,13 @@ def build_restaurant_details_request(name, address):
     formatted_name = name.replace(" ", "+")
     return 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
         '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
+
+
+def parse_track_opentable(response):
+    return {
+        'url': response.url,
+        'store_info': parse_opentable_result(response)
+    }
 
 
 def parse_opentable_result(response):
@@ -218,15 +227,27 @@ def today_formatted():
 
 
 def format_search(name, address):
-    return name.replace(" ", "+") + "+" + address.replace(" ", "+")
+    return encode_word(name) + "+" + encode_word(address)
+
+
+def encode_word(word):
+    return urllib.parse.quote(word.strip().lower().replace(' ', '+').lower().encode('utf-8'))
 
 
 def get_one_int_from_str(text):
-    return int(re.search(r'\d+', text).group())
+    try:
+        return int(re.search(r'\d+', text).group())
+    except Exception:
+        #print("Error parsing int for text:", text)
+        return None
 
 
 def get_one_float_from_str(text):
-    return float(re.search(r'\d+\.\d+', text).group())
+    try:
+        return float(re.search(r'\d+\.\d+', text).group())
+    except Exception:
+        #print("Error parsing float for text:", text)
+        return None
 
 
 def get_viewport(lat, lng, goog_size_var):
@@ -252,7 +273,11 @@ def parse_lat_lng(response):
 
 
 def get_lat_lng(query, include_sizevar=False):
-    lat, lng, goog_size_var = parse_lat_lng(requests.get(build_lat_lng_request(query), headers=HEADERS))
+    scraper = GenericScraper('get_lat_lng scraper')
+
+    # get lat, lng, and viewport of the region that's being queried
+    lat, lng, goog_size_var = scraper.request(build_lat_lng_request(query), quality_proxy=True,
+                                              headers={"referer": "https://www.google.com/"}, res_parser=parse_lat_lng)
     if include_sizevar:
         return lat, lng, goog_size_var
     else:
@@ -298,7 +323,7 @@ if __name__ == "__main__":
 
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
-        lat, lng, goog_size_var = get_lat_lng(name)
+        lat, lng, goog_size_var = get_lat_lng(name, True)
         nw, se = get_viewport(lat, lng, goog_size_var)
         print(name, lat, lng, "nw:", nw, "se:", se)
 
@@ -320,5 +345,17 @@ if __name__ == "__main__":
         address = '4444 Westheimer Rd, Houston, TX 77027, United States'
         print(find_restaurant_details(name, address))
 
-    find_restaurant_details_test()
-    #pprint(find_restaurant_details("The Capital Grille", "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"))
+    # parse_opentable_result_test()
+    get_google_activity_test()
+    # get_nearby_test()
+    # get_lat_lng_test()
+    # get_viewport_test()
+    # get_random_latlng_test()
+    # find_restaurant_details_test()
+    # name = "Atlanta Breakfast Club"
+    # address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
+    # pprint(find_restaurant_details(name, address))
+
+    # name = 'Le Colonial - Houston'
+    # address = '4444 Westheimer Rd, Houston, TX 77027, United States'
+    # print(build_restaurant_details_request(name, address))

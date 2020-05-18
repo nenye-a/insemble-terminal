@@ -153,7 +153,6 @@ class GeoCode(GenericScraper):
     def build_request(query):
         query = query.replace(" ", "+")
         url = 'https://www.google.com/maps/search/{}/'.format(query)
-        print(url)
         return url
 
     def response_parse(self, response):
