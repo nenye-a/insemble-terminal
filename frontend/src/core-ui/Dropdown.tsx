@@ -6,8 +6,9 @@ import {
   HIGHLIGHTED_DROPDOWN,
   WHITE,
   BACKGROUND_COLOR,
+  SHADOW_COLOR,
 } from '../constants/colors';
-import { FONT_SIZE_NORMAL } from '../constants/theme';
+import { FONT_SIZE_NORMAL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
 
 import View from './View';
 import TextInput from './TextInput';
@@ -139,13 +140,16 @@ const ListContainer = styled.ul`
   padding: 0;
   position: absolute;
   margin-top: 40px;
+  border-radius: ${DEFAULT_BORDER_RADIUS};
+  box-shadow: ${SHADOW_COLOR};
+  overflow: hidden;
 `;
 const OptionList = styled.li`
   height: 36px;
   display: flex;
   list-style: none;
   align-items: center;
-  padding: 8px;
+  padding: 8px 18px;
   font-family: 'Avenir';
   font-size: ${FONT_SIZE_NORMAL};
   min-width: 200px;
