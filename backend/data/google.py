@@ -73,13 +73,17 @@ class GoogleNearby(GenericScraper):
         )
         return url
 
-    def response_parse(self, response):
+    @staticmethod
+    def default_parser(response):
         if response.status_code != 200:
             return None
         return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
 
+    def response_parse(self, response):
+        return self.default_parser(response)
+
     def get_nearby(self, venue_type, lat, lng):
-        url = GoogleNearby.build_request(venue_type, lat, lng, zoom=17)
+        url = self.build_request(venue_type, lat, lng, zoom=17)
         return self.request(
             url,
             quality_proxy=True,
@@ -89,7 +93,7 @@ class GoogleNearby(GenericScraper):
 
     def get_many_nearby(self, nearby_search_list):
         queries = [
-            GoogleNearby.build_request(
+            self.build_request(
                 venue_type=term['venue_type'],
                 lat=term['lat'],
                 lng=term['lng']
@@ -115,13 +119,17 @@ class GeoCode(GenericScraper):
         url = 'https://www.google.com/maps/search/{}/'.format(query)
         return url
 
-    def response_parse(self, response):
+    @staticmethod
+    def default_parser(response):
         if response.status_code != 200:
             return None
         first_parse = re.findall(REGEX_LATLNG_1, response.text)
         match = re.findall(REGEX_LATLNG_2, first_parse[0])
         [goog_size_var, lng, lat] = ast.literal_eval(match[0])
         return lat, lng, goog_size_var
+
+    def response_parse(self, response):
+        return self.default_parser(response)
 
     def get_lat_lng(self, query, include_sizevar=False):
 
@@ -139,7 +147,7 @@ class GeoCode(GenericScraper):
 
     def get_many_lat_lng(self, query_list, inclde_sizevar=False):
         queries = [{
-            'url': GeoCode.build_request(query),
+            'url': self.build_request(query),
             'meta': query,
         } for query in query_list]
 
@@ -213,7 +221,7 @@ class GoogleDetails(GenericScraper):
 
         """
 
-        url = GoogleDetails.build_request(name, address)
+        url = self.build_request(name, address)
         data = self.request(
             url,
             quality_proxy=True,
@@ -241,7 +249,7 @@ class GoogleDetails(GenericScraper):
 
         queries = []
         for place in places:
-            url = GoogleDetails.build_request(place['name'], place['address'])
+            url = self.build_request(place['name'], place['address'])
             place['request_url'] = url
             queries.append({'url': url, 'meta': place})
 
@@ -258,14 +266,17 @@ class GoogleDetails(GenericScraper):
 
         return result
 
+    @staticmethod
+    def default_parser(response):
+        if response.status_code != 200:
+            return None
+        return google_detail_parser(response)
+
     def response_parse(self, response):
         """
         Parses detail results into the required fields
         """
-
-        if response.status_code != 200:
-            return None
-        return google_detail_parser(response)
+        return self.default_parser(response)
 
     def use_meta(self, result, meta):
         if 'name' in meta and result:
@@ -375,6 +386,6 @@ if __name__ == "__main__":
 
     # get_google_activity_test()
     # get_many_lat_lng_test()
-    # get_nearby_test()
+    get_nearby_test()
     # get_google_details_test()
-    get_many_google_details_test()
+    # get_many_google_details_test()

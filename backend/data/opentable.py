@@ -1,9 +1,5 @@
-import datetime as dt
-from bs4 import BeautifulSoup
-
-
 from scrape.scraper import GenericScraper
-
+from parsers import opentable_parser
 import utils
 import google
 
@@ -117,108 +113,14 @@ class OpenTableDetails(GenericScraper):
                 return None
         return result
 
-    def response_parse(self, response):
-        """
-        Parse open table result, formally known as
-        (formally known as parse_opentable_result)
-
-        Parameter:
-            response: Response, an http get request response
-                         for a opentable search of an establishment
-        Return
-            store = {
-                "name": str name,
-                "link": str link,
-                "rating": float rating,
-                "review_link": str review_link,
-                "num_reviews": int num_reviews,
-                "price_tier": str price_tier,
-                "category": str category,
-                "neighborhood": str neighborhood,
-                "dist_from_query": str dist_from_query,
-                "bookings": int bookings,
-                "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
-            }
-
-        """
+    @staticmethod
+    def default_parser(response):
         if response.status_code != 200:
             return None
+        return opentable_parser(response)
 
-        soup = BeautifulSoup(response.content, "html.parser")
-
-        try:
-            top_result = soup.find_all('li', class_="result content-section-list-row cf with-times")[0]
-        except Exception:
-            print("Could not find restaurant on opentable")
-            return None
-
-        try:
-            name = top_result.find('div', class_="rest-row-header-container").find("span", class_="rest-row-name-text").text
-        except Exception:
-            name = None
-
-        try:
-            link = top_result.find('div', class_="rest-row-header-container").find("a").attrs['href']
-        except Exception:
-            link = None
-
-        try:
-            # TODO: check that ratings are always out of 5 stars
-            rating = top_result.find('div', class_="star-rating-score").attrs['aria-label']
-        except Exception:
-            rating = None
-
-        try:
-            review_link = top_result.find('a', class_="review-link").attrs['href']
-        except Exception:
-            review_link = None
-
-        try:
-            num_reviews = top_result.find('a', class_="review-link").find('span', class_="underline-hover").text
-        except Exception:
-            num_reviews = None
-
-        try:
-            price_tier = top_result.find('i', class_="pricing--the-price").text.replace(" ", "")
-        except Exception:
-            price_tier = None
-
-        try:
-            category = top_result.find('span', class_="rest-row-meta--cuisine rest-row-meta-text sfx1388addContent").text
-        except Exception:
-            category = None
-
-        try:
-            neighborhood = top_result.find_all('span', class_="rest-row-meta--location rest-row-meta-text sfx1388addContent")[0].text
-        except Exception:
-            neighborhood = None
-
-        try:
-            dist_from_query = top_result.find_all('span', class_="rest-row-meta--location rest-row-meta-text sfx1388addContent")[1].text
-        except Exception:
-            dist_from_query = None
-
-        try:
-            # TODO: check that the results are of the format 'Booked x times today'
-            bookings = top_result.find('div', class_="booking").text
-        except Exception:
-            bookings = None
-
-        store = {
-            "name": name,
-            "link": link,
-            "rating": utils.get_one_float_from_str(rating),
-            "review_link": review_link,
-            "num_reviews": utils.get_one_int_from_str(num_reviews),
-            "price_tier": price_tier,
-            "category": category,
-            "neighborhood": neighborhood,
-            "dist_from_query": dist_from_query,
-            "bookings": utils.get_one_int_from_str(bookings),
-            "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
-        }
-
-        return store
+    def response_parse(self, response):
+        return self.default_parser(response)
 
 
 if __name__ == "__main__":
@@ -238,7 +140,7 @@ if __name__ == "__main__":
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'}, {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'}, {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'}, {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'}, {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'}, {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'}, {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'}, {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
         print(get_many_opentable_details(my_list))
 
-    # find_restaurant_details_test()
-    find_many_restaurant_details_test()
+    find_restaurant_details_test()
+    # find_many_restaurant_details_test()
     # OpenTableDetails.build_request('The UPS Store',
     #                                '2897 N Druid Hills Rd NE, Atlanta, GA 30329')
