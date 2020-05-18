@@ -49,6 +49,11 @@ def get_details(name, address, projection=None):
     return detailer.get_details(name, address, projection=projection)
 
 
+def get_many_details(places, projection=None):
+    detailer = GoogleDetails('detailer')
+    return detailer.many_google_details(places, projection=projection)
+
+
 # Classes
 
 class GoogleNearby(GenericScraper):
@@ -180,8 +185,14 @@ class GoogleDetails(GenericScraper):
             price: string - ex. "$$"
             type: string
             description: string
-            activity: list[list[int]] - list of lists of hourly activity of the establishment =
-                        ex. [[],[],[],[]]
+            activity: list[list[int]] - list of lists of hourly activity of the establishment
+                        ex. [[0, 3, 14, 38, 72, 93, 91, 83, 78, 62, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 5, 18, 41, 59, 59, 50, 38, 22, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 2, 7, 16, 26, 35, 40, 37, 28, 16, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 1, 6, 17, 32, 44, 45, 35, 23, 12, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 2, 8, 17, 31, 44, 51, 47, 35, 21, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 1, 8, 25, 51, 70, 73, 64, 50, 31, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 5, 19, 47, 80, 100, 99, 88, 70, 45, 0, 0, 0, 0, 0, 0, 0, 0]]
             operations: {   - strings determining the actual details
                 'dine_in': string,
                 'takeout': string,
@@ -217,6 +228,37 @@ class GoogleDetails(GenericScraper):
 
         return data
 
+    def many_google_details(self, places, projection=None):
+        """
+        Provided a list of objects containing a name and address,
+        will return their result tagged with the name and address.
+
+        places : {
+            'name': string, - name of place
+            'address': string = address of place
+        }
+        """
+
+        queries = [{
+            'url': GoogleDetails.build_request(
+                place['name'],
+                place['address']
+            ),
+            'meta': place
+        } for place in places]
+        result = self.async_request(
+            queries,
+            quality_proxy=True
+        )
+
+        projection_list = projection.strip().split(',') if projection else None
+        if projection_list:
+            for data in result:
+                if data['data']:
+                    data['data'] = {key: data['data'][key] for key in projection_list}
+
+        return result
+
     def response_parse(self, response):
         """
         Parses detail results into the required fields
@@ -227,9 +269,7 @@ class GoogleDetails(GenericScraper):
         return google_detail_parser(response)
 
     def use_meta(self, result, meta):
-        print(result)
         if 'name' in meta and result:
-            print(utils.fuzzy_match(meta['name'], result['name']))
             if not utils.fuzzy_match(meta['name'], result['name']):
                 return None
         return result
@@ -328,7 +368,14 @@ if __name__ == "__main__":
         num_results = 10
         print(query_region_random(region, terms, num_results))
 
+    def get_many_google_details_test():
+        my_list = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'}, {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'}, {'name': 'Chapel Beauty', 'address': '2626 Rainbow Way, Decatur, GA 30034'}, {'name': "Howard's Furniture Co INC", 'address': '3376 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Book Nook', 'address': '3073 N Druid Hills Rd NE, Decatur, GA 30033'}, {'name': 'Citi Trends', 'address': '3205 S Cobb Dr SE Ste A, Smyrna, GA 30080'}, {'name': 'Star Cafe', 'address': '2053 Marietta Blvd NW, Atlanta, GA 30318'}, {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Kroger',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'}, {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'}, {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'}, {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'}, {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'}, {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'}, {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'}, {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
+
+        print(get_many_details(my_list))
+
     # get_google_activity_test()
     # get_many_lat_lng_test()
     # get_nearby_test()
     # get_google_details_test()
+    get_many_google_details_test()
