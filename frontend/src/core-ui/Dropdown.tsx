@@ -1,18 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useMemo, ComponentProps } from 'react';
 import { useCombobox } from 'downshift';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import {
   HIGHLIGHTED_DROPDOWN,
   WHITE,
   BACKGROUND_COLOR,
   SHADOW_COLOR,
+  THEME_COLOR,
 } from '../constants/colors';
 import { FONT_SIZE_NORMAL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
 
-import View from './View';
 import TextInput from './TextInput';
-import Pill from './Pill';
 import TouchableOpacity from './TouchableOpacity';
 
 type Props<T> = {
@@ -33,7 +32,6 @@ export default function Dropdown<T>(props: Props<T>) {
     optionExtractor = defaultOptionExtractor,
     placeholder,
   } = props;
-  let inputRowRef = useRef<HTMLDivElement>(null);
 
   let [inputItems, setInputItems] = useState<Array<T>>(options);
   let {
@@ -68,43 +66,34 @@ export default function Dropdown<T>(props: Props<T>) {
     },
   });
 
-  useEffect(() => {
-    let onKeyDown = (event: KeyboardEvent) => {
-      if (event.which === 8) {
-        onOptionSelected(null);
-      }
-    };
-
-    let inputRow = inputRowRef.current;
-
-    inputRow?.addEventListener('keydown', onKeyDown);
-    return () => {
-      inputRow?.removeEventListener('keydown', onKeyDown);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  let hasSelection = useMemo(() => {
+    return !!options.find(
+      (item) => optionExtractor(item) === optionExtractor(selectedOption),
+    );
+  }, [selectedOption, options, optionExtractor]);
   return (
-    <TouchableOpacity
-      {...getComboboxProps()}
-      onPress={() => {
-        openMenu();
-        // TODO: improve a11y
-      }}
-      ref={inputRowRef}
-    >
-      <InputRow ref={inputRowRef}>
-        {selectedOption && (
-          <SelectedPill>{optionExtractor(selectedOption)}</SelectedPill>
-        )}
-        <InputContainer
-          {...getInputProps()}
-          placeholder={placeholder}
-          {...(!selectedOption
-            ? { containerStyle: { flex: 1 } }
-            : { style: { width: 0, padding: 0 } })}
-        />
-      </InputRow>
+    <TouchableOpacity {...getComboboxProps()} onPress={openMenu}>
+      <InputContainer
+        {...getInputProps()}
+        placeholder={placeholder}
+        hasSelection={hasSelection}
+        {...(selectedOption &&
+          hasSelection && {
+            style: {
+              caretColor: 'transparent',
+              backgroundColor: THEME_COLOR,
+              color: WHITE,
+              textAlign: 'center',
+              height: 28,
+            },
+          })}
+        onKeyUp={(event) => {
+          // pressing delete on keyboard
+          if (event.which === 8) {
+            onOptionSelected(null);
+          }
+        }}
+      />
       <ListContainer {...getMenuProps()}>
         {isOpen
           ? inputItems.map((item, index) => (
@@ -120,7 +109,7 @@ export default function Dropdown<T>(props: Props<T>) {
                   },
                 })}
               >
-                {item}
+                {optionExtractor(item)}
               </OptionList>
             ))
           : null}
@@ -129,13 +118,10 @@ export default function Dropdown<T>(props: Props<T>) {
   );
 }
 
-const InputRow = styled(View)`
-  flex: 1;
-  flex-direction: row;
-  width: 200px;
-  justify-content: center;
-  align-items: center;
-`;
+type InputContainerProps = ComponentProps<'input'> & {
+  hasSelection: boolean;
+};
+
 const ListContainer = styled.ul`
   padding: 0;
   position: absolute;
@@ -155,13 +141,16 @@ const OptionList = styled.li`
   min-width: 200px;
   max-width: 300px;
 `;
-const InputContainer = styled(TextInput)`
+const InputContainer = styled(TextInput)<InputContainerProps>`
   border: none;
   background-color: ${BACKGROUND_COLOR};
-`;
-const SelectedPill = styled(Pill)`
-  max-width: 190px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  ${(props) =>
+    props.hasSelection &&
+    css`
+      caret-color: transparent;
+      background-color: ${THEME_COLOR};
+      color: ${WHITE};
+      text-align: center;
+      height: 28px;
+    `}
 `;
