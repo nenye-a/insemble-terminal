@@ -8,6 +8,7 @@ def get_locations(region, terms, num_results, batchsize=300):
     viewport = google.get_viewport(lat, lng, goog_size_var)
 
     count_results = 0
+    seen = set()
     while count_results < num_results:
         print("Starting batch. {count} results of {results}.".format(
             count=count_results,
@@ -30,7 +31,8 @@ def get_locations(region, terms, num_results, batchsize=300):
             } for lat, lng in coords))
 
         # Getting all the stores in the places in the vicinity
-        place_strings = google.get_many_nearby(locations)
+        place_strings = [place_string for place_string in google.get_many_nearby(locations) if place_string not in seen]
+        seen.update(place_strings)
         places = [
             dict(zip(
                 ('name', 'address'),
@@ -38,9 +40,42 @@ def get_locations(region, terms, num_results, batchsize=300):
             )) for word in place_strings if word
         ]
 
-        print("Querying Opentable for the following places. {}".format(places))
-        opentable_results = opentable.find_many_restaurant_details(places)
+        places_dict = {place['name']: {
+            'name': place['name'],
+            'address': place['address'],
+            'google_results': None,
+            'opentable_results': None
+        } for place in places}
+
+        print("Querying Opentable.")
+        opentable_results = opentable.get_many_opentable_details(places)
+        print("Retrieved {} results.".format(len(opentable_results)))
+
+        print("Querying Google.")
+        google_results = google.get_many_google_details(places)
+        print("Retrieved {} results.".format(len(opentable_results)))
+
+        print('Retrieved results, packaging for upload.')
+        for result in opentable_results:
+            name = result['meta']['name']
+            if result['meta']['name'] in places_dict:
+                opentable_result = result['data']
+                opentable_result['request_url'] = result['meta']['request_url']
+                places_dict[name]['opentable_results'] = opentable_result
+
+        for result in google_results:
+            name = result['meta']['name']
+            if result['meta']['name'] in places_dict:
+                google_result = result['data']
+                google_result['request_url'] = result['meta']['request_url']
+                places_dict[name]['google_results'] = google_result
+
+        try:
+            utils.DB_CITY_TEST.insert_many(list(places_dict.values()), ordered=False)
+            count_results += len(places_dict)
+        except Exception:
+            print("Failed to insert this batch")
 
 
 if __name__ == "__main__":
-    get_locations("Atlanta, GA", ['restaurants', 'stores'], 100)
+    get_locations("Atlanta, GA", ['restaurants', 'stores'], 3000, 200)

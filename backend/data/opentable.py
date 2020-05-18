@@ -10,12 +10,12 @@ import google
 # Helper Functions
 
 
-def find_opentable_details(name, address, projection=None):
+def get_opentable_details(name, address, projection=None):
     table_scraper = OpenTableDetails('table scraper')
     return table_scraper.get_details(name, address, projection)
 
 
-def find_many_opentable_details(restaurant_list, projection=None):
+def get_many_opentable_details(restaurant_list, projection=None):
     table_scraper = OpenTableDetails('table scraper')
     return table_scraper.many_opentable_details(restaurant_list, projection)
 
@@ -39,13 +39,13 @@ class OpenTableDetails(GenericScraper):
     def build_many_requests(places):
         lat_lng_queries = []
         my_geo = google.GeoCode('opentable geocoder')
-        for restaurant in places:
+        for place in places:
             query = my_geo.build_request(
                 utils.format_search(
-                    restaurant['name'],
-                    restaurant['address']
+                    place['name'],
+                    place['address']
                 ))
-            meta = restaurant
+            meta = place
             lat_lng_queries.append({
                 'url': query,
                 'meta': meta
@@ -55,16 +55,16 @@ class OpenTableDetails(GenericScraper):
             quality_proxy=True,
             remove_nones=True
         )
-        print(lat_lngs)
         urls = []
         for lat_lng in lat_lngs:
-            restaurant = lat_lng['meta']
+            place = lat_lng['meta']
             lat, lng, _ = lat_lng['data']
             date = utils.today_formatted()
-            formatted_name = utils.encode_word(restaurant['name'])
+            formatted_name = utils.encode_word(place['name'])
             url = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
                 '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
-            urls.append({'meta': restaurant, 'url': url})
+            place['request_url'] = url
+            urls.append({'meta': place, 'url': url})
         return urls
 
     def get_details(self, name, address, projection=None):
@@ -100,7 +100,7 @@ class OpenTableDetails(GenericScraper):
         queries = OpenTableDetails.build_many_requests(places)
         result = self.async_request(
             queries,
-            quality_proxy=True
+            quality_proxy=True,
         )
 
         projection_list = projection.strip().split(',') if projection else None
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     def find_restaurant_details_test():
         name = 'Le Colonial - Houston'
         address = '4444 Westheimer Rd, Houston, TX 77027, United States'
-        print(find_opentable_details(name, address))
+        print(get_opentable_details(name, address))
 
     def find_many_restaurant_details_test():
         # nearby = google.get_nearby('restaurant', 33.7490, -84.3880)
@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
         my_list = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'}, {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'}, {'name': 'Chapel Beauty', 'address': '2626 Rainbow Way, Decatur, GA 30034'}, {'name': "Howard's Furniture Co INC", 'address': '3376 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Book Nook', 'address': '3073 N Druid Hills Rd NE, Decatur, GA 30033'}, {'name': 'Citi Trends', 'address': '3205 S Cobb Dr SE Ste A, Smyrna, GA 30080'}, {'name': 'Star Cafe', 'address': '2053 Marietta Blvd NW, Atlanta, GA 30318'}, {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Kroger',
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'}, {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'}, {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'}, {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'}, {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'}, {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'}, {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'}, {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
-        print(find_many_opentable_details(my_list))
+        print(get_many_opentable_details(my_list))
 
     # find_restaurant_details_test()
     find_many_restaurant_details_test()
