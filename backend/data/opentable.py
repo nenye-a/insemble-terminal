@@ -72,6 +72,7 @@ class OpenTableDetails(GenericScraper):
         data = self.request(
             url,
             quality_proxy=True,
+            timeout=5,
             meta={
                 'name': name
             },

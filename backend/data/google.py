@@ -153,7 +153,8 @@ class GeoCode(GenericScraper):
 
         result = self.async_request(
             queries,
-            quality_proxy=True
+            quality_proxy=True,
+            timeout=5
         )
 
         if not inclde_sizevar:
@@ -255,7 +256,8 @@ class GoogleDetails(GenericScraper):
 
         result = self.async_request(
             queries,
-            quality_proxy=True
+            quality_proxy=True,
+            timeout=5
         )
 
         projection_list = projection.strip().split(',') if projection else None
@@ -386,6 +388,6 @@ if __name__ == "__main__":
 
     # get_google_activity_test()
     # get_many_lat_lng_test()
-    get_nearby_test()
+    # get_nearby_test()
     # get_google_details_test()
-    # get_many_google_details_test()
+    get_many_google_details_test()
