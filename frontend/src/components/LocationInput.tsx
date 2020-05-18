@@ -73,7 +73,7 @@ export default function LocationInput(props: Props) {
           });
       }
     }
-  }, [onPlaceSelected]);
+  }, [onPlaceSelected, place]);
 
   useEffect(() => {
     if (inputRef.current && !isLoading) {

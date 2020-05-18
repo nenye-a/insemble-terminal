@@ -6,6 +6,7 @@ import { WHITE, HEADER_SHADOW_COLOR } from '../constants/colors';
 import { NAVBAR_HEIGHT } from '../constants/theme';
 
 import InsembleLogo from './InsembleLogo';
+import SearchFilterBar from './SearchFilterBar';
 
 export default function HeaderNavigationBar() {
   return (
@@ -13,6 +14,7 @@ export default function HeaderNavigationBar() {
       <TouchableOpacity onPress={() => {}}>
         <InsembleLogo color="purple" />
       </TouchableOpacity>
+      <SearchFilterBar />
     </Container>
   );
 }
@@ -20,7 +22,6 @@ export default function HeaderNavigationBar() {
 const Container = styled(View)`
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
   width: 100vw;
   height: ${NAVBAR_HEIGHT};
   background-color: ${WHITE};
