@@ -35,6 +35,38 @@ class OpenTableDetails(GenericScraper):
         return 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
             '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
 
+    @staticmethod
+    def build_many_requests(restaurant_list):
+        lat_lng_queries = []
+        my_geo = google.GeoCode('opentable geocoder')
+        for restaurant in restaurant_list:
+            query = my_geo.build_request(
+                utils.format_search(
+                    restaurant['name'],
+                    restaurant['address']
+                ))
+            meta = restaurant
+            lat_lng_queries.append({
+                'url': query,
+                'meta': meta
+            })
+        lat_lngs = my_geo.async_request(
+            lat_lng_queries,
+            quality_proxy=True,
+            remove_nones=True
+        )
+        print(lat_lngs)
+        urls = []
+        for lat_lng in lat_lngs:
+            restaurant = lat_lng['meta']
+            lat, lng, _ = lat_lng['data']
+            date = utils.today_formatted()
+            formatted_name = utils.encode_word(restaurant['name'])
+            url = 'https://www.opentable.com/s/?currentview=list&size=100&sort=PreSorted&term=' + formatted_name + \
+                '&source=dtp-form&covers=2&dateTime=' + date + '&latitude=' + str(lat) + '&longitude=' + str(lng)
+            urls.append({'meta': restaurant, 'url': url})
+        return urls
+
     def restaurant_details(self, name, address, projection=None):
         """
         Gets all the restaurant details for a provided name
@@ -59,11 +91,8 @@ class OpenTableDetails(GenericScraper):
         Provided a list of objects containing a name and address,
         will return their results, tagged with the name and address
         """
-        queries = [{
-            'url': OpenTableDetails.build_request(restaurant['name'], restaurant['address']),
-            'meta': restaurant
-        } for restaurant in restaurant_list]
 
+        queries = OpenTableDetails.build_many_requests(restaurant_list)
         result = self.async_request(
             queries,
             quality_proxy=True

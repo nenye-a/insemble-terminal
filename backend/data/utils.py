@@ -88,12 +88,18 @@ def today_formatted():
     return dt.datetime.now().strftime("%Y-%m-%d")
 
 
-def get_one_int_from_str(text):
-    return int(re.search(r'\d+', text).group())
+def get_one_int_from_str(text: str):
+    try:
+        return int(re.search(r'\d+', text).group())
+    except Exception:
+        return None
 
 
-def get_one_float_from_str(text):
-    return float(re.search(r'\d+\.\d+', text).group())
+def get_one_float_from_str(text: str):
+    try:
+        return float(re.search(r'\d+\.\d+', text).group())
+    except Exception:
+        return None
 
 
 def get_random_latlng(nw, se):
