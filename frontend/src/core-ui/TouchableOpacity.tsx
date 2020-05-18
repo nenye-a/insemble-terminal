@@ -1,4 +1,4 @@
-import React, { MouseEvent } from 'react';
+import React, { MouseEvent, forwardRef, Ref } from 'react';
 import styled, { css } from 'styled-components';
 
 import View from './View';
@@ -10,7 +10,7 @@ type Props = Omit<ViewProps, 'onClick'> & {
   onStopPropagation?: boolean;
 };
 
-export default function TouchableOpacity(props: Props) {
+export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
   let { onPress, href, onStopPropagation, disabled, ...otherProps } = props;
   let isLink = href != null;
   let isLocalLink = isLink && isLocalURL(href);
@@ -20,6 +20,7 @@ export default function TouchableOpacity(props: Props) {
       href={href}
       target={isLink && !isLocalLink ? '_blank' : undefined}
       disabled={disabled}
+      ref={forwardedRef}
       {...otherProps}
       onClick={(event: MouseEvent) => {
         if (onStopPropagation) {
@@ -35,7 +36,7 @@ export default function TouchableOpacity(props: Props) {
       tabIndex={0}
     />
   );
-}
+});
 
 let linkStyles = css`
   background-color: rgba(0, 0, 0, 0);
