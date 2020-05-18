@@ -9,82 +9,52 @@ from scrape.scraper import GenericScraper
 from parsers import google_detail_parser
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
-HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
+HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
-REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,[\w+\s+]+\, United States'
+REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 AMPERSAND = '\\\\u0026'
 GOOG_KEY = config("GOOG_KEY")
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
 LNG_VIEWPORT_MULTIPLIER = 0.00000072025608
-DEFALT_SCRAPER = GenericScraper('Default Scraper')
+DEFALT_SCRAPER = GenericScraper('DEFAULT SCRAPER')
 
 
 # Helper Functions
 
-def get_google_activity(name, address):
-    activity_scraper = GoogleActivity('activity scraper')
-    return activity_scraper.get_activity(name, address)
-
-
 def get_nearby(venue_type, lat, lng):
-    nearby_scraper = GoogleNearby('nearby scraper')
+    nearby_scraper = GoogleNearby('GOOGLE NEARBY')
     return nearby_scraper.get_nearby(venue_type, lat, lng)
 
 
+def get_many_nearby(nearby_search_list):
+    nearby_scraper = GoogleNearby('GOOGLE NEARBY')
+    return nearby_scraper.get_many_nearby(nearby_search_list)
+
+
 def get_lat_lng(query, include_sizevar=False):
-    geocoder = GeoCode('geocoder')
+    geocoder = GeoCode('GECODER')
     return geocoder.get_lat_lng(query, include_sizevar)
 
 
-def get_details(name, address, projection=None):
-    detailer = GoogleDetails('detailer')
+def get_many_lat_lng(queries, include_sizevar=False):
+    geocoder = GeoCode('GECODER')
+    return geocoder.get_many_lat_lng(queries, include_sizevar)
+
+
+def get_google_details(name, address, projection=None):
+    detailer = GoogleDetails('GOOGLE DETAILS')
     return detailer.get_details(name, address, projection=projection)
 
 
+def get_many_google_details(places, projection=None):
+    detailer = GoogleDetails('GOOGLE DETAILS')
+    return detailer.many_google_details(places, projection=projection)
+
+
 # Classes
-
-
-class GoogleActivity(GenericScraper):
-
-    @staticmethod
-    def build_request(name, address):
-        """
-        Builds the activity request
-        (formally build_google_activity_request)
-        """
-        formatted_input = utils.format_search(name, address)
-        url = 'https://www.google.com/search?q=' + formatted_input
-        return url
-
-    def response_parse(self, response):
-        """
-        Parse response into a list of activity lists.
-        (Formally parse_google_activity)
-        """
-        if response.status_code != 200:
-            return None
-        html_text = response.text
-        # find the 18 or 24 hour activity distribution,depending on which is present
-        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, html_text)]
-        if len(data) == 0:
-            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, html_text)]
-        return data
-
-    def get_activity(self, name, address):
-        """
-        Provided a name and address, will return a list
-        of activity levels for retailer at that address
-        """
-        url = self.build_request(name, address)
-        return self.request(
-            url,
-            quality_proxy=True,
-            timeout=5
-        )
-
 
 class GoogleNearby(GenericScraper):
 
@@ -117,12 +87,31 @@ class GoogleNearby(GenericScraper):
             timeout=5
         )
 
+    def get_many_nearby(self, nearby_search_list):
+        queries = [
+            GoogleNearby.build_request(
+                venue_type=term['venue_type'],
+                lat=term['lat'],
+                lng=term['lng']
+            ) for term in nearby_search_list
+        ]
+        nearby = set()
+        results = self.async_request(
+            queries,
+            quality_proxy=True,
+            headers=HEADERS,
+            timeout=5
+        )
+        for result in results:
+            nearby.update(result)
+        return list(nearby)
+
 
 class GeoCode(GenericScraper):
 
     @staticmethod
     def build_request(query):
-        query = utils.encode_word(query)
+        query = query.replace(" ", "+")
         url = 'https://www.google.com/maps/search/{}/'.format(query)
         return url
 
@@ -147,6 +136,23 @@ class GeoCode(GenericScraper):
             return lat, lng, goog_size_var
         else:
             return lat, lng
+
+    def get_many_lat_lng(self, query_list, inclde_sizevar=False):
+        queries = [{
+            'url': GeoCode.build_request(query),
+            'meta': query,
+        } for query in query_list]
+
+        result = self.async_request(
+            queries,
+            quality_proxy=True
+        )
+
+        if not inclde_sizevar:
+            for data in result:
+                if data['data']:
+                    data['data'] = data['data'][:2]
+        return result
 
 
 class GoogleDetails(GenericScraper):
@@ -179,6 +185,14 @@ class GoogleDetails(GenericScraper):
             price: string - ex. "$$"
             type: string
             description: string
+            activity: list[list[int]] - list of lists of hourly activity of the establishment
+                        ex. [[0, 3, 14, 38, 72, 93, 91, 83, 78, 62, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 5, 18, 41, 59, 59, 50, 38, 22, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 2, 7, 16, 26, 35, 40, 37, 28, 16, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 1, 6, 17, 32, 44, 45, 35, 23, 12, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 2, 8, 17, 31, 44, 51, 47, 35, 21, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 1, 8, 25, 51, 70, 73, 64, 50, 31, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 5, 19, 47, 80, 100, 99, 88, 70, 45, 0, 0, 0, 0, 0, 0, 0, 0]]
             operations: {   - strings determining the actual details
                 'dine_in': string,
                 'takeout': string,
@@ -214,6 +228,36 @@ class GoogleDetails(GenericScraper):
 
         return data
 
+    def many_google_details(self, places, projection=None):
+        """
+        Provided a list of objects containing a name and address,
+        will return their result tagged with the name and address.
+
+        places : {
+            'name': string, - name of place
+            'address': string = address of place
+        }
+        """
+
+        queries = []
+        for place in places:
+            url = GoogleDetails.build_request(place['name'], place['address'])
+            place['request_url'] = url
+            queries.append({'url': url, 'meta': place})
+
+        result = self.async_request(
+            queries,
+            quality_proxy=True
+        )
+
+        projection_list = projection.strip().split(',') if projection else None
+        if projection_list:
+            for data in result:
+                if data['data']:
+                    data['data'] = {key: data['data'][key] for key in projection_list}
+
+        return result
+
     def response_parse(self, response):
         """
         Parses detail results into the required fields
@@ -224,9 +268,7 @@ class GoogleDetails(GenericScraper):
         return google_detail_parser(response)
 
     def use_meta(self, result, meta):
-        print(result)
         if 'name' in meta and result:
-            print(utils.fuzzy_match(meta['name'], result['name']))
             if not utils.fuzzy_match(meta['name'], result['name']):
                 return None
         return result
@@ -245,7 +287,7 @@ def query_region_random(region, search_terms, num_results):
 
     # get lat, lng, and viewport of the region that's being queried
     lat, lng, goog_size_var = get_lat_lng(region, include_sizevar=True)
-    viewport = _get_viewport(lat, lng, goog_size_var)
+    viewport = get_viewport(lat, lng, goog_size_var)
 
     # choose random points in the viewport to run nearby requests on until reaching the desired number of results
     while len(results) < num_results:
@@ -260,12 +302,13 @@ def query_region_random(region, search_terms, num_results):
     return results
 
 
-def _get_viewport(lat, lng, goog_size_var):
+def get_viewport(lat, lng, goog_size_var):
     """
     Get the viewport of a particular reigon given lat, lng, and size_var.
     goog_size_var is the variable that google adds to the initialization
     state when loading google maps for a particular region
     """
+    # TODO: pull this into the lat, lng or add helper function
     nw = (lat + goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng - goog_size_var * LNG_VIEWPORT_MULTIPLIER)
     se = (lat - goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng + goog_size_var * LNG_VIEWPORT_MULTIPLIER)
     return nw, se
@@ -276,7 +319,7 @@ if __name__ == "__main__":
     def get_google_activity_test():
         name = "Atlanta Breakfast Club"
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        data = get_google_activity(name, address)
+        data = get_activity(name, address)
         print(data)
         fig, sbts = plt.subplots(len(data))
         for i in range(len(sbts)):
@@ -286,9 +329,9 @@ if __name__ == "__main__":
     def get_google_details_test():
         name = "Atlanta Breakfast Club"
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        print(get_details(name, address))
-        print(get_details(name, address, 'address'))
-        print(get_details(name, address, 'address,name,rating'))
+        print(get_google_details(name, address))
+        print(get_google_details(name, address, 'address'))
+        print(get_google_details(name, address, 'address,name,rating,activity'))
 
     def get_nearby_test():
         venue_type = 'restaurants'
@@ -301,10 +344,14 @@ if __name__ == "__main__":
         print(name, get_lat_lng(name))
         print(name, "size var option", get_lat_lng(name, True))
 
+    def get_many_lat_lng_test():
+        my_list = ["Souvla Hayes Valley SF", "Souvla Hayes Valley SF", "Souvla Hayes Valley SF"]
+        print(get_many_lat_lng(my_list))
+
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
         lat, lng, goog_size_var = get_lat_lng(name)
-        nw, se = _get_viewport(lat, lng, goog_size_var)
+        nw, se = get_viewport(lat, lng, goog_size_var)
         print(name, lat, lng, "nw:", nw, "se:", se)
 
     def get_random_latlng_test():
@@ -320,5 +367,14 @@ if __name__ == "__main__":
         num_results = 10
         print(query_region_random(region, terms, num_results))
 
-    get_google_activity_test()
+    def get_many_google_details_test():
+        my_list = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'}, {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'}, {'name': 'Chapel Beauty', 'address': '2626 Rainbow Way, Decatur, GA 30034'}, {'name': "Howard's Furniture Co INC", 'address': '3376 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Book Nook', 'address': '3073 N Druid Hills Rd NE, Decatur, GA 30033'}, {'name': 'Citi Trends', 'address': '3205 S Cobb Dr SE Ste A, Smyrna, GA 30080'}, {'name': 'Star Cafe', 'address': '2053 Marietta Blvd NW, Atlanta, GA 30318'}, {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Kroger',
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'}, {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'}, {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'}, {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'}, {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'}, {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'}, {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'}, {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
+
+        print(get_many_google_details(my_list))
+
+    # get_google_activity_test()
+    # get_many_lat_lng_test()
+    # get_nearby_test()
     # get_google_details_test()
+    get_many_google_details_test()

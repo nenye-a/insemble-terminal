@@ -22,6 +22,7 @@ SPACE_RE = re.compile(r' +')
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
+DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 
 
 def meters_to_miles(meters):
@@ -88,12 +89,18 @@ def today_formatted():
     return dt.datetime.now().strftime("%Y-%m-%d")
 
 
-def get_one_int_from_str(text):
-    return int(re.search(r'\d+', text).group())
+def get_one_int_from_str(text: str):
+    try:
+        return int(re.search(r'\d+', text).group())
+    except Exception:
+        return None
 
 
-def get_one_float_from_str(text):
-    return float(re.search(r'\d+\.\d+', text).group())
+def get_one_float_from_str(text: str):
+    try:
+        return float(re.search(r'\d+\.\d+', text).group())
+    except Exception:
+        return None
 
 
 def get_random_latlng(nw, se):
@@ -156,6 +163,13 @@ def fuzzy_match(query, target):
         return True
     else:
         return False
+
+
+def split_name_address(name_address):
+    """Will split a string structured "name, adress, with, many, commas"""
+    name = name_address.split(",")[0]
+    address = name_address.replace(name + ", ", "")
+    return (name, address)
 
 
 if __name__ == "__main__":

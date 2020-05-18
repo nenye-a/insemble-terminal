@@ -19,7 +19,7 @@ requests.packages.urllib3.disable_warnings()
 
 class GenericScraper(object):
 
-    def __init__(self, name='default scraper', header=None):
+    def __init__(self, name='DEFAULT SCRAPER'):
         """
         Generic scraper object, will instantiate a scrapper that can be used to scrape
         a variety of different web sources.
@@ -31,8 +31,14 @@ class GenericScraper(object):
         self.user_agents = scrape_utils.USER_AGENT_LIST
         self.fail_token = None
 
-    def get_header(self):
-        return {'User-Agent': random.choice(self.user_agents)}
+    def get_header(self, header=None):
+        my_header = {
+            'User-Agent': random.choice(self.user_agents)
+        }
+        if header:
+            my_header.update(my_header)
+
+        return my_header
 
     def response_parse(self, response):
         """
@@ -101,7 +107,7 @@ class GenericScraper(object):
 
             response = requests.get(
                 url,
-                headers=headers if headers else self.get_header(),
+                headers=self.get_header(headers),
                 proxies=proxies if proxies else proxy,
                 timeout=timeout,
                 verify=CRAWLERA_CERT if https and quality_proxy else None

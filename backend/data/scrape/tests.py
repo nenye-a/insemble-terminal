@@ -91,6 +91,9 @@ def dictify(list_words):
 if __name__ == "__main__":
 
     # ScraperTests.request_test()
+    ScraperTests.async_request_test()
+    # ScraperTests.google_request_test()
+    # ScraperTests.google_async_request_test()
     # ScraperTests.async_request_test()
     # ScraperTests.test_meta()
-    ScraperTests.test_meta_async()
+    # ScraperTests.test_meta_async()

@@ -16,6 +16,7 @@ MONGO_PASS = config('MONGO_DB_PASS')
 # Databases
 PROXY_LOG = "news.proxy_log"
 PLACES = "appData.places"
+CITY_TEST = "terminal.city_test"
 
 
 class Connect(object):

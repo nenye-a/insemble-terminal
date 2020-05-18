@@ -1,5 +1,10 @@
 from bs4 import BeautifulSoup
 import datetime as dt
+import ast
+import re
+
+REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
+REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 
 
 def google_detail_parser(response):
@@ -107,6 +112,16 @@ def google_detail_parser(response):
     except Exception:
         self_description = None
 
+    try:
+        html_text = response.text
+        # find the 18 or 24 hour activity distribution,depending on which is present
+        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, html_text)]
+        if len(data) == 0:
+            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, html_text)]
+        activity = data
+    except Exception:
+        activity = None
+
     store = {
         "url": response.url,
         "name": name,
@@ -115,6 +130,7 @@ def google_detail_parser(response):
         "price": price,
         "type": type,
         "description": description,
+        "activity": activity,
         "operations": operations,
         "address": address,
         "current_hours": current_hours,
