@@ -82,8 +82,6 @@ jobs:
       - run:
           command: (cd backend; coverage run manage.py test)
       - run:
-          command: npm run test
-      - run:
           command: |
             mkdir -p test-reports/
             coverage xml -o test-reports/results.xml
@@ -112,4 +110,6 @@ jobs:
       - run:
           command: cd frontend
       - run:
-          command: yarn test
+          command: |
+            yarn apollo:generate
+            yarn test
