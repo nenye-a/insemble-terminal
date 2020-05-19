@@ -10,10 +10,20 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "jest": "jest --coverage --passWithNoTests",
-    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest"
+    "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
+    "schema:generate": "cd ../backend-node && yarn generate:schema && cd ../frontend",
+    "apollo:generate": "yarn schema:generate && apollo codegen:generate --excludes=node_modules/* --includes=src/**/*.ts --localSchemaFile=../backend-node/src/generated/schema.graphql  --target typescript --tagName gql --outputFlat src/generated"
   },
   "dependencies": {
+    "@apollo/react-hooks": "^3.1.5",
+    "apollo-cache-inmemory": "^1.6.6",
+    "apollo-client": "^2.6.10",
+    "apollo-link": "^1.2.14",
+    "apollo-link-error": "^1.1.13",
+    "apollo-link-http": "^1.5.17",
     "downshift": "^5.4.0",
+    "graphql": "^15.0.0",
+    "graphql-tag": "^2.10.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-router-dom": "^5.2.0",
