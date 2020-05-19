@@ -13,6 +13,7 @@ export const PURPLE = '#674CA7';
 export const DARKER_PURPLE = '#674EA7';
 
 const RED = '#FF0000';
+const BLUE = '#4082FF';
 
 export const THEME_COLOR = PURPLE;
 
@@ -21,6 +22,7 @@ export const DEFAULT_TEXT_COLOR = DARKER_GRAY;
 export const RED_TEXT = RED;
 export const MUTED_TEXT_COLOR = LIGHT_GRAY;
 export const DARK_TEXT_COLOR = DARK_GRAY;
+export const LINK_COLOR = BLUE;
 
 // DataTable colors
 export const TABLE_BORDER_COLOR = DARK_GRAY;
