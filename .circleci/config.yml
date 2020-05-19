@@ -67,8 +67,6 @@ jobs:
   #     - run:
   #         command: (cd backend; coverage run manage.py test)
   #     - run:
-  #         command: (cd frontend; yarn run test)
-  #     - run:
   #         command: |
   #           mkdir -p test-reports/
   #           coverage xml -o test-reports/results.xml
