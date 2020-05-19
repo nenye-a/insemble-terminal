@@ -1,5 +1,10 @@
+import sys
+import os
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.extend([THIS_DIR, BASE_DIR])
+
 import google
-import opentable
 import utils
 
 '''
@@ -7,6 +12,10 @@ import utils
 Performance related queries.
 
 '''
+
+
+def get_performance(business, location):
+    pass
 
 
 def performance(name, address):

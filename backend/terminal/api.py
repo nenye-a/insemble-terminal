@@ -2,12 +2,12 @@
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
-from data.scrape import scraper
 from .serializers import PerformanceSerializer
+import data.performance as performance
 
 '''
 
-Insemble-terminal Django API.
+terminal Django API.
 
 '''
 
@@ -49,31 +49,31 @@ class PerformanceAPI(BasicAPI):
         Parameters: {
             location: {
                 locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
-                params: string          
+                params: string
             }
             business: {
                 businessType: 'BUSINESS' | 'CATEGORY'
-                params: string          
+                params: string
             }
             dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
         }
 
         Response: {
             performance: {
-                id: prismaID                
+                id: prismaID
                 createdAt: Date,
                 updatedAt: Date,
                 serachTag: {
                     location: {
                         locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
-                        params: string                                              
+                        params: string
                     }
                     business: {
                         businessType: 'BUSINESS' | 'CATEGORY'
-                        params: string                                              
+                        params: string
                     }
                 }
-                dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'     
+                dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
                 data: [
                     {
                         name: string,
