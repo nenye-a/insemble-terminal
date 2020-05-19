@@ -22,19 +22,19 @@ export default function HeaderNavigationBar() {
       </TouchableOpacity>
       <SearchFilterBar />
       {loggedIn ? (
-        <Row>
+        <RowEnd flex>
           <TerminalButton
             mode="transparent"
             text="Terminals"
             textProps={{ style: { color: DARK_TEXT_COLOR } }}
           />
           <ProfileMenuDropdown name="Name" email="example@email.com" />
-        </Row>
+        </RowEnd>
       ) : (
-        <Row>
+        <RowEnd flex>
           <Button shape="round" mode="secondary" text="Sign in" />
           <SignUpButton shape="round" text="Sign up" />
-        </Row>
+        </RowEnd>
       )}
     </Container>
   );
@@ -53,9 +53,10 @@ const Container = styled(View)`
   z-index: 99;
 `;
 
-const Row = styled(View)`
+const RowEnd = styled(View)`
   flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
 `;
 
 const SignUpButton = styled(Button)`
