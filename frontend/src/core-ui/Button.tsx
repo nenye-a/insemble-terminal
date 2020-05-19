@@ -4,10 +4,15 @@ import styled, { css } from 'styled-components';
 import {
   THEME_COLOR,
   WHITE,
-  DEFAULT_TEXT_COLOR,
+  DARK_TEXT_COLOR,
   MUTED_TEXT_COLOR,
+  BORDER_COLOR,
 } from '../constants/colors';
-import { DEFAULT_BORDER_RADIUS } from '../constants/theme';
+import {
+  DEFAULT_BORDER_RADIUS,
+  FONT_WEIGHT_MEDIUM,
+  FONT_SIZE_SMALL,
+} from '../constants/theme';
 
 import TouchableOpacity from './TouchableOpacity';
 import Text from './Text';
@@ -57,7 +62,13 @@ export default function Button(props: Props) {
       ) : (
         <>
           {icon}
-          <Text as="span" color="white" {...textProps}>
+          <Text
+            as="span"
+            color="white"
+            fontWeight={FONT_WEIGHT_MEDIUM}
+            fontSize={FONT_SIZE_SMALL}
+            {...textProps}
+          >
             {text}
           </Text>
         </>
@@ -75,7 +86,7 @@ const Container = styled(TouchableOpacity)<Props>`
   border-radius: ${(props) =>
     props.shape === 'round' ? '14px' : DEFAULT_BORDER_RADIUS};
   height: ${(props) =>
-    props.size === 'default' && props.shape === 'block' ? '36px' : '28px'}
+    props.size === 'default' && props.shape === 'block' ? '36px' : '28px'};
   ${(props) =>
     props.mode === 'primary' &&
     css`
@@ -87,9 +98,9 @@ const Container = styled(TouchableOpacity)<Props>`
     props.mode === 'secondary' &&
     css`
       background-color: ${WHITE};
-      border: 0.8px solid ${THEME_COLOR};
+      border: 0.8px solid ${BORDER_COLOR};
       ${Text} {
-        color: ${DEFAULT_TEXT_COLOR};
+        color: ${DARK_TEXT_COLOR};
       }
     `}
   ${(props) =>
@@ -122,5 +133,4 @@ const Container = styled(TouchableOpacity)<Props>`
   &:active {
     opacity: 0.5;
   }
-
 `;
