@@ -15,6 +15,24 @@ def get_many_opentable_details(restaurant_list, projection=None):
     table_scraper = OpenTableDetails('table scraper')
     return table_scraper.many_opentable_details(restaurant_list, projection)
 
+def check_opentable_in_DB(restaurant):
+    # if restaurant fuzzy matches to opentable result
+    # TODO: replace this
+    restaurant_fuzzy_matches_to_opentable = False
+    if not restaurant_fuzzy_matches_to_opentable:
+        return False
+
+    # get lat lng of address
+    lat, lng, = google.get_lat_lng(restaurant['address'])
+
+    # check if lat lng is within the distance indicated on opentable
+    # TODO: replace this
+    distance_lat_lng_within_opentable_range = False
+    if not distance_lat_lng_within_opentable_range:
+        return False
+
+    # return True if so, false otherwise
+    return True
 
 class OpenTableDetails(GenericScraper):
 
