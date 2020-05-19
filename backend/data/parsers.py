@@ -1,4 +1,3 @@
-from bs4 import BeautifulSoup
 import datetime as dt
 import ast
 import re
@@ -219,77 +218,91 @@ def opentable_parser(response):
     if response.status_code != 200:
         return None
 
-    soup = BeautifulSoup(response.content, "html.parser")
+    stew = response.text
 
+    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+<'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+<'
     try:
-        top_result = soup.find_all('li', class_="result content-section-list-row cf with-times")[0]
-    except Exception:
-        print("Could not find restaurant on opentable")
-        return None
-
-    try:
-        name = top_result.find('div', class_="rest-row-header-container").find("span", class_="rest-row-name-text").text
+        name = re.search(NAME_RX, re.findall(NAME_LOCATOR_RX, stew)[0]).group()[1:-1]
     except Exception:
         name = None
 
+    LINK_LOCATOR_RX = r'class="rest-row-header">\s+<a\s+href="[\'"]?([^\'" >]+)"'
     try:
-        link = top_result.find('div', class_="rest-row-header-container").find("a").attrs['href']
+        link = re.findall(LINK_LOCATOR_RX, stew)[0]
     except Exception:
         link = None
 
+    RATING_LOCATOR_RX = r'class="star-rating-score"\s+aria-label=[\w\s\.\"]+'
+    RATING_NARROW_RX = r'aria-label=[\w\s\.\"]+'
+    RATING_RX = r'"[\w\s\.]+"'
     try:
         # TODO: check that ratings are always out of 5 stars
-        rating = top_result.find('div', class_="star-rating-score").attrs['aria-label']
+        rating = re.search(RATING_RX, re.search(RATING_NARROW_RX, re.findall(RATING_LOCATOR_RX, stew)[0]).group()).group()[1:-1]
+        rating = utils.get_one_float_from_str(rating)
     except Exception:
         rating = None
 
+    REVLINK_LOCATOR_RX = r'class="review-link"\s+href="[\'"]?([^\'" >]+)"'
     try:
-        review_link = top_result.find('a', class_="review-link").attrs['href']
+        review_link = re.findall(REVLINK_LOCATOR_RX, stew)[0]
     except Exception:
         review_link = None
 
+    NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
+    NUM_REVIEWS_RX = r'\(\d+\)'
     try:
-        num_reviews = top_result.find('a', class_="review-link").find('span', class_="underline-hover").text
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1])
     except Exception:
         num_reviews = None
 
+    PRICE_LOCATOR_RX = r'class="pricing--the-price">[\$\s]+'
+    PRICE_RX = r'>[\$\s]+'
     try:
-        price_tier = top_result.find('i', class_="pricing--the-price").text.replace(" ", "")
+        price_tier = re.search(PRICE_RX, re.findall(PRICE_LOCATOR_RX, stew)[0]).group()[1:].replace(" ", "")
     except Exception:
         price_tier = None
 
+    CATEGORY_LOCATOR_RX = r'class="rest-row-meta--cuisine rest-row-meta-text sfx1388addContent">[\w\s\,\-\&\'\.]+'
+    CATEGORY_RX = r'>[\w\s\,\-\&\'\.]+'
     try:
-        category = top_result.find('span', class_="rest-row-meta--cuisine rest-row-meta-text sfx1388addContent").text
+        category = re.search(CATEGORY_RX, re.findall(CATEGORY_LOCATOR_RX, stew)[0]).group()[1:]
     except Exception:
         category = None
 
+    LOCATION_LOCATOR_RX = r'class="rest-row-meta--location rest-row-meta-text sfx1388addContent">[\w\s\,\-\&\'\.\/]+'
+    LOCATION_RX = r'>[\w\s\,\-\&\'\.\/]+'
     try:
-        neighborhood = top_result.find_all('span', class_="rest-row-meta--location rest-row-meta-text sfx1388addContent")[0].text
+        neighborhood = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[0]).group()[1:]
     except Exception:
         neighborhood = None
 
     try:
-        dist_from_query = top_result.find_all('span', class_="rest-row-meta--location rest-row-meta-text sfx1388addContent")[1].text
+        dist_from_query = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[1]).group()[1:]
     except Exception:
         dist_from_query = None
 
+    BOOKINGS_LOCATOR_RX = r'<div class="booking"><span class="tadpole"><\/span>[\w\s\!]+<'
+    BOOKINGS_RX = r'>[\w\s\!]+<'
     try:
         # TODO: check that the results are of the format 'Booked x times today'
-        bookings = top_result.find('div', class_="booking").text
+        bookings = utils.get_one_int_from_str(re.search(BOOKINGS_RX,
+                                                        re.findall(BOOKINGS_LOCATOR_RX, stew)[0]).group()[1:-1])
     except Exception:
         bookings = None
 
     store = {
+        "url": response.url,
         "name": name,
         "link": link,
-        "rating": utils.get_one_float_from_str(rating),
+        "rating": rating,
         "review_link": review_link,
-        "num_reviews": utils.get_one_int_from_str(num_reviews),
+        "num_reviews": num_reviews,
         "price_tier": price_tier,
         "category": category,
         "neighborhood": neighborhood,
         "dist_from_query": dist_from_query,
-        "bookings": utils.get_one_int_from_str(bookings),
+        "bookings": bookings,
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
