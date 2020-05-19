@@ -5,10 +5,11 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(THIS_DIR)
 
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 import json
 import random
 import scrape_utils
-
 
 from functools import partial
 from billiard import exceptions as poolexceptions
@@ -31,6 +32,18 @@ class GenericScraper(object):
         self.logger = scrape_utils.get_logger(name)
         self.user_agents = scrape_utils.USER_AGENT_LIST
         self.fail_token = None
+        self.session = requests.Session()
+        self.set_retries()
+
+    def set_retries(self, max_retries=3, backoff_factor=0.1):
+        retry_strategy = Retry(
+            total=max_retries,
+            backoff_factor=backoff_factor,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        adapter = HTTPAdapter(max_retries=retry_strategy)
+        self.session.mount("https://", adapter)
+        self.session.mount("http://", adapter)
 
     def get_header(self, header=None):
         my_header = {
@@ -108,7 +121,7 @@ class GenericScraper(object):
                 proxy = scrape_utils.get_proxy(https=https, us_only=us_only, fail_token=self.fail_token)
                 self.logger.info('Requesting with the following proxy - {}'.format(proxy))
 
-            response = requests.get(
+            response = self.session.get(
                 url,
                 headers=self.get_header(headers),
                 proxies=proxies if proxies else proxy,
