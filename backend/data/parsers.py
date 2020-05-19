@@ -10,115 +10,160 @@ REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 
 def google_detail_parser(response):
     """
-    Parses http request response from google web search of restaurant or store.
+        Parses http request response from google web search of restaurant or store.
 
-    return: {
-        name: "Spitz - Little Tokyo"
-        num_stars: 4.4
-        num_reviews: 662
-        price: "$$"
-        type: "Restaurant"
-        description: "Low-key joint serves doner kebabs, fries & Turkish street
-                        eats, plus full bar at this chain outpost."
-        operations: {'dine_in': "No dine_in", 'takeout': "Takeout", 'delivery': "No delivery"}
-        address: "371 E 2nd St, Los Angeles, CA 90012"
-        current_hours: Closes 9PM (hours that it closes on the day that it was pulled)
-        menu_link: "spitzrestaurant.com"
-        phone: "(213) 613-0101"
-        online_ordering_platforms: ["spitzrestaurant.com", "trycaviar.com",
-                                    "doordash.com", "postmates.com"]
-        events: None (not implemented)
-        other_platform_ratings: None (not implemented)
-        top_review_comments: ["Good fries and nice ambiance for drinks and food after long day at work",
-                                "Good rotating selection of draught beers, greekish type flavors in the menu."]
-        self_description: "Spitz = Healthy & flavorful wraps, döners, salads and our famous fries..."
-        time_of_scrape: '04-17-2020_20:39:36'
-    }
+        return: {
+            name: "Spitz - Little Tokyo"
+            num_stars: 4.4
+            num_reviews: 662
+            price: "$$"
+            type: "Restaurant"
+            description: "Low-key joint serves doner kebabs, fries & Turkish street
+                            eats, plus full bar at this chain outpost."
+            operations: {'dine_in': "No dine_in", 'takeout': "Takeout", 'delivery': "No delivery"}
+            address: "371 E 2nd St, Los Angeles, CA 90012"
+            hours:
+            menu_link: "spitzrestaurant.com"
+            phone: "(213) 613-0101"
+            online_ordering_platforms: ["spitzrestaurant.com", "trycaviar.com",
+                                        "doordash.com", "postmates.com"]
+            events: None (not implemented)
+            other_platform_ratings: None (not implemented)
+            top_review_comments: ["Good fries and nice ambiance for drinks and food after long day at work",
+                                    "Good rotating selection of draught beers, greekish type flavors in the menu."]
+            self_description: "Spitz = Healthy & flavorful wraps, döners, salads and our famous fries..."
+            time_of_scrape: '04-17-2020_20:39:36'
+        }
 
-    """
+        """
 
-    soup = BeautifulSoup(response.content, "html.parser")
+    stew = response.text
+
+    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=]+<\/span>'
+    NAME_NARROW_RX = r'<span>[\w\-\s\"\=]+<\/span>'
+    NAME_RX = r'>[\w\-\s\"\=]+<'
 
     try:
-        name = soup.find('div', class_="SPZz6b").find_all("span")[0].text
+        name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
     except Exception:
         name = None
 
+    RATING_LOCATOR_RX = r'class="Aq14fc"[\w\-\s\"\=]+>\d+\.\d+<\/span>'
+    RATING_RX = r'\d+\.\d+'
     try:
-        rating = float(soup.find("div", class_="Ob2kfd").text.split()[0])
+        rating = float(re.search(RATING_RX, re.search(RATING_LOCATOR_RX, stew).group()).group())
     except Exception:
         rating = None
 
+    NUM_REVIEWS_LOCATOR_RX = r'<span>[\d\,\s]+Google reviews<\/span>'
+    NUM_REVIEWS_RX = r'[\d\,]+'
     try:
-        num_reviews = int(soup.find("div", class_="Ob2kfd").find("a").text.split()[0])
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(NUM_REVIEWS_LOCATOR_RX, stew).group()).group())
     except Exception:
         num_reviews = None
 
+    PRICE_LOCATOR_RX = r'class="YhemCb"[\w\s\,\-\=\"]+>\$+'
+    PRICE_RX = r'\$+'
     try:
-        price = soup.find("span", class_="YhemCb").text
+        price = re.search(PRICE_RX, re.search(PRICE_LOCATOR_RX, stew).group()).group()
     except BaseException:
         price = None
 
+    TYPE_LOCATOR_RX = r'class="YhemCb">[\w\s\,\-]+<\/span>'
+    TYPE_NARROW_RX = r'>[\w\s\,\-]+<'
+    TYPE_RX = r'[\w\s\,\-]+'
     try:
-        type = soup.find_all("span", class_="YhemCb")[1].text
+        type = re.search(TYPE_RX, re.search(TYPE_NARROW_RX, re.search(TYPE_LOCATOR_RX, stew).group()).group()).group()
     except Exception:
         type = None
 
+    # using two ways to parse description based on html response
+    DESCRIPTION_LOCATOR_RX1 = r'class="Yy0acb">[\w\s\,\-\&\;\'\.]+<\/span>'
+    DESCRIPTION_NARROW_RX1 = r'>[\w\s\,\-\&\;\'\.]+<'
+    DESCRIPTION_RX1 = r'[\w\s\,\-\&\;\'\.]+'
+    DESCRIPTION_LOCATOR_RX2 = r'class="ggV7z"[\w\-\s\"\=]+><span>[\w\s\,\-\&\;\'\.]+<\/span>'
+    DESCRIPTION_NARROW_RX2 = r'<span>[\w\s\,\-\&\;\'\.]+<\/span>'
+    DESCRIPTION_RX2 = r'>[\w\s\,\-\&\;\'\.]+<'
     try:
-        description = soup.find("span", class_="ggV7z").text
+        description = re.search(DESCRIPTION_RX1, re.search(DESCRIPTION_NARROW_RX1,
+                                                          re.search(DESCRIPTION_LOCATOR_RX1,
+                                                                    stew).group()).group()).group().replace("&amp;","&")
     except Exception:
-        description = None
+        try:
+            description = re.search(DESCRIPTION_RX2, re.search(DESCRIPTION_NARROW_RX2,
+                                                               re.search(DESCRIPTION_LOCATOR_RX2,
+                                                                         stew).group()).group()).group()[1:-1].replace("&amp;","&")
+        except Exception:
+            description = None
+
+    OPERATIONS_LOCATOR_RX = r'class="asD7Oe" aria-label="[\w\-\s\=]+"'
+    OPERATIONS_NARROW_RX = r'aria-label="[\w\-\s\=]+"'
+    OPERATIONS_RX = r'"[\w\-\s\=]+"'
 
     try:
-        operations_options = soup.find_all("li", class_="asD7Oe")
-        operations = {"dine_in": operations_options[0].attrs["aria-label"],
-                      "takeout": operations_options[1].attrs["aria-label"],
-                      "delivery": operations_options[2].attrs["aria-label"]}
+        operations_options = [re.search(OPERATIONS_RX, re.search(OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
+                              for located_rx in re.findall(OPERATIONS_LOCATOR_RX, stew)]
+        operations = {"dine_in": operations_options[0],
+                      "takeout": operations_options[1],
+                      "delivery": operations_options[2]}
     except Exception:
         operations = None
 
+    ADDRESS_LOCATOR_RX = r'class="LrzXr">[\w\s\,\-\&\;\'\.]+<\/span>'
+    ADDRESS_RX = r'>[\w\s\,\-\&\;\'\.]+<'
     try:
-        address = soup.find("span", class_="LrzXr").text
+        address = re.search(ADDRESS_RX, re.search(ADDRESS_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
         address = None
 
+    HOURS_LOCATOR_RX = r'<td class="SKNSIb">[\w\']+<\/td><td>[\w\–]+<\/td>'
+    HOURS_NARROWER_RX = r'>[\w\–\']+<'
     try:
-        current_hours = soup.find("span", class_="TLou0b").text
+        bracket_schedule = [tuple(re.findall(HOURS_NARROWER_RX, day_schedule)) for day_schedule in re.findall(HOURS_LOCATOR_RX, stew)]
+        hours = {day[1:-1]: opentime[1:-1] for (day, opentime) in bracket_schedule}
     except Exception:
-        current_hours = None
+        hours = None
 
+    MENU_LOCATOR_RX = r'class="jSC49b">Menu:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    MENU_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    MENU_RX = r'"[\'"]?([^\'" >]+)"'
     try:
-        menu_link = soup.find_all("div", class_="zloOqf")[4].find("a", class_="fl").attrs["href"]
+        menu_link = re.search(MENU_RX, re.search(MENU_NARROW_RX, re.search(MENU_LOCATOR_RX, stew).group()).group()).group()[1:-1]
     except Exception:
         menu_link = None
 
+    PHONE_LOCATOR_RX = r'class="zgWrF">[\d\(\)\s\-\,]+<\/span>'
+    PHONE_RX = r'>[\d\(\)\s\-\,]+<'
     try:
-        phone = soup.find("span", class_="zgWrF").text
+        phone = re.search(PHONE_RX, re.search(PHONE_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
         phone = None
 
+    ORDERING_LOCATOR_RX = r'class="jSC49b">Order:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    ORDERING_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    ORDERING_RX = r'"[\'"]?([^\'" >]+)"'
     try:
-        online_ordering_platforms = [item.text for item in soup.find_all("div", class_="zloOqf")[5].find_all("a")]
+        online_ordering_platforms = re.search(ORDERING_RX, re.search(ORDERING_NARROW_RX,
+                                                                     re.search(ORDERING_LOCATOR_RX,
+                                                                               stew).group()).group()).group()[1:-1]
     except Exception:
         online_ordering_platforms = None
 
+    SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
+    SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
+    SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
     try:
-        top_review_comments = [item.text for item in
-                               soup.find_all("div", class_="RQ0Hvc a1VOGd")]
-    except Exception:
-        top_review_comments = None
-
-    try:
-        self_description = soup.find("div", class_="BAyyse").text
+        self_description = re.search(SELF_DESC_RX, re.search(SELF_DESC_NARROW_RX,
+                                                             re.search(SELF_DESC_LOCATOR_RX,
+                                                                       stew).group()).group()).group()[1:-1]
     except Exception:
         self_description = None
 
     try:
-        html_text = response.text
         # find the 18 or 24 hour activity distribution,depending on which is present
-        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, html_text)]
+        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, stew)]
         if len(data) == 0:
-            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, html_text)]
+            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, stew)]
         activity = data
     except Exception:
         activity = None
@@ -134,19 +179,18 @@ def google_detail_parser(response):
         "activity": activity,
         "operations": operations,
         "address": address,
-        "current_hours": current_hours,
+        "hours": hours,
         "menu_link": menu_link,
         "phone": phone,
-        "online_ordering_platforms": online_ordering_platforms,
+        "online_ordering_platforms": online_ordering_platforms, # TODO: edit so it gets more than one
         "events": None,
         "other_platform_ratings": None,
-        "top_review_comments": top_review_comments,  # TODO: only returns 2 comments
+        "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
         "self_description": self_description,
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
     return store
-
 
 def opentable_parser(response):
     """
