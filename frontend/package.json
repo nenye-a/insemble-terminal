@@ -11,7 +11,7 @@
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
     "jest": "jest --coverage --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
-    "schema:generate": "cd ../backend-node && yarn generate && cd ../frontend",
+    "schema:generate": "cd ../backend-node && yarn generate:schema && cd ../frontend",
     "apollo:generate": "yarn schema:generate && apollo codegen:generate --excludes=node_modules/* --includes=src/**/*.ts --localSchemaFile=../backend-node/src/generated/schema.graphql  --target typescript --tagName gql --outputFlat src/generated"
   },
   "dependencies": {
