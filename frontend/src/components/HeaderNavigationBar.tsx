@@ -14,7 +14,7 @@ import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 
 export default function HeaderNavigationBar() {
-  let loggedIn = true; // TODO: change when connecting to BE
+  let loggedIn = false; // TODO: change when connecting to BE
   return (
     <Container>
       <TouchableOpacity onPress={() => {}}>
@@ -28,7 +28,7 @@ export default function HeaderNavigationBar() {
             text="Terminals"
             textProps={{ style: { color: DARK_TEXT_COLOR } }}
           />
-          <ProfileMenuDropdown name="Nia" email="nia@kodefox.com" />
+          <ProfileMenuDropdown name="Name" email="example@email.com" />
         </Row>
       ) : (
         <Row>

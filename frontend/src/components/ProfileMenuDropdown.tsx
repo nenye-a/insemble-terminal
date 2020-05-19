@@ -17,7 +17,6 @@ import {
 import arrowIcon from '../assets/images/arrow-down.svg';
 
 type Props = {
-  placeholder: string;
   name: string;
   email: string;
 };
@@ -41,9 +40,9 @@ const MENUS = [
   },
 ];
 export default function ProfileMenuDropdown(props: Props) {
-  let { placeholder, name, email } = props;
+  let { name, email } = props;
   let [menuOpen, setMenuOpen] = useState(false);
-  console.log(menuOpen, '<<<');
+
   return (
     <ClickAway
       onClickAway={() => {
@@ -56,7 +55,7 @@ export default function ProfileMenuDropdown(props: Props) {
           setMenuOpen(!menuOpen);
         }}
       >
-        <Placeholder>{placeholder}</Placeholder>
+        <Placeholder>{name}</Placeholder>
         <ArrowIcon src={arrowIcon} alt="arrow-icon" isOpen={menuOpen} />
       </TouchableContainer>
       {menuOpen && (
