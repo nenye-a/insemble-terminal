@@ -6,7 +6,7 @@ import {
   WHITE,
   DARK_TEXT_COLOR,
   MUTED_TEXT_COLOR,
-  BORDER_COLOR,
+  BUTTON_BORDER_COLOR,
 } from '../constants/colors';
 import {
   DEFAULT_BORDER_RADIUS,
@@ -98,7 +98,7 @@ const Container = styled(TouchableOpacity)<Props>`
     props.mode === 'secondary' &&
     css`
       background-color: ${WHITE};
-      border: 0.8px solid ${BORDER_COLOR};
+      border: 0.8px solid ${BUTTON_BORDER_COLOR};
       ${Text} {
         color: ${DARK_TEXT_COLOR};
       }
