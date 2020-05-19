@@ -20,7 +20,7 @@ export const THEME_COLOR = PURPLE;
 export const DEFAULT_TEXT_COLOR = DARKER_GRAY;
 export const RED_TEXT = RED;
 export const MUTED_TEXT_COLOR = LIGHT_GRAY;
-export const DARK_TEXT_COLOR = DARKER_GRAY;
+export const DARK_TEXT_COLOR = DARK_GRAY;
 
 // DataTable colors
 export const TABLE_BORDER_COLOR = DARK_GRAY;
@@ -39,3 +39,5 @@ export const HIGHLIGHTED_DROPDOWN = LIGHT_PURPLE;
 // TextInput colors
 export const TEXT_INPUT_BORDER_COLOR = SLIGHT_GRAY;
 export const DISABLED_TEXT_INPUT_BACKGROUND = LIGHTER_GRAY;
+
+export const BUTTON_BORDER_COLOR = LIGHT_GRAY;
