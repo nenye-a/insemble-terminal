@@ -107,6 +107,10 @@ jobs:
           paths:
             - backend-node/node_modules
           key: v1-dependencies-{{ checksum "backend-node/yarn.lock" }}
+      - run:
+          command: cd frontend
+      - run:
+          command: yarn test
 
 workflows:
   version: 2
