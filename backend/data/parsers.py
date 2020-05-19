@@ -220,8 +220,8 @@ def opentable_parser(response):
 
     stew = response.text
 
-    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+<'
-    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+<'
+    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
     try:
         name = re.search(NAME_RX, re.findall(NAME_LOCATOR_RX, stew)[0]).group()[1:-1]
     except Exception:
@@ -307,3 +307,124 @@ def opentable_parser(response):
     }
 
     return store
+
+def opentable_parser_all(response):
+    """
+    Parse open table result, formally known as
+    (formally known as parse_opentable_result)
+
+    Parameter:
+        response: Response, an http get request response
+                        for a opentable search of an establishment
+    Return
+        store = {
+            "name": str name,
+            "link": str link,
+            "rating": float rating,
+            "review_link": str review_link,
+            "num_reviews": int num_reviews,
+            "price_tier": str price_tier,
+            "category": str category,
+            "neighborhood": str neighborhood,
+            "dist_from_query": str dist_from_query,
+            "bookings": int bookings,
+            "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        }
+
+    """
+    if response.status_code != 200:
+        return None
+
+    stew = response.text
+
+    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+
+    num_results = len(re.findall(NAME_LOCATOR_RX, stew))
+    stores = []
+    for i in range(num_results):
+        try:
+            name = re.search(NAME_RX, re.findall(NAME_LOCATOR_RX, stew)[i]).group()[1:-1]
+        except Exception:
+            name = None
+
+        LINK_LOCATOR_RX = r'class="rest-row-header">\s+<a\s+href="[\'"]?([^\'" >]+)"'
+        try:
+            link = re.findall(LINK_LOCATOR_RX, stew)[i]
+        except Exception:
+            link = None
+
+        RATING_LOCATOR_RX = r'class="star-rating-score"\s+aria-label=[\w\s\.\"]+'
+        RATING_NARROW_RX = r'aria-label=[\w\s\.\"]+'
+        RATING_RX = r'"[\w\s\.]+"'
+        try:
+            # TODO: check that ratings are always out of 5 stars
+            rating = re.search(RATING_RX, re.search(RATING_NARROW_RX, re.findall(RATING_LOCATOR_RX, stew)[i]).group()).group()[1:-1]
+            rating = utils.get_one_float_from_str(rating)
+        except Exception:
+            rating = None
+
+        REVLINK_LOCATOR_RX = r'class="review-link"\s+href="[\'"]?([^\'" >]+)"'
+        try:
+            review_link = re.findall(REVLINK_LOCATOR_RX, stew)[i]
+        except Exception:
+            review_link = None
+
+        NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
+        NUM_REVIEWS_RX = r'\(\d+\)'
+        try:
+            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1])
+        except Exception:
+            num_reviews = None
+
+        PRICE_LOCATOR_RX = r'class="pricing--the-price">[\$\s]+'
+        PRICE_RX = r'>[\$\s]+'
+        try:
+            price_tier = re.search(PRICE_RX, re.findall(PRICE_LOCATOR_RX, stew)[i]).group()[1:].replace(" ", "")
+        except Exception:
+            price_tier = None
+
+        CATEGORY_LOCATOR_RX = r'class="rest-row-meta--cuisine rest-row-meta-text sfx1388addContent">[\w\s\,\-\&\'\.]+'
+        CATEGORY_RX = r'>[\w\s\,\-\&\'\.]+'
+        try:
+            category = re.search(CATEGORY_RX, re.findall(CATEGORY_LOCATOR_RX, stew)[i]).group()[1:]
+        except Exception:
+            category = None
+
+        LOCATION_LOCATOR_RX = r'class="rest-row-meta--location rest-row-meta-text sfx1388addContent">[\w\s\,\-\&\'\.\/]+'
+        LOCATION_RX = r'>[\w\s\,\-\&\'\.\/]+'
+        try:
+            neighborhood = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2*i]).group()[1:]
+        except Exception:
+            neighborhood = None
+
+        try:
+            dist_from_query = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2*i+1]).group()[1:]
+        except Exception:
+            dist_from_query = None
+
+        BOOKINGS_LOCATOR_RX = r'<div class="booking"><span class="tadpole"><\/span>[\w\s\!]+<'
+        BOOKINGS_RX = r'>[\w\s\!]+<'
+        try:
+            # TODO: check that the results are of the format 'Booked x times today'
+            bookings = utils.get_one_int_from_str(re.search(BOOKINGS_RX,
+                                                            re.findall(BOOKINGS_LOCATOR_RX, stew)[i]).group()[1:-1])
+        except Exception:
+            bookings = None
+
+        stores.append({
+            "url": response.url,
+            "name": name,
+            "link": link,
+            "rating": rating,
+            "review_link": review_link,
+            "num_reviews": num_reviews,
+            "price_tier": price_tier,
+            "category": category,
+            "neighborhood": neighborhood,
+            "dist_from_query": dist_from_query,
+            "bookings": bookings,
+            "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        })
+
+    return stores
