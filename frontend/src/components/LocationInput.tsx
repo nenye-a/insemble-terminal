@@ -46,7 +46,6 @@ export default function LocationInput(props: Props) {
   } = props;
   let [place, setPlace] = useState<PlaceResult | null>(null);
   let inputRef = useRef<HTMLInputElement | null>(null);
-  // let selectedPlace = useRef<PlaceResult | null>(null);
   let options = {
     // TODO: restrict to only city and address
     componentRestrictions: { country: 'us' },
