@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(THIS_DIR)
 
@@ -54,7 +55,7 @@ class GenericScraper(object):
                 proxies=None, res_parser=None, meta=None, meta_function=None):
         """
 
-        Performs a proxied GET request on the provided url, with the provided parameters. 
+        Performs a proxied GET request on the provided url, with the provided parameters.
 
         Parameters:
             url: string - the url to perform ghe GET request on
@@ -87,6 +88,8 @@ class GenericScraper(object):
 
         """
 
+        request_start = time.time()
+
         if isinstance(url, dict):
             url, meta = self._extract_meta(url)
 
@@ -97,11 +100,11 @@ class GenericScraper(object):
         try:
             # Find random proxy for HTML request.
             if quality_proxy:
-                print('Using Quality Proxy')
+                self.logger.info('Using Quality Proxy')
                 proxy = scrape_utils.get_proxy(paid=True, https=https, us_only=us_only, fail_token=self.fail_token)
                 self.logger.info('Requesting with the premium proxy API - {}'.format(proxy))
             else:
-                print('Using Generic Proxy')
+                self.logger.info('Using Generic Proxy')
                 proxy = scrape_utils.get_proxy(https=https, us_only=us_only, fail_token=self.fail_token)
                 self.logger.info('Requesting with the following proxy - {}'.format(proxy))
 
@@ -113,10 +116,16 @@ class GenericScraper(object):
                 verify=CRAWLERA_CERT if https and quality_proxy else None
             )
 
+            request_finish = time.time()
             result = res_parser(response) if res_parser else self.response_parse(response)
-            scrape_utils.trash_proxy(proxy, self.fail_token) if not result else None
+            # scrape_utils.trash_proxy(proxy, self.fail_token) if not result else None
             if meta and result:
                 result = meta_function(result, meta) if meta_function else self.use_meta(result, meta)
+
+            parse_finish = time.time()
+            self.logger.info("Request finished in {} seconds.".format(round(request_finish - request_start, 2)))
+            self.logger.info("Parsing finished in {} seconds.".format(round(parse_finish - request_finish, 2)))
+            self.logger.info("Total Request Time: {} seconds.".format(round(parse_finish - request_start, 2)))
 
             return result if not meta else {
                 'data': result,
@@ -188,6 +197,8 @@ class GenericScraper(object):
 
         """
 
+        request_start = time.time()
+
         num_queries = len(queries)
         worker_crash = False
 
@@ -247,9 +258,12 @@ class GenericScraper(object):
                                   'and restarting request.')
                 worker_crash = True
         finally:
+            request_finish = time.time()
             try:
                 pool.close()
-                pool.join()
+                pool.terminate()
+                pool_terminated_time = time.time()
+                self.logger.info("Pool terminated in {} seconds.".format(round(pool_terminated_time - request_finish, 2)))
             except BaseException:
                 self.logger.error('Exiting, too many files.')
                 raise
@@ -257,4 +271,6 @@ class GenericScraper(object):
                 if worker_crash:
                     return self.async_request(queries, pool_limit)
 
+        self.logger.info("Actual Request Time: {}".format(round(request_finish - request_start, 2)))
+        self.logger.info("Total Request Time: {}".format(round(pool_terminated_time - request_start, 2)))
         return results

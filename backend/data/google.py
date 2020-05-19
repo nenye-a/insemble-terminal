@@ -1,6 +1,7 @@
 
 import re
 import ast
+import time
 import utils
 import matplotlib.pyplot as plt
 from decouple import config
@@ -141,16 +142,20 @@ class GeoCode(GenericScraper):
     def get_lat_lng(self, query, include_sizevar=False):
 
         url = self.build_request(query)
-        lat, lng, goog_size_var = self.request(
-            url,
-            headers=HEADERS,
-            quality_proxy=True,
-            timeout=5
-        )
-        if include_sizevar:
-            return lat, lng, goog_size_var
-        else:
-            return lat, lng
+        try:
+            lat, lng, goog_size_var = self.request(
+                url,
+                headers=HEADERS,
+                quality_proxy=True,
+                timeout=5
+            )
+            if include_sizevar:
+                return lat, lng, goog_size_var
+            else:
+                return lat, lng
+        except Exception as e:
+            print("Error has occured in GeoCode: {} - request_url: {}".format(e, url))
+            return None
 
     def get_many_lat_lng(self, query_list, inclde_sizevar=False):
         queries = [{
@@ -160,7 +165,8 @@ class GeoCode(GenericScraper):
 
         result = self.async_request(
             queries,
-            quality_proxy=True
+            quality_proxy=True,
+            timeout=5
         )
 
         if not inclde_sizevar:
@@ -217,11 +223,11 @@ class GoogleDetails(GenericScraper):
             current_hours: string, ex. Closes 9PM (hours that it closes on the day that it was pulled)
             menu_link: string, ex. "spitzrestaurant.com"
             phone: string, ex. "(213) 613-0101"
-            online_ordering_platforms: list[string] - ex. ["spitzrestaurant.com", "trycaviar.com", 
+            online_ordering_platforms: list[string] - ex. ["spitzrestaurant.com", "trycaviar.com",
                                                          "doordash.com", "postmates.com"]
-            top_review_comments: list[string] - ex. ["Good fries and nice ambiance for drinks 
+            top_review_comments: list[string] - ex. ["Good fries and nice ambiance for drinks
                                                      and food after long day at work",
-                                                    "Good rotating selection of draught beers, 
+                                                    "Good rotating selection of draught beers,
                                                      greekish type flavors in the menu."]
             self_description: string - ex. "Spitz = Healthy & flavorful wraps, döners, salads and our famous fries..."
             time_of_scrape: string - ex. '04-17-2020_20:39:36'
@@ -229,19 +235,26 @@ class GoogleDetails(GenericScraper):
         """
 
         url = self.build_request(name, address)
-        data = self.request(
-            url,
-            quality_proxy=True,
-            timeout=5,
-            meta={
-                'name': name
-            }
-        )['data']
-        projection_list = projection.strip().split(',') if projection else None
-        if projection_list and data:
-            data = {key: data[key] for key in projection_list}
+        try:
+            data = self.request(
+                url,
+                quality_proxy=True,
+                timeout=5,
+                meta={
+                    'name': name
+                }
+            )
+            if not data:
+                return None
+            data = data['data']
+            projection_list = projection.strip().split(',') if projection else None
+            if projection_list and data:
+                data = {key: data[key] for key in projection_list}
 
-        return data
+            return data
+        except Exception as e:
+            print("Error has occured in GoogleDetails: {} - request_url: {}".format(e, url))
+            return None
 
     def many_google_details(self, places, projection=None):
         """
@@ -262,7 +275,8 @@ class GoogleDetails(GenericScraper):
 
         result = self.async_request(
             queries,
-            quality_proxy=True
+            quality_proxy=True,
+            timeout=5
         )
 
         projection_list = projection.strip().split(',') if projection else None
@@ -270,7 +284,6 @@ class GoogleDetails(GenericScraper):
             for data in result:
                 if data['data']:
                     data['data'] = {key: data['data'][key] for key in projection_list}
-
         return result
 
     @staticmethod
@@ -334,15 +347,24 @@ def get_viewport(lat, lng, goog_size_var):
 
 if __name__ == "__main__":
 
-    def get_google_activity_test():
-        name = "Atlanta Breakfast Club"
-        address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        data = get_activity(name, address)
-        print(data)
-        fig, sbts = plt.subplots(len(data))
-        for i in range(len(sbts)):
-            sbts[i].bar(range(len(data[i])), data[i])
-        plt.show()
+    TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'},
+                 {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'},
+                 {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'},
+                 {'name': 'Chapel Beauty', 'address': '2626 Rainbow Way, Decatur, GA 30034'},
+                 {'name': "Howard's Furniture Co INC", 'address': '3376 S Cobb Dr SE, Smyrna, GA 30080'},
+                 {'name': 'Book Nook', 'address': '3073 N Druid Hills Rd NE, Decatur, GA 30033'},
+                 {'name': 'Citi Trends', 'address': '3205 S Cobb Dr SE Ste A, Smyrna, GA 30080'},
+                 {'name': 'Star Cafe', 'address': '2053 Marietta Blvd NW, Atlanta, GA 30318'},
+                 {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'},
+                 {'name': 'Kroger', 'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'},
+                 {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'},
+                 {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'},
+                 {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'},
+                 {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'},
+                 {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'},
+                 {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'},
+                 {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'},
+                 {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
 
     def get_google_details_test():
         name = "Atlanta Breakfast Club"
@@ -355,7 +377,13 @@ if __name__ == "__main__":
         venue_type = 'restaurants'
         lat = 33.840617
         lng = -84.3715611
-        print(get_nearby(venue_type, lat, lng))
+        # print(get_nearby(venue_type, lat, lng))
+        start = time.time()
+        for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
+            get_nearby(venue_type, lat, lng)
+        finish = time.time()
+
+        print("Nearby seconds: {} seconds".format(finish - start))
 
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
@@ -363,8 +391,11 @@ if __name__ == "__main__":
         print(name, "size var option", get_lat_lng(name, True))
 
     def get_many_lat_lng_test():
-        my_list = ["Souvla Hayes Valley SF", "Souvla Hayes Valley SF", "Souvla Hayes Valley SF"]
-        print(get_many_lat_lng(my_list))
+        my_list = [item["name"] + " " + item["address"] for item in TEST_LIST]
+        goog_start = time.time()
+        details = get_many_lat_lng(my_list)
+        goog_time = time.time()
+        print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
 
     def get_viewport_test():
         name = "255 East Paces Ferry Rd NE, Atlanta, GA 30305, United States"
@@ -386,13 +417,15 @@ if __name__ == "__main__":
         print(query_region_random(region, terms, num_results))
 
     def get_many_google_details_test():
-        my_list = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'}, {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'}, {'name': 'Chapel Beauty', 'address': '2626 Rainbow Way, Decatur, GA 30034'}, {'name': "Howard's Furniture Co INC", 'address': '3376 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Book Nook', 'address': '3073 N Druid Hills Rd NE, Decatur, GA 30033'}, {'name': 'Citi Trends', 'address': '3205 S Cobb Dr SE Ste A, Smyrna, GA 30080'}, {'name': 'Star Cafe', 'address': '2053 Marietta Blvd NW, Atlanta, GA 30318'}, {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Kroger',
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'}, {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'}, {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'}, {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'}, {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'}, {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'}, {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'}, {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
-
-        print(get_many_google_details(my_list))
+        goog_start = time.time()
+        details = get_many_google_details(TEST_LIST + TEST_LIST)
+        goog_time = time.time()
+        print(details)
+        print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
 
     # get_google_activity_test()
     # get_many_lat_lng_test()
-    get_nearby_test()
+    # get_lat_lng_test()
+    # get_nearby_test()
     # get_google_details_test()
-    # get_many_google_details_test()
+    get_many_google_details_test()

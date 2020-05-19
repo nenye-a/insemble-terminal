@@ -72,10 +72,14 @@ class OpenTableDetails(GenericScraper):
         data = self.request(
             url,
             quality_proxy=True,
+            timeout=5,
             meta={
                 'name': name
             },
-        )['data']
+        )
+        if not data:
+            return None
+        data = data['data']
         projection_list = projection.strip().split(',') if projection else None
         if projection_list and data:
             data = {key: data[key] for key in projection_list}
