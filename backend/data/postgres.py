@@ -1,5 +1,6 @@
 from decouple import config
 import psycopg2
+import psycopg2.extras
 from cuid import cuid
 
 '''
@@ -19,9 +20,10 @@ REMOTE_URL = "postgres://" in DB_URL
 
 class PostConnect(object):
 
-    def __init__(self):
-        self.connection = self.get_connection()
-        self.tables = self.list_tables()
+    def __init__(self, connect=True):
+        self.connection = None
+        self.tables = None
+        connect and self.connect()
 
     @staticmethod
     def get_connection():
@@ -35,8 +37,8 @@ class PostConnect(object):
                 password=DB_PASS
             )
 
-    def get_cursor(self):
-        return self.connection.cursor()
+    def get_cursor(self, *args, **kwargs):
+        return self.connection.cursor(*args, **kwargs)
 
     def list_tables(self, print_out=False):
         with self.connection.cursor() as cursor:
@@ -47,8 +49,43 @@ class PostConnect(object):
             print(table_list)
         return table_list
 
-    def query(self, table, query):
-        pass
+    def find(self, table, query={}, projection='*'):
+        self._check_table(table)
+        columns = self._projection_string(projection)
+        with self.get_cursor(cursor_factory=psycopg2.extras.DictCursor) as cursor:
+            if query:
+                query_string, values = self._query_params(query)
+            else:
+                query_string = ""
+
+            command_string = 'SELECT {columns} FROM "{table}" {query_string}'.format(
+                columns=columns,
+                table=table,
+                query_string=query_string
+            )
+            command = cursor.mogrify(command_string, values) if query else command_string
+            cursor.execute(command)
+            return cursor.fetchall()
+
+    def find_one(self, table, query={}, projection='*'):
+        results = self.find(table, query, projection)
+        if len(results) > 0:
+            return results[0]
+
+    def _projection_string(self, projection):
+        string = ", ".join([word.strip() for word in projection.split(",")])
+        return string
+
+    def _query_params(self, query):
+        query_string = ""
+        values = []
+        for key, value in query.items():
+            # TODO: support key pathing
+            item_string = '"{}"=%s AND'.format(key)
+            values.append(value)
+            query_string += item_string
+        query_string = query_string.replace(' AND', '').strip()
+        return "WHERE {}".format(query_string), tuple(values)
 
     def insert(self, table, document):
         """
@@ -56,21 +93,33 @@ class PostConnect(object):
         of keys (table columns) to values (item values).
         Will return id of the item.
         """
-        if table not in self.tables:
-            raise Exception('Table {} not in database.'.format(table))
+        self._check_table(table)
+        command, values = self._insert_params(table, document)
+        with self.get_cursor() as cursor:
+            cursor.execute(command, values)
+        self.commit()
+        return document['id']
+
+    def _insert_params(self, table, document):
         document['id'] = cuid()
         keys, values = zip(*document.items())
         positioner = tuple(r"%s" for value in values)
-        query_string = 'INSERT INTO "{table}" {keys} VALUES{positioner}'.format(
+        command = 'INSERT INTO "{table}" {keys} VALUES{positioner}'.format(
             table=table,
             keys=self._convert_iter(keys),
             positioner=self._convert_iter(positioner)
         )
-        with self.get_cursor() as cursor:
-            cursor.execute(query_string, values)
-            self.commit()
+        return command, values
 
-        return document['id']
+    def insert_many(self, table, list_document):
+        with self.get_cursor() as cursor:
+            ids = []
+            for document in list_document:
+                command, values = self._insert_params(table, document)
+                cursor.execute(command, values)
+                ids.append(document['id'])
+        self.commit()
+        return ids
 
     def _convert_iter(self, iterable):
         string = ""
@@ -79,6 +128,14 @@ class PostConnect(object):
         string = string.strip(", ")
         return "({})".format(string)
 
+    def _check_table(self, table):
+        if table not in self.tables:
+            raise Exception('Table {} not in database.'.format(table))
+
+    def connect(self):
+        self.connection = self.get_connection()
+        self.tables = self.list_tables()
+
     def close(self):
         self.connection.close()
 
@@ -86,6 +143,12 @@ class PostConnect(object):
         self.connection.commit()
 
 
-h = PostConnect()
-h.list_tables(True)
-print(h.insert("BusinessTag", {"params": "Hello", "type": "Business"}))
+# h = PostConnect()
+# h.list_tables(True)
+# print(h.insert("BusinessTag", {"params": "Hello", "type": "Business"}))
+# print(h.insert_many("BusinessTag", [{"params": "Hello", "type": "Business"}, {
+#       "params": "Hello", "type": "Business"}, {"params": "Hello", "type": "Business"}]))
+# j = h.find("BusinessTag")
+# print(j)
+# print(h.find_one("BusinessTag"))
+# print(j[0]['id'])
