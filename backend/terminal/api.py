@@ -63,16 +63,6 @@ class PerformanceAPI(BasicAPI):
                 id: prismaID
                 createdAt: Date,
                 updatedAt: Date,
-                serachTag: {
-                    location: {
-                        locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
-                        params: string
-                    }
-                    business: {
-                        businessType: 'BUSINESS' | 'CATEGORY'
-                        params: string
-                    }
-                }
                 dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
                 data: [
                     {
@@ -96,6 +86,25 @@ class PerformanceAPI(BasicAPI):
         business = params['business']
         data_type = params['dataType']
 
-        # Determine which case we are in right now.
+        data = None
+        if business['businessType'] == 'BUSINESS':
+            # Details for the business.
+            if location['locationType'] == 'ADDRESS':
+                data = performance.performance(business['params'], location['params'])
+                if data_type == 'ADDRESS':
+                    data['name'] = data.pop('address')
+                elif data_type == 'OVERALL':
+                    data.pop('address')
+                else:
+                    error = "{data_type} not supported for request ADDRESS + BUSINESS requests.".format(
+                        data_type=data_type
+                    )
+                    return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        elif business['businessType'] == 'CATEGORY':
+            return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        else:
+            return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(params, status=status.HTTP_200_OK)
+        return Response(data, status=status.HTTP_200_OK)

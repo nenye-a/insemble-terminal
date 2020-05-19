@@ -14,10 +14,6 @@ Performance related queries.
 '''
 
 
-def get_performance(business, location):
-    pass
-
-
 def performance(name, address):
     """
 
@@ -32,8 +28,8 @@ def performance(name, address):
         name: string,
         address: string,
         salesVolumeIndex?: number,
-        rating?: number,
-        numReviews?: number,
+        avgRating?: number,
+        avgReviews?: number,
         numLocations?: number,
     }
 
@@ -45,9 +41,10 @@ def performance(name, address):
 
         return {
             'name': place_details['name'],
+            'address': place_details['address'],
             'salesVolumeIndex': sales_index if sales_index != 0 else None,
-            'rating': place_details['rating'],
-            'numReviews': place_details['num_reviews'],
+            'avgRating': place_details['rating'],
+            'avgReviews': place_details['num_reviews'],
             'numLocations': None
         }
     else:
@@ -55,7 +52,7 @@ def performance(name, address):
 
 
 def get_details(name, address):
-    projection = 'name,rating,num_reviews,activity'
+    projection = 'name,address,rating,num_reviews,activity'
     try:
         google_details = google.get_google_details(
             name, address, projection
