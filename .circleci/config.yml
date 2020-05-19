@@ -36,18 +36,6 @@ jobs:
             - .venv
             - /usr/local/bin
             - /usr/local/lib/python3.7/site-packages
-      - restore_cache:
-          keys:
-            - v1-npm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-            - v1-npm-cache-{{ .Branch }}-
-            - v1-npm-cache-
-      - run:
-          command: npm install
-      - save_cache:
-          key: npm-cache-{{ .Branch }}-{{ .Environment.CIRCLE_SHA1 }}
-          paths:
-            - node_modules
-
       # style check
       - run:
           command: prospector --messages-only
