@@ -12,6 +12,7 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100
 HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
+#TODO: fix regex to get Chick-fil-a in regex_address
 REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
@@ -78,6 +79,12 @@ class GoogleNearby(GenericScraper):
         if response.status_code != 200:
             return None
         return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
+
+    @staticmethod
+    def parse_zoom(response):
+        if response.status_code != 200:
+            return None
+        return utils.get_one_int_from_str(re.search(r'zoom=\d+', response.text).group())
 
     def response_parse(self, response):
         return self.default_parser(response)
