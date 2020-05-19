@@ -15,3 +15,24 @@ export const USER_LOGIN = gql`
     }
   }
 `;
+
+export const USER_REGISTER = gql`
+  mutation UserRegister($user: UserRegisterInput!) {
+    register(user: $user) {
+      message
+      verificationId
+    }
+  }
+`;
+
+export const USER_REGISTER_VERIFICATION = gql`
+  query UserRegisterVerification($verificationId: String!) {
+    userRegisterVerification(verificationId: $verificationId) {
+      id
+      verified
+      auth {
+        token
+      }
+    }
+  }
+`;
