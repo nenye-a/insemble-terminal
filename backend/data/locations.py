@@ -3,6 +3,7 @@ import google
 import utils
 import time
 
+
 def get_locations_random(region, terms, num_results, batchsize=300):
     lat, lng, goog_size_var = google.get_lat_lng(region, include_sizevar=True)
     viewport = google.get_viewport(lat, lng, goog_size_var)
@@ -76,6 +77,7 @@ def get_locations_random(region, terms, num_results, batchsize=300):
         except Exception:
             print("Failed to insert this batch")
 
+
 def get_locations_region(region, term):
     geo_scraper = google.GeoCode('GOOGLE GEO')
     nearby_scraper = google.GoogleNearby('GOOGLE NEARBY')
@@ -86,15 +88,16 @@ def get_locations_region(region, term):
         headers={"referer": "https://www.google.com/"},
         timeout=5,
         res_parser=lambda response: (nearby_scraper.parse_zoom(response), geo_scraper.default_parser(response)))
-    if nearby_result_package == None:
+    if not nearby_result_package:
         return None
     zoom, (lat, lng, sizevar) = nearby_result_package
     results = set()
     return get_locations_recursively(term, lat, lng, zoom, results)
 
+
 def get_locations_recursively(term, lat, lng, zoom, results):
     # do a nearby search for locations
-    print("searching locations for {} in ({},{}) at zoom={}".format(term,lat,lng,zoom))
+    print("searching locations for {} in ({},{}) at zoom={}".format(term, lat, lng, zoom))
     nearby_scraper = google.GoogleNearby('GOOGLE NEARBY')
     geo_scraper = google.GeoCode('GOOGLE GEO')
     nearby_request_url = nearby_scraper.build_request(term, lat, lng, zoom)
@@ -105,11 +108,12 @@ def get_locations_recursively(term, lat, lng, zoom, results):
         quality_proxy=True,
         headers={"referer": "https://www.google.com/"},
         timeout=5,
-        res_parser=lambda response: (nearby_scraper.parse_zoom(response), nearby_scraper.default_parser(response),
+        res_parser=lambda response: (nearby_scraper.parse_zoom(response),
+                                     nearby_scraper.default_parser(response),
                                      geo_scraper.default_parser(response))
     )
 
-    if nearby_package == None:
+    if not nearby_package:
         return None
     zoom_result, nearby_results, (lat_result, lng_result, sizevar) = nearby_package
 
@@ -119,14 +123,14 @@ def get_locations_recursively(term, lat, lng, zoom, results):
     # add results to nearby result set
     prev_len = len(results)
     results.update(nearby_results)
-    num_unique_results = len(results)-prev_len
+    num_unique_results = len(results) - prev_len
     print("got {} nearby results. {} are new".format(len(nearby_results), num_unique_results))
 
     # if search returned 20 matching results and the zoom didn't decrease, divide into 4 regions
     if len(nearby_results) >= 15 and num_unique_results >= 5:
         # get 4 new latlng's
         corners = lambda nw, se: [(nw[0], nw[1]), (se[0], se[1]), (nw[0], se[1]), (se[0], nw[1])]
-        new_coords = [((corner[0]+lat)/2, (corner[1]+lng)/2) for corner in corners(viewport[0], viewport[1])]
+        new_coords = [((corner[0] + lat) / 2, (corner[1] + lng) / 2) for corner in corners(viewport[0], viewport[1])]
         print("recursing with new coords: {}".format(new_coords))
 
         # get new zoom
@@ -140,6 +144,14 @@ def get_locations_recursively(term, lat, lng, zoom, results):
     return results
 
 
+def collect_locations():
+    """
+    Location collector that stores items in our database. Strongly
+    inherits from get_locations, recursively.
+    """
+    pass
+
+
 if __name__ == "__main__":
     # get_locations_random("Atlanta, GA", ['restaurants', 'stores'], 3000, 200)
     def get_locations_region_test():
@@ -149,6 +161,6 @@ if __name__ == "__main__":
         results = get_locations_region(region, term)
         print(results)
         if results is not None:
-            print("Obtained {} results in {} seconds".format(len(results), time.time()-start_time))
+            print("Obtained {} results in {} seconds".format(len(results), time.time() - start_time))
 
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
