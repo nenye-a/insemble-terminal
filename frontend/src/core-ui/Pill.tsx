@@ -14,11 +14,10 @@ type PillProps = ViewProps & {
   primary?: boolean;
   onPress?: () => void;
   children: string;
-  textProps?: TextProps;
 };
 
 export default function Pill(props: PillProps) {
-  let { primary = true, onPress, children, textProps, ...otherProps } = props;
+  let { primary = true, onPress, children, ...otherProps } = props;
   if (onPress) {
     return (
       <PressPill primary={primary} onClick={onPress} {...otherProps}>

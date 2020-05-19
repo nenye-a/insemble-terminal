@@ -8,3 +8,28 @@
 html {
   font-family: 'Avenir', sans-serif;
 }
+
+.pac-container {
+  width: 180px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.1);
+}
+
+.pac-item {
+  display: flex;
+  padding: 0 8px;
+  height: 36px;
+  align-items: center;
+  font-family: Avenir;
+}
+.pac-item:hover,
+.pac-item-selected {
+  background-color: #ece9f6;
+}
+
+.pac-icon {
+  display: none;
+  width: 0;
+  padding: 0;
+  margin: 0;
+}
