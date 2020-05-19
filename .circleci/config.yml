@@ -48,10 +48,6 @@ jobs:
           paths:
             - node_modules
 
-      - run:
-          command: npm run build
-      - run:
-          command: npm run lint
       # style check
       - run:
           command: prospector --messages-only
