@@ -159,7 +159,7 @@ def get_alternative_source(key, preffered_dict, default_dict):
 
 def fuzzy_match(query, target):
     ratio = fuzz.WRatio(query, target)
-    if ratio > 88:
+    if ratio > 80:
         return True
     else:
         print("Fuzzymatch failed. Ratio: {} | Query: {} | Target: {}".format(ratio, query, target))

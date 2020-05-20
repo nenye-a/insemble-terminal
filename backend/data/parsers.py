@@ -38,9 +38,9 @@ def google_detail_parser(response):
 
     stew = response.text
 
-    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=]+<\/span>'
-    NAME_NARROW_RX = r'<span>[\w\-\s\"\=]+<\/span>'
-    NAME_RX = r'>[\w\-\s\"\=]+<'
+    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
+    NAME_NARROW_RX = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
 
     try:
         name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
@@ -85,13 +85,13 @@ def google_detail_parser(response):
     DESCRIPTION_RX2 = r'>[\w\s\,\-\&\;\'\.]+<'
     try:
         description = re.search(DESCRIPTION_RX1, re.search(DESCRIPTION_NARROW_RX1,
-                                                          re.search(DESCRIPTION_LOCATOR_RX1,
-                                                                    stew).group()).group()).group().replace("&amp;","&")
+                                                           re.search(DESCRIPTION_LOCATOR_RX1,
+                                                                     stew).group()).group()).group().replace("&amp;", "&")
     except Exception:
         try:
             description = re.search(DESCRIPTION_RX2, re.search(DESCRIPTION_NARROW_RX2,
                                                                re.search(DESCRIPTION_LOCATOR_RX2,
-                                                                         stew).group()).group()).group()[1:-1].replace("&amp;","&")
+                                                                         stew).group()).group()).group()[1:-1].replace("&amp;", "&")
         except Exception:
             description = None
 
@@ -181,7 +181,7 @@ def google_detail_parser(response):
         "hours": hours,
         "menu_link": menu_link,
         "phone": phone,
-        "online_ordering_platforms": online_ordering_platforms, # TODO: edit so it gets more than one
+        "online_ordering_platforms": online_ordering_platforms,  # TODO: edit so it gets more than one
         "events": None,
         "other_platform_ratings": None,
         "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
@@ -189,7 +189,10 @@ def google_detail_parser(response):
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
+    print(store)
+
     return store
+
 
 def opentable_parser(response):
     """
@@ -308,6 +311,7 @@ def opentable_parser(response):
 
     return store
 
+
 def opentable_parser_all(response):
     """
     Parse open table result, formally known as
@@ -394,12 +398,12 @@ def opentable_parser_all(response):
         LOCATION_LOCATOR_RX = r'class="rest-row-meta--location rest-row-meta-text sfx1388addContent">[\w\s\,\-\&\'\.\/]+'
         LOCATION_RX = r'>[\w\s\,\-\&\'\.\/]+'
         try:
-            neighborhood = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2*i]).group()[1:]
+            neighborhood = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2 * i]).group()[1:]
         except Exception:
             neighborhood = None
 
         try:
-            dist_from_query = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2*i+1]).group()[1:]
+            dist_from_query = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2 * i + 1]).group()[1:]
         except Exception:
             dist_from_query = None
 

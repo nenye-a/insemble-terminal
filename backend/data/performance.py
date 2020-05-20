@@ -64,7 +64,7 @@ def get_details(name, address):
 
 
 def activity_score(week_activity):
-    total_weight = 0.7
+    total_weight = 0.6
     avg_weight = 1 - total_weight
     total_volume_score = scale(total_volume(week_activity), 'total')
     avg_volume_score = scale(avg_hourly_volume(week_activity), 'avg')
@@ -75,9 +75,9 @@ def activity_score(week_activity):
 def scale(value, volume_type):
     """scale volume details"""
     if volume_type == 'total':
-        return utils.translate(value, 0, 11000, 0, 100)
+        return utils.translate(value, 0, 5500, 0, 100)
     if volume_type == 'avg':
-        return utils.translate(value, 0, 75, 0, 100)
+        return utils.translate(value, 0, 60, 0, 100)
 
 
 def total_volume(week_activity):
