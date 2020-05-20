@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useLazyQuery } from '@apollo/react-hooks';
 
 import { View, Text, Divider } from '../../core-ui';
 import HeaderNavigationBar from '../../components/HeaderNavigationBar';
-import { MUTED_TEXT_COLOR, DARK_TEXT_COLOR } from '../../constants/colors';
+import {
+  MUTED_TEXT_COLOR,
+  DARK_TEXT_COLOR,
+  BACKGROUND_COLOR,
+} from '../../constants/colors';
 import { FONT_SIZE_XLARGE } from '../../constants/theme';
 import SvgArrowUp from '../../components/icons/arrow-up';
 import { SEARCH } from '../../graphql/queries/server/search';
@@ -12,12 +16,40 @@ import { Search, SearchVariables } from '../../generated/Search';
 
 import PageTitle from './PageTitle';
 import OverallPerformanceResult from './OverallPerformanceResult';
+import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
+import {
+  GetPerformanceTable,
+  GetPerformanceTableVariables,
+} from '../../generated/GetPerformanceTable';
+import { PerformanceTableType } from '../../generated/globalTypes';
 
 export default function ResultsScene() {
   let [
     submitSearch,
     { loading: submitSearchLoading, data: submitSearchData },
   ] = useMutation<Search, SearchVariables>(SEARCH);
+
+  let [
+    getOverallPerformance,
+    {
+      loading: overallPerformanceLoading,
+      data: overallPerformanceData,
+      error: overallPerformanceError,
+    },
+  ] = useLazyQuery<GetPerformanceTable, GetPerformanceTableVariables>(
+    GET_PERFORMANCE_TABLE_DATA,
+  );
+
+  let [
+    getLocationPerformance,
+    {
+      loading: locationPerformanceLoading,
+      data: locationPerformanceData,
+      error: locationPerformanceError,
+    },
+  ] = useLazyQuery<GetPerformanceTable, GetPerformanceTableVariables>(
+    GET_PERFORMANCE_TABLE_DATA,
+  );
 
   let onSubmit = (searchVariables: SearchVariables) => {
     submitSearch({
@@ -27,6 +59,26 @@ export default function ResultsScene() {
 
   useEffect(() => {
     if (submitSearchData) {
+      let { businessTag, locationTag } = submitSearchData.search;
+      if (businessTag && locationTag) {
+        let { id: businessTagId } = businessTag;
+        let { id: locationTagId } = locationTag;
+
+        getLocationPerformance({
+          variables: {
+            performanceType: PerformanceTableType.OVERALL,
+            businessTagId,
+            locationTagId,
+          },
+        });
+        getOverallPerformance({
+          variables: {
+            performanceType: PerformanceTableType.ADDRESS,
+            businessTagId,
+            locationTagId,
+          },
+        });
+      }
     }
   }, [submitSearchData]);
 
@@ -35,11 +87,20 @@ export default function ResultsScene() {
       {/* TODO: disable search bar on loading */}
       <HeaderNavigationBar onSearchPress={onSubmit} />
       {submitSearchData ? (
-        <PageTitle
-          reviewTag={submitSearchData.search.reviewTag}
-          businessTag={submitSearchData.search.businessTag}
-          locationTag={submitSearchData.search.locationTag}
-        />
+        <>
+          <PageTitle
+            reviewTag={submitSearchData.search.reviewTag}
+            businessTag={submitSearchData.search.businessTag}
+            locationTag={submitSearchData.search.locationTag}
+          />
+          <Container>
+            <OverallPerformanceResult
+              loading={overallPerformanceLoading}
+              data={overallPerformanceData?.performanceTable.data}
+              error={overallPerformanceError}
+            />
+          </Container>
+        </>
       ) : (
         <TitleContainer>
           <TitleRow>
@@ -51,16 +112,13 @@ export default function ResultsScene() {
           <Divider color={MUTED_TEXT_COLOR} />
         </TitleContainer>
       )}
-
-      <Container>
-        <OverallPerformanceResult />
-      </Container>
     </View>
   );
 }
 
 const Container = styled(View)`
-  padding: 20px 15%;
+  margin: 20px 15%;
+  background-color: ${BACKGROUND_COLOR};
 `;
 
 const Title = styled(Text)`

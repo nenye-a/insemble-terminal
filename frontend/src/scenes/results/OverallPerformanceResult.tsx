@@ -1,24 +1,59 @@
 import React from 'react';
 import styled from 'styled-components';
+import { ApolloError } from 'apollo-client';
 
-import { View } from '../../core-ui';
+import { View, LoadingIndicator, Text } from '../../core-ui';
 import { DataTable } from '../../components';
+import { GetPerformanceTable_performanceTable_data as PerformanceData } from '../../generated/GetPerformanceTable';
 
 import ResultTitle from './ResultTitle';
 
-export default function OverallPerformanceResult() {
+type Props = {
+  data?: Array<PerformanceData>;
+  loading: boolean;
+  error?: ApolloError;
+};
+
+export default function OverallPerformanceResult(props: Props) {
+  let { data, loading, error } = props;
   return (
     <Container>
       <ResultTitle title="Overall Performance" />
-      <DataTable>
-        <DataTable.HeaderRow>
-          <DataTable.HeaderCell width={220}>Company</DataTable.HeaderCell>
-          <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
-          <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
-          <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
-          <DataTable.HeaderCell># Locations</DataTable.HeaderCell>
-        </DataTable.HeaderRow>
-      </DataTable>
+      {loading ? (
+        <LoadingIndicator />
+      ) : error ? (
+        <Text>Something went wrong</Text>
+      ) : (
+        <DataTable>
+          <DataTable.HeaderRow>
+            <DataTable.HeaderCell width={220}>Company</DataTable.HeaderCell>
+            <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
+            <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
+            <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
+            <DataTable.HeaderCell># Locations</DataTable.HeaderCell>
+          </DataTable.HeaderRow>
+          {data &&
+            data?.length > 0 &&
+            data.map((row, index) => {
+              let {
+                name = '',
+                avgRating = '',
+                numLocation = '',
+                numReview = '',
+                totalSales = '',
+              } = row;
+              return (
+                <DataTable.Row key={index}>
+                  <DataTable.Cell width={220}>{name}</DataTable.Cell>
+                  <DataTable.Cell>{totalSales}</DataTable.Cell>
+                  <DataTable.Cell>{avgRating}</DataTable.Cell>
+                  <DataTable.Cell>{numReview}</DataTable.Cell>
+                  <DataTable.Cell>{numLocation}</DataTable.Cell>
+                </DataTable.Row>
+              );
+            })}
+        </DataTable>
+      )}
     </Container>
   );
 }
