@@ -69,6 +69,7 @@ class OpenTableDetails(GenericScraper):
         lat_lngs = my_geo.async_request(
             lat_lng_queries,
             quality_proxy=True,
+            timeout=5,
             remove_nones=True
         )
         urls = []

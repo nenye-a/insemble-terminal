@@ -292,6 +292,7 @@ def google_detailer(batch_size=300, wait=True):
 
 def opentable_detailer(batch_size=300, wait=True):
     """
+    FIXME: Needs to be fixed to run. $text and $geoNear can't be in the same query
     Opentable detailer collector
     """
 
@@ -318,7 +319,7 @@ def opentable_detailer(batch_size=300, wait=True):
                 collecting = False
 
         queries = opentable_collector.build_many_requests(places)
-        opentable_details = opentable_collector.async_request(
+        open_details = opentable_collector.async_request(
             queries,
             quality_proxy=True,
             timeout=5,
@@ -326,7 +327,9 @@ def opentable_detailer(batch_size=300, wait=True):
             meta_function=opentable_all_meta
         )
         opentable_details = []
-        opentable_details.extend(item['data'] for item in opentable_details)
+        for item in open_details:
+            if item['data']:
+                opentable_details.extend(item['data'])
 
         for details in opentable_details:
             query_location = {
@@ -337,7 +340,7 @@ def opentable_detailer(batch_size=300, wait=True):
                 utils.DB_TERMINAL_PLACES.update_one({
                     '_id': details['_id']
                 }, {'$set': {
-                    'opentable_details': details['data'],
+                    'opentable_details': details,
                     'location': query_location
                 }})
                 print('OPENTABLE_COLLECTOR: Update {}({}) with opentable details.'.format(
@@ -345,80 +348,60 @@ def opentable_detailer(batch_size=300, wait=True):
                     details['_id']
                 ))
             else:
+                if not details['dist_from_query']:
+                    continue
                 distance = utils.miles_to_meters(utils.get_one_float_from_str(details['dist_from_query']))
-                # if any of the following are true then no need to insert. Otherwise insert needed.
-                # if it has an address.
-                potential_candidates = list(utils.DB_TERMINAL_PLACES.find({
+                already_has_details = utils.DB_TERMINAL_PLACES.count_documents({
+                    # if the opentable details are already in here, then there's
+                    # no need to update at all.
+                    'opentable_details.rating': details['rating'],
+                    'opentable_details.neighborhood': details['neighborhood'],
+                    'opentable_details.bookings': details['bookings'],
+                    'opentable_detials.price_tier': details['price_tier'],
+                    'opentable_details.category': details['category']
+                })
+                if already_has_details > 0:
+                    print("Item with these exact details already exists, let's continue.")
+                    continue
+
+                potential_candidate = utils.DB_TERMINAL_PLACES.find_one({
                     '$text': {
                         '$search': details['name']
                     },
-                    '$or': [
-                        {
-                            # if item only has address, there's a potential that
-                            # we have the same item as this and should update.
-                            'address': {'$exists': True},
-                            'location': {'$exists': False},
-                            'opentable_details': {'$exists': False}
+                    # if the item has the same location as us and no open table details,
+                    # then htis is definitely our location and should be updated
+                    'location': {
+                        '$near': {
+                            '$geometry': query_location,
+                            '$maxDistance': distance + utils.miles_to_meters(0.25),
+                            '$minDistance': distance - utils.miles_to_meters(0.25)
                         },
-                        {
-                            # if the item has the same location as us and no open table details,
-                            # then htis is definitely our location and should be updated
-                            'location': {
-                                '$near': {
-                                    '$geometry': query_location,
-                                    '$maxDistance': distance + utils.miles_to_meters(0.25),
-                                    '$minDistance': distance - utils.miles_to_meters(0.25)
-                                },
-                            },
-                            'opentable_details': {'$exists': False}
-                        },
-                        {
-                            # if the opentable details are already in here, then there's
-                            # no need to update at all.
-                            'opentable_details.rating': details['rating'],
-                            'opentable_details.neighborhood': details['neihborhood'],
-                            'opentable_details.bookings': details['bookings'],
-                            'opentable_detials.price_tier': details['price_tier'],
-                            'opentable_details.category': details['category']
-                        }
-                    ]
-                }))
-
-                if utils.list_matches_condition(lambda x: 'opentable_details' in x, potential_candidates):
-                    print("Item with these exact details already exists, let's continue.")
-                    continue
-                elif len(potential_candidates) == 0:
-                    # Nothing in database with these details, let's insert.
-                    utils.DB_TERMINAL_PLACES.insert_one({
-                        'name': details['name'],
-                        'opentable_details': details['data'],
-                    })
-                    print("Inserted new item with name {} to database".format(details['name']))
-                    continue
-                for item in potential_candidates:
+                    },
+                    'opentable_details': {'$exists': False}
+                })
+                if potential_candidate:
                     # If item contains location, then this is our location, and we should give it details.
-                    if 'location' in item:
-                        # break and enter the else condition
-                        utils.update_one({
-                            'location': item['location']
-                        }, {'$set': {
-                            'opentable_details': details,
-                            'nearby_location': {
-                                'location': query_location,
-                                'distance': distance
-                            }
-                        }})
-                        print("Inserted new item that had same location as this one!: {}".format(
-                            item['location']['coordinates'])
-                        )
-                        break
-                else:
-                    # NOTE: Here's where we could call get_lat_lng on all the left over items
-                    # and get their distance from the query point to see if it matches
-                    # ours, but this may take a long time so it has been ommitted.
-                    # # for item in potential_candidates:
-                    # #     pass
-                    pass
+                    utils.DB_TERMINAL_PLACES.update_one({
+                        'location': potential_candidate['location']
+                    }, {'$set': {
+                        'opentable_details': details,
+                        'nearby_location': {
+                            'location': query_location,
+                            'distance': distance
+                        }
+                    }})
+                    continue
+                # NOTE: Here's where we could call get_lat_lng on all the left over items
+                # that don't have a location match or opentable details, but an address.
+                # This may take a long time and so has been omitted.
+
+                # Otherwise --
+                # Nothing in database with these details, let's insert.
+                utils.DB_TERMINAL_PLACES.insert_one({
+                    'name': details['name'],
+                    'opentable_details': details,
+                })
+                print("Inserted new item with name {} to database".format(details['name']))
         print('Batch complete, searching for more locations.')
 
 
@@ -524,6 +507,8 @@ if __name__ == "__main__":
     #print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
     google_detailer(batch_size=300)
     location_detailer(batch_size=300)
+    # google_detailer(batch_size=300)
+    # location_detailer(batch_size=300)
 
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
-    # opentable_detailer()
+    opentable_detailer(batch_size=10)
