@@ -23,6 +23,16 @@ SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
+DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
+
+
+def create_index():
+    DB_TERMINAL_PLACES.create_index([('name', 1), ('address', 1)], unique=True)
+    DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
+    DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
+    DB_TERMINAL_PLACES.create_index([('name', "text"),
+                                     ('google_details.name', "text"),
+                                     ('yelp_details.name', "text")])
 
 
 def meters_to_miles(meters):
@@ -166,11 +176,17 @@ def fuzzy_match(query, target):
         return False
 
 
-def split_name_address(name_address):
+def split_name_address(name_address, as_dict=False):
     """Will split a string structured "name, adress, with, many, commas"""
     name = name_address.split(",")[0]
     address = name_address.replace(name + ", ", "")
-    return (name, address)
+    if as_dict:
+        return dict(zip(('name', 'address'), (name, address)))
+    return name, address
+
+
+def make_name_address(name, address):
+    return name + ", " + address
 
 
 if __name__ == "__main__":
@@ -202,4 +218,5 @@ if __name__ == "__main__":
     # test_parse_city()
     # test_to_snake_case()
     # test_snake_to_word()
-    test_round_object()
+    # test_round_object()
+    # create_index()
