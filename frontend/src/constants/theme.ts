@@ -5,6 +5,7 @@ export const FONT_SIZE_SMALL = '13px';
 export const FONT_SIZE_NORMAL = '14px';
 export const FONT_SIZE_SEMI_MEDIUM = '15px';
 export const FONT_SIZE_MEDIUM = '16px';
+export const FONT_SIZE_LARGE = '18px';
 export const FONT_SIZE_XLARGE = '25px';
 
 export const DEFAULT_BORDER_RADIUS = '5px';

@@ -10,7 +10,8 @@ import SvgArrowUp from '../../components/icons/arrow-up';
 import { SEARCH } from '../../graphql/queries/server/search';
 import { Search, SearchVariables } from '../../generated/Search';
 
-import ResultTitle from './ResultTitle';
+import PageTitle from './PageTitle';
+import OverallPerformanceResult from './OverallPerformanceResult';
 
 export default function ResultsScene() {
   let [
@@ -34,7 +35,7 @@ export default function ResultsScene() {
       {/* TODO: disable search bar on loading */}
       <HeaderNavigationBar onSearchPress={onSubmit} />
       {submitSearchData ? (
-        <ResultTitle
+        <PageTitle
           reviewTag={submitSearchData.search.reviewTag}
           businessTag={submitSearchData.search.businessTag}
           locationTag={submitSearchData.search.locationTag}
@@ -50,7 +51,10 @@ export default function ResultsScene() {
           <Divider color={MUTED_TEXT_COLOR} />
         </TitleContainer>
       )}
-      <Container />
+
+      <Container>
+        <OverallPerformanceResult />
+      </Container>
     </View>
   );
 }

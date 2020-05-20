@@ -1,61 +1,31 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Text, View } from '../../core-ui';
-import { ReviewTag, LocationTagType } from '../../generated/globalTypes';
-import {
-  Search_search_businessTag as BusinessTag,
-  Search_search_locationTag as LocationTag,
-} from '../../generated/Search';
-import { THEME_COLOR, WHITE } from '../../constants/colors';
-import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
-import { capitalize } from '../../helpers';
+import { View, Text } from '../../core-ui';
+import { THEME_COLOR } from '../../constants/colors';
+import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 
 type Props = {
-  reviewTag?: ReviewTag | null;
-  businessTag?: BusinessTag | null;
-  locationTag?: LocationTag | null;
+  title: string;
 };
 
 export default function ResultTitle(props: Props) {
-  let { reviewTag, businessTag, locationTag } = props;
-
-  let formattedReview = capitalize(reviewTag || '');
-  let formattedBusiness = capitalize(businessTag?.params || '');
-  let formattedLocation =
-    locationTag?.type === LocationTagType.ADDRESS
-      ? `near ${locationTag.params}`
-      : locationTag?.type === LocationTagType.CITY ||
-        locationTag?.type === LocationTagType.COUNTY ||
-        locationTag?.type === LocationTagType.STATE
-      ? `in ${locationTag?.params}`
-      : '';
-  let formattedText = `${formattedBusiness} ${formattedReview} ${formattedLocation}`;
-
+  let { title } = props;
   return (
-    <TitleContainer>
-      <Title>{formattedText}</Title>
-      {locationTag?.type === LocationTagType.NATION && (
-        <USText>All United States</USText>
-      )}
-    </TitleContainer>
+    <Container>
+      <Title>{title}</Title>
+      {/* TODO: add compare & pin icon */}
+    </Container>
   );
 }
 
+const Container = styled(View)`
+  padding: 8px 0;
+  flex-direction: row;
+`;
+
 const Title = styled(Text)`
   color: ${THEME_COLOR};
-  font-size: ${FONT_SIZE_XLARGE};
-`;
-
-const TitleContainer = styled(View)`
-  background-color: ${WHITE};
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 25px 15%;
-`;
-
-const USText = styled(Text)`
-  font-weight: ${FONT_WEIGHT_MEDIUM};
-  color: ${THEME_COLOR};
+  font-size: ${FONT_SIZE_LARGE};
+  font-weight: ${FONT_WEIGHT_BOLD};
 `;
