@@ -6,7 +6,6 @@ import utils
 import time
 from bson import ObjectId
 from pprint import pprint
-from utils import DB_TERMINAL_PLACES
 
 
 NUM_REGEX = r'[-+]?\d*\.?\d*'
