@@ -65,14 +65,14 @@ export default function ResultsScene() {
         let { id: businessTagId } = businessTag;
         let { id: locationTagId } = locationTag;
 
-        getLocationPerformance({
+        getOverallPerformance({
           variables: {
             performanceType: PerformanceTableType.OVERALL,
             businessTagId,
             locationTagId,
           },
         });
-        getOverallPerformance({
+        getLocationPerformance({
           variables: {
             performanceType: PerformanceTableType.ADDRESS,
             businessTagId,
