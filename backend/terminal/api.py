@@ -86,15 +86,19 @@ class PerformanceAPI(BasicAPI):
         business = params['business']
         data_type = params['dataType']
 
-        data = None
+        data = []
         if business['businessType'] == 'BUSINESS':
             # Details for the business.
             if location['locationType'] == 'ADDRESS':
-                data = performance.performance(business['params'], location['params'])
-                if data_type == 'ADDRESS':
-                    data['name'] = data.pop('address')
+                row = performance.performance(business['params'], location['params'])
+                if not row:
+                    pass
+                elif data_type == 'ADDRESS':
+                    row['name'] = row.pop('address')
+                    data.append(row)
                 elif data_type == 'OVERALL':
-                    data.pop('address')
+                    row.pop('address')
+                    data.append(row)
                 else:
                     error = "{data_type} not supported for request ADDRESS + BUSINESS requests.".format(
                         data_type=data_type
