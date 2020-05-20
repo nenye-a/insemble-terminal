@@ -23,7 +23,7 @@ STATIC_URL = "/static/"
 MEDIA_ROOT = base_dir_join("mediafiles")
 MEDIA_URL = "/media/"
 
-SERVER_EMAIL = "foo@example.com"
+SERVER_EMAIL = "admin@insemblegroup.com"
 
 EMAIL_HOST = "smtp.sendgrid.net"
 EMAIL_HOST_USER = config("SENDGRID_USERNAME")
@@ -79,7 +79,7 @@ LOGGING = {
         },
     },
     "handlers": {
-        "null": {"class": "logging.NullHandler",},
+        "null": {"class": "logging.NullHandler", },
         "mail_admins": {
             "level": "ERROR",
             "class": "django.utils.log.AdminEmailHandler",
@@ -94,8 +94,8 @@ LOGGING = {
     },
     "loggers": {
         "": {"handlers": ["console"], "level": "INFO"},
-        "django.security.DisallowedHost": {"handlers": ["null"], "propagate": False,},
-        "django.request": {"handlers": ["mail_admins"], "level": "ERROR", "propagate": True,},
+        "django.security.DisallowedHost": {"handlers": ["null"], "propagate": False, },
+        "django.request": {"handlers": ["mail_admins"], "level": "ERROR", "propagate": True, },
         "log_request_id.middleware": {
             "handlers": ["console"],
             "level": "DEBUG",
