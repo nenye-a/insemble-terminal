@@ -396,6 +396,7 @@ if __name__ == "__main__":
         goog_start = time.time()
         details = get_many_lat_lng(my_list)
         goog_time = time.time()
+        print(details)
         print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
 
     def get_viewport_test():
@@ -429,4 +430,4 @@ if __name__ == "__main__":
     # get_lat_lng_test()
     # get_nearby_test()
     # get_google_details_test()
-    # get_many_google_details_test()
+    get_many_google_details_test()

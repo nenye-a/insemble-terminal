@@ -29,12 +29,18 @@ BWE = mongo.BulkWriteError
 
 
 def create_index():
-    DB_TERMINAL_PLACES.create_index([('name', 1), ('address', 1)], unique=True)
+    DB_TERMINAL_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
     DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
     DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
     DB_TERMINAL_PLACES.create_index([('name', "text"),
                                      ('google_details.name', "text"),
                                      ('yelp_details.name', "text")])
+
+    DB_TERMINAL_PLACES.create_index([('opentable_details.rating', -1)])
+    DB_TERMINAL_PLACES.create_index([('opentable_details.neighborhood', 1)])
+    DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
+    DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
+    DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
 
 
 def meters_to_miles(meters):
