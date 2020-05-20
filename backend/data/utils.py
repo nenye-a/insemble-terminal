@@ -162,6 +162,7 @@ def fuzzy_match(query, target):
     if ratio > 88:
         return True
     else:
+        print("Fuzzymatch failed. Ratio: {} | Query: {} | Target: {}".format(ratio, query, target))
         return False
 
 

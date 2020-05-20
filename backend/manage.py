@@ -13,9 +13,9 @@ if __name__ == "__main__":
         if settings_module:
             print(
                 "Ignoring config('DJANGO_SETTINGS_MODULE') because it's test. "
-                "Using 'insemble-terminal.settings.test'"
+                "Using 'terminal.settings.test'"
             )
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "insemble-terminal.settings.test")
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "terminal.settings.test")
     else:
         if settings_module is None:
             print(

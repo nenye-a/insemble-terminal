@@ -22,7 +22,7 @@ def restart_celery():
         celery_proc = proc  # found parent celery process
         celery_proc.terminate()
         break
-    cmd = "celery worker -A insemble-terminal -l INFO"
+    cmd = "celery worker -A terminal -l INFO"
     psutil.Popen(shlex.split(cmd), stdout=PIPE)
 
 

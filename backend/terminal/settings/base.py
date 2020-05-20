@@ -35,7 +35,7 @@ INSTALLED_APPS = [
     "webpack_loader",
     "import_export",
     "common",
-    "insemble-terminal",
+    "terminal",
     'rest_framework'
 ]
 
@@ -50,7 +50,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "insemble-terminal.urls"
+ROOT_URLCONF = "terminal.urls"
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "insemble-terminal.wsgi.application"
+WSGI_APPLICATION = "terminal.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator", },
