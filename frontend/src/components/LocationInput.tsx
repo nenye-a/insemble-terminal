@@ -20,8 +20,6 @@ export type SelectedLocation = {
   id: string;
   name: string;
   address: string;
-  lat: string;
-  lng: string;
   placeType: Array<string>;
 };
 
@@ -44,52 +42,47 @@ export default function LocationInput(props: Props) {
     icon,
     ...otherProps
   } = props;
-  let [place, setPlace] = useState<PlaceResult | null>(null);
+  let [isFocused, setFocused] = useState(false);
   let inputRef = useRef<HTMLInputElement | null>(null);
+  let selectedPlace = useRef<PlaceResult | null>(null);
   let options = {
     // TODO: restrict to only city and address
     componentRestrictions: { country: 'us' },
   };
   let submitHandler = useCallback(() => {
-    if (place) {
+    if (selectedPlace.current) {
       let {
         formatted_address: formattedAddress = '',
-        geometry,
         name,
         id = '',
         types: placeType = [],
-      } = place;
-      if (geometry) {
-        let { lat, lng } = geometry.location;
-        onPlaceSelected &&
-          onPlaceSelected({
-            id,
-            name,
-            address: formattedAddress,
-            lat: lat().toString() || '',
-            lng: lng().toString() || '',
-            placeType,
-          });
-      }
+      } = selectedPlace.current;
+      onPlaceSelected &&
+        onPlaceSelected({
+          id,
+          name,
+          address: formattedAddress,
+          placeType,
+        });
     }
-  }, [onPlaceSelected, place]);
+  }, [onPlaceSelected]);
 
   useEffect(() => {
-    if (inputRef.current && !isLoading) {
+    if (inputRef.current && !isLoading && isFocused) {
       let autocomplete = new window.google.maps.places.Autocomplete(
         inputRef.current,
         options,
       );
       let listener = autocomplete.addListener('place_changed', () => {
         let place = autocomplete.getPlace();
-        setPlace(place);
+        selectedPlace.current = place;
         submitHandler();
       });
       return () => {
         listener.remove();
       };
     }
-  }, [submitHandler, isLoading, options]);
+  }, [submitHandler, isLoading, options, isFocused]);
 
   if (isLoading) {
     return null;
@@ -100,6 +93,8 @@ export default function LocationInput(props: Props) {
       placeholder={placeholder}
       onSubmit={submitHandler}
       label={label}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
       containerStyle={{
         flex: 1,
         justifyContent: 'center',
@@ -108,7 +103,7 @@ export default function LocationInput(props: Props) {
       style={
         icon
           ? { paddingRight: 36 }
-          : place?.formatted_address
+          : selectedPlace.current?.formatted_address
           ? {
               textAlign: 'center',
               minWidth: 40,
@@ -122,12 +117,6 @@ export default function LocationInput(props: Props) {
             }
           : undefined
       }
-      onKeyUp={(e) => {
-        // pressing delete on keyboard
-        if (e.which === 8) {
-          setPlace(null);
-        }
-      }}
       {...otherProps}
     />
   );

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 
@@ -50,7 +50,7 @@ export default function ResultsScene() {
           <Divider color={MUTED_TEXT_COLOR} />
         </TitleContainer>
       )}
-      <Container></Container>
+      <Container />
     </View>
   );
 }

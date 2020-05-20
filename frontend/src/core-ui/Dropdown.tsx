@@ -79,12 +79,6 @@ export default function Dropdown<T>(props: Props<T>) {
             height: 28,
           },
         })}
-        onKeyUp={(event) => {
-          // pressing delete on keyboard
-          if (event.which === 8) {
-            onOptionSelected(null);
-          }
-        }}
       />
       <ListContainer {...getMenuProps()}>
         {isOpen
@@ -121,6 +115,8 @@ const ListContainer = styled.ul`
   border-radius: ${DEFAULT_BORDER_RADIUS};
   box-shadow: ${SHADOW_COLOR};
   overflow: hidden;
+  max-height: 300px;
+  overflow-y: scroll;
 `;
 const OptionList = styled.li`
   height: 36px;
