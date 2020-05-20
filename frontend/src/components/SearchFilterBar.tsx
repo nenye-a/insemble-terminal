@@ -1,19 +1,38 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useQuery } from '@apollo/react-hooks';
 
-import { View, Text, TouchableOpacity, Pill, Dropdown } from '../core-ui';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Pill,
+  Dropdown,
+  LoadingIndicator,
+} from '../core-ui';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { BACKGROUND_COLOR, MUTED_TEXT_COLOR } from '../constants/colors';
-import { BUSINESS_CATEGORY_DATA } from '../fixtures/dummyData';
+import {
+  ReviewTag,
+  LocationTagInput,
+  BusinessTagInput,
+  LocationTagType,
+} from '../generated/globalTypes';
+import { SearchVariables } from '../generated/Search';
+import {
+  GetBusinessTag,
+  GetBusinessTag_businessTags as BusinessTag,
+} from '../generated/GetBusinessTag';
+import { GET_BUSINESS_TAG } from '../graphql/queries/server/tags';
 
 import PillSelector from './PillSelector';
 import LocationInput from './LocationInput';
 import SvgSearch from './icons/search';
 
-// TODO: get type from BE
-type Business = {
-  type: 'brand' | 'business';
-  value: string;
+type Business = BusinessTag;
+
+type Props = {
+  onSearchPress?: (searchTags: SearchVariables) => void;
 };
 
 const DATA_TYPE_OPTIONS = [
@@ -24,45 +43,81 @@ const DATA_TYPE_OPTIONS = [
   'Activity',
 ];
 
-export default function SearchFilterBar() {
+export default function SearchFilterBar(props: Props) {
+  let { onSearchPress } = props;
   let [dataTypeFilterVisible, setDataTypeFilterVisible] = useState(false);
   let [selectedDataType, setSelectedDataType] = useState('');
-  let [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  let [selectedBusiness, setSelectedBusiness] = useState<
+    Business | string | null
+  >(null);
+  let [selectedPlace, setSelectedPlace] = useState<LocationTagInput | null>(
+    null,
+  );
+  let { data: businessTagData, loading: businessTagLoading } = useQuery<
+    GetBusinessTag
+  >(GET_BUSINESS_TAG);
+
   return (
     <View>
-      <Container>
-        <DataFilterContainer
-          onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
-        >
-          {selectedDataType ? (
-            <Pill>{selectedDataType}</Pill>
-          ) : (
-            <Text>Search for data</Text>
-          )}
-        </DataFilterContainer>
-        <SpacedText>of</SpacedText>
-        <Dropdown<Business | null>
-          selectedOption={selectedBusiness}
-          onOptionSelected={setSelectedBusiness}
-          options={BUSINESS_CATEGORY_DATA as Array<Business>}
-          placeholder="Any business/category"
-          optionExtractor={(item) => item?.value || ''}
-        />
-        <SpacedText>in</SpacedText>
-        <SearchLocationInput
-          placeholder="Any Location"
-          onPlaceSelected={() => {
-            // TODO: get selected place
-          }}
-        />
-        <TouchableOpacity
-          onPress={() => {
-            // TODO: search on submit
-          }}
-        >
-          <SvgSearch />
-        </TouchableOpacity>
-      </Container>
+      {businessTagLoading ? (
+        <LoadingIndicator />
+      ) : businessTagData ? (
+        <Container>
+          <DataFilterContainer
+            onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
+          >
+            {selectedDataType ? (
+              <Pill>{selectedDataType}</Pill>
+            ) : (
+              <Text>Search for data</Text>
+            )}
+          </DataFilterContainer>
+          <SpacedText>of</SpacedText>
+          <Dropdown<Business | string | null>
+            selectedOption={selectedBusiness}
+            onOptionSelected={setSelectedBusiness}
+            options={businessTagData.businessTags}
+            placeholder="Any business/category"
+            optionExtractor={(item) => {
+              if (typeof item === 'string') {
+                return item;
+              }
+              return item?.params || '';
+            }}
+          />
+          <SpacedText>in</SpacedText>
+          <SearchLocationInput
+            placeholder="Any Location"
+            onPlaceSelected={(place) => {
+              setSelectedPlace({
+                type: 'ADDRESS' as LocationTagType,
+                params: place.address,
+              });
+            }}
+          />
+          <TouchableOpacity
+            onPress={() => {
+              // TODO: validate search input
+              onSearchPress &&
+                onSearchPress({
+                  reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                  businessTag: (typeof selectedBusiness === 'string'
+                    ? { type: 'BUSINESS', params: selectedBusiness }
+                    : undefined) as BusinessTagInput,
+                  businessTagId:
+                    selectedBusiness &&
+                    typeof selectedBusiness !== 'string' &&
+                    selectedBusiness?.id
+                      ? selectedBusiness.id
+                      : undefined,
+                  locationTag: selectedPlace ? selectedPlace : undefined,
+                });
+            }}
+          >
+            <SvgSearch />
+          </TouchableOpacity>
+        </Container>
+      ) : null}
       {dataTypeFilterVisible && (
         <PillSelector
           options={DATA_TYPE_OPTIONS}

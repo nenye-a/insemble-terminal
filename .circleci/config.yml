@@ -94,10 +94,11 @@ jobs:
             - v1-dependencies-
       - run:
           command: |
-            cd backend
+            cd backend-node
             yarn install
             cd ../frontend
             yarn install
+            yarn apollo:generate
             yarn test
       - save_cache:
           paths:

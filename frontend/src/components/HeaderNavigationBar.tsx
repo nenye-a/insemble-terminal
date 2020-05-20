@@ -8,19 +8,26 @@ import {
   DARK_TEXT_COLOR,
 } from '../constants/colors';
 import { NAVBAR_HEIGHT } from '../constants/theme';
+import { SearchVariables } from '../generated/Search';
 
 import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 
-export default function HeaderNavigationBar() {
+type Props = {
+  onSearchPress?: (searchTags: SearchVariables) => void;
+};
+
+export default function HeaderNavigationBar(props: Props) {
+  let { onSearchPress } = props;
   let loggedIn = false; // TODO: change when connecting to BE
+
   return (
     <Container>
       <TouchableOpacity onPress={() => {}}>
         <InsembleLogo color="purple" />
       </TouchableOpacity>
-      <SearchFilterBar />
+      <SearchFilterBar onSearchPress={onSearchPress} />
       {loggedIn ? (
         <RowEnd flex>
           <TerminalButton
