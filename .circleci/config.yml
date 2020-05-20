@@ -98,6 +98,7 @@ jobs:
             yarn install
             cd ../frontend
             yarn install
+            yarn apollo:generate
             yarn test
       - save_cache:
           paths:
