@@ -4,7 +4,7 @@ import { HttpLink } from 'apollo-link-http';
 import { onError } from 'apollo-link-error';
 import { ApolloLink } from 'apollo-link';
 
-import { API_URI } from '../constants/uris';
+import { API_URI } from '../constants/uri';
 
 const cache = new InMemoryCache();
 

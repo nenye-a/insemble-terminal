@@ -6,7 +6,9 @@ import {
   WHITE,
   TABLE_HEADER_BACKGROUND,
   TABLE_BORDER_COLOR,
+  DEFAULT_TEXT_COLOR,
 } from '../constants/colors';
+import { FONT_SIZE_NORMAL } from '../constants/theme';
 
 type Props = {
   children?: ReactNode;
@@ -55,6 +57,9 @@ const Cell = styled(View)<CellProps>`
   align-items: center;
   justify-content: ${({ align }) => CellAlign[align || 'left']};
   padding: 24px;
+  color: ${DEFAULT_TEXT_COLOR};
+  font-size: ${FONT_SIZE_NORMAL};
+  font-family: 'Avenir';
 `;
 
 const Row = styled(View)<RowProps>`
