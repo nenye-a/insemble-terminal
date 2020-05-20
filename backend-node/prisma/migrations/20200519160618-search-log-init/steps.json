@@ -1,0 +1,122 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateEnum",
+      "enum": "ReviewTag",
+      "values": [
+        "PERFORMANCE",
+        "NEWS",
+        "OWNERSHIP",
+        "COVERAGE"
+      ]
+    },
+    {
+      "tag": "CreateModel",
+      "model": "SearchLog"
+    },
+    {
+      "tag": "CreateField",
+      "model": "SearchLog",
+      "field": "id",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "SearchLog",
+          "field": "id"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "SearchLog",
+          "field": "id"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "cuid()"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "SearchLog",
+          "field": "id"
+        },
+        "directive": "id"
+      }
+    },
+    {
+      "tag": "CreateField",
+      "model": "SearchLog",
+      "field": "locationTag",
+      "type": "LocationTag",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "SearchLog",
+      "field": "businessTag",
+      "type": "BusinessTag",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "SearchLog",
+      "field": "reviewTag",
+      "type": "ReviewTag",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "SearchLog",
+      "field": "createdAt",
+      "type": "DateTime",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "SearchLog",
+          "field": "createdAt"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "SearchLog",
+          "field": "createdAt"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "now()"
+    },
+    {
+      "tag": "CreateField",
+      "model": "User",
+      "field": "searchLog",
+      "type": "SearchLog",
+      "arity": "List"
+    }
+  ]
+}

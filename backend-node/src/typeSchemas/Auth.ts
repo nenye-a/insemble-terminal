@@ -1,6 +1,6 @@
 import { objectType } from 'nexus';
 
-export let TenantAuth = objectType({
+export let Auth = objectType({
   name: 'Auth',
   definition(t) {
     t.string('token');

@@ -4,6 +4,7 @@ import * as path from 'path';
 
 import * as Types from './typeSchemas';
 import * as Resolvers from './resolvers';
+import * as Scalars from './scalars';
 
 let Query = queryType({
   definition(t) {
@@ -15,7 +16,7 @@ let Query = queryType({
 });
 
 let schema = makeSchema({
-  types: [Query, Types, Resolvers],
+  types: [Query, Types, Resolvers, Scalars],
   plugins: [nexusPrismaPlugin()],
   outputs: {
     schema: __dirname + '/generated/schema.graphql',
