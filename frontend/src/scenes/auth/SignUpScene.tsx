@@ -1,11 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useHistory } from 'react-router-dom';
 
 import { View, Text, Button, Card } from '../../core-ui';
 
 import SignUpForm from './SignUpForm';
 
 export default function SignUpScene() {
+  let history = useHistory();
+
   return (
     <Container>
       <Card title="Sign Up">
@@ -19,7 +22,7 @@ export default function SignUpScene() {
           mode="transparent"
           text="Log in here"
           onPress={() => {
-            // TODO: navigate
+            history.push('/login');
           }}
         />
       </RowView>
