@@ -1,7 +1,10 @@
 import datetime as dt
+import pytz
 import ast
 import re
 import utils
+import dateutil.parser as tparser
+from bs4 import BeautifulSoup
 
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
@@ -433,6 +436,48 @@ def opentable_parser_all(response):
         })
 
     return stores
+
+
+def google_news_parser(response):
+
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    results = []
+    for g in soup.find_all('div', class_='NiLAwe y6IFtc R7GTQ keNKEd j7vNaf nID9nc'):
+        anchors = g.find_all('a')
+        divs = g.find_all('div')
+        if anchors:
+            link = "https://news.google.com" + anchors[0]['href'][1:]
+            source = anchors[3].text
+            title = g.find('h3').text
+            if not g.find('time'):
+                continue
+            published = tparser.parse(g.find('time')['datetime']).ctime()  # normalize date format
+            description = divs[1].text
+            image = g.find('img')['src']
+            item = {
+                "title": title,
+                "link": link,
+                "published": published,
+                "source": source,
+                "description": description,
+                "image": image
+            }
+            results.append(item)
+    return remove_old_news(results)
+
+
+def remove_old_news(news_list, date=None):
+    cleaned_list = []
+    if not date:
+        date = dt.datetime.utcnow() - dt.timedelta(weeks=2)
+
+    for news in news_list:
+        published_date = tparser.parse(news['published']).astimezone(pytz.utc).replace(tzinfo=None)
+        if published_date > date:
+            cleaned_list.append(news)
+
+    return cleaned_list
 
 
 # def google_nearby_parser(response):
