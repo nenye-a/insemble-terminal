@@ -253,7 +253,7 @@ def google_detailer(batch_size=300, wait=True):
     Google detail collector.
     """
 
-    query = {'google_details': {'$exists': False}}
+    query = {'google_details': {'$exists': False}, 'address': {'$exists': True}}
     size = {'size': batch_size}
 
     collecting = True
@@ -295,7 +295,7 @@ def opentable_detailer(batch_size=300, wait=True):
     Opentable detailer collector
     """
 
-    query = {'opentable_details': {'$exists': False}}
+    query = {'opentable_details': {'$exists': False}, 'address': {'$exists': True}}
     size = {'size': batch_size}
     opentable_collector = opentable.OpenTableDetails('OPENTABLE COLLECTOR')
 
@@ -307,8 +307,6 @@ def opentable_detailer(batch_size=300, wait=True):
             {'$match': query},
             {'$sample': size}
         ]))
-
-        places = TEST_LIST
 
         if len(places) == 0:
             if wait:
@@ -418,8 +416,8 @@ def opentable_detailer(batch_size=300, wait=True):
                     # NOTE: Here's where we could call get_lat_lng on all the left over items
                     # and get their distance from the query point to see if it matches
                     # ours, but this may take a long time so it has been ommitted.
-                    # for item in potential_candidates:
-                    #     pass
+                    # # for item in potential_candidates:
+                    # #     pass
                     pass
         print('Batch complete, searching for more locations.')
 
@@ -448,30 +446,54 @@ def opentable_all_meta(result, meta):
     return result
 
 
-def location_detailer():
-    pass
+def location_detailer(batch_size=300, wait=True):
+    """
+    Opentable detailer collector
+    """
 
+    query = {'location': {'$exists': False}, 'address': {'$exists': True}}
+    size = {'size': batch_size}
 
-def get_coordinates():
-    # places_dict = {utils.make_name_address(
-    #     place['name'],
-    #     place['address']
-    # ): {
-    #     'name': place['name'],
-    #     'address': place['address'],
-    #     'nearby_location': None,
-    #     'google_results': None,
-    #     'opentable_results': None
-    # } for place in places}
-    # place_coordinates = geo.async_request(
-    #     [{
-    #         'url': geo.build_request(place['name'], place['address']),
-    #         'meta': place
-    #     } for place in places],
-    #     timeout=5
-    # )
-    # geo = google.GeoCode('DETAILER SCRAPER')
-    pass
+    collecting = True
+
+    while collecting:
+
+        # places = list(utils.DB_TERMINAL_PLACES.aggregate([
+        #     {'$match': query},
+        #     {'$sample': size}
+        # ]))
+
+        places = TEST_LIST
+
+        if len(places) == 0:
+            if wait:
+                print('LOCATION_COLLECTOR: No un-processed name_addresses observed, '
+                      'waiting 10 seconds for new locations...')
+                time.sleep(10)
+                continue
+            else:
+                collecting = False
+
+        locations = google.get_many_lat_lng(places)
+
+        for details in locations:
+            utils.DB_TERMINAL_PLACES.update_one({
+                '_id': details['meta']['_id']
+            }, {'$set': {
+                'location': {
+                    'type': "Point",
+                    'coordinates': [
+                        round(details['data'][1], 6),  # lng
+                        round(details['data'][0], 6)  # lat
+                    ]
+                }
+            }})
+            print('LOCATION_COLLECTOR: Updated {} at {} ({}) with google details.'.format(
+                details['meta']['name'],
+                details['meta']['address'],
+                details['meta']['_id']
+            ))
+        print('LOCATION_COLLECTOR: Batch complete, searching for more locations.')
 
 
 if __name__ == "__main__":

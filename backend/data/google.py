@@ -41,9 +41,13 @@ def get_lat_lng(query, include_sizevar=False):
     return geocoder.get_lat_lng(query, include_sizevar)
 
 
-def get_many_lat_lng(queries, include_sizevar=False):
+def get_many_lat_lng(queries, include_sizevar=False, place_dict=False):
     geocoder = GeoCode('GECODER')
-    return geocoder.get_many_lat_lng(queries, include_sizevar)
+    return geocoder.get_many_lat_lng(
+        queries,
+        include_sizevar=include_sizevar,
+        place_dict=place_dict
+    )
 
 
 def get_google_details(name, address, projection=None):
@@ -157,9 +161,15 @@ class GeoCode(GenericScraper):
             print("Error has occured in GeoCode: {} - request_url: {}".format(e, url))
             return None
 
-    def get_many_lat_lng(self, query_list, inclde_sizevar=False):
+    def get_many_lat_lng(self, query_list, include_sizevar=False, place_dict=False):
+        if place_dict:
+            if 'name' not in query_list[0] and 'address' not in query_list[0]:
+                print('A Place consists of an address and a name. Please resubmit.')
+                return None
         queries = [{
-            'url': self.build_request(query),
+            'url': self.build_request(query) if not place_dict else self.build_request(
+                query["name"] + " " + query["address"]
+            ),
             'meta': query,
         } for query in query_list]
 
@@ -169,7 +179,7 @@ class GeoCode(GenericScraper):
             timeout=5
         )
 
-        if not inclde_sizevar:
+        if not include_sizevar:
             for data in result:
                 if data['data']:
                     data['data'] = data['data'][:2]
@@ -392,9 +402,10 @@ if __name__ == "__main__":
         print(name, "size var option", get_lat_lng(name, True))
 
     def get_many_lat_lng_test():
-        my_list = [item["name"] + " " + item["address"] for item in TEST_LIST]
+        # my_list = [item["name"] + " " + item["address"] for item in TEST_LIST]
+        my_list = TEST_LIST
         goog_start = time.time()
-        details = get_many_lat_lng(my_list)
+        details = get_many_lat_lng(my_list, place_dict=True)
         goog_time = time.time()
         print(details)
         print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
@@ -426,8 +437,8 @@ if __name__ == "__main__":
         print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
 
     # get_google_activity_test()
-    # get_many_lat_lng_test()
+    get_many_lat_lng_test()
     # get_lat_lng_test()
     # get_nearby_test()
     # get_google_details_test()
-    get_many_google_details_test()
+    # get_many_google_details_test()
