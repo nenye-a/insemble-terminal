@@ -1,4 +1,4 @@
-import React, { useState, useMemo, ComponentProps } from 'react';
+import React, { useState, ComponentProps } from 'react';
 import { useCombobox } from 'downshift';
 import styled, { css } from 'styled-components';
 
@@ -17,7 +17,7 @@ import TouchableOpacity from './TouchableOpacity';
 type Props<T> = {
   options: Array<T>;
   selectedOption: T;
-  onOptionSelected: (option: T | null) => void;
+  onOptionSelected: (option: T | string | null) => void;
   optionExtractor?: (option: T) => string;
   placeholder?: string;
 };
@@ -60,39 +60,25 @@ export default function Dropdown<T>(props: Props<T>) {
       let foundObj = options.find(
         (item) => optionExtractor(item) === inputValue,
       );
-      if (foundObj) {
-        onOptionSelected(foundObj);
-      }
+      onOptionSelected(foundObj || inputValue || null);
     },
   });
 
-  let hasSelection = useMemo(() => {
-    return !!options.find(
-      (item) => optionExtractor(item) === optionExtractor(selectedOption),
-    );
-  }, [selectedOption, options, optionExtractor]);
   return (
     <TouchableOpacity {...getComboboxProps()} onPress={openMenu}>
       <InputContainer
         {...getInputProps()}
         placeholder={placeholder}
-        hasSelection={hasSelection}
-        {...(selectedOption &&
-          hasSelection && {
-            style: {
-              caretColor: 'transparent',
-              backgroundColor: THEME_COLOR,
-              color: WHITE,
-              textAlign: 'center',
-              height: 28,
-            },
-          })}
-        onKeyUp={(event) => {
-          // pressing delete on keyboard
-          if (event.which === 8) {
-            onOptionSelected(null);
-          }
-        }}
+        hasSelection={!!selectedOption}
+        {...(selectedOption && {
+          style: {
+            caretColor: 'transparent',
+            backgroundColor: THEME_COLOR,
+            color: WHITE,
+            textAlign: 'center',
+            height: 28,
+          },
+        })}
       />
       <ListContainer {...getMenuProps()}>
         {isOpen
@@ -129,6 +115,8 @@ const ListContainer = styled.ul`
   border-radius: ${DEFAULT_BORDER_RADIUS};
   box-shadow: ${SHADOW_COLOR};
   overflow: hidden;
+  max-height: 300px;
+  overflow-y: scroll;
 `;
 const OptionList = styled.li`
   height: 36px;
