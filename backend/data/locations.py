@@ -1,9 +1,37 @@
+import re
 import opentable
+from parsers import opentable_parser_all
 import google
 import utils
 import time
 from bson import ObjectId
 from pprint import pprint
+from utils import DB_TERMINAL_PLACES
+
+
+NUM_REGEX = r'[-+]?\d*\.?\d*'
+LATITUDE_REGEX = r'latitude=' + NUM_REGEX
+LONGITUDE_REGEX = r'longitude=' + NUM_REGEX
+
+TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'},
+             {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'},
+             {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'},
+             {'name': 'Chapel Beauty', 'address': '2626 Rainbow Way, Decatur, GA 30034'},
+             {'name': "Howard's Furniture Co INC", 'address': '3376 S Cobb Dr SE, Smyrna, GA 30080'},
+             {'name': 'Book Nook', 'address': '3073 N Druid Hills Rd NE, Decatur, GA 30033'},
+             {'name': 'Citi Trends', 'address': '3205 S Cobb Dr SE Ste A, Smyrna, GA 30080'},
+             {'name': 'Star Cafe', 'address': '2053 Marietta Blvd NW, Atlanta, GA 30318'},
+             {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'},
+             {'name': 'Kroger', 'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'},
+             {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'},
+             {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'},
+             {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'},
+             {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'},
+             {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'},
+             {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'},
+             {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'},
+             {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
+
 
 def get_locations_random(region, terms, num_results, batchsize=300):
     lat, lng, goog_size_var = google.get_lat_lng(region, include_sizevar=True)
@@ -154,13 +182,14 @@ def collect_locations(run_ID=None, run_details=None):
         return
 
     if run_ID is not None:
-        run_details = utils.DB_TERMINAL_RUNS.find_one({"_id":run_ID})
+        run_details = utils.DB_TERMINAL_RUNS.find_one({"_id": run_ID})
         print("Using details from existing db object for {} in {}".format(run_details['term'], run_details['region']))
     else:
         run_details = run_details
     term = run_details['term']
     stack = run_details['stack']
-    if len(stack) == 0: return
+    if len(stack) == 0:
+        return
 
     # do a nearby search for locations
     lat, lng, zoom = stack.pop()
@@ -191,11 +220,11 @@ def collect_locations(run_ID=None, run_details=None):
     nearby_results.remove(None) if None in nearby_results else ''
     try:
         num_unique_results = len(utils.DB_TERMINAL_PLACES.insert_many([utils.split_name_address(name_address, as_dict=True)
-                                                               for name_address in nearby_results],ordered=False).inserted_ids)
+                                                                       for name_address in nearby_results], ordered=False).inserted_ids)
     except utils.BWE as bwe:
         num_unique_results = bwe.details['nInserted']
 
-    print("got {} nearby results. {} are new".format(len(nearby_results),  num_unique_results))
+    print("got {} nearby results. {} are new".format(len(nearby_results), num_unique_results))
 
     # TODO: save the case where it fails in this region and collects result without updating the stack
 
@@ -217,6 +246,232 @@ def collect_locations(run_ID=None, run_details=None):
 
     # recurse until stack is empty
     collect_locations(run_details=run_details)
+
+
+def google_detailer(batch_size=300, wait=True):
+    """
+    Google detail collector.
+    """
+
+    query = {'google_details': {'$exists': False}}
+    size = {'size': batch_size}
+
+    collecting = True
+
+    while collecting:
+
+        places = list(utils.DB_TERMINAL_PLACES.aggregate([
+            {'$match': query},
+            {'$sample': size}
+        ]))
+
+        if len(places) == 0:
+            if wait:
+                print('GOOGLE_COLLECTOR: No un-processed name_addresses observed, '
+                      'waiting 10 seconds for new locations...')
+                time.sleep(10)
+                continue
+            else:
+                collecting = False
+
+        google_details = google.get_many_google_details(places)
+
+        for details in google_details:
+            utils.DB_TERMINAL_PLACES.update_one({
+                '_id': details['meta']['_id']
+            }, {'$set': {
+                'google_details': details['data']
+            }})
+            print('GOOGLE_COLLECTOR: Updated {} at {} ({}) with google details.'.format(
+                details['meta']['name'],
+                details['meta']['address'],
+                details['meta']['_id']
+            ))
+        print('GOOGLE_COLLECTOR: Batch complete, searching for more locations.')
+
+
+def opentable_detailer(batch_size=300, wait=True):
+    """
+    Opentable detailer collector
+    """
+
+    query = {'opentable_details': {'$exists': False}}
+    size = {'size': batch_size}
+    opentable_collector = opentable.OpenTableDetails('OPENTABLE COLLECTOR')
+
+    collecting = True
+
+    while collecting:
+
+        places = list(utils.DB_TERMINAL_PLACES.aggregate([
+            {'$match': query},
+            {'$sample': size}
+        ]))
+
+        places = TEST_LIST
+
+        if len(places) == 0:
+            if wait:
+                print('OPENTABLE_COLLECTOR: No un-processed name_addresses observed, '
+                      'waiting 10 seconds for new locations...')
+                time.sleep(10)
+                continue
+            else:
+                collecting = False
+
+        queries = opentable_collector.build_many_requests(places)
+        opentable_details = opentable_collector.async_request(
+            queries,
+            quality_proxy=True,
+            timeout=5,
+            res_parser=opentable_parser_all,
+            meta_function=opentable_all_meta
+        )
+        opentable_details = []
+        opentable_details.extend(item['data'] for item in opentable_details)
+
+        for details in opentable_details:
+            query_location = {
+                'type': "Point",
+                'coordinates': details['query_point']
+            }
+            if '_id' in details:
+                utils.DB_TERMINAL_PLACES.update_one({
+                    '_id': details['_id']
+                }, {'$set': {
+                    'opentable_details': details['data'],
+                    'location': query_location
+                }})
+                print('OPENTABLE_COLLECTOR: Update {}({}) with opentable details.'.format(
+                    details['name'],
+                    details['_id']
+                ))
+            else:
+                distance = utils.miles_to_meters(utils.get_one_float_from_str(details['dist_from_query']))
+                # if any of the following are true then no need to insert. Otherwise insert needed.
+                # if it has an address.
+                potential_candidates = list(utils.DB_TERMINAL_PLACES.find({
+                    '$text': {
+                        '$search': details['name']
+                    },
+                    '$or': [
+                        {
+                            # if item only has address, there's a potential that
+                            # we have the same item as this and should update.
+                            'address': {'$exists': True},
+                            'location': {'$exists': False},
+                            'opentable_details': {'$exists': False}
+                        },
+                        {
+                            # if the item has the same location as us and no open table details,
+                            # then htis is definitely our location and should be updated
+                            'location': {
+                                '$near': {
+                                    '$geometry': query_location,
+                                    '$maxDistance': distance + utils.miles_to_meters(0.25),
+                                    '$minDistance': distance - utils.miles_to_meters(0.25)
+                                },
+                            },
+                            'opentable_details': {'$exists': False}
+                        },
+                        {
+                            # if the opentable details are already in here, then there's
+                            # no need to update at all.
+                            'opentable_details.rating': details['rating'],
+                            'opentable_details.neighborhood': details['neihborhood'],
+                            'opentable_details.bookings': details['bookings'],
+                            'opentable_detials.price_tier': details['price_tier'],
+                            'opentable_details.category': details['category']
+                        }
+                    ]
+                }))
+
+                if utils.list_matches_condition(lambda x: 'opentable_details' in x, potential_candidates):
+                    print("Item with these exact details already exists, let's continue.")
+                    continue
+                elif len(potential_candidates) == 0:
+                    # Nothing in database with these details, let's insert.
+                    utils.DB_TERMINAL_PLACES.insert_one({
+                        'name': details['name'],
+                        'opentable_details': details['data'],
+                    })
+                    print("Inserted new item with name {} to database".format(details['name']))
+                    continue
+                for item in potential_candidates:
+                    # If item contains location, then this is our location, and we should give it details.
+                    if 'location' in item:
+                        # break and enter the else condition
+                        utils.update_one({
+                            'location': item['location']
+                        }, {'$set': {
+                            'opentable_details': details,
+                            'nearby_location': {
+                                'location': query_location,
+                                'distance': distance
+                            }
+                        }})
+                        print("Inserted new item that had same location as this one!: {}".format(
+                            item['location']['coordinates'])
+                        )
+                        break
+                else:
+                    # NOTE: Here's where we could call get_lat_lng on all the left over items
+                    # and get their distance from the query point to see if it matches
+                    # ours, but this may take a long time so it has been ommitted.
+                    # for item in potential_candidates:
+                    #     pass
+                    pass
+        print('Batch complete, searching for more locations.')
+
+
+def opentable_all_meta(result, meta):
+    """
+    Assumes you are using the opentable_parser_all
+    """
+    if not result:
+        return result
+    first_item = result[0]
+    if 'name' in first_item:
+        if not utils.fuzzy_match(meta['name'], first_item['name']):
+            return None
+    first_item['_id'] = meta['_id']
+    link = meta['request_url']
+    longitude = round(float(
+        re.search(LONGITUDE_REGEX, link).group().split("=")[1]
+    ), 6)
+    latitude = round(float(
+        re.search(LATITUDE_REGEX, link).group().split("=")[1]
+    ), 6)
+    for item in result:
+        if item:
+            item['query_point'] = [longitude, latitude]
+    return result
+
+
+def location_detailer():
+    pass
+
+
+def get_coordinates():
+    # places_dict = {utils.make_name_address(
+    #     place['name'],
+    #     place['address']
+    # ): {
+    #     'name': place['name'],
+    #     'address': place['address'],
+    #     'nearby_location': None,
+    #     'google_results': None,
+    #     'opentable_results': None
+    # } for place in places}
+    # place_coordinates = geo.async_request(
+    #     [{
+    #         'url': geo.build_request(place['name'], place['address']),
+    #         'meta': place
+    #     } for place in places],
+    #     timeout=5
+    # )
+    # geo = google.GeoCode('DETAILER SCRAPER')
+    pass
 
 
 if __name__ == "__main__":
@@ -242,8 +497,11 @@ if __name__ == "__main__":
         collect_locations(run_details=run_details)
         delta = time.time() - start_time
         if results is not None:
-            print("Obtained {} results in {} seconds".format(utils.DB_TERMINAL_PLACES.count_documents({})-start_count, delta))
+            print("Obtained {} results in {} seconds".format(utils.DB_TERMINAL_PLACES.count_documents({}) - start_count, delta))
 
-    #get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
+    # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     collect_locations_test()
     #print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
+
+    # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
+    opentable_detailer()
