@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useForm, FieldValues } from 'react-hook-form';
 import { useMutation } from '@apollo/react-hooks';
@@ -51,14 +51,12 @@ export default function SignUpForm() {
     }
   };
 
-  // if (data) {
-  //   if (data.register.message === 'success') {
-  //     return (
-  //       <Redirect to={`/email-verification/${data.register.verificationId}`} />
-  //     );
-  //   }
-  // }
-  console.log(data, error, loading);
+  if (data) {
+    if (data.register.message === 'success') {
+      // TODO: redirect to email verification scene
+      return <Redirect to="/login" />;
+    }
+  }
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
       {errorMessage && <Alert visible={true} text={errorMessage} />}
