@@ -85,6 +85,7 @@ export default function SearchFilterBar(props: Props) {
         />
         <TouchableOpacity
           onPress={() => {
+            // TODO: validate search input
             onSearchPress &&
               onSearchPress({
                 reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
