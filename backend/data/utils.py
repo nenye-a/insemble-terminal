@@ -24,6 +24,8 @@ DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
+DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
+BWE = mongo.BulkWriteError
 
 
 def create_index():
