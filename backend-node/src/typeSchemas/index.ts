@@ -9,3 +9,6 @@ export * from './LocationTag';
 export * from './BusinessTagInput';
 export * from './LocationTagInput';
 export * from './Search';
+
+export * from './PerformanceTable';
+export * from './PerformanceData';

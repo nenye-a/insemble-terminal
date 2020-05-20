@@ -4,3 +4,5 @@ export * from './auth/userVerificationQuery';
 
 export * from './search/searchMutation';
 export * from './tags/businessTagsQuery';
+
+export * from './tables/performanceTableQuery';
