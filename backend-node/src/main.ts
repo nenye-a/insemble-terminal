@@ -7,6 +7,7 @@ import { authSession } from './helpers/auth';
 import { permissions } from './middlewares/permission';
 import { registerHandler } from './controllers/registerController';
 import { emailVerificationHandler } from './controllers/emailVerificationController';
+import { port, hostname } from './constants/constants';
 
 const server = new GraphQLServer({
   schema,
@@ -27,7 +28,7 @@ server.express.get('/register-verification/:token', registerHandler);
 
 server.express.get('/email-verification/:token', emailVerificationHandler);
 
-server.start({}, () => {
+server.start({ port }, () => {
   // eslint-disable-next-line no-console
-  console.log(`Server is running on http://localhost:4000`);
+  console.log(`Server is running on ${hostname}:${port}`);
 });

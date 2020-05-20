@@ -5,6 +5,7 @@
     "start": "node ./lib/main.js",
     "start:dev": "ts-node ./src/main.ts",
     "start:watch": "yarn generate && ts-node-dev --no-notify --respawn --transpile-only ./src/main.ts",
+    "start-staging:watch": "yarn generate && yarn build && node lib/index.js",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "lint": "eslint --max-warnings 0 \"src/**/*.ts\"",
@@ -28,6 +29,8 @@
     "js-base64": "^2.5.2",
     "nexus": "^0.12.0-rc.11",
     "nexus-prisma": "^0.9.1",
+    "ts-node": "^8.5.4",
+    "ts-node-dev": "^1.0.0-pre.44",
     "prisma2": "2.0.0-preview021"
   },
   "devDependencies": {
