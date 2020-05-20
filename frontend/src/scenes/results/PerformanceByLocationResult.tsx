@@ -26,7 +26,7 @@ export default function PerformanceByLocationResult(props: Props) {
       ) : (
         <DataTable>
           <DataTable.HeaderRow>
-            <DataTable.HeaderCell width={220}>Company</DataTable.HeaderCell>
+            <DataTable.HeaderCell width={220}>Address</DataTable.HeaderCell>
             <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
             <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
             <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
