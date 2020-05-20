@@ -458,12 +458,10 @@ def location_detailer(batch_size=300, wait=True):
 
     while collecting:
 
-        # places = list(utils.DB_TERMINAL_PLACES.aggregate([
-        #     {'$match': query},
-        #     {'$sample': size}
-        # ]))
-
-        places = TEST_LIST
+        places = list(utils.DB_TERMINAL_PLACES.aggregate([
+            {'$match': query},
+            {'$sample': size}
+        ]))
 
         if len(places) == 0:
             if wait:
@@ -474,7 +472,7 @@ def location_detailer(batch_size=300, wait=True):
             else:
                 collecting = False
 
-        locations = google.get_many_lat_lng(places)
+        locations = google.get_many_lat_lng(places, place_dict=True)
 
         for details in locations:
             utils.DB_TERMINAL_PLACES.update_one({
@@ -524,6 +522,8 @@ if __name__ == "__main__":
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     collect_locations_test()
     #print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
+    google_detailer(batch_size=300)
+    location_detailer(batch_size=300)
 
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
-    opentable_detailer()
+    # opentable_detailer()
