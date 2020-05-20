@@ -4,6 +4,7 @@ from rest_framework.response import Response
 
 from .serializers import PerformanceSerializer
 import data.performance as performance
+import datetime as dt
 
 '''
 
@@ -60,7 +61,6 @@ class PerformanceAPI(BasicAPI):
 
         Response: {
             performance: {
-                id: prismaID
                 createdAt: Date,
                 updatedAt: Date,
                 dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
@@ -107,4 +107,11 @@ class PerformanceAPI(BasicAPI):
         else:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(data, status=status.HTTP_200_OK)
+        result = {
+            'createAt': dt.datetime.utcnow(),
+            'updatedAt': dt.datetime.utcnow(),
+            'dataType': data_type,
+            'data': data
+        }
+
+        return Response(result, status=status.HTTP_200_OK)
