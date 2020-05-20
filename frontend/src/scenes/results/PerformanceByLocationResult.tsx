@@ -43,9 +43,9 @@ export default function PerformanceByLocationResult(props: Props) {
               return (
                 <DataTable.Row key={index}>
                   <DataTable.Cell width={220}>{name}</DataTable.Cell>
-                  <DataTable.Cell>{totalSales}</DataTable.Cell>
-                  <DataTable.Cell>{avgRating}</DataTable.Cell>
-                  <DataTable.Cell>{numReview}</DataTable.Cell>
+                  <DataTable.Cell align="right">{totalSales}</DataTable.Cell>
+                  <DataTable.Cell align="right">{avgRating}</DataTable.Cell>
+                  <DataTable.Cell align="right">{numReview}</DataTable.Cell>
                 </DataTable.Row>
               );
             })}
