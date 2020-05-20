@@ -179,7 +179,7 @@ class GeoCode(GenericScraper):
 class GoogleDetails(GenericScraper):
 
     BASE_URL = 'https://www.google.com/search?hl=en&q={}&sourceid=chrome&ie=UTF-8'
-    #BASE_URL = 'https://www.google.com/search?q={}&sourceid=chrome&ie=UTF-8'
+    # BASE_URL = 'https://www.google.com/search?q={}&sourceid=chrome&ie=UTF-8'
 
     @staticmethod
     def build_request(name, address):
@@ -187,6 +187,7 @@ class GoogleDetails(GenericScraper):
         name = utils.encode_word(name)
         address = utils.encode_word(address)
         url = GoogleDetails.BASE_URL.format(name + '+near+' + address)
+        print(url)
         return url
 
     def get_details(self, name, address, projection=None):
