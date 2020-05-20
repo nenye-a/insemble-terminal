@@ -1,4 +1,4 @@
-import React, { useState, useMemo, ComponentProps } from 'react';
+import React, { useState, ComponentProps } from 'react';
 import { useCombobox } from 'downshift';
 import styled, { css } from 'styled-components';
 
