@@ -4,6 +4,8 @@ from parsers import opentable_parser_all
 import google
 import utils
 import time
+import pandas
+import numpy as np
 from bson import ObjectId
 from pprint import pprint
 
@@ -245,6 +247,97 @@ def collect_locations(run_ID=None, run_details=None):
 
     # recurse until stack is empty
     collect_locations(run_details=run_details)
+
+
+def collect_random_expansion(region, term, zoom=19):
+    # processed latlngs
+    processed = dict()
+
+    # TODO while still unprocessed latlng
+    unprocessed_latlng = True
+    # while there's unprocessed latlng's in database
+    while unprocessed_latlng:
+
+        # get pool of lat,lngs to query from
+        # TODO:
+        latlngs = list()
+
+        # collect locations for nearby region asynchronously, save (latlng, result) pairs
+        # TODO: save lat,lng with result metadata
+        nearby_scraper = google.GoogleNearby('NEARBY SCRAPER')
+        urls_meta = [{"url": nearby_scraper.build_request(term, lat, lng, zoom), "meta": (lat, lng)} for (lat, lng) in latlngs]
+        nearby_results = nearby_scraper.async_request(urls_meta, quality_proxy=True,
+                                                      headers={"referer": "https://www.google.com/"}, timeout=5)
+
+        # for the lat,lngs queried, expand the region recursively if number of results only changes by 2
+        # TODO: check this format
+        [query_upward(term, nearby_lat, nearby_lng, zoom, result) for nearby_lat, nearby_lng, result in nearby_results]
+
+        # remove expanded region lat,lngs from queue
+
+    pass
+
+
+def query_upward(term, lat, lng, zoom, results=None):
+    # reduces the zoom if there aren't enough new results to encapsulate larger area
+    if results == None:
+        results = set()
+    init_results = results
+    # TODO: edit get_nearby func to include zoom
+    results.update(google.get_nearby(term, lat, lng, zoom))
+    result_change = len(results) - len(init_results)
+    if result_change <= 2:
+        query_upward(term, lat, lng, zoom - 1, results)
+    return results, zoom
+
+
+def divide_region(region, ground_zoom):
+    # TODO: need lat, lng, sky_zoom if you're doing a custom region
+
+    print("building requests for {}".format(region))
+    lat, lng, sky_size_var = google.get_lat_lng(region, True)
+    nearby_scraper = google.GoogleNearby('GOOGLE NEARBY')
+    geo_scraper = google.GeoCode('GOOGLE GEO')
+    nearby_request_url = nearby_scraper.build_request('', lat, lng, ground_zoom)
+
+    print("requesting {}".format(nearby_request_url))
+    lat, lng, size_var = nearby_scraper.request(
+        nearby_request_url,
+        quality_proxy=True,
+        headers={"referer": "https://www.google.com/"},
+        timeout=5,
+        res_parser=geo_scraper.default_parser
+    )
+    nw, se = google.get_viewport(lat, lng, size_var)
+    diameter = {"vertical": abs(nw[0] - se[0]), "horizontal": abs(nw[1] - se[1])}
+    print("nw {} se {}".format(nw, se))
+
+    sky_nw, sky_se = google.get_viewport(lat, lng, sky_size_var)
+    sky_diameter = {"vertical": abs(sky_nw[0] - sky_se[0]), "horizontal": abs(sky_nw[1] - sky_se[1])}
+    print("sky_nw {} sky_se {}".format(sky_nw, sky_se))
+
+    print("assigning new coordinates".format())
+    coords = []
+    print(sky_nw[1], sky_se[1], sky_diameter['horizontal'] / diameter['horizontal'])
+    for v in np.linspace(sky_nw[0], sky_se[0], round(sky_diameter['vertical'] / diameter['vertical'])):
+        for h in np.linspace(sky_nw[1], sky_se[1], round(sky_diameter['horizontal'] / diameter['horizontal'])):
+            coords.append((v, h))
+
+    return coords
+
+
+def save_expanded_results(term, results, lat, lng, zoom):
+    # update latlng for which result was found
+
+    # upload results to database
+
+    # remove latlngs within radius specified by zoom
+    pass
+
+
+def get_zoom_radius(zoom):
+    # return radius
+    pass
 
 
 def google_detailer(batch_size=300, wait=True):
@@ -491,23 +584,28 @@ if __name__ == "__main__":
     def collect_locations_test():
         start_count = utils.DB_TERMINAL_PLACES.count_documents({})
         start_time = time.time()
-        region = "Pasadena, CA"
-        term = "Starbucks"
+        region = "Orange County"
+        term = "Dunkin"
         term, lat, lng, zoom, results = build_location_collect(region, term)
         run_details = {"term": term, "region": region, "init_stack": [(lat, lng, zoom)], "stack": [(lat, lng, zoom)]}
-        run_ID = ObjectId("5ec4a58169b2f6c6d4bedf8d")
+        #run_ID = ObjectId("5ec4c72369b2f6c6d4c0c7ba")
         collect_locations(run_details=run_details)
         delta = time.time() - start_time
         if results is not None:
             print("Obtained {} results in {} seconds".format(utils.DB_TERMINAL_PLACES.count_documents({}) - start_count, delta))
 
-    # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
-    collect_locations_test()
-    #print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
-    google_detailer(batch_size=300)
-    location_detailer(batch_size=300)
-    # google_detailer(batch_size=300)
-    # location_detailer(batch_size=300)
+    def divide_region_test():
+        region = "Los Angeles"
+        zoom = 18
+        coords = divide_region(region, zoom)
+        print(len(coords))
+        df = pandas.DataFrame(coords[-2000:])
+        df.to_csv("grid_coordinates_last2k.csv")
 
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
+    # collect_locations_test()
+    # divide_region_test()
+    # print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
+    # google_detailer(batch_size=300)
+    # location_detailer(batch_size=300)
     opentable_detailer(batch_size=10)
