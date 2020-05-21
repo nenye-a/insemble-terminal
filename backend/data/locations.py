@@ -281,7 +281,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             batches = utils.chunks(coords, 100000)
             for batch in batches:
                 utils.DB_COORDINATES.insert_many(batch, ordered=False)
-        except utils.BWE as bwe:
+        except utils.BWE:
             print('Center, viewport, zoom, combo already in database, please check.')
             raise
 
@@ -291,12 +291,14 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
 
     while True:
 
+        point_documents = list(utils.DB_COORDINATES.aggregate([
+            {'$match': query},
+            {'$sample': size}
+        ]))
+        queried_ids = [document['_id'] for document in point_documents]
         latlngs = [
             tuple(reversed(document['query_point']['coordinates'])) for document in
-            utils.DB_COORDINATES.aggregate([
-                {'$match': query},
-                {'$sample': size}
-            ])]
+            point_documents]
 
         if len(latlngs) == 0:
             print('All Done!')
@@ -317,7 +319,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         )
 
         name_addresses = set()
-        disposable_coord_ids = set()
+        disposable_coord_ids = set(queried_ids)
         for item in nearby_results:
             lat, lng, zoom, term = item['meta']
             results, final_zoom = item['data'] if item['data'] else (None, None)
@@ -339,7 +341,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         try:
             if places:
                 utils.DB_TERMINAL_PLACES.insert_many(places, ordered=False)
-            number_inserted = len(places)
+            number_inserted = len(places) if places else 0
         except utils.BWE as bwe:
             number_inserted = bwe.details['nInserted']
         print('Inserted {} new items into the database.'.format(number_inserted))
@@ -388,6 +390,7 @@ def query_upward(results, meta, num_initial_results):
         return results, zoom
     if results is None:
         results = set()
+    time.sleep(0.5)  # wait half a second to prevent spamming request
     nearby = google.get_nearby(term, lat, lng, zoom)
     nearby and results.update(nearby)
     result_change = len(results) - num_initial_results

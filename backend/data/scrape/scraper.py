@@ -35,7 +35,7 @@ class GenericScraper(object):
         self.session = requests.Session()
         self.set_retries()
 
-    def set_retries(self, max_retries=3, backoff_factor=0.1):
+    def set_retries(self, max_retries=3, backoff_factor=1):
         retry_strategy = Retry(
             total=max_retries,
             backoff_factor=backoff_factor,
