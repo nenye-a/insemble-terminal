@@ -314,7 +314,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             urls_meta,
             quality_proxy=True,
             headers={"referer": "https://www.google.com/"},
-            timeout=5,
+            timeout=10,
             meta_function=meta_query_upward
         )
 
@@ -351,7 +351,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         num_points_removed = len(disposable_coord_ids)
         print('Removed {} coords from the database.'.format(num_points_removed))
         utils.DB_LOG.update_one(run_identifier, {'$inc': {
-            term + '_queried_points': batch_size,
+            term + '_queried_points': len(queried_ids),
             term + '_removed_points ': num_points_removed,
             term + '_places_inserted': number_inserted
         }}, upsert=True)
