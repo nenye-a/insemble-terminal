@@ -26,9 +26,9 @@ DEFALT_SCRAPER = GenericScraper('DEFAULT SCRAPER')
 
 # Helper Functions
 
-def get_nearby(venue_type, lat, lng):
+def get_nearby(venue_type, lat, lng, zoom=17):
     nearby_scraper = GoogleNearby('GOOGLE NEARBY')
-    return nearby_scraper.get_nearby(venue_type, lat, lng)
+    return nearby_scraper.get_nearby(venue_type, lat, lng, zoom)
 
 
 def get_many_nearby(nearby_search_list):
@@ -36,17 +36,22 @@ def get_many_nearby(nearby_search_list):
     return nearby_scraper.get_many_nearby(nearby_search_list)
 
 
-def get_lat_lng(query, include_sizevar=False):
+def get_lat_lng(query, include_sizevar=False, viewport=False):
     geocoder = GeoCode('GECODER')
-    return geocoder.get_lat_lng(query, include_sizevar)
+    return geocoder.get_lat_lng(
+        query,
+        include_sizevar=include_sizevar,
+        viewport=viewport
+    )
 
 
-def get_many_lat_lng(queries, include_sizevar=False, place_dict=False):
+def get_many_lat_lng(queries, include_sizevar=False, place_dict=False, viewport=False):
     geocoder = GeoCode('GECODER')
     return geocoder.get_many_lat_lng(
         queries,
         include_sizevar=include_sizevar,
-        place_dict=place_dict
+        place_dict=place_dict,
+        viewport=viewport
     )
 
 
@@ -94,8 +99,8 @@ class GoogleNearby(GenericScraper):
     def response_parse(self, response):
         return self.default_parser(response)
 
-    def get_nearby(self, venue_type, lat, lng):
-        url = self.build_request(venue_type, lat, lng, zoom=17)
+    def get_nearby(self, venue_type, lat, lng, zoom=17):
+        url = self.build_request(venue_type, lat, lng, zoom)
         return self.request(
             url,
             quality_proxy=True,
@@ -143,7 +148,7 @@ class GeoCode(GenericScraper):
     def response_parse(self, response):
         return self.default_parser(response)
 
-    def get_lat_lng(self, query, include_sizevar=False):
+    def get_lat_lng(self, query, include_sizevar=False, viewport=False):
 
         url = self.build_request(query)
         try:
@@ -155,13 +160,15 @@ class GeoCode(GenericScraper):
             )
             if include_sizevar:
                 return lat, lng, goog_size_var
+            if viewport:
+                return lat, lng, get_viewport(lat, lng, goog_size_var)
             else:
                 return lat, lng
         except Exception as e:
             print("Error has occured in GeoCode: {} - request_url: {}".format(e, url))
             return None
 
-    def get_many_lat_lng(self, query_list, include_sizevar=False, place_dict=False):
+    def get_many_lat_lng(self, query_list, include_sizevar=False, place_dict=False, viewport=False):
         if place_dict:
             if 'name' not in query_list[0] and 'address' not in query_list[0]:
                 print('A Place consists of an address and a name. Please resubmit.')
@@ -183,6 +190,12 @@ class GeoCode(GenericScraper):
             for data in result:
                 if data['data']:
                     data['data'] = data['data'][:2]
+        if viewport:
+            for data in result:
+                if data['data']:
+                    lat, lng, goog_sizevar = data['data']
+                    data['data'] = lat, lng, get_viewport(goog_sizevar)
+
         return result
 
 
@@ -399,8 +412,8 @@ if __name__ == "__main__":
 
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
-        print(name, get_lat_lng(name))
-        print(name, "size var option", get_lat_lng(name, True))
+        print(name, get_lat_lng(name, viewport=True))
+        # print(name, "size var option", get_lat_lng(name, True))
 
     def get_many_lat_lng_test():
         # my_list = [item["name"] + " " + item["address"] for item in TEST_LIST]
@@ -439,7 +452,7 @@ if __name__ == "__main__":
 
     # get_google_activity_test()
     # get_many_lat_lng_test()
-    # get_lat_lng_test()
+    get_lat_lng_test()
     # get_nearby_test()
     # get_google_details_test()
-    get_many_google_details_test()
+    # get_many_google_details_test()

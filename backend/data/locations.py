@@ -14,6 +14,9 @@ NUM_REGEX = r'[-+]?\d*\.?\d*'
 LATITUDE_REGEX = r'latitude=' + NUM_REGEX
 LONGITUDE_REGEX = r'longitude=' + NUM_REGEX
 
+BASELINE_ZOOM = 18
+BASELINE_RADIUS = 75  # meters
+
 TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'},
              {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'},
              {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'},
@@ -249,53 +252,150 @@ def collect_locations(run_ID=None, run_details=None):
     collect_locations(run_details=run_details)
 
 
-def collect_random_expansion(region, term, zoom=19):
-    # processed latlngs
-    processed = dict()
+def collect_random_expansion(region, term, zoom=18, batch_size=10):
+    # check if db exists. if yes, connect with corresponding db of lat lngs
+    # if db does not exist, create new latlngs for region and upload into new run_db for region, term, zoom
 
-    # TODO while still unprocessed latlng
-    unprocessed_latlng = True
-    # while there's unprocessed latlng's in database
-    while unprocessed_latlng:
+    lat, lng, viewport = google.get_lat_lng(region, viewport=True)
+    nw, se = viewport
+    center = lat, lng
+    run_identifier = {
+        'center': utils.to_geojson(center),
+        'viewport': {
+            'nw': utils.to_geojson(nw),
+            'se': utils.to_geojson(se)
+        },
+        'zoom': zoom
+    }
+    has_document = utils.DB_COORDINATES.find_one(run_identifier)
+    if not has_document:
+        coords = []
+        for query_point in divide_region(center, viewport, zoom):
+            insert_doc = run_identifier.copy()
+            insert_doc['query_point'] = utils.to_geojson(query_point)
+            coords.append(insert_doc)
+        try:
+            batches = utils.chunks(coords, 100000)
+            for batch in batches:
+                utils.DB_COORDINATES.insert_many(batch, ordered=False)
+        except utils.BWE as bwe:
+            print('Center, viewport, zoom, combo already in database, please check.')
+            raise
 
-        # get pool of lat,lngs to query from
-        # TODO:
-        latlngs = list()
+    query = run_identifier.copy()
+    query['processed_terms'] = {"$nin": [term]}
+    size = {'size': batch_size}
+
+    while True:
+
+        latlngs = [
+            tuple(reversed(document['query_point']['coordinates'])) for document in
+            utils.DB_COORDINATES.aggregate([
+                {'$match': query},
+                {'$sample': size}
+            ])]
+
+        if len(latlngs) == 0:
+            print('All Done!')
+            return
 
         # collect locations for nearby region asynchronously, save (latlng, result) pairs
-        # TODO: save lat,lng with result metadata
         nearby_scraper = google.GoogleNearby('NEARBY SCRAPER')
-        urls_meta = [{"url": nearby_scraper.build_request(term, lat, lng, zoom), "meta": (lat, lng)} for (lat, lng) in latlngs]
-        nearby_results = nearby_scraper.async_request(urls_meta, quality_proxy=True,
-                                                      headers={"referer": "https://www.google.com/"}, timeout=5)
+        urls_meta = [{
+            "url": nearby_scraper.build_request(term, lat, lng, zoom),
+            "meta": (lat, lng, zoom, term)} for (lat, lng) in latlngs
+        ]
+        nearby_results = nearby_scraper.async_request(
+            urls_meta,
+            quality_proxy=True,
+            headers={"referer": "https://www.google.com/"},
+            timeout=5,
+            meta_function=meta_query_upward
+        )
 
-        # for the lat,lngs queried, expand the region recursively if number of results only changes by 2
-        # TODO: check this format
-        [query_upward(term, nearby_lat, nearby_lng, zoom, result) for nearby_lat, nearby_lng, result in nearby_results]
+        name_addresses = set()
+        disposable_coord_ids = set()
+        for item in nearby_results:
+            lat, lng, zoom, term = item['meta']
+            results, final_zoom = item['data'] if item['data'] else (None, None)
+            results and name_addresses.update(results)
+            radius = get_zoom_radius(zoom)
+            in_area = query.copy()
+            in_area['query_point'] = {
+                '$near': {
+                    '$geometry': utils.to_geojson((lat, lng)),
+                    '$maxDistance': radius
+                }
+            }
 
-        # remove expanded region lat,lngs from queue
+            location_documents = utils.DB_COORDINATES.find(in_area)
+            for document in location_documents:
+                disposable_coord_ids.add(document['_id'])
 
-    pass
+        places = [utils.split_name_address(place, as_dict=True) for place in name_addresses]
+        try:
+            utils.DB_TERMINAL_PLACES.insert_many(places, ordered=False)
+            number_inserted = len(places)
+        except utils.BWE as bwe:
+            number_inserted = bwe.details['nInserted']
+        print('Inserted {} new items into the database.'.format(number_inserted))
+        utils.DB_COORDINATES.update_many({'_id': {'$in': list(disposable_coord_ids)}}, {'$push': {
+            'processed_terms': term
+        }})
+        num_points_removed = len(disposable_coord_ids)
+        print('Removed {} coords from the database.'.format(num_points_removed))
+        utils.DB_LOG.update_one(run_identifier, {'$inc': {
+            term + '_queried_points': batch_size,
+            term + '_removed_points ': num_points_removed,
+            term + '_places_inserted': number_inserted
+        }}, upsert=True)
 
 
-def query_upward(term, lat, lng, zoom, results=None):
-    # reduces the zoom if there aren't enough new results to encapsulate larger area
-    if results == None:
+def parse_nearby(nearby_upward_results):
+
+    data = []
+    for item in nearby_upward_results:
+        lat, lng, zoom, term = item['meta']
+        results, final_zoom = item['data'] if item['data'] else (None, None)
+        data.append({
+            'lat': lat,
+            'lng': lng,
+            'final_zoom': final_zoom,
+            'num_results': "num locations: " + str(len(results)) if results else "no results"
+        })
+
+    pandas.DataFrame(data).to_csv('upward_test_csv.csv')
+
+
+def meta_query_upward(results, meta):
+    num_initial_results = len(results) if results else 0
+    lat, lng, zoom, term = meta
+    meta = lat, lng, zoom - 1, term
+    return query_upward(results, meta, num_initial_results)
+
+
+def query_upward(results, meta, num_initial_results):
+    """
+    For the lat,lngs queried, expand the region recursively
+    if number of results only changes by 2
+    """
+    lat, lng, zoom, term = meta
+    if zoom <= 13:
+        return results, zoom
+    if results is None:
         results = set()
-    init_results = results
-    # TODO: edit get_nearby func to include zoom
     results.update(google.get_nearby(term, lat, lng, zoom))
-    result_change = len(results) - len(init_results)
+    result_change = len(results) - num_initial_results
     if result_change <= 2:
-        query_upward(term, lat, lng, zoom - 1, results)
-    return results, zoom
+        meta = lat, lng, zoom - 1, term
+        results, zoom = query_upward(results, meta, num_initial_results)
+    return results, zoom + 1  # zoom of level down from query zoom
 
 
-def divide_region(region, ground_zoom):
-    # TODO: need lat, lng, sky_zoom if you're doing a custom region
+def divide_region(center, viewport, ground_zoom):
+    lat, lng = center
+    sky_nw, sky_se = viewport
 
-    print("building requests for {}".format(region))
-    lat, lng, sky_size_var = google.get_lat_lng(region, True)
     nearby_scraper = google.GoogleNearby('GOOGLE NEARBY')
     geo_scraper = google.GeoCode('GOOGLE GEO')
     nearby_request_url = nearby_scraper.build_request('', lat, lng, ground_zoom)
@@ -312,7 +412,6 @@ def divide_region(region, ground_zoom):
     diameter = {"vertical": abs(nw[0] - se[0]), "horizontal": abs(nw[1] - se[1])}
     print("nw {} se {}".format(nw, se))
 
-    sky_nw, sky_se = google.get_viewport(lat, lng, sky_size_var)
     sky_diameter = {"vertical": abs(sky_nw[0] - sky_se[0]), "horizontal": abs(sky_nw[1] - sky_se[1])}
     print("sky_nw {} sky_se {}".format(sky_nw, sky_se))
 
@@ -336,8 +435,7 @@ def save_expanded_results(term, results, lat, lng, zoom):
 
 
 def get_zoom_radius(zoom):
-    # return radius
-    pass
+    return BASELINE_RADIUS * 2**(BASELINE_ZOOM - zoom)
 
 
 def google_detailer(batch_size=300, wait=True):
@@ -588,7 +686,7 @@ if __name__ == "__main__":
         term = "Dunkin"
         term, lat, lng, zoom, results = build_location_collect(region, term)
         run_details = {"term": term, "region": region, "init_stack": [(lat, lng, zoom)], "stack": [(lat, lng, zoom)]}
-        #run_ID = ObjectId("5ec4c72369b2f6c6d4c0c7ba")
+        # run_ID = ObjectId("5ec4c72369b2f6c6d4c0c7ba")
         collect_locations(run_details=run_details)
         delta = time.time() - start_time
         if results is not None:
@@ -597,15 +695,20 @@ if __name__ == "__main__":
     def divide_region_test():
         region = "Los Angeles"
         zoom = 18
-        coords = divide_region(region, zoom)
+        print("building requests for {}".format(region))
+        lat, lng, sky_size_var = google.get_lat_lng(region, True)
+        viewport = google.get_viewport(lat, lng, sky_size_var)
+        center = lat, lng
+        coords = divide_region(center, viewport, zoom)
         print(len(coords))
-        df = pandas.DataFrame(coords[-2000:])
-        df.to_csv("grid_coordinates_last2k.csv")
+        # df = pandas.DataFrame(coords[-2000:])
+        # df.to_csv("grid_coordinates_last2k.csv")
 
+    collect_random_expansion("Los Angeles", "stores")
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
     # divide_region_test()
     # print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
     # google_detailer(batch_size=300)
     # location_detailer(batch_size=300)
-    opentable_detailer(batch_size=10)
+    # opentable_detailer(batch_size=10)
