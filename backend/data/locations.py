@@ -322,7 +322,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             lat, lng, zoom, term = item['meta']
             results, final_zoom = item['data'] if item['data'] else (None, None)
             results and name_addresses.update(results)
-            radius = get_zoom_radius(zoom)
+            radius = get_zoom_radius(final_zoom)
             in_area = query.copy()
             in_area['query_point'] = {
                 '$near': {
@@ -337,7 +337,8 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
 
         places = [utils.split_name_address(place, as_dict=True) for place in name_addresses]
         try:
-            utils.DB_TERMINAL_PLACES.insert_many(places, ordered=False)
+            if places:
+                utils.DB_TERMINAL_PLACES.insert_many(places, ordered=False)
             number_inserted = len(places)
         except utils.BWE as bwe:
             number_inserted = bwe.details['nInserted']
@@ -442,18 +443,22 @@ def get_zoom_radius(zoom):
     return BASELINE_RADIUS * 2**(BASELINE_ZOOM - zoom)
 
 
-def google_detailer(batch_size=300, wait=True):
+def google_detailer(batch_size=300, wait=True, additional_query=None):
     """
     Google detail collector.
     """
 
     query = {'google_details': {'$exists': False}, 'address': {'$exists': True}}
+    additional_query and query.update(additional_query)
+
     size = {'size': batch_size}
 
     collecting = True
 
     while collecting:
 
+        print(query)
+        return
         places = list(utils.DB_TERMINAL_PLACES.aggregate([
             {'$match': query},
             {'$sample': size}
@@ -714,6 +719,6 @@ if __name__ == "__main__":
     # collect_locations_test()
     # divide_region_test()
     # print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
-    # google_detailer(batch_size=300)
+    # google_detailer(batch_size=120, additional_query={'$text': {'$search': 'Sports Clips'}})
     # location_detailer(batch_size=300)
     # opentable_detailer(batch_size=10)
