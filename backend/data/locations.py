@@ -387,7 +387,8 @@ def query_upward(results, meta, num_initial_results):
         return results, zoom
     if results is None:
         results = set()
-    results.update(google.get_nearby(term, lat, lng, zoom))
+    nearby = google.get_nearby(term, lat, lng, zoom)
+    nearby and results.update(nearby)
     result_change = len(results) - num_initial_results
     if result_change <= 2:
         meta = lat, lng, zoom - 1, term
@@ -708,7 +709,7 @@ if __name__ == "__main__":
         # df.to_csv("grid_coordinates_last2k.csv")
 
     collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
-    collect_random_expansion("Los Angeles", "stores", batch_size=100)
+    # collect_random_expansion("Los Angeles", "stores", batch_size=100)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
     # divide_region_test()
