@@ -252,7 +252,7 @@ def collect_locations(run_ID=None, run_details=None):
     collect_locations(run_details=run_details)
 
 
-def collect_random_expansion(region, term, zoom=18, batch_size=10):
+def collect_random_expansion(region, term, zoom=18, batch_size=100):
     # check if db exists. if yes, connect with corresponding db of lat lngs
     # if db does not exist, create new latlngs for region and upload into new run_db for region, term, zoom
 
@@ -275,6 +275,9 @@ def collect_random_expansion(region, term, zoom=18, batch_size=10):
             insert_doc['query_point'] = utils.to_geojson(query_point)
             coords.append(insert_doc)
         try:
+            identifier_with_num = run_identifier.copy()
+            identifier_with_num['total_number_query_points'] = len(coords)
+            utils.DB_LOG.insert_one(identifier_with_num)
             batches = utils.chunks(coords, 100000)
             for batch in batches:
                 utils.DB_COORDINATES.insert_many(batch, ordered=False)
@@ -704,7 +707,8 @@ if __name__ == "__main__":
         # df = pandas.DataFrame(coords[-2000:])
         # df.to_csv("grid_coordinates_last2k.csv")
 
-    collect_random_expansion("Los Angeles", "stores")
+    collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
+    collect_random_expansion("Los Angeles", "stores", batch_size=100)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
     # divide_region_test()

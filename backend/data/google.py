@@ -14,7 +14,7 @@ HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 # TODO: fix regex to get Chick-fil-a in regex_address
-REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
+REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 AMPERSAND = '\\\\u0026'
@@ -402,13 +402,15 @@ if __name__ == "__main__":
         venue_type = 'restaurants'
         lat = 33.840617
         lng = -84.3715611
-        # print(get_nearby(venue_type, lat, lng))
-        start = time.time()
-        for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
-            get_nearby(venue_type, lat, lng)
-        finish = time.time()
+        nearby = get_nearby(venue_type, lat, lng)
+        print(nearby)
+        print(len(nearby))
+        # start = time.time()
+        # for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
+        #     get_nearby(venue_type, lat, lng)
+        # finish = time.time()
 
-        print("Nearby seconds: {} seconds".format(finish - start))
+        # print("Nearby seconds: {} seconds".format(finish - start))
 
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
@@ -452,7 +454,7 @@ if __name__ == "__main__":
 
     # get_google_activity_test()
     # get_many_lat_lng_test()
-    get_lat_lng_test()
-    # get_nearby_test()
+    # get_lat_lng_test()
+    get_nearby_test()
     # get_google_details_test()
     # get_many_google_details_test()
