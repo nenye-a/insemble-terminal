@@ -460,8 +460,6 @@ def google_detailer(batch_size=300, wait=True, additional_query=None):
 
     while collecting:
 
-        print(query)
-        return
         places = list(utils.DB_TERMINAL_PLACES.aggregate([
             {'$match': query},
             {'$sample': size}
@@ -716,12 +714,16 @@ if __name__ == "__main__":
         # df = pandas.DataFrame(coords[-2000:])
         # df.to_csv("grid_coordinates_last2k.csv")
 
-    collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
+    # collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
     # collect_random_expansion("Los Angeles", "stores", batch_size=100)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
     # divide_region_test()
     # print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
-    # google_detailer(batch_size=120, additional_query={'$text': {'$search': 'Sports Clips'}})
+    # google_detailer(batch_size=120, additional_query={
+    #     '$text': {'$search': 'Clips'},
+    #     'address': {"$regex": ".*FL"}
+    # })
+    google_detailer(batch_size=120)
     # location_detailer(batch_size=300)
     # opentable_detailer(batch_size=10)

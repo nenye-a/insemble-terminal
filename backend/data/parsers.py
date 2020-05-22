@@ -189,8 +189,6 @@ def google_detail_parser(response):
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
-    print(store)
-
     return store
 
 
