@@ -452,7 +452,7 @@ def google_news_parser(response):
             title = g.find('h3').text
             if not g.find('time'):
                 continue
-            published = tparser.parse(g.find('time')['datetime']).ctime()  # normalize date format
+            published = tparser.parse(g.find('time')['datetime'])
             description = divs[1].text
             image = g.find('img')['src']
             item = {
@@ -473,7 +473,7 @@ def remove_old_news(news_list, date=None):
         date = dt.datetime.utcnow() - dt.timedelta(weeks=2)
 
     for news in news_list:
-        published_date = tparser.parse(news['published']).astimezone(pytz.utc).replace(tzinfo=None)
+        published_date = news['published'].astimezone(pytz.utc).replace(tzinfo=None)
         if published_date > date:
             cleaned_list.append(news)
 
