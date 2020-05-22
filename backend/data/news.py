@@ -8,7 +8,10 @@ News related queries.
 '''
 
 DEFAULT_SCORER = {
-    'business': 6,
+    'sales': 6,
+    'performance': 5,
+    'business': 4,
+    'locations': 4,
     'close': 3.5,
     'closed': 3,
     'closing': 3,
@@ -20,8 +23,8 @@ DEFAULT_SCORER = {
     'layoff': 4.5,
     'market': 3.3,
     'open': 3.5,
-    'opened': 3,
-    'opening': 3,
+    'opened': 5,
+    'opening': 4,
     'retail': 5.5,
     'shut': 3,
     'shuttered': 3,

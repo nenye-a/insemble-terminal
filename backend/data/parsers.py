@@ -454,14 +454,14 @@ def google_news_parser(response):
                 continue
             published = tparser.parse(g.find('time')['datetime'])
             description = divs[1].text
-            image = g.find('img')['src']
+            # image = g.find('img')['src']
             item = {
                 "title": title,
                 "link": link,
                 "published": published,
                 "source": source,
                 "description": description,
-                "image": image
+                # "image": image # NOTE: removed for now for potential legal issues
             }
             results.append(item)
     return remove_old_news(results)

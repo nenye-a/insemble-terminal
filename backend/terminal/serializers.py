@@ -50,11 +50,12 @@ class BusinessSerializer(serializers.Serializer):
         return attrs
 
 
-class PerformanceSerializer(serializers.Serializer):
+class SearchSerializer(serializers.Serializer):
 
     """
 
-    Enforces the request schema for the /performance api endpoint.
+    Enforces the basic request schema for most endpoints that 
+    are supportedby the terminal application.
 
     Schema: {
         location: {
@@ -72,7 +73,6 @@ class PerformanceSerializer(serializers.Serializer):
 
     location = serializers.JSONField()
     business = serializers.JSONField()
-    dataType = serializers.CharField(max_length=8)
 
     def validate(self, attrs):
         locationserializer = LocationSerializer(data=attrs['location'])
@@ -84,7 +84,17 @@ class PerformanceSerializer(serializers.Serializer):
         attrs['location'] = locationserializer.validated_data
         attrs['business'] = businessserializer.validated_data
 
+        return attrs
+
+
+class PerformanceSerializer(SearchSerializer):
+
+    dataType = serializers.CharField(max_length=8)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
         attrs['dataType'] = attrs['dataType'].upper()
+
         if attrs['dataType'] not in DATA_TYPES:
             error_message = {}
             error_message['status_detail'] = [
@@ -92,4 +102,4 @@ class PerformanceSerializer(serializers.Serializer):
             ]
             raise serializers.ValidationError(error_message)
 
-        return attrs
+        return super().validate(attrs)
