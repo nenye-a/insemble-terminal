@@ -89,10 +89,14 @@ export default function SearchFilterBar(props: Props) {
           <SearchLocationInput
             placeholder="Any Location"
             onPlaceSelected={(place) => {
-              setSelectedPlace({
-                type: 'ADDRESS' as LocationTagType,
-                params: place.address,
-              });
+              if (place?.address) {
+                setSelectedPlace({
+                  params: place.address,
+                  type: 'ADDRESS' as LocationTagType,
+                });
+              } else {
+                setSelectedPlace(null);
+              }
             }}
           />
           <TouchableOpacity
