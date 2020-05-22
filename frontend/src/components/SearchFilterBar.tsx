@@ -10,6 +10,7 @@ import {
   Dropdown,
   LoadingIndicator,
 } from '../core-ui';
+import { parsePlaceType } from '../helpers';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { BACKGROUND_COLOR, MUTED_TEXT_COLOR } from '../constants/colors';
 import {
@@ -113,7 +114,7 @@ export default function SearchFilterBar(props: Props) {
               if (place?.address) {
                 setSelectedPlace({
                   params: place.address,
-                  type: 'ADDRESS' as LocationTagType,
+                  type: parsePlaceType(place.placeType),
                 });
               } else {
                 setSelectedPlace(null);
