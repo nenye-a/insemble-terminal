@@ -15,7 +15,7 @@ LATITUDE_REGEX = r'latitude=' + NUM_REGEX
 LONGITUDE_REGEX = r'longitude=' + NUM_REGEX
 
 BASELINE_ZOOM = 18
-BASELINE_RADIUS = 75  # meters
+BASELINE_RADIUS = 180  # meters
 
 TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'},
              {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'},
@@ -394,7 +394,7 @@ def query_upward(results, meta, num_initial_results):
     nearby = google.get_nearby(term, lat, lng, zoom)
     nearby and results.update(nearby)
     result_change = len(results) - num_initial_results
-    if result_change <= 2:
+    if result_change <= 4:
         meta = lat, lng, zoom - 1, term
         results, zoom = query_upward(results, meta, num_initial_results)
     return results, zoom + 1  # zoom of level down from query zoom
@@ -714,7 +714,7 @@ if __name__ == "__main__":
         # df = pandas.DataFrame(coords[-2000:])
         # df.to_csv("grid_coordinates_last2k.csv")
 
-    # collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
+    collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
     # collect_random_expansion("Los Angeles", "stores", batch_size=100)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
@@ -724,6 +724,6 @@ if __name__ == "__main__":
     #     '$text': {'$search': 'Clips'},
     #     'address': {"$regex": ".*FL"}
     # })
-    google_detailer(batch_size=120)
+    # google_detailer(batch_size=120)
     # location_detailer(batch_size=300)
     # opentable_detailer(batch_size=10)
