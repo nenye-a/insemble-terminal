@@ -92,7 +92,6 @@ class PerformanceSerializer(SearchSerializer):
     dataType = serializers.CharField(max_length=8)
 
     def validate(self, attrs):
-        attrs = super().validate(attrs)
         attrs['dataType'] = attrs['dataType'].upper()
 
         if attrs['dataType'] not in DATA_TYPES:
