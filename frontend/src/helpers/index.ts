@@ -2,6 +2,7 @@ export { default as capitalize } from './capitalize';
 export { default as getResultQueries } from './getResultQueries';
 export { default as isLocalUrl } from './isLocalUrl';
 export { default as localStorage } from './localStorage';
+export { default as parsePlaceType } from './parsePlaceType';
 export { default as useID } from './useID';
 export { default as useGoogleMaps } from './useGoogleMaps';
 export * from './validation';
