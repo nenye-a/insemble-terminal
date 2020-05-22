@@ -441,7 +441,10 @@ class GoogleNewsScraper(GenericScraper):
             quality_proxy=True,
             timeout=5
         )
-        return results
+        news = []
+        for result in results:
+            result['data'] and news.extend(result['data'])
+        return news
 
 
 def query_region_random(region, search_terms, num_results):
@@ -573,7 +576,19 @@ if __name__ == "__main__":
         news = get_news(news_query)
         print(news)
 
-    get_news_test()
+    def get_many_news_test():
+        news_queries = [
+            "commercial real estate news",
+            "real estate news",
+            "awesome news",
+            "hi news"
+        ]
+        my_queries = get_many_news(news_queries)
+        print(my_queries)
+        print(len(my_queries))
+
+    # get_news_test()
+    get_many_news_test()
     # get_google_activity_test()
     # get_many_lat_lng_test()
     # get_lat_lng_test()
