@@ -189,8 +189,6 @@ def google_detail_parser(response):
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
-    print(store)
-
     return store
 
 
@@ -314,14 +312,14 @@ def opentable_parser(response):
 
 def opentable_parser_all(response):
     """
-    Parse open table result, formally known as
-    (formally known as parse_opentable_result)
+    Parse open table result.
+    First item here is the one that matches the query.
 
     Parameter:
         response: Response, an http get request response
                         for a opentable search of an establishment
-    Return
-        store = {
+    Return: [
+        {
             "name": str name,
             "link": str link,
             "rating": float rating,
@@ -334,6 +332,7 @@ def opentable_parser_all(response):
             "bookings": int bookings,
             "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
         }
+    ]
 
     """
     if response.status_code != 200:

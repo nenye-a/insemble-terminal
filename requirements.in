@@ -22,6 +22,7 @@ bs4
 wheel
 pymongo
 dnspython
+geopy
 matplotlib
 psycopg2
 fuzzywuzzy[speedup]

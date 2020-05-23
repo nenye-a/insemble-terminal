@@ -15,6 +15,7 @@ def get_many_opentable_details(restaurant_list, projection=None):
     table_scraper = OpenTableDetails('table scraper')
     return table_scraper.many_opentable_details(restaurant_list, projection)
 
+
 def check_opentable_in_DB(restaurant):
     # if restaurant fuzzy matches to opentable result
     # TODO: replace this
@@ -33,6 +34,7 @@ def check_opentable_in_DB(restaurant):
 
     # return True if so, false otherwise
     return True
+
 
 class OpenTableDetails(GenericScraper):
 
@@ -67,6 +69,7 @@ class OpenTableDetails(GenericScraper):
         lat_lngs = my_geo.async_request(
             lat_lng_queries,
             quality_proxy=True,
+            timeout=5,
             remove_nones=True
         )
         urls = []
@@ -162,7 +165,7 @@ if __name__ == "__main__":
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'}, {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'}, {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'}, {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'}, {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'}, {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'}, {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'}, {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'}, {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
         print(get_many_opentable_details(my_list))
 
-    find_restaurant_details_test()
-    # find_many_restaurant_details_test()
+    # find_restaurant_details_test()
+    find_many_restaurant_details_test()
     # OpenTableDetails.build_request('The UPS Store',
     #                                '2897 N Druid Hills Rd NE, Atlanta, GA 30329')
