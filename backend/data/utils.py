@@ -1,5 +1,6 @@
 import os
 import re
+import geopy.distance
 import random
 import urllib
 import datetime as dt
@@ -138,6 +139,15 @@ def get_random_latlng(nw, se):
     return lat, lng
 
 
+def distance(geo1, geo2):
+    """
+    Provided two lat & lng tuples, function returns distance in miles:
+    geo = (lat, lng)
+    """
+    mile_distance = geopy.distance.distance(geo1, geo2).miles
+    return mile_distance
+
+
 def translate(value, left_min, left_max, right_min, right_max):
     """Translates value from one range to another"""
     left_span = left_max - left_min
@@ -216,6 +226,18 @@ def to_geojson(coordinates):
         'type': "Point",
         "coordinates": [round(lng, 6), round(lat, 6)]
     }
+
+
+def from_geojson(geo_json, as_dict=False):
+    """
+    geo_json === {
+        "type": "Point",
+        "coordinates": [lng, lat]
+    }
+    """
+    lat = geo_json["coordinates"][1]
+    lng = geo_json["coordinates"][0]
+    return {'lat': lat, 'lng': lng} if as_dict else (lat, lng)
 
 
 if __name__ == "__main__":
