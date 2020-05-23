@@ -32,6 +32,8 @@ dnspython==1.16.0         # via -r requirements.in
 et-xmlfile==1.0.1         # via openpyxl
 flake8==3.8.1             # via -r requirements.in
 fuzzywuzzy[speedup]==0.18.0  # via -r requirements.in
+geographiclib==1.50       # via geopy
+geopy==1.22.0             # via -r requirements.in
 gunicorn==20.0.4          # via -r requirements.in
 idna==2.9                 # via requests
 ipython-genutils==0.2.0   # via traitlets

@@ -1,5 +1,6 @@
 from decouple import config
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 import urllib
 
 '''
@@ -17,6 +18,11 @@ MONGO_PASS = config('MONGO_DB_PASS')
 PROXY_LOG = "news.proxy_log"
 PLACES = "appData.places"
 CITY_TEST = "terminal.city_test"
+TERMINAL_PLACES = "terminal.places"
+TERMINAL_NAME_ADDRESSES = "terminal.name_addresses"
+TERMINAL_RUNS = "terminal.runs"
+COORDINATES = "terminal.coordinates"
+LOG = "terminal.log"
 
 
 class Connect(object):

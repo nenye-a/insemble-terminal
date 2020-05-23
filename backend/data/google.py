@@ -14,7 +14,7 @@ HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 # TODO: fix regex to get Chick-fil-a in regex_address
-REGEX_ADDRESS = r'[\\\\+\w+\'?\s+]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
+REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 AMPERSAND = '\\\\u0026'
@@ -26,9 +26,9 @@ DEFALT_SCRAPER = GenericScraper('DEFAULT SCRAPER')
 
 # Helper Functions
 
-def get_nearby(venue_type, lat, lng):
+def get_nearby(venue_type, lat, lng, zoom=17):
     nearby_scraper = GoogleNearby('GOOGLE NEARBY')
-    return nearby_scraper.get_nearby(venue_type, lat, lng)
+    return nearby_scraper.get_nearby(venue_type, lat, lng, zoom)
 
 
 def get_many_nearby(nearby_search_list):
@@ -36,14 +36,23 @@ def get_many_nearby(nearby_search_list):
     return nearby_scraper.get_many_nearby(nearby_search_list)
 
 
-def get_lat_lng(query, include_sizevar=False):
+def get_lat_lng(query, include_sizevar=False, viewport=False):
     geocoder = GeoCode('GECODER')
-    return geocoder.get_lat_lng(query, include_sizevar)
+    return geocoder.get_lat_lng(
+        query,
+        include_sizevar=include_sizevar,
+        viewport=viewport
+    )
 
 
-def get_many_lat_lng(queries, include_sizevar=False):
+def get_many_lat_lng(queries, include_sizevar=False, place_dict=False, viewport=False):
     geocoder = GeoCode('GECODER')
-    return geocoder.get_many_lat_lng(queries, include_sizevar)
+    return geocoder.get_many_lat_lng(
+        queries,
+        include_sizevar=include_sizevar,
+        place_dict=place_dict,
+        viewport=viewport
+    )
 
 
 def get_google_details(name, address, projection=None):
@@ -90,8 +99,8 @@ class GoogleNearby(GenericScraper):
     def response_parse(self, response):
         return self.default_parser(response)
 
-    def get_nearby(self, venue_type, lat, lng):
-        url = self.build_request(venue_type, lat, lng, zoom=17)
+    def get_nearby(self, venue_type, lat, lng, zoom=17):
+        url = self.build_request(venue_type, lat, lng, zoom)
         return self.request(
             url,
             quality_proxy=True,
@@ -139,7 +148,7 @@ class GeoCode(GenericScraper):
     def response_parse(self, response):
         return self.default_parser(response)
 
-    def get_lat_lng(self, query, include_sizevar=False):
+    def get_lat_lng(self, query, include_sizevar=False, viewport=False):
 
         url = self.build_request(query)
         try:
@@ -151,15 +160,23 @@ class GeoCode(GenericScraper):
             )
             if include_sizevar:
                 return lat, lng, goog_size_var
+            if viewport:
+                return lat, lng, get_viewport(lat, lng, goog_size_var)
             else:
                 return lat, lng
         except Exception as e:
             print("Error has occured in GeoCode: {} - request_url: {}".format(e, url))
             return None
 
-    def get_many_lat_lng(self, query_list, inclde_sizevar=False):
+    def get_many_lat_lng(self, query_list, include_sizevar=False, place_dict=False, viewport=False):
+        if place_dict:
+            if 'name' not in query_list[0] and 'address' not in query_list[0]:
+                print('A Place consists of an address and a name. Please resubmit.')
+                return None
         queries = [{
-            'url': self.build_request(query),
+            'url': self.build_request(query) if not place_dict else self.build_request(
+                query["name"] + " " + query["address"]
+            ),
             'meta': query,
         } for query in query_list]
 
@@ -169,10 +186,16 @@ class GeoCode(GenericScraper):
             timeout=5
         )
 
-        if not inclde_sizevar:
+        if not include_sizevar:
             for data in result:
                 if data['data']:
                     data['data'] = data['data'][:2]
+        if viewport:
+            for data in result:
+                if data['data']:
+                    lat, lng, goog_sizevar = data['data']
+                    data['data'] = lat, lng, get_viewport(goog_sizevar)
+
         return result
 
 
@@ -379,24 +402,28 @@ if __name__ == "__main__":
         venue_type = 'restaurants'
         lat = 33.840617
         lng = -84.3715611
-        # print(get_nearby(venue_type, lat, lng))
-        start = time.time()
-        for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
-            get_nearby(venue_type, lat, lng)
-        finish = time.time()
+        nearby = get_nearby(venue_type, lat, lng)
+        print(nearby)
+        print(len(nearby))
+        # start = time.time()
+        # for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
+        #     get_nearby(venue_type, lat, lng)
+        # finish = time.time()
 
-        print("Nearby seconds: {} seconds".format(finish - start))
+        # print("Nearby seconds: {} seconds".format(finish - start))
 
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
-        print(name, get_lat_lng(name))
-        print(name, "size var option", get_lat_lng(name, True))
+        print(name, get_lat_lng(name, viewport=True))
+        # print(name, "size var option", get_lat_lng(name, True))
 
     def get_many_lat_lng_test():
-        my_list = [item["name"] + " " + item["address"] for item in TEST_LIST]
+        # my_list = [item["name"] + " " + item["address"] for item in TEST_LIST]
+        my_list = TEST_LIST
         goog_start = time.time()
-        details = get_many_lat_lng(my_list)
+        details = get_many_lat_lng(my_list, place_dict=True)
         goog_time = time.time()
+        print(details)
         print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
 
     def get_viewport_test():
@@ -428,6 +455,6 @@ if __name__ == "__main__":
     # get_google_activity_test()
     # get_many_lat_lng_test()
     # get_lat_lng_test()
-    # get_nearby_test()
+    get_nearby_test()
     # get_google_details_test()
     # get_many_google_details_test()

@@ -1,5 +1,6 @@
 import os
 import re
+import geopy.distance
 import random
 import urllib
 import datetime as dt
@@ -23,6 +24,34 @@ SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
+DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
+DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
+DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
+DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
+BWE = mongo.BulkWriteError
+
+
+def create_index(collection):
+    if collection.lower() == 'terminal':
+        DB_TERMINAL_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
+        DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
+        DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
+        DB_TERMINAL_PLACES.create_index([('name', "text"),
+                                         ('google_details.name', "text"),
+                                         ('yelp_details.name', "text")])
+        DB_TERMINAL_PLACES.create_index([('opentable_details.rating', -1)])
+        DB_TERMINAL_PLACES.create_index([('opentable_details.neighborhood', 1)])
+        DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
+        DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
+        DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+    if collection.lower() == 'coordinates':
+        DB_COORDINATES.create_index([('center', 1)])
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_COORDINATES.create_index([('query_point', "2dsphere")])
+        DB_COORDINATES.create_index([('processed_terms', 1)])
+    if collection.lower() == 'log':
+        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1)], unique=True)
 
 
 def meters_to_miles(meters):
@@ -110,6 +139,15 @@ def get_random_latlng(nw, se):
     return lat, lng
 
 
+def distance(geo1, geo2):
+    """
+    Provided two lat & lng tuples, function returns distance in miles:
+    geo = (lat, lng)
+    """
+    mile_distance = geopy.distance.distance(geo1, geo2).miles
+    return mile_distance
+
+
 def translate(value, left_min, left_max, right_min, right_max):
     """Translates value from one range to another"""
     left_span = left_max - left_min
@@ -166,11 +204,40 @@ def fuzzy_match(query, target):
         return False
 
 
-def split_name_address(name_address):
+def split_name_address(name_address, as_dict=False):
     """Will split a string structured "name, adress, with, many, commas"""
     name = name_address.split(",")[0]
     address = name_address.replace(name + ", ", "")
-    return (name, address)
+    if as_dict:
+        return dict(zip(('name', 'address'), (name, address)))
+    return name, address
+
+
+def make_name_address(name, address):
+    return name + ", " + address
+
+
+def to_geojson(coordinates):
+    """
+    coordinates === (lat, lng)
+    """
+    lat, lng = coordinates
+    return {
+        'type': "Point",
+        "coordinates": [round(lng, 6), round(lat, 6)]
+    }
+
+
+def from_geojson(geo_json, as_dict=False):
+    """
+    geo_json === {
+        "type": "Point",
+        "coordinates": [lng, lat]
+    }
+    """
+    lat = geo_json["coordinates"][1]
+    lng = geo_json["coordinates"][0]
+    return {'lat': lat, 'lng': lng} if as_dict else (lat, lng)
 
 
 if __name__ == "__main__":
@@ -198,8 +265,15 @@ if __name__ == "__main__":
             }
         }, 2))
 
+    def test_chunks():
+        print(list(chunks([1], 2)))
+        print(list(chunks([1, 2, 3], 2)))
+        print(list(chunks([1, 2, 3, 5, 6], 2)))
+
     # test_state_code_to_name()
     # test_parse_city()
     # test_to_snake_case()
     # test_snake_to_word()
-    test_round_object()
+    # test_round_object()
+    create_index('log')
+    # test_chunks()
