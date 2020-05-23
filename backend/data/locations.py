@@ -1,6 +1,7 @@
 import re
 import opentable
 from parsers import opentable_parser_all
+import datetime as dt
 import google
 import utils
 import time
@@ -13,6 +14,7 @@ from pprint import pprint
 NUM_REGEX = r'[-+]?\d*\.?\d*'
 LATITUDE_REGEX = r'latitude=' + NUM_REGEX
 LONGITUDE_REGEX = r'longitude=' + NUM_REGEX
+TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 
 BASELINE_ZOOM = 18
 BASELINE_RADIUS = 180  # meters
@@ -350,11 +352,16 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         }})
         num_points_removed = len(disposable_coord_ids)
         print('Removed {} coords from the database.'.format(num_points_removed))
-        utils.DB_LOG.update_one(run_identifier, {'$inc': {
-            term + '_queried_points': len(queried_ids),
-            term + '_removed_points ': num_points_removed,
-            term + '_places_inserted': number_inserted
-        }}, upsert=True)
+        utils.DB_LOG.update_one(run_identifier, {
+            '$inc': {
+                term + '_queried_points': len(queried_ids),
+                term + '_removed_points ': num_points_removed,
+                term + '_places_inserted': number_inserted
+            },
+            '$set': {
+                term + '_updated_last': dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+            }
+        }, upsert=True)
 
 
 def parse_nearby(nearby_upward_results):
@@ -714,7 +721,7 @@ if __name__ == "__main__":
         # df = pandas.DataFrame(coords[-2000:])
         # df.to_csv("grid_coordinates_last2k.csv")
 
-    collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
+    # collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
     # collect_random_expansion("Los Angeles", "stores", batch_size=100)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
@@ -724,6 +731,6 @@ if __name__ == "__main__":
     #     '$text': {'$search': 'Clips'},
     #     'address': {"$regex": ".*FL"}
     # })
-    # google_detailer(batch_size=120)
+    google_detailer(batch_size=300)
     # location_detailer(batch_size=300)
     # opentable_detailer(batch_size=10)
