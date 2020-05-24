@@ -271,6 +271,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         },
         'zoom': zoom
     }
+    log_identifier = dict(run_identifier, **{'method': 'collect_random_expansion'})
     has_document = utils.DB_COORDINATES.find_one(run_identifier)
     if not has_document:
         coords = []
@@ -286,7 +287,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             for batch in batches:
                 utils.DB_COORDINATES.insert_many(batch, ordered=False)
         except utils.BWE:
-            print('Center, viewport, zoom, combo already in database, please check.')
+            print('Center, viewport, zoom, combo already in databasw, please check.')
             raise
 
     query = run_identifier.copy()
@@ -354,7 +355,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         }})
         num_points_removed = len(disposable_coord_ids)
         print('Removed {} coords from the database.'.format(num_points_removed))
-        utils.DB_LOG.update_one(run_identifier, {
+        utils.DB_LOG.update_one(log_identifier, {
             '$inc': {
                 term + '_queried_points': len(queried_ids),
                 term + '_removed_points ': num_points_removed,
