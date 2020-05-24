@@ -175,11 +175,4 @@ if __name__ == "__main__":
     # print_zoom_region("Los Angeles", 15)
     for item in ["restaurants", "stores", "auto shop", "cafe", "coffee shop"]:
         staged_finder("Los Angeles", item, batch_size=100)
-
-    # utils.DB_STAGING_RESULTS.remove({})
-    # utils.DB_STAGING.remove({})
     # get_locations()
-
-    # utils.DB_STAGING.update_many({'$or': [{'stage': 2}, {'stage': 3}]}, {'$rename': {
-    #     'term': 'generating_term'
-    # }})
