@@ -17,6 +17,7 @@ REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
+REGEX_LATLNG_3 = r'\[\d+\.\d\,[\-\d]+\.\d+\,[\-\d]+\.\d+\]'
 AMPERSAND = '\\\\u0026'
 GOOG_KEY = config("GOOG_KEY")
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
@@ -95,6 +96,15 @@ class GoogleNearby(GenericScraper):
         if response.status_code != 200:
             return None
         return utils.get_one_int_from_str(re.search(r'zoom=\d+', response.text).group())
+
+    @staticmethod
+    def parse_nearest_latlng(response):
+        # returns a set of the nearby coordinates from this search
+        # TODO: tie this to each address
+        if response.status_code != 200:
+            return None
+        unprocessed_coords = re.findall(REGEX_LATLNG_3, response.text)
+        return {(ast.literal_eval(coords)[2], ast.literal_eval(coords)[1]) for coords in set(unprocessed_coords)}
 
     def response_parse(self, response):
         return self.default_parser(response)
