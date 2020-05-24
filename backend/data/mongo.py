@@ -23,6 +23,7 @@ TERMINAL_NAME_ADDRESSES = "terminal.name_addresses"
 TERMINAL_RUNS = "terminal.runs"
 COORDINATES = "terminal.coordinates"
 STAGING = "terminal.staging"
+STAGING_RESULTS = "terminal.staging_results"
 LOG = "terminal.log"
 
 MINESWEEPER_PLACES = "terminal.minesweeper_places"

@@ -30,6 +30,7 @@ DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
 DB_STAGING = SYSTEM_MONGO.get_collection(mongo.STAGING)
+DB_STAGING_RESULTS = SYSTEM_MONGO.get_collection(mongo.STAGING_RESULTS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 BWE = mongo.BulkWriteError
 
@@ -72,11 +73,12 @@ def create_index(collection):
         DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_MS_COORDINATES.create_index([('processed_terms', 1)])
     if collection.lower() == 'staging':
-        DB_COORDINATES.create_index([('center', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
-        DB_COORDINATES.create_index([('query_point', "2dsphere")])
-        DB_COORDINATES.create_index([('processed_terms', 1)])
+        DB_STAGING.create_index([('center', 1)])
+        DB_STAGING.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
+        DB_STAGING.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_STAGING.create_index([('query_point', "2dsphere")])
+        DB_STAGING.create_index([('processed_terms', 1)])
+        DB_STAGING_RESULTS.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
     if collection.lower() == 'log':
         DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
 
@@ -150,6 +152,11 @@ def get_one_int_from_str(text: str):
         return int(re.search(r'\d+', text).group())
     except Exception:
         return None
+
+
+def flatten(l):
+    """Flattens a list of lists, will ignore Nones and empty lists"""
+    return [item for sublist in l if sublist for item in sublist]
 
 
 def get_one_float_from_str(text: str):
