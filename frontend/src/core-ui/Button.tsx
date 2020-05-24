@@ -83,10 +83,11 @@ const Container = styled(TouchableOpacity)<Props>`
   padding: 0 12px;
   flex-direction: row;
   align-items: center;
+  outline: none;
   border-radius: ${(props) =>
     props.shape === 'round' ? '14px' : DEFAULT_BORDER_RADIUS};
-  height: ${(props) =>
-    props.size === 'default' && props.shape === 'block' ? '36px' : '28px'};
+    height: ${(props) =>
+      props.size === 'default' && props.shape === 'block' ? '36px' : '28px'};
   ${(props) =>
     props.mode === 'primary' &&
     css`

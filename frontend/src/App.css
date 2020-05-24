@@ -9,6 +9,7 @@ html {
   font-family: 'Avenir', sans-serif;
 }
 
+/* Google autocomplete */
 .pac-container {
   width: 180px;
   border-radius: 5px;
@@ -32,4 +33,10 @@ html {
   width: 0;
   padding: 0;
   margin: 0;
+}
+
+/* Remove outlin */
+body.tab-pressed *:focus {
+  outline: 2px solid #ece9f6 !important; /* for non-webkit browsers */
+  outline: 2px auto -webkit-focus-ring-color !important;
 }
