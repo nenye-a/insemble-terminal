@@ -13,10 +13,13 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100
 HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
-REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\-\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
+REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\-\'?\s\#]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_3 = r'\[\d+\.\d\,[\-\d]+\.\d+\,[\-\d]+\.\d+\]'
+REGEX_LATLNG_4 = r'[\-\d]+\.\d+\,[\-\d]+\.\d+'
+REGEX_COORD_ADDRESS = r'[\-\d]+\.\d+\,[\-\d]+\.\d+\]\\\w\,[\\\"\w\:]+\,[\"\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+' \
+                      r'\[[\\\"\w\s\'\-\:\,]+\]\\\w[\\\"\w\s\'\:\,\-\=\&\;\.\+\(\)\!\*\@\#\$\%\|]+'
 AMPERSAND = '\\\\u0026'
 GOOG_KEY = config("GOOG_KEY")
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
@@ -103,13 +106,30 @@ class GoogleNearby(GenericScraper):
     @staticmethod
     def parse_nearest_latlng(response):
         """
-        Returns a set of (lat, lng) tuples that correspond to the nearby addresses in this request
-        TODO: tie this to each address
+        Returns a set of nearby (lat, lng) tuples that correspond to the nearby locations in this request
         """
         if response.status_code != 200:
             return None
         unprocessed_coords = re.findall(REGEX_LATLNG_3, response.text)
         return {(ast.literal_eval(coords)[2], ast.literal_eval(coords)[1]) for coords in set(unprocessed_coords)}
+
+    @staticmethod
+    def parse_address_latlng(response):
+        """
+        Returns a dictionary of {address: (lat, lng)} that correspond to the nearby addresses in this request
+        """
+        if response.status_code != 200:
+            return None
+        stew = response.text
+        unparsed_section = re.findall(REGEX_COORD_ADDRESS, stew)
+        coord_dict = {}
+        for pair in unparsed_section:
+            try:
+                coord_dict[re.search(REGEX_ADDRESS, pair).group().replace(AMPERSAND, "&")] = ast.literal_eval(re.search(REGEX_LATLNG_4, pair).group())
+            except AttributeError:
+                continue
+
+        return coord_dict
 
     def response_parse(self, response):
         return self.default_parser(response)
@@ -484,6 +504,16 @@ if __name__ == "__main__":
     # get_many_lat_lng_test()
     # get_lat_lng_test()
     # get_nearby_test()
-    get_many_nearby_test()
+    # get_many_nearby_test()
     # get_google_details_test()
     # get_many_google_details_test()
+
+    url = 'https://www.google.com/maps/search/stores/@33.9559918,-118.5607461,17.39z'
+
+    nearby_scrape = GoogleNearby('NEARBY')
+    import requests
+    response = requests.get(url, headers=HEADERS)
+    addresses = nearby_scrape.response_parse(response)
+    print("addresses", len(addresses), addresses)
+    address_latlng = nearby_scrape.parse_address_latlng(response)
+    print("addresses lat lng", len(address_latlng), address_latlng)
