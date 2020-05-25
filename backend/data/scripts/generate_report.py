@@ -139,16 +139,38 @@ def compare_locations_terminal():
 
 
 def compare_locations_fast():
-    terminal_places = list(utils.DB_TERMINAL_PLACES.find({'location': {'$exists': True}}, {'location': 1}))
+    terminal_places = list(utils.DB_TERMINAL_PLACES.find(
+        {'location': {'$exists': True}},
+        {'location': 1}
+    ))
     locations = [terminal_place['location'] for terminal_place in terminal_places]
-    num_list = len(list(utils.DB_PLACES.find({
-        'location': {'$in': locations}
-    })))
-    print(num_list)
+    diff_list = list(utils.DB_PLACES.find({
+        '$and': [
+            {'location': {
+                '$geoWithin': {
+                    '$geometry': {
+                        "type": "Polygon",
+                        "coordinates": [[
+                            [-118.716606, 34.236143],
+                            [-118.106859, 34.236143],
+                            [-118.106859, 33.804815],
+                            [-118.716606, 33.804815],
+                            [-118.716606, 34.236143]
+                        ]]
+                    }
+                }
+            }},
+            {'location': {'$nin': locations}}
+        ]
+    }, {
+        'name': 1, 'address': 1, 'categories': 1, 'location': 1
+    }))
+    print(len(diff_list))
+    pd.DataFrame(diff_list).to_csv('diff.csv')
 
 
 def num_insemble_in_viewport():
-    insemble_places = list(utils.DB__PLACES.find({
+    insemble_places = list(utils.DB_PLACES.find({
         'location': {
             '$geoWithin': {
                 '$geometry': {
@@ -162,7 +184,8 @@ def num_insemble_in_viewport():
                     ]]
                 }
             }
-        }
+        },
+        "name": {"$regex": "^Popeyes Louisiana"}
     }))
     num_places_in_insemble = len(insemble_places)
     print(num_places_in_insemble)
@@ -243,5 +266,7 @@ if __name__ == "__main__":
     # }})
     # compare_bookings_activity()
     # compare_locations()
-    categories()
+    # categories()
+    # compare_locations_fast()
+    num_insemble_in_viewport()
     # categories_terminal()

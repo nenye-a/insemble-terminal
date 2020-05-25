@@ -29,6 +29,8 @@ DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
 DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
+DB_STAGING = SYSTEM_MONGO.get_collection(mongo.STAGING)
+DB_STAGING_RESULTS = SYSTEM_MONGO.get_collection(mongo.STAGING_RESULTS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 BWE = mongo.BulkWriteError
 
@@ -51,8 +53,8 @@ def create_index(collection):
         DB_MINESWEEPER_PLACES.create_index([('location', "2dsphere")])
         DB_MINESWEEPER_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_MINESWEEPER_PLACES.create_index([('name', "text"),
-                                         ('google_details.name', "text"),
-                                         ('yelp_details.name', "text")])
+                                            ('google_details.name', "text"),
+                                            ('yelp_details.name', "text")])
         DB_MINESWEEPER_PLACES.create_index([('opentable_details.rating', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_details.neighborhood', 1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_details.bookings', -1)])
@@ -70,8 +72,15 @@ def create_index(collection):
         DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
         DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_MS_COORDINATES.create_index([('processed_terms', 1)])
+    if collection.lower() == 'staging':
+        DB_STAGING.create_index([('center', 1)])
+        DB_STAGING.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
+        DB_STAGING.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_STAGING.create_index([('query_point', "2dsphere")])
+        DB_STAGING.create_index([('processed_terms', 1)])
+        DB_STAGING_RESULTS.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
     if collection.lower() == 'log':
-        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1)], unique=True)
+        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
 
 
 def meters_to_miles(meters):
@@ -143,6 +152,11 @@ def get_one_int_from_str(text: str):
         return int(re.search(r'\d+', text).group())
     except Exception:
         return None
+
+
+def flatten(l):
+    """Flattens a list of lists, will ignore Nones and empty lists"""
+    return [item for sublist in l if sublist for item in sublist]
 
 
 def get_one_float_from_str(text: str):
@@ -295,7 +309,7 @@ if __name__ == "__main__":
     # test_to_snake_case()
     # test_snake_to_word()
     # test_round_object()
-    # create_index('ms_coordinates')
+    create_index('staging')
     # test_chunks()
 
     # DB_MS_COORDINATES.remove({})

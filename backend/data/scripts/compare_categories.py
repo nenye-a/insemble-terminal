@@ -49,9 +49,17 @@ def generate_comparison():
     pd.DataFrame(data).sort_values(by=['diff'], ascending=False).to_csv(THIS_DIR + '/categorydiff.csv')
 
 
+def get_without_categories():
+
+    pass
+
+
 if __name__ == "__main__":
     # generate_comparison()
-    pd.read_csv(THIS_DIR + '/categorydiff.csv').sort_values(
-        by=['diff'],
-        ascending=False
-    ).set_index('category').to_csv(THIS_DIR + '/sortedcategorydiff.csv')
+    # pd.read_csv(THIS_DIR + '/categorydiff.csv').sort_values(
+    #     by=['diff'],
+    #     ascending=False
+    # ).set_index('category').to_csv(THIS_DIR + '/sortedcategorydiff.csv')
+
+    print(sum(INSEMBLE.values()))
+    print(sum(TERMINAL.values()))

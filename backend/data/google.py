@@ -32,6 +32,10 @@ def get_nearby(venue_type, lat, lng, zoom=17):
 
 
 def get_many_nearby(nearby_search_list):
+    """
+    nearby_search_list should include tuples of (venue_type, lat, lng)
+    or (venue_type, lat, lng, zoom)
+    """
     nearby_scraper = GoogleNearby('GOOGLE NEARBY')
     return nearby_scraper.get_many_nearby(nearby_search_list)
 
@@ -98,8 +102,10 @@ class GoogleNearby(GenericScraper):
 
     @staticmethod
     def parse_nearest_latlng(response):
-        # returns a set of the nearby coordinates from this search
-        # TODO: tie this to each address
+        """
+        Returns a set of (lat, lng) tuples that correspond to the nearby addresses in this request
+        TODO: tie this to each address
+        """
         if response.status_code != 200:
             return None
         unprocessed_coords = re.findall(REGEX_LATLNG_3, response.text)
@@ -118,13 +124,24 @@ class GoogleNearby(GenericScraper):
         )
 
     def get_many_nearby(self, nearby_search_list):
-        queries = [
-            self.build_request(
-                venue_type=term['venue_type'],
-                lat=term['lat'],
-                lng=term['lng']
-            ) for term in nearby_search_list
-        ]
+        if isinstance(nearby_search_list[0], dict):
+            queries = [
+                self.build_request(
+                    venue_type=term['venue_type'],
+                    lat=term['lat'],
+                    lng=term['lng'],
+                    zoom=term['zoom'] if 'zoom' in term else 17
+                ) for term in nearby_search_list
+            ]
+        else:
+            queries = []
+            for item in nearby_search_list:
+                if len(item) == 4:
+                    venue_type, lat, lng, zoom = item
+                else:
+                    venue_type, lat, lng = item
+                    zoom = 17
+                queries.append(self.build_request(venue_type, lat, lng, zoom))
         nearby = set()
         results = self.async_request(
             queries,
@@ -139,13 +156,13 @@ class GoogleNearby(GenericScraper):
 
 class GeoCode(GenericScraper):
 
-    @staticmethod
+    @ staticmethod
     def build_request(query):
         query = query.replace(" ", "+")
         url = 'https://www.google.com/maps/search/{}/'.format(query)
         return url
 
-    @staticmethod
+    @ staticmethod
     def default_parser(response):
         if response.status_code != 200:
             return None
@@ -213,7 +230,7 @@ class GoogleDetails(GenericScraper):
     BASE_URL = 'https://www.google.com/search?hl=en&q={}&sourceid=chrome&ie=UTF-8'
     # BASE_URL = 'https://www.google.com/search?q={}&sourceid=chrome&ie=UTF-8'
 
-    @staticmethod
+    @ staticmethod
     def build_request(name, address):
 
         name = utils.encode_word(name)
@@ -320,7 +337,7 @@ class GoogleDetails(GenericScraper):
                     data['data'] = {key: data['data'][key] for key in projection_list}
         return result
 
-    @staticmethod
+    @ staticmethod
     def default_parser(response):
         if response.status_code != 200:
             return None
@@ -414,12 +431,14 @@ if __name__ == "__main__":
         nearby = get_nearby(venue_type, lat, lng)
         print(nearby)
         print(len(nearby))
-        # start = time.time()
-        # for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
-        #     get_nearby(venue_type, lat, lng)
-        # finish = time.time()
 
-        # print("Nearby seconds: {} seconds".format(finish - start))
+    def get_many_nearby_test():
+        venue_type = 'restaurants'
+        lat = 33.840617
+        lng = -84.3715611
+        nearby_list = [(venue_type, lat, lng) for x in range(10)]
+        nearby = get_many_nearby(nearby_list)
+        print(nearby)
 
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
@@ -464,6 +483,7 @@ if __name__ == "__main__":
     # get_google_activity_test()
     # get_many_lat_lng_test()
     # get_lat_lng_test()
-    get_nearby_test()
+    # get_nearby_test()
+    get_many_nearby_test()
     # get_google_details_test()
     # get_many_google_details_test()
