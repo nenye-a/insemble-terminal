@@ -24,6 +24,9 @@ TERMINAL_RUNS = "terminal.runs"
 COORDINATES = "terminal.coordinates"
 LOG = "terminal.log"
 
+MINESWEEPER_PLACES = "terminal.minesweeper_places"
+MS_COORDINATES = "terminal.ms_coordinates"
+
 
 class Connect(object):
 
