@@ -16,10 +16,11 @@ import ProfileMenuDropdown from './ProfileMenuDropdown';
 
 type Props = {
   onSearchPress?: (searchTags: SearchVariables) => void;
+  showSearchBar?: boolean;
 };
 
 export default function HeaderNavigationBar(props: Props) {
-  let { onSearchPress } = props;
+  let { onSearchPress, showSearchBar = false } = props;
   let loggedIn = false; // TODO: change when connecting to BE
 
   return (
@@ -27,7 +28,7 @@ export default function HeaderNavigationBar(props: Props) {
       <TouchableOpacity onPress={() => {}}>
         <InsembleLogo color="purple" />
       </TouchableOpacity>
-      <SearchFilterBar onSearchPress={onSearchPress} />
+      {showSearchBar && <SearchFilterBar onSearchPress={onSearchPress} />}
       {loggedIn ? (
         <RowEnd flex>
           <TerminalButton

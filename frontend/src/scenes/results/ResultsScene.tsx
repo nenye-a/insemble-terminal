@@ -86,7 +86,7 @@ export default function ResultsScene() {
   return (
     <View>
       {/* TODO: disable search bar on loading */}
-      <HeaderNavigationBar onSearchPress={onSubmit} />
+      <HeaderNavigationBar showSearchBar={true} onSearchPress={onSubmit} />
       {submitSearchData ? (
         <>
           <PageTitle
