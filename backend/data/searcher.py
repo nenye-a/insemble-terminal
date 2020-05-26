@@ -154,10 +154,10 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
     stage > 1 and query.update({'generating_term': term})
     query = dict(run_identifier, **query)
 
-    remaining_queries = _determine_remaining_queries(query, stage, term)
     pipeline = [{'$match': query}, {'$sample': size}]
 
     while True:
+        remaining_queries = _determine_remaining_queries(query, stage, term)
         remaining_queries and print("{} remaining queries!".format(remaining_queries))
         point_documents = list(utils.DB_COORDINATES.aggregate(pipeline))
 
@@ -205,7 +205,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
             'processed_terms': term
         }})
         num_queried = len(queried_ids)
-        remaining_queries = remaining_queries - num_queried if remaining_queries else None
+        # remaining_queries = remaining_queries - num_queried if remaining_queries else None
 
         _print_log(stage, term, num_queried, locations_inserted, results_inserted, log)
 
