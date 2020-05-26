@@ -181,8 +181,9 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
             quality_proxy=True,
             res_parser=google.GoogleNearby.parse_address_latlng
         ))
+        if not results:
+            continue
         new_locations = list(results.values())
-
         results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
                    for k, v in results.items()]
 
