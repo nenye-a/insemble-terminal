@@ -1,7 +1,5 @@
 import sys
 import os
-import shutil
-import pandas as pd
 import datetime as dt
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,7 +11,7 @@ import FindRestaurantDetails as details
 from scrape.scraper import GenericScraper
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-GENERATED_PATH = THIS_DIR + 'files/activity_generated/'
+GENERATED_PATH = THIS_DIR + '/files/activity_generated/'
 
 if not os.path.exists(GENERATED_PATH):
     os.mkdir(GENERATED_PATH)
