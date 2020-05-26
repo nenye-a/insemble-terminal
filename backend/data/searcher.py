@@ -6,6 +6,7 @@ Crawler that searches for all the locations that it sshould update.
 
 import utils
 import google
+import pymongo.errors
 import datetime as dt
 from locations import divide_region
 
@@ -22,16 +23,19 @@ def search_locations():
         '$or': [{'type': "msa"}, {'type': 'city-box'}]
     }))
 
-    elimanted_geojson = {
+    eliminated_geojson = {
         "type": "MultiPolygon",
         "coordinates": []
     }
     for eliminated in eliminated_locations:
-        elimanted_geojson["coordinates"].append(
+        eliminated_geojson["coordinates"].append(
             eliminated['geometry']['coordinates']
         )
 
     for location in opaque_locations:
+        # placeholder to skip LA for now (need to figure out geowithin issues)
+        if location['rank'] == 2:
+            continue
         print("Starting to search for locations in {}. Id for this location "
               "in the Regions database is {}".format(
                   location["name"], location["_id"]
@@ -42,7 +46,7 @@ def search_locations():
         for term in ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
                      "bars", "arcade", "gym", "medical", "dentist", "shipping"]:
             staged_finder(center, viewport, term, course_zoom=15,
-                          eliminated_regions=eliminated)
+                          eliminated_regions=eliminated_geojson, batch_size=10)
 
 
 def search_region(region, term, course_zoom=15, batch_size=100):
@@ -100,20 +104,33 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
     has_document = utils.DB_COORDINATES.find_one(run_identifier)
     if not has_document:
         stage_dict = {'stage': 1}
+        region_points = divide_region(center, viewport, course_zoom)
+        if len(region_points) > 2000:
+            course_zoom = course_zoom - 1
+            region_points = divide_region(center, viewport, course_zoom)
+            run_identifier['zoom'] = course_zoom
+            log_identifier['zoom'] = course_zoom
         coords = [dict(run_identifier, **stage_dict, **{'query_point': utils.to_geojson(query_point)})
-                  for query_point in divide_region(center, viewport, course_zoom)]
+                  for query_point in region_points]
         try:
             log_identifier['1st_stage_points'] = len(coords)
             log_identifier['created_at'] = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+            print(log_identifier)
             utils.DB_LOG.insert_one(log_identifier)
             utils.DB_COORDINATES.insert_many(coords, ordered=False)
+        except pymongo.errors.DuplicateKeyError:
+            print('Center, viewport, zoom, method, combo already in database, please check. '
+                  'Running with previous settings.')
+            log_identifier.pop('created_at')
+            log_identifier.pop('1st_stage_points')
+            log_identifier.pop('_id')
         except utils.BWE:
-            print('Center, viewport, zoom, combo already in database, please check.')
-            raise
+            print('Many of these points allready exist!. Updating these points.')
 
     for next_stage in (1, 2, 3):
         zoom = first_stage_zoom if next_stage == 1 else other_stage_zoom
-        stage_caller(run_identifier, term, next_stage, batch_size, zoom, log_identifier)
+        stage_caller(run_identifier, term, next_stage, batch_size, zoom, log_identifier,
+                     eliminated_regions=eliminated_regions)
 
 
 def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_regions=None):
@@ -131,10 +148,10 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
     # for stage 3 and above, only querying half the points.
     remaining_queries = _determine_remaining_queries(query, stage, term)
 
-    pipeline = [{'$match': query}]
-    eliminated_regions and pipeline.append({'$match': {
-        'query_point': {'$not': {'$geoWithin': {'$geometry': eliminated_regions}}}
-    }})
+    pipeline = [{'$match': query, }]
+    # eliminated_regions and pipeline.append({'$match': {
+    #     'query_point': {'$not': {'$geoWithin': {'$geometry': eliminated_regions}}}
+    # }})
     pipeline.append({'$sample': size})
 
     while True:
@@ -153,18 +170,21 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
         urls = [nearby_scraper.build_request(term, lat, lng, zoom)
                 for (lat, lng) in latlngs]
 
-        results, new_locations = zip(*nearby_scraper.async_request(
+        results = utils.flatten(nearby_scraper.async_request(
             urls,
             pool_limit=20,
             timeout=10,
             quality_proxy=True,
-            res_parser=get_lat_and_response
+            res_parser=google.GoogleNearby.parse_address_latlng
         ))
-        results = [utils.split_name_address(place, as_dict=True)
-                   for place in set(utils.flatten(results))]
+        new_locations = list(results.values())
+
+        results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
+                   for k, v in results.items()]
+
         next_stage_dict = {'stage': stage + 1, 'generating_term': term}
         new_locations = [dict(run_identifier, **next_stage_dict, **{'query_point': utils.to_geojson(location)})
-                         for location in utils.flatten(new_locations)]
+                         for location in new_locations]
 
         try:
             utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
@@ -215,7 +235,7 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
 
     utils.DB_LOG.update_one(log, {
         '$inc': {
-            term + '_stage' + str(stage) + '_queried_points': len(num_queried),
+            term + '_stage' + str(stage) + '_queried_points': num_queried,
             term + '_' + str(stage + 1) + '_stage_points': locations_inserted,
             term + '_places_inserted': results_inserted
         },

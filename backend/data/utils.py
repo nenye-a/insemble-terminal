@@ -158,8 +158,18 @@ def get_one_int_from_str(text: str):
 
 
 def flatten(l):
-    """Flattens a list of lists, will ignore Nones and empty lists"""
-    return [item for sublist in l if sublist for item in sublist]
+    """
+    Flattens a list of lists or dictionaries. Will ignore Nones and empty lists/dicts.
+    If dictionaries contain the same keys, only the last key, value pair will remain.
+    """
+    if not l:
+        return l
+    if isinstance(l[0], list):
+        return [item for sublist in l if sublist for item in sublist]
+    if isinstance(l[0], dict):
+        new_dict = dict(l[0])
+        [new_dict.update(item) for item in l if item]
+        return new_dict
 
 
 def get_one_float_from_str(text: str):
@@ -258,6 +268,8 @@ def to_geojson(coordinates):
     """
     coordinates === (lat, lng)
     """
+    if not coordinates:
+        return None
     lat, lng = coordinates
     return {
         'type': "Point",

@@ -17,7 +17,7 @@ def clean_name(name):
 def update_msa():
     my_csv = pd.read_csv(THIS_DIR + '/MSAs.csv')
     my_csv['MSA'] = my_csv['MSA'].apply(clean_name)
-    my_csv.to_csv(THIS_DIR + 'files/formattedMSA.csv')
+    my_csv.to_csv(THIS_DIR + '/files/formattedMSA.csv')
     return my_csv
 
 
@@ -44,7 +44,7 @@ def get_viewports():
             'lat': se[0],
             'lng': se[1]
         })
-    pd.DataFrame(data).to_csv(THIS_DIR + 'files/MSAviewports2.csv')
+    pd.DataFrame(data).to_csv(THIS_DIR + '/files/MSAviewports2.csv')
 
 
 def observe_divided_region():
@@ -52,7 +52,7 @@ def observe_divided_region():
 
 
 def upload_regions():
-    viewports = pd.read_csv(THIS_DIR + 'files/CustomMSAviewports.csv').set_index('Metropolitan Area')
+    viewports = pd.read_csv(THIS_DIR + '/files/CustomMSAviewports.csv').set_index('Metropolitan Area')
     points = []
     current_item = {'viewport': {}}
     for point in viewports.index:
@@ -63,7 +63,8 @@ def upload_regions():
             current_item['viewport']['nw'] = utils.to_geojson((viewports.loc[point, 'lat'], viewports.loc[point, 'lng']))
         elif 'south east' in point:
             current_item['viewport']['se'] = utils.to_geojson((viewports.loc[point, 'lat'], viewports.loc[point, 'lng']))
-            points.append(current_item.copy())
+            points.append(dict(**current_item))
+            current_item['viewport'] = {}
 
     for point in points:
         nw_coordinates = point["viewport"]["nw"]["coordinates"]
@@ -81,8 +82,9 @@ def upload_regions():
             ]
         }
         point["type"] = "msa"
+        utils.DB_REGIONS.update_one({"name": point["name"]}, {"$set": point})
 
-    utils.DB_REGIONS.insert_many(points, ordered=False)
+    # utils.DB_REGIONS.insert_many(points, ordered=False)
 
 
 def print_zoom_region(region, zoom):
@@ -119,4 +121,5 @@ if __name__ == "__main__":
     # get_viewports()
     # observe_divided_region()
     # upload_regions()
-    add_msa_rank()
+    # add_msa_rank()
+    pass
