@@ -45,8 +45,14 @@ def search_locations():
                     utils.from_geojson(location["viewport"]["se"]))
         for term in ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
                      "bars", "arcade", "gym", "medical", "dentist", "shipping"]:
+            if term in location['searched_terms']:
+                continue
             staged_finder(center, viewport, term, course_zoom=15,
                           eliminated_regions=eliminated_geojson)
+            utils.DB_REGIONS.update_one({'_id': location['_id']}, {'$push': {
+                'searched_terms': term
+            }})
+            print("Completed seacher {} for {}.".format(location['name'], term))
         utils.DB_REGIONS.update_one({'_id': location['_id']}, {'$set': {'searched': True}})
 
 
