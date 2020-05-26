@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { View, Text, TouchableOpacity } from '../../core-ui';
+import { ComparisonPopover, PinPopover } from '../../components';
 import { THEME_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
-import ComparisonPopover from '../../components/ComparisonPopover';
 
 type Props = {
   title: string;
@@ -35,6 +35,9 @@ export default function ResultTitle(props: Props) {
           <Touchable onPress={() => setPinPopoverOpen(true)}>
             <SvgPin />
           </Touchable>
+          {pinPopoverOpen && (
+            <PinPopover onClickAway={() => setPinPopoverOpen(false)} />
+          )}
         </View>
       </Row>
     </Container>
