@@ -1,3 +1,9 @@
+import os
+import sys
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(THIS_DIR)
+sys.path.extend([THIS_DIR, BASE_DIR])
+
 import utils
 import pandas
 

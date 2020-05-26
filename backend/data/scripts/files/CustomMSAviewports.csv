@@ -1,0 +1,91 @@
+,Metropolitan Area,lat,lng
+0,Tampa Metropolitan Area center,28.132729,-82.481461
+1,Tampa Metropolitan Area north west,28.591648,-83.130212
+2,Tampa Metropolitan Area south east,27.673810,-81.832709
+3,Chicago Metropolitan Area center,41.829640,-87.790580
+4,Chicago Metropolitan Area north west,42.175360,-88.324120
+5,Chicago Metropolitan Area south east,41.434210,-87.380830
+6,Miami Metropolitan Area center,26.311795,-80.157796
+7,Miami Metropolitan Area north west,27.023940,-80.594800
+8,Miami Metropolitan Area south east,25.421614,-79.764493
+9,Denver Metropolitan Area center,39.709340,-104.956230
+10,Denver Metropolitan Area north west,40.091340,-105.390510
+11,Denver Metropolitan Area south east,39.305960,-104.525760
+12,San Francisco Metropolitan Area center,37.687401,-122.321519
+13,San Francisco Metropolitan Area north west,38.099224,-122.903694
+14,San Francisco Metropolitan Area south east,37.275579,-121.739345
+15,Dallas Metropolitan Area center,32.743072,-96.963595
+16,Dallas Metropolitan Area north west,33.180783,-97.582366
+17,Dallas Metropolitan Area south east,32.305361,-96.344824
+18,Minneapolis Metropolitan Area center,44.969325,-93.166741
+19,Minneapolis Metropolitan Area north west,45.234370,-93.542430
+20,Minneapolis Metropolitan Area south east,44.705840,-92.857150
+21,Phoenix Metropolitan Area center,33.274686,-111.891395
+22,Phoenix Metropolitan Area north west,33.972650,-112.764390
+23,Phoenix Metropolitan Area south east,32.743610,-111.102430
+24,New York Metropolitan Area center,40.778052,-73.568128
+25,New York Metropolitan Area north west,41.268670,-74.659040
+26,New York Metropolitan Area south east,40.424200,-71.888450
+27,Detroit Metropolitan Area center,42.346320,-83.034050
+28,Detroit Metropolitan Area north west,42.701570,-83.544910
+29,Detroit Metropolitan Area south east,41.998990,-82.700390
+30,Washington Metropolitan Area center,38.866740,-77.051590
+31,Washington Metropolitan Area north west,39.248500,-77.455330
+32,Washington Metropolitan Area south east,38.435600,-76.510510
+33,San Diego Metropolitan Area center,32.952350,-117.162100
+34,San Diego Metropolitan Area north west,33.364300,-117.499080
+35,San Diego Metropolitan Area south east,32.558630,-116.839690
+36,Philadelphia Metropolitan Area center,53.800651,-4.064941
+37,Philadelphia Metropolitan Area north west,56.259422,-7.540790
+38,Philadelphia Metropolitan Area south east,51.341880,-0.589092
+39,Los Angeles Metropolitan Area center,33.985360,-118.228430
+40,Los Angeles Metropolitan Area north west,34.383020,-118.890120
+41,Los Angeles Metropolitan Area south east,33.453970,-117.585780
+42,Seattle Metropolitan Area center,47.570050,-122.341720
+43,Seattle Metropolitan Area north west,47.983010,-122.788650
+44,Seattle Metropolitan Area south east,47.154280,-121.889810
+45,Houston Metropolitan Area center,29.697561,-95.487679
+46,Houston Metropolitan Area north west,30.198140,-95.997340
+47,Houston Metropolitan Area south east,29.047310,-94.626800
+48,Riverside Metropolitan Area center,33.946016,-117.399528
+49,Riverside Metropolitan Area north west,34.205270,-117.711220
+50,Riverside Metropolitan Area south east,33.748610,-117.100110
+51,Las Vegas Metropolitan Area center,36.127090,-115.144680
+52,Las Vegas Metropolitan Area north west,36.323600,-115.408090
+53,Las Vegas Metropolitan Area south east,35.902430,-114.818620
+54,"St. Louis Metropolitan Area center",38.620500,-90.220810
+55,"St. Louis Metropolitan Area north west",38.827710,-90.454380
+56,"St. Louis Metropolitan Area south east",38.421180,-90.004360
+57,Charlotte Metropolitan Area center,35.257825,-80.860378
+58,Charlotte Metropolitan Area north west,35.466960,-81.151270
+59,Charlotte Metropolitan Area south east,34.948570,-80.437160
+60,"Pittsburgh, PA Metropolitan Area Metropolitan Area center",40.397690,-79.995930
+61,"Pittsburgh, PA Metropolitan Area Metropolitan Area north west",40.639890,-80.304920
+62,"Pittsburgh, PA Metropolitan Area Metropolitan Area south east",40.117150,-79.605140
+63,Boston Metropolitan Area center,42.343130,-71.066790
+64,Boston Metropolitan Area north west,42.465320,-71.265230
+65,Boston Metropolitan Area south east,42.217640,-70.908170
+66,Orlando Metropolitan Area center,28.459370,-81.409518
+67,Orlando Metropolitan Area north west,28.916882,-82.056282
+68,Orlando Metropolitan Area south east,28.001858,-80.762754
+69,Austin Metropolitan Area center,30.268453,-97.661029
+70,Austin Metropolitan Area north west,30.744510,-97.952380
+71,Austin Metropolitan Area south east,29.776900,-97.445790
+72,Atlanta Metropolitan Area center,33.731282,-84.327857
+73,Atlanta Metropolitan Area north west,34.096710,-84.748790
+74,Atlanta Metropolitan Area south east,33.436860,-83.990730
+75,Sacramento Metropolitan Area center,38.587260,-121.354790
+76,Sacramento Metropolitan Area north west,38.960820,-121.662760
+77,Sacramento Metropolitan Area south east,38.262250,-120.928050
+78,Baltimore Metropolitan Area center,39.301510,-76.617680
+79,Baltimore Metropolitan Area north west,39.522670,-76.892660
+80,Baltimore Metropolitan Area south east,38.985710,-76.335940
+81,San Antonio Metropolitan Area center,29.435820,-98.513080
+82,San Antonio Metropolitan Area north west,29.789220,-98.915460
+83,San Antonio Metropolitan Area south east,29.101580,-98.146410
+84,Portland Metropolitan Area center,45.482870,-122.687620
+85,Portland Metropolitan Area north west,45.795880,-123.206720
+86,Portland Metropolitan Area south east,45.119680,-122.147920
+87,"Cincinnati, OH Metropolitan Area center",39.179005,-84.465617
+88,"Cincinnati, OH Metropolitan Area north west",39.380706,-84.750751
+89,"Cincinnati, OH Metropolitan Area south east",38.977304,-84.180482
