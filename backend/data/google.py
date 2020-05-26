@@ -13,10 +13,13 @@ USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100
 HEADERS = {"referer": "https://www.google.com/"}
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
-# TODO: fix regex to get Chick-fil-a in regex_address
-REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
+REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\-\'?\s\#]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 REGEX_LATLNG_1 = r'APP_INITIALIZATION_STATE\=\[\[\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
 REGEX_LATLNG_2 = r'\[\d+\.\d+\,\-?\d+\.\d+\,\-?\d+\.\d+\]'
+REGEX_LATLNG_3 = r'\[\d+\.\d\,[\-\d]+\.\d+\,[\-\d]+\.\d+\]'
+REGEX_LATLNG_4 = r'[\-\d]+\.\d+\,[\-\d]+\.\d+'
+REGEX_COORD_ADDRESS = r'[\-\d]+\.\d+\,[\-\d]+\.\d+\]\\\w\,[\\\"\w\:]+\,[\"\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+' \
+                      r'\[[\\\"\w\s\'\-\:\,]+\]\\\w[\\\"\w\s\'\:\,\-\=\&\;\.\+\(\)\!\*\@\#\$\%\|]+'
 AMPERSAND = '\\\\u0026'
 GOOG_KEY = config("GOOG_KEY")
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
@@ -32,6 +35,10 @@ def get_nearby(venue_type, lat, lng, zoom=17):
 
 
 def get_many_nearby(nearby_search_list):
+    """
+    nearby_search_list should include tuples of (venue_type, lat, lng)
+    or (venue_type, lat, lng, zoom)
+    """
     nearby_scraper = GoogleNearby('GOOGLE NEARBY')
     return nearby_scraper.get_many_nearby(nearby_search_list)
 
@@ -96,6 +103,34 @@ class GoogleNearby(GenericScraper):
             return None
         return utils.get_one_int_from_str(re.search(r'zoom=\d+', response.text).group())
 
+    @staticmethod
+    def parse_nearest_latlng(response):
+        """
+        Returns a set of nearby (lat, lng) tuples that correspond to the nearby locations in this request
+        """
+        if response.status_code != 200:
+            return None
+        unprocessed_coords = re.findall(REGEX_LATLNG_3, response.text)
+        return {(ast.literal_eval(coords)[2], ast.literal_eval(coords)[1]) for coords in set(unprocessed_coords)}
+
+    @staticmethod
+    def parse_address_latlng(response):
+        """
+        Returns a dictionary of {address: (lat, lng)} that correspond to the nearby addresses in this request
+        """
+        if response.status_code != 200:
+            return None
+        stew = response.text
+        unparsed_section = re.findall(REGEX_COORD_ADDRESS, stew)
+        coord_dict = {}
+        for pair in unparsed_section:
+            try:
+                coord_dict[re.search(REGEX_ADDRESS, pair).group().replace(AMPERSAND, "&")] = ast.literal_eval(re.search(REGEX_LATLNG_4, pair).group())
+            except AttributeError:
+                continue
+
+        return coord_dict
+
     def response_parse(self, response):
         return self.default_parser(response)
 
@@ -109,13 +144,24 @@ class GoogleNearby(GenericScraper):
         )
 
     def get_many_nearby(self, nearby_search_list):
-        queries = [
-            self.build_request(
-                venue_type=term['venue_type'],
-                lat=term['lat'],
-                lng=term['lng']
-            ) for term in nearby_search_list
-        ]
+        if isinstance(nearby_search_list[0], dict):
+            queries = [
+                self.build_request(
+                    venue_type=term['venue_type'],
+                    lat=term['lat'],
+                    lng=term['lng'],
+                    zoom=term['zoom'] if 'zoom' in term else 17
+                ) for term in nearby_search_list
+            ]
+        else:
+            queries = []
+            for item in nearby_search_list:
+                if len(item) == 4:
+                    venue_type, lat, lng, zoom = item
+                else:
+                    venue_type, lat, lng = item
+                    zoom = 17
+                queries.append(self.build_request(venue_type, lat, lng, zoom))
         nearby = set()
         results = self.async_request(
             queries,
@@ -130,20 +176,23 @@ class GoogleNearby(GenericScraper):
 
 class GeoCode(GenericScraper):
 
-    @staticmethod
+    @ staticmethod
     def build_request(query):
         query = query.replace(" ", "+")
         url = 'https://www.google.com/maps/search/{}/'.format(query)
         return url
 
-    @staticmethod
+    @ staticmethod
     def default_parser(response):
         if response.status_code != 200:
             return None
-        first_parse = re.findall(REGEX_LATLNG_1, response.text)
-        match = re.findall(REGEX_LATLNG_2, first_parse[0])
-        [goog_size_var, lng, lat] = ast.literal_eval(match[0])
-        return lat, lng, goog_size_var
+        try:
+            first_parse = re.findall(REGEX_LATLNG_1, response.text)
+            match = re.findall(REGEX_LATLNG_2, first_parse[0])
+            [goog_size_var, lng, lat] = ast.literal_eval(match[0])
+            return lat, lng, goog_size_var
+        except Exception:
+            return None, None, None
 
     def response_parse(self, response):
         return self.default_parser(response)
@@ -161,7 +210,10 @@ class GeoCode(GenericScraper):
             if include_sizevar:
                 return lat, lng, goog_size_var
             if viewport:
-                return lat, lng, get_viewport(lat, lng, goog_size_var)
+                if goog_size_var:
+                    return lat, lng, get_viewport(lat, lng, goog_size_var)
+                else:
+                    return lat, lng, None
             else:
                 return lat, lng
         except Exception as e:
@@ -186,15 +238,18 @@ class GeoCode(GenericScraper):
             timeout=5
         )
 
-        if not include_sizevar:
-            for data in result:
-                if data['data']:
-                    data['data'] = data['data'][:2]
         if viewport:
             for data in result:
                 if data['data']:
-                    lat, lng, goog_sizevar = data['data']
-                    data['data'] = lat, lng, get_viewport(goog_sizevar)
+                    lat, lng, goog_size_var = data['data']
+                    if goog_size_var:
+                        data['data'] = lat, lng, get_viewport(lat, lng, goog_size_var)
+                    else:
+                        data['data'] = lat, lng, None
+        elif not include_sizevar:
+            for data in result:
+                if data['data']:
+                    data['data'] = data['data'][:2]
 
         return result
 
@@ -204,7 +259,7 @@ class GoogleDetails(GenericScraper):
     BASE_URL = 'https://www.google.com/search?hl=en&q={}&sourceid=chrome&ie=UTF-8'
     # BASE_URL = 'https://www.google.com/search?q={}&sourceid=chrome&ie=UTF-8'
 
-    @staticmethod
+    @ staticmethod
     def build_request(name, address):
 
         name = utils.encode_word(name)
@@ -311,7 +366,7 @@ class GoogleDetails(GenericScraper):
                     data['data'] = {key: data['data'][key] for key in projection_list}
         return result
 
-    @staticmethod
+    @ staticmethod
     def default_parser(response):
         if response.status_code != 200:
             return None
@@ -405,12 +460,14 @@ if __name__ == "__main__":
         nearby = get_nearby(venue_type, lat, lng)
         print(nearby)
         print(len(nearby))
-        # start = time.time()
-        # for venue_type, lat, lng in [(venue_type, lat, lng) for x in range(5)]:
-        #     get_nearby(venue_type, lat, lng)
-        # finish = time.time()
 
-        # print("Nearby seconds: {} seconds".format(finish - start))
+    def get_many_nearby_test():
+        venue_type = 'restaurants'
+        lat = 33.840617
+        lng = -84.3715611
+        nearby_list = [(venue_type, lat, lng) for x in range(10)]
+        nearby = get_many_nearby(nearby_list)
+        print(nearby)
 
     def get_lat_lng_test():
         name = "Souvla Hayes Valley SF"
@@ -455,6 +512,17 @@ if __name__ == "__main__":
     # get_google_activity_test()
     # get_many_lat_lng_test()
     # get_lat_lng_test()
-    get_nearby_test()
+    # get_nearby_test()
+    # get_many_nearby_test()
     # get_google_details_test()
     # get_many_google_details_test()
+
+    url = 'https://www.google.com/maps/search/stores/@33.9559918,-118.5607461,17.39z'
+
+    nearby_scrape = GoogleNearby('NEARBY')
+    import requests
+    response = requests.get(url, headers=HEADERS)
+    addresses = nearby_scrape.response_parse(response)
+    print("addresses", len(addresses), addresses)
+    address_latlng = nearby_scrape.parse_address_latlng(response)
+    print("addresses lat lng", len(address_latlng), address_latlng)

@@ -19,6 +19,7 @@ MILES_TO_METERS_FACTOR = 1609.34
 EARTHS_RADIUS_MILES = 3958.8
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
+ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
 
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
@@ -27,8 +28,12 @@ DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
 DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
+DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 BWE = mongo.BulkWriteError
+
+DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
+DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
 
 
 def create_index(collection):
@@ -50,8 +55,35 @@ def create_index(collection):
         DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
         DB_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_COORDINATES.create_index([('processed_terms', 1)])
+        DB_COORDINATES.create_index([('stage', 1)])
     if collection.lower() == 'log':
-        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1)], unique=True)
+        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
+    if collection.lower() == 'regions':
+        DB_REGIONS.create_index([('name', 1)], unique=True)
+        DB_REGIONS.create_index([('geometry', "2dsphere")])
+        DB_REGIONS.create_index([('viewport', 1)], sparse=True)
+        DB_REGIONS.create_index([('center', 1)])
+        DB_REGIONS.create_index([('type', 1)])
+        DB_REGIONS.create_index([('rank', 1), ('type', 1)], unique=True, sparse=True)
+    # TODO: Remove or Archive Minesweeper items.
+    if collection.lower() == 'ms_coordinates':
+        DB_MS_COORDINATES.create_index([('center', 1)])
+        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
+        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
+        DB_MS_COORDINATES.create_index([('processed_terms', 1)])
+    if collection.lower() == 'minesweeper_places':
+        DB_MINESWEEPER_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
+        DB_MINESWEEPER_PLACES.create_index([('location', "2dsphere")])
+        DB_MINESWEEPER_PLACES.create_index([('nearby_location.location', "2dsphere")])
+        DB_MINESWEEPER_PLACES.create_index([('name', "text"),
+                                            ('google_details.name', "text"),
+                                            ('yelp_details.name', "text")])
+        DB_MINESWEEPER_PLACES.create_index([('opentable_details.rating', -1)])
+        DB_MINESWEEPER_PLACES.create_index([('opentable_details.neighborhood', 1)])
+        DB_MINESWEEPER_PLACES.create_index([('opentable_details.bookings', -1)])
+        DB_MINESWEEPER_PLACES.create_index([('opentable_detials.price_tier', -1)])
+        DB_MINESWEEPER_PLACES.create_index([('opentable_detials.category', 1)])
 
 
 def meters_to_miles(meters):
@@ -123,6 +155,21 @@ def get_one_int_from_str(text: str):
         return int(re.search(r'\d+', text).group())
     except Exception:
         return None
+
+
+def flatten(l):
+    """
+    Flattens a list of lists or dictionaries. Will ignore Nones and empty lists/dicts.
+    If dictionaries contain the same keys, only the last key, value pair will remain.
+    """
+    if not l:
+        return l
+    if isinstance(l[0], list):
+        return [item for sublist in l if sublist for item in sublist]
+    if isinstance(l[0], dict):
+        new_dict = dict(l[0])
+        [new_dict.update(item) for item in l if item]
+        return new_dict
 
 
 def get_one_float_from_str(text: str):
@@ -221,6 +268,8 @@ def to_geojson(coordinates):
     """
     coordinates === (lat, lng)
     """
+    if not coordinates:
+        return None
     lat, lng = coordinates
     return {
         'type': "Point",
@@ -238,6 +287,19 @@ def from_geojson(geo_json, as_dict=False):
     lat = geo_json["coordinates"][1]
     lng = geo_json["coordinates"][0]
     return {'lat': lat, 'lng': lng} if as_dict else (lat, lng)
+
+
+def extract_city(address):
+    """
+    Provided an address with the following ending:
+    "Los Angeles, CA 90012". Will extract the city.
+    """
+    city_finder = re.compile(ADDRESS_END_REGEX)
+    match = city_finder.findall(address)
+    if not match:
+        return None
+    else:
+        return match[0][0].strip()
 
 
 if __name__ == "__main__":
@@ -270,10 +332,19 @@ if __name__ == "__main__":
         print(list(chunks([1, 2, 3], 2)))
         print(list(chunks([1, 2, 3, 5, 6], 2)))
 
+    def test_extract_city():
+        print(extract_city("3006 S Sepulveda Blvd, Los Angeles, CA 90034"))
+
+    # RUN
+
+    # create_index("terminal")
+
+    # TESTS
+
     # test_state_code_to_name()
     # test_parse_city()
     # test_to_snake_case()
     # test_snake_to_word()
     # test_round_object()
-    create_index('log')
+    # test_extract_city()
     # test_chunks()

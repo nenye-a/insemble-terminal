@@ -19,6 +19,8 @@ TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 BASELINE_ZOOM = 18
 BASELINE_RADIUS = 180  # meters
 
+MINESWEEPER_MAX_CUTOFF_RADIUS = 10000  # meters
+
 TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'},
              {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'},
              {'name': 'Bush Antiques', 'address': '1440 Chattahoochee Ave NW, Atlanta, GA 30318'},
@@ -269,6 +271,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         },
         'zoom': zoom
     }
+    log_identifier = dict(run_identifier, **{'method': 'collect_random_expansion'})
     has_document = utils.DB_COORDINATES.find_one(run_identifier)
     if not has_document:
         coords = []
@@ -284,7 +287,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             for batch in batches:
                 utils.DB_COORDINATES.insert_many(batch, ordered=False)
         except utils.BWE:
-            print('Center, viewport, zoom, combo already in database, please check.')
+            print('Center, viewport, zoom, combo already in databasw, please check.')
             raise
 
     query = run_identifier.copy()
@@ -352,7 +355,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
         }})
         num_points_removed = len(disposable_coord_ids)
         print('Removed {} coords from the database.'.format(num_points_removed))
-        utils.DB_LOG.update_one(run_identifier, {
+        utils.DB_LOG.update_one(log_identifier, {
             '$inc': {
                 term + '_queried_points': len(queried_ids),
                 term + '_removed_points ': num_points_removed,
@@ -362,22 +365,6 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
                 term + '_updated_last': dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
             }
         }, upsert=True)
-
-
-def parse_nearby(nearby_upward_results):
-
-    data = []
-    for item in nearby_upward_results:
-        lat, lng, zoom, term = item['meta']
-        results, final_zoom = item['data'] if item['data'] else (None, None)
-        data.append({
-            'lat': lat,
-            'lng': lng,
-            'final_zoom': final_zoom,
-            'num_results': "num locations: " + str(len(results)) if results else "no results"
-        })
-
-    pandas.DataFrame(data).to_csv('upward_test_csv.csv')
 
 
 def meta_query_upward(results, meta):
@@ -405,6 +392,160 @@ def query_upward(results, meta, num_initial_results):
         meta = lat, lng, zoom - 1, term
         results, zoom = query_upward(results, meta, num_initial_results)
     return results, zoom + 1  # zoom of level down from query zoom
+
+
+def collect_minesweeper(region, term, zoom=18, batch_size=100):
+    # check if db exists. if yes, connect with corresponding db of lat lngs
+    # if db does not exist, create new latlngs for region and upload into new run_db for region, term, zoom
+
+    lat, lng, viewport = google.get_lat_lng(region, viewport=True)
+    nw, se = viewport
+    center = lat, lng
+    run_identifier = {
+        'center': utils.to_geojson(center),
+        'viewport': {
+            'nw': utils.to_geojson(nw),
+            'se': utils.to_geojson(se)
+        },
+        'zoom': zoom,
+        'method': 'collect_minesweeper'
+    }
+
+    has_document = utils.DB_MS_COORDINATES.find_one(run_identifier)
+    if not has_document:
+        coords = []
+        for query_point in divide_region(center, viewport, zoom):
+            insert_doc = run_identifier.copy()
+            insert_doc['query_point'] = utils.to_geojson(query_point)
+            coords.append(insert_doc)
+        try:
+            identifier_with_num = run_identifier.copy()
+            identifier_with_num['total_number_query_points'] = len(coords)
+            identifier_with_num['created_at'] = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+            utils.DB_LOG.insert_one(identifier_with_num)
+            batches = utils.chunks(coords, 100000)
+            for batch in batches:
+                utils.DB_MS_COORDINATES.insert_many(batch, ordered=False)
+        except utils.BWE:
+            print('Center, viewport, zoom, combo already in database, please check.')
+            raise
+
+    query = run_identifier.copy()
+    query['processed_terms'] = {"$nin": [term]}
+    size = {'size': batch_size}
+
+    while True:
+
+        point_documents = list(utils.DB_MS_COORDINATES.aggregate([
+            {'$match': query},
+            {'$sample': size}
+        ]))
+        queried_ids = [document['_id'] for document in point_documents]
+        latlngs = [
+            tuple(reversed(document['query_point']['coordinates'])) for document in
+            point_documents]
+
+        if len(latlngs) == 0:
+            print('All Done!')
+            return
+
+        # collect locations for nearby region asynchronously, save (latlng, result) pairs
+        nearby_scraper = google.GoogleNearby('NEARBY SCRAPER')
+        urls_meta = [{
+            "url": nearby_scraper.build_request(term, lat, lng, zoom),
+            "meta": (lat, lng, zoom, term)} for (lat, lng) in latlngs
+        ]
+        nearby_results = nearby_scraper.async_request(
+            urls_meta,
+            quality_proxy=True,
+            headers={"referer": "https://www.google.com/"},
+            timeout=10,
+            meta_function=meta_minesweeper,
+            res_parser=minesweeper_resparser
+        )
+
+        print(nearby_results)
+        name_addresses = set()
+        disposable_coord_ids = set(queried_ids)
+        for item in nearby_results:
+            lat, lng, zoom, term = item['meta']
+            results, cutoff_radius = item['data'] if item['data'] else (None, None)
+            results and name_addresses.update(results)
+            in_area = query.copy()
+            in_area['query_point'] = {
+                '$near': {
+                    '$geometry': utils.to_geojson((lat, lng)),
+                    '$maxDistance': cutoff_radius
+                }
+            }
+
+            location_documents = utils.DB_MS_COORDINATES.find(in_area)
+            for document in location_documents:
+                disposable_coord_ids.add(document['_id'])
+
+        # insert found places into DB
+        places = [utils.split_name_address(place, as_dict=True) for place in name_addresses]
+        try:
+            if places:
+                utils.DB_MINESWEEPER_PLACES.insert_many(places, ordered=False)
+            number_inserted = len(places) if places else 0
+        except utils.BWE as bwe:
+            number_inserted = bwe.details['nInserted']
+        print('Inserted {} new items into the database.'.format(number_inserted))
+
+        # remove latlng from DB to be queried
+        utils.DB_MS_COORDINATES.update_many({'_id': {'$in': list(disposable_coord_ids)}}, {'$push': {
+            'processed_terms': term
+        }})
+        num_points_removed = len(disposable_coord_ids)
+        print('Removed {} coords from the database.'.format(num_points_removed))
+        utils.DB_LOG.update_one(run_identifier, {
+            '$inc': {
+                term + '_queried_points': len(queried_ids),
+                term + '_removed_points ': num_points_removed,
+                term + '_places_inserted': number_inserted
+            },
+            '$set': {
+                term + '_updated_last': dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+            }
+        }, upsert=True)
+
+
+def meta_minesweeper(results, meta):
+    # nearby results are name_addresses returned nearby
+    # coords are processed into distances to make a histogram and used to determine the resultant radius in
+    # which to eliminate the closer points from
+    nearby_results, coords = results
+    lat, lng, zoom, term = meta
+
+    print("center", lat, lng)
+    # get distances for all coords
+    distances = []
+    if coords is None:
+        return nearby_results, 1
+    for coord in coords:
+        try:
+            distances.append(utils.miles_to_meters(utils.distance((lat, lng), coord)))
+        except ValueError:
+            continue
+    print("distances", distances)
+
+    # build histogram of distances
+    histo = np.histogram(distances)
+
+    # decide radius for which to remove remaining points
+    max_histo_index = list(histo[0]).index(histo[0].max())
+    cutoff_radius = histo[1][max_histo_index - 1] if (max_histo_index - 1) >= 0 else 1
+    print("histo counts", histo[0])
+    print("histo bins", histo[1])
+    print("cutoff radius", min(cutoff_radius, MINESWEEPER_MAX_CUTOFF_RADIUS))
+
+    return nearby_results, min(cutoff_radius, MINESWEEPER_MAX_CUTOFF_RADIUS)
+
+
+def minesweeper_resparser(response):
+    nearby_scraper = google.GoogleNearby('INSIDE NEARBY SCRAPER')
+    return (nearby_scraper.default_parser(response), nearby_scraper.parse_nearest_latlng(response))
 
 
 def divide_region(center, viewport, ground_zoom):
@@ -438,15 +579,6 @@ def divide_region(center, viewport, ground_zoom):
             coords.append((v, h))
 
     return coords
-
-
-def save_expanded_results(term, results, lat, lng, zoom):
-    # update latlng for which result was found
-
-    # upload results to database
-
-    # remove latlngs within radius specified by zoom
-    pass
 
 
 def get_zoom_radius(zoom):
@@ -723,6 +855,7 @@ if __name__ == "__main__":
 
     # collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
     # collect_random_expansion("Los Angeles", "stores", batch_size=100)
+    collect_minesweeper("Los Angeles", "restaurants", batch_size=80)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
     # divide_region_test()
@@ -731,6 +864,6 @@ if __name__ == "__main__":
     #     '$text': {'$search': 'Clips'},
     #     'address': {"$regex": ".*FL"}
     # })
-    google_detailer(batch_size=300)
+    # google_detailer(batch_size=300)
     # location_detailer(batch_size=300)
     # opentable_detailer(batch_size=10)

@@ -5,6 +5,8 @@ import utils
 
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
+# REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
+# AMPERSAND = '\\\\u0026'
 
 
 def google_detail_parser(response):
@@ -431,3 +433,9 @@ def opentable_parser_all(response):
         })
 
     return stores
+
+
+# def google_nearby_parser(response):
+#     if response.status_code != 200:
+#         return None
+#     return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
