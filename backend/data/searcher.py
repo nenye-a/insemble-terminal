@@ -46,7 +46,8 @@ def search_locations():
         for term in ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
                      "bars", "arcade", "gym", "medical", "dentist", "shipping"]:
             staged_finder(center, viewport, term, course_zoom=15,
-                          eliminated_regions=eliminated_geojson, batch_size=10)
+                          eliminated_regions=eliminated_geojson)
+        utils.DB_REGIONS.update_one({'_id': location['_id']}, {'$set': {'searched': True}})
 
 
 def search_region(region, term, course_zoom=15, batch_size=100):
@@ -145,9 +146,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
     stage > 1 and query.update({'generating_term': term})
     query = dict(run_identifier, **query)
 
-    # for stage 3 and above, only querying half the points.
     remaining_queries = _determine_remaining_queries(query, stage, term)
-
     pipeline = [{'$match': query, }]
     # eliminated_regions and pipeline.append({'$match': {
     #     'query_point': {'$not': {'$geoWithin': {'$geometry': eliminated_regions}}}
@@ -156,9 +155,10 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
 
     while True:
         remaining_queries and print("{} remaining queries!".format(remaining_queries))
-
         point_documents = list(utils.DB_COORDINATES.aggregate(pipeline))
-        if len(point_documents) == 0 or (remaining_queries and remaining_queries <= 0):
+
+        print(remaining_queries, "in stage", stage)
+        if len(point_documents) == 0 or (remaining_queries is not None and remaining_queries <= 0):
             print('Stage {} Completed!'.format(stage))
             return
 
@@ -208,7 +208,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
 
 def _determine_remaining_queries(query, stage, term):
 
-    if stage == 1:
+    if stage <= 1:
         return None
 
     num_stage_query = query.copy()
@@ -217,9 +217,9 @@ def _determine_remaining_queries(query, stage, term):
     num_stage_query.pop('processed_terms')
     all_queries = utils.DB_COORDINATES.count_documents(num_stage_query)
     if stage == 2:
-        return max(0, min(all_queries, 10000) - processed)
-    elif stage >= 3:
-        return max(0, min(all_queries / 2, 6000) - processed)
+        return max(0, min(all_queries, 16000) - processed)
+    if stage >= 3:
+        return max(0, min(all_queries / 2, 7000) - processed)
 
 
 def get_lat_and_response(response):
