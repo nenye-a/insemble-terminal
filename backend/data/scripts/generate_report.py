@@ -267,7 +267,7 @@ def deterimine_cities():
 
 
 def determine_overlap():
-    locations = list(utils.DB_STAGING_RESULTS.find({'name': {'$exists': True}, 'address': {'$exists': True}}, {'name': 1, 'address': 1}))
+    locations = list(utils.DB_TERMINAL_PLACES.find({'name': {'$exists': True}, 'address': {'$exists': True}}, {'name': 1, 'address': 1}))
     names = [place['name'] for place in locations]
     addresses = [place['address'] for place in locations]
     overlap = utils.DB_TERMINAL_PLACES.find({
@@ -282,7 +282,7 @@ def determine_overlap():
 
 def get_stage_locations():
 
-    locations = utils.DB_STAGING.find({
+    locations = utils.DB_COORDINATES.find({
         'zoom': 15,
         '$or': [
             {'stage': 2},

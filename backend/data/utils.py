@@ -26,15 +26,14 @@ DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
-DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
 DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
-DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
-DB_STAGING = SYSTEM_MONGO.get_collection(mongo.STAGING)
-DB_STAGING_RESULTS = SYSTEM_MONGO.get_collection(mongo.STAGING_RESULTS)
 DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 BWE = mongo.BulkWriteError
+
+DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
+DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
 
 
 def create_index(collection):
@@ -50,6 +49,29 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
         DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+    if collection.lower() == 'coordinates':
+        DB_COORDINATES.create_index([('center', 1)])
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_COORDINATES.create_index([('query_point', "2dsphere")])
+        DB_COORDINATES.create_index([('processed_terms', 1)])
+        DB_COORDINATES.create_index([('stage', 1)])
+    if collection.lower() == 'log':
+        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
+    if collection.lower() == 'regions':
+        DB_REGIONS.create_index([('name', 1)], unique=True)
+        DB_REGIONS.create_index([('geometry', "2dsphere")])
+        DB_REGIONS.create_index([('viewport', 1)], sparse=True)
+        DB_REGIONS.create_index([('center', 1)])
+        DB_REGIONS.create_index([('type', 1)])
+        DB_REGIONS.create_index([('rank', 1), ('type', 1)], unique=True, sparse=True)
+    # TODO: Remove or Archive Minesweeper items.
+    if collection.lower() == 'ms_coordinates':
+        DB_MS_COORDINATES.create_index([('center', 1)])
+        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
+        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
+        DB_MS_COORDINATES.create_index([('processed_terms', 1)])
     if collection.lower() == 'minesweeper_places':
         DB_MINESWEEPER_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
         DB_MINESWEEPER_PLACES.create_index([('location', "2dsphere")])
@@ -62,34 +84,6 @@ def create_index(collection):
         DB_MINESWEEPER_PLACES.create_index([('opentable_details.bookings', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.category', 1)])
-    if collection.lower() == 'coordinates':
-        DB_COORDINATES.create_index([('center', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
-        DB_COORDINATES.create_index([('query_point', "2dsphere")])
-        DB_COORDINATES.create_index([('processed_terms', 1)])
-    if collection.lower() == 'ms_coordinates':
-        DB_MS_COORDINATES.create_index([('center', 1)])
-        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
-        DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
-        DB_MS_COORDINATES.create_index([('processed_terms', 1)])
-    if collection.lower() == 'staging':
-        DB_STAGING.create_index([('center', 1)])
-        DB_STAGING.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_STAGING.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
-        DB_STAGING.create_index([('query_point', "2dsphere")])
-        DB_STAGING.create_index([('processed_terms', 1)])
-        DB_STAGING_RESULTS.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
-    if collection.lower() == 'log':
-        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
-    if collection.lower() == 'regions':
-        DB_REGIONS.create_index([('name', 1)], unique=True)
-        DB_REGIONS.create_index([('geometry', "2dsphere")])
-        DB_REGIONS.create_index([('viewport', 1)], sparse=True)
-        DB_REGIONS.create_index([('center', 1)])
-        DB_REGIONS.create_index([('type', 1)])
-        DB_REGIONS.create_index([('rank', 1), ('type', 1)], unique=True, sparse=True)
 
 
 def meters_to_miles(meters):
@@ -329,14 +323,16 @@ if __name__ == "__main__":
     def test_extract_city():
         print(extract_city("3006 S Sepulveda Blvd, Los Angeles, CA 90034"))
 
+    # RUN
+
+    # create_index("terminal")
+
+    # TESTS
+
     # test_state_code_to_name()
     # test_parse_city()
     # test_to_snake_case()
     # test_snake_to_word()
     # test_round_object()
     # test_extract_city()
-    # create_index('regions')
-    DB_STAGING_RESULTS.rename("places")
-
     # test_chunks()
-    # DB_MS_COORDINATES.remove({})

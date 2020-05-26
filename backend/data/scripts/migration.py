@@ -17,7 +17,7 @@ def migrate_terminal():
     updated_count = 0
     for place in list(terminal_places):
         place.pop('_id')
-        update_result = utils.DB_STAGING_RESULTS.update_one({
+        update_result = utils.DB_TERMINAL_PLACES.update_one({
             'name': place['name'],
             'address': place['address']
         }, {

@@ -32,9 +32,10 @@ def search_locations():
         )
 
     for location in opaque_locations:
-        print("Starting to search for locations in {}. Id in regions is {}".format(
-            location["name"], location["_id"]
-        ))
+        print("Starting to search for locations in {}. Id for this location "
+              "in the Regions database is {}".format(
+                  location["name"], location["_id"]
+              ))
         center = utils.from_geojson(location["center"])
         viewport = (utils.from_geojson(location["viewport"]["nw"]),
                     utils.from_geojson(location["viewport"]["se"]))
@@ -96,7 +97,7 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
         'zoom': course_zoom
     }
     log_identifier = dict(run_identifier, **{'method': 'stage_finder'})
-    has_document = utils.DB_STAGING.find_one(run_identifier)
+    has_document = utils.DB_COORDINATES.find_one(run_identifier)
     if not has_document:
         stage_dict = {'stage': 1}
         coords = [dict(run_identifier, **stage_dict, **{'query_point': utils.to_geojson(query_point)})
@@ -105,7 +106,7 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
             log_identifier['1st_stage_points'] = len(coords)
             log_identifier['created_at'] = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
             utils.DB_LOG.insert_one(log_identifier)
-            utils.DB_STAGING.insert_many(coords, ordered=False)
+            utils.DB_COORDINATES.insert_many(coords, ordered=False)
         except utils.BWE:
             print('Center, viewport, zoom, combo already in database, please check.')
             raise
@@ -139,7 +140,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
     while True:
         remaining_queries and print("{} remaining queries!".format(remaining_queries))
 
-        point_documents = list(utils.DB_STAGING.aggregate(pipeline))
+        point_documents = list(utils.DB_COORDINATES.aggregate(pipeline))
         if len(point_documents) == 0 or (remaining_queries and remaining_queries <= 0):
             print('Stage {} Completed!'.format(stage))
             return
@@ -166,17 +167,17 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
                          for location in utils.flatten(new_locations)]
 
         try:
-            utils.DB_STAGING_RESULTS.insert_many(results, ordered=False)
+            utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
             results_inserted = len(results)
         except utils.BWE as bwe:
             results_inserted = bwe.details['nInserted']
         try:
-            utils.DB_STAGING.insert_many(new_locations, ordered=False)
+            utils.DB_COORDINATES.insert_many(new_locations, ordered=False)
             locations_inserted = len(new_locations)
         except utils.BWE as bwe:
             locations_inserted = bwe.details['nInserted']
 
-        utils.DB_STAGING.update_many({'_id': {'$in': queried_ids}}, {'$push': {
+        utils.DB_COORDINATES.update_many({'_id': {'$in': queried_ids}}, {'$push': {
             'processed_terms': term
         }})
         num_queried = len(queried_ids)
@@ -192,9 +193,9 @@ def _determine_remaining_queries(query, stage, term):
 
     num_stage_query = query.copy()
     num_stage_query['processed_terms'] = term
-    processed = utils.DB_STAGING.count_documents(num_stage_query)
+    processed = utils.DB_COORDINATES.count_documents(num_stage_query)
     num_stage_query.pop('processed_terms')
-    all_queries = utils.DB_STAGING.count_documents(num_stage_query)
+    all_queries = utils.DB_COORDINATES.count_documents(num_stage_query)
     if stage == 2:
         return max(0, min(all_queries, 10000) - processed)
     elif stage >= 3:
