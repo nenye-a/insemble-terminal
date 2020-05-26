@@ -22,10 +22,10 @@ TERMINAL_PLACES = "terminal.places"
 TERMINAL_NAME_ADDRESSES = "terminal.name_addresses"
 TERMINAL_RUNS = "terminal.runs"
 COORDINATES = "terminal.coordinates"
-STAGING = "terminal.staging"
-STAGING_RESULTS = "terminal.staging_results"
+REGIONS = "terminal.regions"
 LOG = "terminal.log"
 
+# TODO: Remove or Archive
 MINESWEEPER_PLACES = "terminal.minesweeper_places"
 MS_COORDINATES = "terminal.ms_coordinates"
 

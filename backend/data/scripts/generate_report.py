@@ -259,6 +259,39 @@ def categories_terminal():
     print(categories)
 
 
+def deterimine_cities():
+
+    cities = list(set([utils.extract_city(place['address']) for place in
+                       utils.DB_TERMINAL_PLACES.find({'address': {'$exists': True}}, {'address': 1})]))
+    pd.Series(list(set(cities))).to_csv('cities.csv')
+
+
+def determine_overlap():
+    locations = list(utils.DB_TERMINAL_PLACES.find({'name': {'$exists': True}, 'address': {'$exists': True}}, {'name': 1, 'address': 1}))
+    names = [place['name'] for place in locations]
+    addresses = [place['address'] for place in locations]
+    overlap = utils.DB_TERMINAL_PLACES.find({
+        'name': {'$nin': names},
+        'address': {'$nin': addresses}
+    }, {'name': 1, 'address': 1})
+    print(list(overlap)[:50])
+    # print(overlap)
+    # print(utils.DB_TERMINAL_PLACES.count_documents({}))
+    # print(utils.DB_STAGING_RESULTS.count_documents({}))
+
+
+def get_stage_locations():
+
+    locations = utils.DB_COORDINATES.find({
+        'zoom': 15,
+        '$or': [
+            {'stage': 2},
+            {'stage': 3}
+        ]
+    })
+    pd.DataFrame([utils.from_geojson(location['query_point'], as_dict=True) for location in locations]).to_csv('new_items.csv')
+
+
 if __name__ == "__main__":
     # generate_report('Great Clips', custom_query={'address': {
     #     '$regex': ".*FL",
@@ -268,5 +301,7 @@ if __name__ == "__main__":
     # compare_locations()
     # categories()
     # compare_locations_fast()
-    num_insemble_in_viewport()
+    # num_insemble_in_viewport()
     # categories_terminal()
+    # deterimine_cities()
+    determine_overlap()

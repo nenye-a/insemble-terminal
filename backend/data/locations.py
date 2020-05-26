@@ -19,7 +19,7 @@ TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 BASELINE_ZOOM = 18
 BASELINE_RADIUS = 180  # meters
 
-MINESWEEPER_MAX_CUTOFF_RADIUS = 10000 # meters
+MINESWEEPER_MAX_CUTOFF_RADIUS = 10000  # meters
 
 TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atlanta, GA 30329'},
              {'name': "O'Reilly Auto Parts", 'address': '3425 S Cobb Dr SE, Smyrna, GA 30080'},
@@ -393,6 +393,7 @@ def query_upward(results, meta, num_initial_results):
         results, zoom = query_upward(results, meta, num_initial_results)
     return results, zoom + 1  # zoom of level down from query zoom
 
+
 def collect_minesweeper(region, term, zoom=18, batch_size=100):
     # check if db exists. if yes, connect with corresponding db of lat lngs
     # if db does not exist, create new latlngs for region and upload into new run_db for region, term, zoom
@@ -509,6 +510,7 @@ def collect_minesweeper(region, term, zoom=18, batch_size=100):
             }
         }, upsert=True)
 
+
 def meta_minesweeper(results, meta):
     # nearby results are name_addresses returned nearby
     # coords are processed into distances to make a histogram and used to determine the resultant radius in
@@ -533,16 +535,18 @@ def meta_minesweeper(results, meta):
 
     # decide radius for which to remove remaining points
     max_histo_index = list(histo[0]).index(histo[0].max())
-    cutoff_radius = histo[1][max_histo_index-1] if (max_histo_index-1)>=0 else 1
+    cutoff_radius = histo[1][max_histo_index - 1] if (max_histo_index - 1) >= 0 else 1
     print("histo counts", histo[0])
     print("histo bins", histo[1])
     print("cutoff radius", min(cutoff_radius, MINESWEEPER_MAX_CUTOFF_RADIUS))
 
     return nearby_results, min(cutoff_radius, MINESWEEPER_MAX_CUTOFF_RADIUS)
 
+
 def minesweeper_resparser(response):
     nearby_scraper = google.GoogleNearby('INSIDE NEARBY SCRAPER')
     return (nearby_scraper.default_parser(response), nearby_scraper.parse_nearest_latlng(response))
+
 
 def divide_region(center, viewport, ground_zoom):
     lat, lng = center
