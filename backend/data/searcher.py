@@ -128,13 +128,15 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
         except utils.BWE:
             print('Many of these points allready exist!. Updating these points.')
 
+    if eliminated_regions:
+        _eliminate_regions(term, eliminated_regions, run_identifier, log_identifier)
+
     for next_stage in (1, 2, 3):
         zoom = first_stage_zoom if next_stage == 1 else other_stage_zoom
-        stage_caller(run_identifier, term, next_stage, batch_size, zoom, log_identifier,
-                     eliminated_regions=eliminated_regions)
+        stage_caller(run_identifier, term, next_stage, batch_size, zoom, log_identifier)
 
 
-def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_regions=None):
+def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
 
     print("Starting Stage: {}".format(stage))
     size = {'size': batch_size}
@@ -147,11 +149,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
     query = dict(run_identifier, **query)
 
     remaining_queries = _determine_remaining_queries(query, stage, term)
-    pipeline = [{'$match': query, }]
-    # eliminated_regions and pipeline.append({'$match': {
-    #     'query_point': {'$not': {'$geoWithin': {'$geometry': eliminated_regions}}}
-    # }})
-    pipeline.append({'$sample': size})
+    pipeline = [{'$match': query}, {'$sample': size}]
 
     while True:
         remaining_queries and print("{} remaining queries!".format(remaining_queries))
@@ -197,7 +195,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log, eliminated_
         except utils.BWE as bwe:
             locations_inserted = bwe.details['nInserted']
 
-        utils.DB_COORDINATES.update_many({'_id': {'$in': queried_ids}}, {'$push': {
+        utils.DB_COORDINATES.update_many({'_id': {'$in': queried_ids}}, {'$addToSet': {
             'processed_terms': term
         }})
         num_queried = len(queried_ids)
@@ -225,6 +223,22 @@ def _determine_remaining_queries(query, stage, term):
 def get_lat_and_response(response):
     return (google.GoogleNearby.default_parser(response),
             google.GoogleNearby.parse_nearest_latlng(response))
+
+
+def _eliminate_regions(term, eliminated_regions, run, log):
+    addend = {'query_point': {'$geoWithin': {'$geometry': eliminated_regions}}, 'stage': 1}
+    update_result = utils.DB_COORDINATES.update_many(dict(run, **addend), {'$addToSet': {
+        'processed_terms': term
+    }})
+    print(update_result.modified_count, "documents eliminated!")
+    utils.DB_LOG.update_one(log, {
+        '$inc': {
+            term + '_stage1' + '_queried_points': update_result.modified_count,
+        },
+        '$set': {
+            term + '_updated_last': dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+        }
+    }) if update_result.modified_count > 1 else None
 
 
 def _print_log(stage, term, num_queried, locations_inserted, results_inserted, log):
