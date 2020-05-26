@@ -15,13 +15,16 @@ import {
   THEME_COLOR,
 } from '../constants/colors';
 import { useID } from '../helpers';
+import SvgSearch from '../components/icons/search';
 
 import Label from './Label';
 import View from './View';
 import Text from './Text';
+import TouchableOpacity from './TouchableOpacity';
 
 type InputProps = ComponentProps<'input'> & {
   isError?: boolean;
+  icon?: boolean;
 };
 
 type TextInputProps = Omit<InputProps, 'onSubmit'> & {
@@ -32,6 +35,7 @@ type TextInputProps = Omit<InputProps, 'onSubmit'> & {
 type Props = TextInputProps & {
   label?: string;
   errorMessage?: string;
+  iconStyle?: CSSProperties;
 };
 
 export default forwardRef(
@@ -45,6 +49,8 @@ export default forwardRef(
       containerStyle,
       errorMessage,
       required,
+      icon,
+      iconStyle,
       ...otherProps
     } = props;
     let fallbackID = useID();
@@ -79,6 +85,15 @@ export default forwardRef(
           required={required}
           {...otherProps}
         />
+        {icon && (
+          <TouchableOpacity
+            disabled={disabled}
+            onPress={onSubmit}
+            style={{ position: 'absolute', right: 5, top: 7, ...iconStyle }}
+          >
+            <SvgSearch />
+          </TouchableOpacity>
+        )}
         {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
       </View>
     );
