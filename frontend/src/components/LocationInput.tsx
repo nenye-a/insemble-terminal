@@ -10,7 +10,7 @@ import React, {
 import { TextInput } from '../core-ui';
 import { useGoogleMaps } from '../helpers';
 import { DEFAULT_BORDER_RADIUS } from '../constants/theme';
-import { THEME_COLOR, WHITE } from '../constants/colors';
+import { THEME_COLOR, WHITE, DISABLED_PILL_COLOR } from '../constants/colors';
 
 type PlaceResult = google.maps.places.PlaceResult;
 type InputProps = ComponentProps<'input'>;
@@ -37,6 +37,9 @@ export default function LocationInput(props: Props) {
     onPlaceSelected,
     label,
     containerStyle,
+    icon,
+    disabled,
+    defaultValue,
     ...otherProps
   } = props;
   let inputRef = useRef<HTMLInputElement | null>(null);
@@ -90,18 +93,22 @@ export default function LocationInput(props: Props) {
       placeholder={placeholder}
       onSubmit={submitHandler}
       label={label}
+      defaultValue={defaultValue}
       containerStyle={{
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
       }}
+      disabled={disabled}
       style={
-        selectedPlace.current?.formatted_address
+        icon
+          ? { paddingRight: 36 }
+          : selectedPlace.current?.formatted_address || defaultValue
           ? {
               textAlign: 'center',
               minWidth: 40,
               maxWidth: 200,
-              backgroundColor: THEME_COLOR,
+              backgroundColor: disabled ? DISABLED_PILL_COLOR : THEME_COLOR,
               padding: 8,
               borderRadius: DEFAULT_BORDER_RADIUS,
               color: WHITE,
