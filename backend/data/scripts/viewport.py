@@ -85,7 +85,38 @@ def upload_regions():
     utils.DB_REGIONS.insert_many(points, ordered=False)
 
 
+def print_zoom_region(region, zoom):
+    lat, lng, viewport = google.get_lat_lng(region, viewport=True)
+    nw, se = viewport
+    center = lat, lng
+    coords = []
+    points = divide_region(center, viewport, zoom)
+    # points = divide_region((40.09134, -105.39051), ((40.09134, -105.39051), (39.30596, -104.52576)), zoom)
+    for item in points:
+        coords.append({
+            'latitude': item[0],
+            'longitude': item[1]
+        })
+    pd.DataFrame(coords).to_csv(region + str(zoom) + '_datapoints.csv')
+
+
+def add_msa_rank():
+
+    ranked_msas = pd.read_csv(THIS_DIR + '/files/ranked_msas.csv').set_index('Name')
+    print(ranked_msas.head())
+
+    for name in ranked_msas.index:
+        search_name = r"^" + name.split('-')[0][:4]
+        update_results = utils.DB_REGIONS.update_one({
+            'name': {"$regex": search_name, "$options": "i"}
+        }, {
+            '$set': {'rank': int(ranked_msas.loc[name, 'Rank'])}
+        })
+        print(update_results.modified_count)
+
+
 if __name__ == "__main__":
     # get_viewports()
     # observe_divided_region()
-    upload_regions()
+    # upload_regions()
+    add_msa_rank()

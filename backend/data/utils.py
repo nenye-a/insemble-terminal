@@ -89,6 +89,7 @@ def create_index(collection):
         DB_REGIONS.create_index([('viewport', 1)], sparse=True)
         DB_REGIONS.create_index([('center', 1)])
         DB_REGIONS.create_index([('type', 1)])
+        DB_REGIONS.create_index([('rank', 1), ('type', 1)], unique=True, sparse=True)
 
 
 def meters_to_miles(meters):
@@ -334,7 +335,8 @@ if __name__ == "__main__":
     # test_snake_to_word()
     # test_round_object()
     # test_extract_city()
-    create_index('regions')
-    # test_chunks()
+    # create_index('regions')
+    DB_STAGING_RESULTS.rename("places")
 
+    # test_chunks()
     # DB_MS_COORDINATES.remove({})

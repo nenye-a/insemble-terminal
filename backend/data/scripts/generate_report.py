@@ -280,6 +280,18 @@ def determine_overlap():
     # print(utils.DB_STAGING_RESULTS.count_documents({}))
 
 
+def get_stage_locations():
+
+    locations = utils.DB_STAGING.find({
+        'zoom': 15,
+        '$or': [
+            {'stage': 2},
+            {'stage': 3}
+        ]
+    })
+    pd.DataFrame([utils.from_geojson(location['query_point'], as_dict=True) for location in locations]).to_csv('new_items.csv')
+
+
 if __name__ == "__main__":
     # generate_report('Great Clips', custom_query={'address': {
     #     '$regex': ".*FL",
