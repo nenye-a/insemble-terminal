@@ -1,4 +1,4 @@
-import React, { useState, ComponentProps } from 'react';
+import React, { useState, useEffect, ComponentProps } from 'react';
 import { useCombobox } from 'downshift';
 import styled, { css } from 'styled-components';
 
@@ -8,6 +8,7 @@ import {
   BACKGROUND_COLOR,
   SHADOW_COLOR,
   THEME_COLOR,
+  DISABLED_PILL_COLOR,
 } from '../constants/colors';
 import { FONT_SIZE_NORMAL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
 
@@ -20,6 +21,7 @@ type Props<T> = {
   onOptionSelected: (option: T | string | null) => void;
   optionExtractor?: (option: T) => string;
   placeholder?: string;
+  disabled?: boolean;
 };
 
 const defaultOptionExtractor = (item: unknown) => String(item);
@@ -31,9 +33,14 @@ export default function Dropdown<T>(props: Props<T>) {
     onOptionSelected,
     optionExtractor = defaultOptionExtractor,
     placeholder,
+    disabled,
   } = props;
 
   let [inputItems, setInputItems] = useState<Array<T>>(options);
+  let [inputValue, setInputValue] = useState(
+    optionExtractor(selectedOption) || '',
+  );
+
   let {
     isOpen,
     getMenuProps,
@@ -64,16 +71,29 @@ export default function Dropdown<T>(props: Props<T>) {
     },
   });
 
+  useEffect(() => {
+    setInputValue(optionExtractor(selectedOption));
+  }, [selectedOption, optionExtractor]);
+
   return (
-    <TouchableOpacity {...getComboboxProps()} onPress={openMenu}>
+    <TouchableOpacity
+      {...getComboboxProps()}
+      onPress={openMenu}
+      disabled={disabled}
+    >
       <InputContainer
-        {...getInputProps()}
+        {...getInputProps({
+          onChange: (e) => {
+            setInputValue(e.currentTarget.value);
+          },
+          value: inputValue,
+        })}
         placeholder={placeholder}
         hasSelection={!!selectedOption}
         {...(selectedOption && {
           style: {
             caretColor: 'transparent',
-            backgroundColor: THEME_COLOR,
+            backgroundColor: disabled ? DISABLED_PILL_COLOR : THEME_COLOR,
             color: WHITE,
             textAlign: 'center',
             height: 28,
