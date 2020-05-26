@@ -23,7 +23,7 @@ export default function OverallPerformanceResult(props: Props) {
   let noData = !data || data?.length === 0;
   return (
     <Container>
-      <ResultTitle title="Overall Performance" />
+      <ResultTitle title="Overall Performance" noData={noData} />
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
