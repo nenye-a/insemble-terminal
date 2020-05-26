@@ -186,10 +186,13 @@ class GeoCode(GenericScraper):
     def default_parser(response):
         if response.status_code != 200:
             return None
-        first_parse = re.findall(REGEX_LATLNG_1, response.text)
-        match = re.findall(REGEX_LATLNG_2, first_parse[0])
-        [goog_size_var, lng, lat] = ast.literal_eval(match[0])
-        return lat, lng, goog_size_var
+        try:
+            first_parse = re.findall(REGEX_LATLNG_1, response.text)
+            match = re.findall(REGEX_LATLNG_2, first_parse[0])
+            [goog_size_var, lng, lat] = ast.literal_eval(match[0])
+            return lat, lng, goog_size_var
+        except Exception:
+            return None, None, None
 
     def response_parse(self, response):
         return self.default_parser(response)
@@ -207,7 +210,10 @@ class GeoCode(GenericScraper):
             if include_sizevar:
                 return lat, lng, goog_size_var
             if viewport:
-                return lat, lng, get_viewport(lat, lng, goog_size_var)
+                if goog_size_var:
+                    return lat, lng, get_viewport(lat, lng, goog_size_var)
+                else:
+                    return lat, lng, None
             else:
                 return lat, lng
         except Exception as e:
@@ -232,15 +238,18 @@ class GeoCode(GenericScraper):
             timeout=5
         )
 
-        if not include_sizevar:
-            for data in result:
-                if data['data']:
-                    data['data'] = data['data'][:2]
         if viewport:
             for data in result:
                 if data['data']:
-                    lat, lng, goog_sizevar = data['data']
-                    data['data'] = lat, lng, get_viewport(goog_sizevar)
+                    lat, lng, goog_size_var = data['data']
+                    if goog_size_var:
+                        data['data'] = lat, lng, get_viewport(lat, lng, goog_size_var)
+                    else:
+                        data['data'] = lat, lng, None
+        elif not include_sizevar:
+            for data in result:
+                if data['data']:
+                    data['data'] = data['data'][:2]
 
         return result
 

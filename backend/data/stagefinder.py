@@ -150,13 +150,13 @@ def print_zoom_region(region, zoom):
     center = lat, lng
     coords = []
     points = divide_region(center, viewport, zoom)
-    # Use the following script to simply print out the regions.
+    # points = divide_region((40.09134, -105.39051), ((40.09134, -105.39051), (39.30596, -104.52576)), zoom)
     for item in points:
         coords.append({
             'latitude': item[0],
             'longitude': item[1]
         })
-    pd.DataFrame(coords).to_csv('datapoints.csv')
+    pd.DataFrame(coords).to_csv(region + str(zoom) + '_datapoints.csv')
 
 
 def get_locations():
@@ -172,7 +172,7 @@ def get_locations():
 
 
 if __name__ == "__main__":
-    # print_zoom_region("Los Angeles", 15)
-    for item in ["restaurants", "stores", "auto shop", "cafe", "coffee shop"]:
-        staged_finder("Los Angeles", item, batch_size=100)
+    print_zoom_region("Dallas MSA", 14)
+    # for item in ["restaurants", "stores", "auto shop", "cafe", "coffee shop"]:
+    #     staged_finder("Los Angeles", item, batch_size=100)
     # get_locations()

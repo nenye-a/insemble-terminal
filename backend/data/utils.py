@@ -19,6 +19,7 @@ MILES_TO_METERS_FACTOR = 1609.34
 EARTHS_RADIUS_MILES = 3958.8
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
+ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
 
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
@@ -31,6 +32,7 @@ DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
 DB_STAGING = SYSTEM_MONGO.get_collection(mongo.STAGING)
 DB_STAGING_RESULTS = SYSTEM_MONGO.get_collection(mongo.STAGING_RESULTS)
+DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 BWE = mongo.BulkWriteError
 
@@ -81,6 +83,12 @@ def create_index(collection):
         DB_STAGING_RESULTS.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
     if collection.lower() == 'log':
         DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
+    if collection.lower() == 'regions':
+        DB_REGIONS.create_index([('name', 1)], unique=True)
+        DB_REGIONS.create_index([('geometry', "2dsphere")])
+        DB_REGIONS.create_index([('viewport', 1)], sparse=True)
+        DB_REGIONS.create_index([('center', 1)])
+        DB_REGIONS.create_index([('type', 1)])
 
 
 def meters_to_miles(meters):
@@ -274,6 +282,19 @@ def from_geojson(geo_json, as_dict=False):
     return {'lat': lat, 'lng': lng} if as_dict else (lat, lng)
 
 
+def extract_city(address):
+    """
+    Provided an address with the following ending:
+    "Los Angeles, CA 90012". Will extract the city.
+    """
+    city_finder = re.compile(ADDRESS_END_REGEX)
+    match = city_finder.findall(address)
+    if not match:
+        return None
+    else:
+        return match[0][0].strip()
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():
@@ -304,12 +325,16 @@ if __name__ == "__main__":
         print(list(chunks([1, 2, 3], 2)))
         print(list(chunks([1, 2, 3, 5, 6], 2)))
 
+    def test_extract_city():
+        print(extract_city("3006 S Sepulveda Blvd, Los Angeles, CA 90034"))
+
     # test_state_code_to_name()
     # test_parse_city()
     # test_to_snake_case()
     # test_snake_to_word()
     # test_round_object()
-    create_index('staging')
+    # test_extract_city()
+    create_index('regions')
     # test_chunks()
 
     # DB_MS_COORDINATES.remove({})

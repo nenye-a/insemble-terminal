@@ -24,6 +24,7 @@ TERMINAL_RUNS = "terminal.runs"
 COORDINATES = "terminal.coordinates"
 STAGING = "terminal.staging"
 STAGING_RESULTS = "terminal.staging_results"
+REGIONS = "terminal.regions"
 LOG = "terminal.log"
 
 MINESWEEPER_PLACES = "terminal.minesweeper_places"
