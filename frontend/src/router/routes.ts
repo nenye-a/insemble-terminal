@@ -1,6 +1,11 @@
 import { RouteProps } from 'react-router-dom';
 
-import { ResultsScene, SignUpScene, LoginScene } from '../scenes';
+import {
+  ResultsScene,
+  SignUpScene,
+  LoginScene,
+  TerminalHomeScene,
+} from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -13,6 +18,7 @@ const ROUTES: Array<RouteType> = [
   { path: '/signup', component: SignUpScene },
   { path: '/login', component: LoginScene },
   { path: '/results', component: ResultsScene, showHeader: false },
+  { path: '/terminals', component: TerminalHomeScene },
 ];
 
 export default ROUTES;

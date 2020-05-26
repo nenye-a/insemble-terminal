@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useMutation, useLazyQuery } from '@apollo/react-hooks';
 
 import { View, Text, Divider } from '../../core-ui';
-import HeaderNavigationBar from '../../components/HeaderNavigationBar';
+import { HeaderNavigationBar, PageTitle } from '../../components';
 import {
   MUTED_TEXT_COLOR,
   DARK_TEXT_COLOR,
@@ -21,7 +21,6 @@ import {
 import { PerformanceTableType } from '../../generated/globalTypes';
 
 import PerformanceByLocationResult from './PerformanceByLocationResult';
-import PageTitle from './PageTitle';
 import OverallPerformanceResult from './OverallPerformanceResult';
 
 export default function ResultsScene() {
