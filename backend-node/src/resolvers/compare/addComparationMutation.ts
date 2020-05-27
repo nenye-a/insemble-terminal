@@ -183,6 +183,7 @@ export let addComparationResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
+            updatedAt: new Date(new Date().getTime() - 60 * 60000),
           },
           select: {
             id: true,
