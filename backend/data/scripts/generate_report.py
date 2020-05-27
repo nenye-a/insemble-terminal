@@ -292,6 +292,19 @@ def get_stage_locations():
     pd.DataFrame([utils.from_geojson(location['query_point'], as_dict=True) for location in locations]).to_csv('new_items.csv')
 
 
+def view_locations(query):
+
+    locations = list(utils.DB_TERMINAL_PLACES.find(dict(query, **{'location': {'$exists': True}})))
+    data = []
+    for item in locations:
+        data.append({
+            'name': item['name'],
+            'lat': item['location']['coordinates'][1],
+            'lng': item['location']['coordinates'][0]
+        })
+    pd.DataFrame(data).to_csv(THIS_DIR + '/files/generated_locations.csv')
+
+
 if __name__ == "__main__":
     # generate_report('Great Clips', custom_query={'address': {
     #     '$regex': ".*FL",
@@ -304,4 +317,7 @@ if __name__ == "__main__":
     # num_insemble_in_viewport()
     # categories_terminal()
     # deterimine_cities()
-    determine_overlap()
+    # determine_overlap()
+    view_locations({
+        'address': {"$regex": "NY"}
+    })
