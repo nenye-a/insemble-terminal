@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 
-import { View, Text, Divider } from '../../core-ui';
+import { View, Text, Divider, LoadingIndicator } from '../../core-ui';
 import { HeaderNavigationBar, PageTitle } from '../../components';
 import {
   MUTED_TEXT_COLOR,
@@ -19,12 +19,13 @@ import SvgArrowUp from '../../components/icons/arrow-up';
 
 import PerformanceByLocationResult from './PerformanceByLocationResult';
 import OverallPerformanceResult from './OverallPerformanceResult';
+import PerformanceByBrandResult from './PerformanceByBrandResult';
 
 export default function ResultsScene() {
-  let [submitSearch, { data: submitSearchData }] = useMutation<
-    Search,
-    SearchVariables
-  >(SEARCH);
+  let [
+    submitSearch,
+    { data: submitSearchData, loading: submitSearchLoading },
+  ] = useMutation<Search, SearchVariables>(SEARCH);
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
 
   let onSubmit = (searchVariables: SearchVariables) => {
@@ -36,14 +37,12 @@ export default function ResultsScene() {
   useEffect(() => {
     if (submitSearchData) {
       let { reviewTag, businessTag, locationTag } = submitSearchData.search;
-      if (businessTag && locationTag) {
-        let queries = getResultQueries({
-          reviewTag,
-          businessTag,
-          locationTag,
-        });
-        setResultQueries(queries);
-      }
+      let queries = getResultQueries({
+        reviewTag,
+        businessTag,
+        locationTag,
+      });
+      setResultQueries(queries);
     }
   }, [submitSearchData]);
 
@@ -75,6 +74,13 @@ export default function ResultsScene() {
                       locationTagId={submitSearchData?.search.locationTag?.id}
                     />
                   );
+                } else if (type === PerformanceTableType.BRAND) {
+                  return (
+                    <PerformanceByBrandResult
+                      businessTagId={submitSearchData?.search.businessTag?.id}
+                      locationTagId={submitSearchData?.search.locationTag?.id}
+                    />
+                  );
                 }
               }
               return null;
@@ -92,6 +98,7 @@ export default function ResultsScene() {
           <Divider color={MUTED_TEXT_COLOR} />
         </TitleContainer>
       )}
+      {submitSearchLoading && <LoadingIndicator />}
     </View>
   );
 }
