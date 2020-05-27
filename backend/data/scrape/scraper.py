@@ -169,6 +169,9 @@ class GenericScraper(object):
         except requests.exceptions.Timeout as e:
             self.logger.exception('TimeOut {} while requesting "{}"'.format(
                 e, url))
+        except requests.exceptions.RetryError as e:
+            self.logger.exception('RetryError {} while requesting "{}"'.format(
+                e, url))
         except json.decoder.JSONDecodeError as e:
             self.logger.exception('Failed to parse JSON "{}" while requesting "{}".'.format(
                 e, url))
