@@ -269,6 +269,9 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
     print("STAGE: Number of Stage {} Points Inserted: {}".format(stage + 1, locations_inserted))
     print("STAGE: Number of Results Inserted: {}".format(results_inserted))
 
+    timestamp = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+    print(timestamp.ctime())
+
     utils.DB_LOG.update_one(log, {
         '$inc': {
             term + '_stage' + str(stage) + '_queried_points': num_queried,
@@ -276,7 +279,7 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
             term + '_places_inserted': results_inserted
         },
         '$set': {
-            term + '_updated_last': dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+            term + '_updated_last': timestamp
         }
     })
 
