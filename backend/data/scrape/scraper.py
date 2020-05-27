@@ -285,6 +285,7 @@ class GenericScraper(object):
             except UnboundLocalError as e:
                 self.logger.error('UnboundLocalError {}. Likely due to failed pool '
                                   'closure due to uninstantiated pool'.format(e))
+                restart_program()
 
         self.logger.info("Actual Request Time: {}".format(round(request_finish - request_start, 2)))
         self.logger.info("Total Request Time: {}".format(round(pool_terminated_time - request_start, 2)))
