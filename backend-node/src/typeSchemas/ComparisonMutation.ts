@@ -1,7 +1,7 @@
 import { objectType } from 'nexus';
 
-export let ComparationMutation = objectType({
-  name: 'ComparationMutation',
+export let ComparisonMutation = objectType({
+  name: 'ComparisonMutation',
   definition(t) {
     t.field('comparationTags', { type: 'ComparationTag', list: true });
     t.field('reviewTag', { type: 'ReviewTag' });

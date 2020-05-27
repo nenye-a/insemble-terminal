@@ -2,9 +2,9 @@ import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
 
 import { Context } from 'serverTypes';
 
-export let addComparationResolver: FieldResolver<
+export let addComparisonResolver: FieldResolver<
   'Mutation',
-  'addComparation'
+  'addComparison'
 > = async (
   _,
   { reviewTag, businessTag, locationTag, businessTagId, tableId },
@@ -130,6 +130,13 @@ export let addComparationResolver: FieldResolver<
           comparationTags: {
             some: { id: selectedComparationId },
           },
+          type: table.type,
+          businessTag: table.businessTag
+            ? { id: table.businessTag.id }
+            : undefined,
+          locationTag: table.locationTag
+            ? { id: table.locationTag.id }
+            : undefined,
         },
         select: {
           id: true,
@@ -147,8 +154,9 @@ export let addComparationResolver: FieldResolver<
         },
       });
       tables = tables.filter(({ comparationTags }) => {
-        return comparationTags.every(({ id }) =>
-          newComparationIds.includes(id),
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
         );
       });
       if (!tables.length) {
@@ -175,6 +183,7 @@ export let addComparationResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
+            updatedAt: new Date(new Date().getTime() - 60 * 60000),
           },
           select: {
             id: true,
@@ -208,8 +217,8 @@ export let addComparationResolver: FieldResolver<
   };
 };
 
-export let addComparation = mutationField('addComparation', {
-  type: 'ComparationMutation',
+export let addComparation = mutationField('addComparison', {
+  type: 'ComparisonMutation',
   args: {
     reviewTag: arg({ type: 'ReviewTag', required: true }),
     businessTag: arg({ type: 'BusinessTagInput' }),
@@ -217,5 +226,5 @@ export let addComparation = mutationField('addComparation', {
     locationTag: arg({ type: 'LocationTagInput' }),
     tableId: stringArg({ required: true }),
   },
-  resolve: addComparationResolver,
+  resolve: addComparisonResolver,
 });
