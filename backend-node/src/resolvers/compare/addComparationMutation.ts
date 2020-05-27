@@ -130,6 +130,13 @@ export let addComparationResolver: FieldResolver<
           comparationTags: {
             some: { id: selectedComparationId },
           },
+          type: table.type,
+          businessTag: table.businessTag
+            ? { id: table.businessTag.id }
+            : undefined,
+          locationTag: table.locationTag
+            ? { id: table.locationTag.id }
+            : undefined,
         },
         select: {
           id: true,
@@ -147,8 +154,9 @@ export let addComparationResolver: FieldResolver<
         },
       });
       tables = tables.filter(({ comparationTags }) => {
-        return comparationTags.every(({ id }) =>
-          newComparationIds.includes(id),
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
         );
       });
       if (!tables.length) {
