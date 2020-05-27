@@ -8,7 +8,9 @@ let isUserAuthenticated = rule()(async (_, __, ctx: Context) => {
 
 let permissions = shield({
   Query: {},
-  Mutation: {},
+  Mutation: {
+    search: isUserAuthenticated,
+  },
 });
 
 export { permissions };
