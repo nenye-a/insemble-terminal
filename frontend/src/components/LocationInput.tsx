@@ -1,7 +1,6 @@
 import React, {
   useEffect,
   useRef,
-  useState,
   useCallback,
   ComponentProps,
   RefObject,
@@ -21,10 +20,9 @@ export type SelectedLocation = {
   name: string;
   address: string;
   placeType: Array<string>;
-};
+} | null;
 
 type Props = Omit<InputProps, 'onSubmit' | 'ref'> & {
-  icon?: boolean;
   label?: string;
   placeholder?: string;
   ref?: RefObject<HTMLInputElement> | null;
@@ -39,16 +37,10 @@ export default function LocationInput(props: Props) {
     onPlaceSelected,
     label,
     containerStyle,
-    icon,
     ...otherProps
   } = props;
-  let [isFocused, setFocused] = useState(false);
   let inputRef = useRef<HTMLInputElement | null>(null);
   let selectedPlace = useRef<PlaceResult | null>(null);
-  let options = {
-    // TODO: restrict to only city and address
-    componentRestrictions: { country: 'us' },
-  };
   let submitHandler = useCallback(() => {
     if (selectedPlace.current) {
       let {
@@ -65,10 +57,15 @@ export default function LocationInput(props: Props) {
           placeType,
         });
     }
-  }, [onPlaceSelected]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    if (inputRef.current && !isLoading && isFocused) {
+    if (inputRef.current) {
+      let options = {
+        types: ['geocode'],
+        componentRestrictions: { country: 'us' },
+      };
       let autocomplete = new window.google.maps.places.Autocomplete(
         inputRef.current,
         options,
@@ -82,7 +79,7 @@ export default function LocationInput(props: Props) {
         listener.remove();
       };
     }
-  }, [submitHandler, isLoading, options, isFocused]);
+  }, [submitHandler, isLoading]);
 
   if (isLoading) {
     return null;
@@ -93,17 +90,13 @@ export default function LocationInput(props: Props) {
       placeholder={placeholder}
       onSubmit={submitHandler}
       label={label}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
       containerStyle={{
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
       }}
       style={
-        icon
-          ? { paddingRight: 36 }
-          : selectedPlace.current?.formatted_address
+        selectedPlace.current?.formatted_address
           ? {
               textAlign: 'center',
               minWidth: 40,
@@ -117,6 +110,12 @@ export default function LocationInput(props: Props) {
             }
           : undefined
       }
+      onKeyDown={(e) => {
+        if (e.which === 8) {
+          onPlaceSelected && onPlaceSelected(null);
+          selectedPlace.current = null;
+        }
+      }}
       {...otherProps}
     />
   );
