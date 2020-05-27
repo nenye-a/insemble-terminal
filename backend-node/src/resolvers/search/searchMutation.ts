@@ -7,15 +7,15 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
   { reviewTag, businessTag, locationTag, businessTagId },
   context: Context,
 ) => {
-  // let user = await context.prisma.user.findOne({
-  //   where: {
-  //     id: context.userId,
-  //   },
-  // });
+  let user = await context.prisma.user.findOne({
+    where: {
+      id: context.userId,
+    },
+  });
 
-  // if (!user) {
-  //   throw new Error('User not found!');
-  // }
+  if (!user) {
+    throw new Error('User not found!');
+  }
   let selectedBusinessTag;
   let selectedLocationTag;
 
@@ -65,18 +65,18 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
     }
   }
 
-  // await context.prisma.searchLog.create({
-  //   data: {
-  //     reviewTag,
-  //     businessTag: selectedBusinessTag
-  //       ? { connect: { id: selectedBusinessTag.id } }
-  //       : undefined,
-  //     locationTag: selectedLocationTag
-  //       ? { connect: { id: selectedLocationTag.id } }
-  //       : undefined,
-  //     user: { connect: { id: user.id } },
-  //   },
-  // });
+  await context.prisma.searchLog.create({
+    data: {
+      reviewTag,
+      businessTag: selectedBusinessTag
+        ? { connect: { id: selectedBusinessTag.id } }
+        : undefined,
+      locationTag: selectedLocationTag
+        ? { connect: { id: selectedLocationTag.id } }
+        : undefined,
+      user: { connect: { id: user.id } },
+    },
+  });
 
   return {
     reviewTag,

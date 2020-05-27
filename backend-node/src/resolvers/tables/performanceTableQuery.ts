@@ -15,16 +15,20 @@ let performanceTableResolver: FieldResolver<
   { performanceType, businessTagId, locationTagId },
   context: Context,
 ) => {
-  let businessTag = await context.prisma.businessTag.findOne({
-    where: {
-      id: businessTagId,
-    },
-  });
-  let locationTag = await context.prisma.locationTag.findOne({
-    where: {
-      id: locationTagId,
-    },
-  });
+  let businessTag = businessTagId
+    ? await context.prisma.businessTag.findOne({
+        where: {
+          id: businessTagId,
+        },
+      })
+    : undefined;
+  let locationTag = locationTagId
+    ? await context.prisma.locationTag.findOne({
+        where: {
+          id: locationTagId,
+        },
+      })
+    : undefined;
   let performance = await context.prisma.performance.findMany({
     where: {
       type: performanceType,
