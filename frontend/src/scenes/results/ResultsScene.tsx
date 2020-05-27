@@ -20,6 +20,7 @@ import SvgArrowUp from '../../components/icons/arrow-up';
 import PerformanceByLocationResult from './PerformanceByLocationResult';
 import OverallPerformanceResult from './OverallPerformanceResult';
 import PerformanceByBrandResult from './PerformanceByBrandResult';
+import PerformanceByCategoryResult from './PerformanceByCategoryResult';
 
 export default function ResultsScene() {
   let [
@@ -77,6 +78,13 @@ export default function ResultsScene() {
                 } else if (type === PerformanceTableType.BRAND) {
                   return (
                     <PerformanceByBrandResult
+                      businessTagId={submitSearchData?.search.businessTag?.id}
+                      locationTagId={submitSearchData?.search.locationTag?.id}
+                    />
+                  );
+                } else if (type === PerformanceTableType.CATEGORY) {
+                  return (
+                    <PerformanceByCategoryResult
                       businessTagId={submitSearchData?.search.businessTag?.id}
                       locationTagId={submitSearchData?.search.locationTag?.id}
                     />
