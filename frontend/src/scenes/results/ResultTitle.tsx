@@ -3,23 +3,24 @@ import styled from 'styled-components';
 
 import { View, Text, TouchableOpacity } from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
-import { THEME_COLOR } from '../../constants/colors';
+import { THEME_COLOR, DISABLED_TEXT_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
 
 type Props = {
   title: string;
+  noData?: boolean;
 };
 
 export default function ResultTitle(props: Props) {
-  let { title } = props;
+  let { title, noData = false } = props;
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
 
   return (
     <Container>
-      <Title>{title}</Title>
+      <Title noData={noData}>{title}</Title>
       <Row>
         <View>
           <Touchable onPress={() => setComparisonPopoverOpen(true)}>
@@ -44,6 +45,9 @@ export default function ResultTitle(props: Props) {
   );
 }
 
+type TitleProps = TextProps & {
+  noData: boolean;
+};
 const Container = styled(View)`
   padding: 8px 0;
   flex-direction: row;
@@ -53,8 +57,8 @@ const Container = styled(View)`
   z-index: 99;
 `;
 
-const Title = styled(Text)`
-  color: ${THEME_COLOR};
+const Title = styled(Text)<TitleProps>`
+  color: ${(props) => (props.noData ? DISABLED_TEXT_COLOR : THEME_COLOR)};
   font-size: ${FONT_SIZE_LARGE};
   font-weight: ${FONT_WEIGHT_BOLD};
 `;

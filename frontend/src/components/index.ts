@@ -1,4 +1,6 @@
 export { default as DataTable } from './DataTable';
+export { default as EmptyDataComponent } from './EmptyDataComponent';
+export { default as ErrorComponent } from './ErrorComponent';
 export { default as HeaderNavigationBar } from './HeaderNavigationBar';
 export { default as PageTitle } from './PageTitle';
 export { default as PillSelector } from './PillSelector';

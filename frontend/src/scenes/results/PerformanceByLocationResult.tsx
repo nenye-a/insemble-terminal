@@ -2,12 +2,15 @@ import React from 'react';
 import styled from 'styled-components';
 import { ApolloError } from 'apollo-client';
 
-import { View, LoadingIndicator, Text } from '../../core-ui';
-import { DataTable } from '../../components';
+import { View, LoadingIndicator } from '../../core-ui';
+import {
+  DataTable,
+  EmptyDataComponent,
+  ErrorComponent,
+} from '../../components';
 import { GetPerformanceTable_performanceTable_data as PerformanceData } from '../../generated/GetPerformanceTable';
 
 import ResultTitle from './ResultTitle';
-
 type Props = {
   data?: Array<PerformanceData>;
   loading: boolean;
@@ -16,13 +19,17 @@ type Props = {
 
 export default function PerformanceByLocationResult(props: Props) {
   let { data, loading, error } = props;
+  let noData = !data || data?.length === 0;
+
   return (
     <Container>
-      <ResultTitle title="By Location" />
+      <ResultTitle title="By Location" noData={noData} />
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <Text>Something went wrong</Text>
+        <ErrorComponent />
+      ) : noData ? (
+        <EmptyDataComponent text="Location data is not available at this scope. Please widen area of search to see." />
       ) : (
         <DataTable>
           <DataTable.HeaderRow>
