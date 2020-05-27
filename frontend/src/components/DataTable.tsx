@@ -1,5 +1,5 @@
 import React, { ReactNode, ComponentProps } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { View, Text } from '../core-ui';
 import {
@@ -50,13 +50,17 @@ const Container = styled(View)`
 `;
 
 const Cell = styled(View)<CellProps>`
-  max-width: ${({ width }) => width + 'px'};
-  min-width: ${({ width }) => width + 'px'};
+  ${({ width }) =>
+    width &&
+    css`
+      max-width: ${width} + 'px';
+      min-width: ${width} + 'px';
+    `}
   flex: 1;
   flex-direction: row;
   align-items: center;
   justify-content: ${({ align }) => CellAlign[align || 'left']};
-  padding: 24px;
+  padding: 0 24px;
   color: ${DEFAULT_TEXT_COLOR};
   font-size: ${FONT_SIZE_NORMAL};
   font-family: 'Avenir';

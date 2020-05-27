@@ -29,10 +29,15 @@ import PillSelector from './PillSelector';
 import LocationInput from './LocationInput';
 import SvgSearch from './icons/search';
 
-type Business = BusinessTag;
+type SelectedBusiness = BusinessTag | string;
 
 type Props = {
   onSearchPress?: (searchTags: SearchVariables) => void;
+  defaultReviewTag?: string;
+  defaultBusinessTag?: SelectedBusiness;
+  defaultLocationTag?: LocationTagInput;
+  disableAll?: boolean;
+  disableReviewTag?: boolean;
 };
 
 const DATA_TYPE_OPTIONS = [
@@ -44,14 +49,24 @@ const DATA_TYPE_OPTIONS = [
 ];
 
 export default function SearchFilterBar(props: Props) {
-  let { onSearchPress } = props;
+  let {
+    onSearchPress,
+    defaultReviewTag,
+    defaultBusinessTag,
+    defaultLocationTag,
+    disableAll = false,
+    disableReviewTag = false,
+  } = props;
   let [dataTypeFilterVisible, setDataTypeFilterVisible] = useState(false);
-  let [selectedDataType, setSelectedDataType] = useState('');
-  let [selectedBusiness, setSelectedBusiness] = useState<
-    Business | string | null
-  >(null);
+  let [selectedDataType, setSelectedDataType] = useState(
+    defaultReviewTag || '',
+  );
+  let [
+    selectedBusiness,
+    setSelectedBusiness,
+  ] = useState<SelectedBusiness | null>(defaultBusinessTag || null);
   let [selectedPlace, setSelectedPlace] = useState<LocationTagInput | null>(
-    null,
+    defaultLocationTag || null,
   );
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
     GetBusinessTag
@@ -64,16 +79,21 @@ export default function SearchFilterBar(props: Props) {
       ) : businessTagData ? (
         <Container>
           <DataFilterContainer
-            onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
+            disabled={disableAll || disableReviewTag}
+            onPress={() => {
+              setDataTypeFilterVisible(!dataTypeFilterVisible);
+            }}
           >
             {selectedDataType ? (
-              <Pill>{selectedDataType}</Pill>
+              <Pill disabled={disableAll || disableReviewTag}>
+                {selectedDataType}
+              </Pill>
             ) : (
               <Text>Search for data</Text>
             )}
           </DataFilterContainer>
           <SpacedText>of</SpacedText>
-          <Dropdown<Business | string | null>
+          <Dropdown<SelectedBusiness | null>
             selectedOption={selectedBusiness}
             onOptionSelected={setSelectedBusiness}
             options={businessTagData.businessTags}
@@ -84,6 +104,7 @@ export default function SearchFilterBar(props: Props) {
               }
               return item?.params || '';
             }}
+            disabled={disableAll}
           />
           <SpacedText>in</SpacedText>
           <SearchLocationInput
@@ -98,8 +119,11 @@ export default function SearchFilterBar(props: Props) {
                 setSelectedPlace(null);
               }
             }}
+            disabled={disableAll}
+            defaultValue={defaultLocationTag?.params}
           />
           <TouchableOpacity
+            disabled={disableAll}
             onPress={() => {
               // TODO: validate search input
               onSearchPress &&
@@ -146,7 +170,6 @@ const Container = styled(View)`
   padding: 0 8px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
   background-color: ${BACKGROUND_COLOR};
-  margin-left: 64px;
 `;
 
 const DataFilterContainer = styled(TouchableOpacity)`

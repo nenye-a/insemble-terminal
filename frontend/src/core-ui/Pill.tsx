@@ -1,7 +1,12 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
 
-import { DEFAULT_TEXT_COLOR, THEME_COLOR, WHITE } from '../constants/colors';
+import {
+  DEFAULT_TEXT_COLOR,
+  THEME_COLOR,
+  WHITE,
+  DISABLED_PILL_COLOR,
+} from '../constants/colors';
 import {
   FONT_FAMILY_NORMAL,
   FONT_SIZE_NORMAL,
@@ -14,19 +19,31 @@ type PillProps = ViewProps & {
   primary?: boolean;
   onPress?: () => void;
   children: string;
+  disabled?: boolean;
 };
 
 export default function Pill(props: PillProps) {
-  let { primary = true, onPress, children, ...otherProps } = props;
+  let {
+    primary = true,
+    onPress,
+    children,
+    disabled = false,
+    ...otherProps
+  } = props;
   if (onPress) {
     return (
-      <PressPill primary={primary} onClick={onPress} {...otherProps}>
+      <PressPill
+        primary={primary}
+        onClick={onPress}
+        disabled={disabled}
+        {...otherProps}
+      >
         {children}
       </PressPill>
     );
   }
   return (
-    <DefaultPill primary={primary} {...otherProps}>
+    <DefaultPill primary={primary} disabled={disabled} {...otherProps}>
       {children}
     </DefaultPill>
   );
@@ -49,14 +66,20 @@ const defaultPillStyle = css`
 `;
 
 const DefaultPill = styled(View)<PillProps>`
-  ${defaultPillStyle};
   padding: 4px;
+  ${defaultPillStyle};
   ${(props: PillProps) =>
     props.primary &&
     css`
       background: ${THEME_COLOR};
       border-color: ${THEME_COLOR};
       color: ${WHITE};
+    `}
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      background-color: ${DISABLED_PILL_COLOR};
+      border-color: ${DISABLED_PILL_COLOR};
     `}
 `;
 
@@ -79,5 +102,11 @@ const PressPill = styled.button.attrs(() => ({ type: 'button' }))<PillProps>`
         color: ${WHITE};
         box-shadow: 0 0.25rem 0.45rem rgba(0, 0, 0, 0.35);
       }
+    `}
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      background-color: ${DISABLED_PILL_COLOR};
+      border-color: ${DISABLED_PILL_COLOR};
     `}
 `;

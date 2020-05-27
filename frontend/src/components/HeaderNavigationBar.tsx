@@ -28,7 +28,11 @@ export default function HeaderNavigationBar(props: Props) {
       <TouchableOpacity onPress={() => {}}>
         <InsembleLogo color="purple" />
       </TouchableOpacity>
-      {showSearchBar && <SearchFilterBar onSearchPress={onSearchPress} />}
+      {showSearchBar && (
+        <SearchContainer>
+          <SearchFilterBar onSearchPress={onSearchPress} />
+        </SearchContainer>
+      )}
       {loggedIn ? (
         <RowEnd flex>
           <TerminalButton
@@ -73,4 +77,8 @@ const SignUpButton = styled(Button)`
 
 const TerminalButton = styled(Button)`
   margin-right: 8px;
+`;
+
+const SearchContainer = styled(View)`
+  margin-left: 64px;
 `;
