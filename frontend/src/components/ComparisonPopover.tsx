@@ -1,59 +1,117 @@
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
+import { useMutation } from '@apollo/react-hooks';
 
-import { Card, View, Text, TouchableOpacity, Divider } from '../core-ui';
+import {
+  Card,
+  View,
+  Text,
+  TouchableOpacity,
+  Divider,
+  LoadingIndicator,
+  Alert,
+} from '../core-ui';
 import {
   DARK_TEXT_COLOR,
   THEME_COLOR,
   GREY_DIVIDER,
 } from '../constants/colors';
-import { ReviewTag, LocationTagInput } from '../generated/globalTypes';
-import { SearchVariables } from '../generated/Search';
+import { capitalize } from '../helpers';
+import { ReviewTag } from '../generated/globalTypes';
+import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
+import {
+  AddComparison,
+  AddComparisonVariables,
+} from '../generated/AddComparison';
+import { ADD_COMPARISON } from '../graphql/queries/server/comparison';
 
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
 
-export default function ComparisonPopover() {
-  let [activeComparison, setActiveComparison] = useState<
-    Array<SearchVariables>
-  >([]);
+type Props = {
+  reviewTag: ReviewTag;
+  tableId: string;
+};
+
+export default function ComparisonPopover(props: Props) {
+  let { reviewTag, tableId } = props;
+
+  let [
+    addComparison,
+    {
+      data: addComparisonData,
+      loading: addComparisonLoading,
+      error: addComparisonError,
+    },
+  ] = useMutation<AddComparison, AddComparisonVariables>(ADD_COMPARISON);
+
+  useEffect(() => {
+    // callback to parent
+  }, [addComparisonData]);
   return (
     <Container>
-      {activeComparison.length > 0 && (
+      <Alert
+        visible={!!addComparisonError}
+        text={addComparisonError?.message || ''}
+      />
+      {addComparisonData?.addComparison.comparationTags &&
+        addComparisonData.addComparison.comparationTags.length > 0 && (
+          <View>
+            <Title>Active Comparison</Title>
+            {/* TODO: get array from BE */}
+            {addComparisonData.addComparison.comparationTags.map(
+              (comparison, idx) => (
+                <Row key={idx}>
+                  <SearchFilterBar
+                    defaultReviewTag={capitalize(reviewTag)}
+                    defaultBusinessTag={comparison.businessTag as BusinessTag}
+                    defaultLocationTag={
+                      comparison.locationTag
+                        ? {
+                            params: comparison.locationTag.params,
+                            type: comparison.locationTag.type,
+                          }
+                        : undefined
+                    }
+                    disableAll
+                  />
+                  <CloseContainer
+                    onPress={() => {
+                      // TODO: call be to remove comparison
+                    }}
+                  >
+                    <SvgRoundClose />
+                  </CloseContainer>
+                </Row>
+              ),
+            )}
+            <ComparisonDivider />
+          </View>
+        )}
+      {addComparisonLoading ? (
+        <LoadingIndicator />
+      ) : (
         <View>
-          <Title>Active Comparison</Title>
-          {/* TODO: get array from BE */}
-          {activeComparison.map((comparison, idx) => (
-            <Row key={idx}>
-              <SearchFilterBar
-                defaultReviewTag={comparison.reviewTag as ReviewTag}
-                defaultBusinessTag={''}
-                defaultLocationTag={comparison.locationTag as LocationTagInput}
-                disableAll
-              />
-              <CloseContainer
-                onPress={() => {
-                  // TODO: call be to remove comparison
-                }}
-              >
-                <SvgRoundClose />
-              </CloseContainer>
-            </Row>
-          ))}
-          <ComparisonDivider />
+          <Title>Please select a query to compare with this table.</Title>
+          <SearchFilterBar
+            disableReviewTag={true}
+            defaultReviewTag={capitalize(reviewTag)}
+            onSearchPress={(searchTags) => {
+              let { businessTag, businessTagId, locationTag } = searchTags;
+              // TODO: check if search valid, call be, move to active comparison arr
+              addComparison({
+                variables: {
+                  reviewTag,
+                  businessTag,
+                  businessTagId,
+                  locationTag,
+                  tableId,
+                },
+              });
+            }}
+          />
         </View>
       )}
-      <View style={{ zIndex: 99 }}>
-        <Title>Please select a query to compare with this table.</Title>
-        <SearchFilterBar
-          disableReviewTag={true}
-          defaultReviewTag="Performance"
-          onSearchPress={(searchTags) => {
-            // TODO: check if search valid, call be, move to active comparison arr
-            setActiveComparison([...activeComparison, searchTags]);
-          }}
-        />
-      </View>
     </Container>
   );
 }
