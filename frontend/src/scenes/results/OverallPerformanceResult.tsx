@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { ApolloError } from 'apollo-client';
+import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import {
@@ -8,19 +8,34 @@ import {
   EmptyDataComponent,
   ErrorComponent,
 } from '../../components';
-import { GetPerformanceTable_performanceTable_data as PerformanceData } from '../../generated/GetPerformanceTable';
+import {
+  GetPerformanceTable,
+  GetPerformanceTableVariables,
+} from '../../generated/GetPerformanceTable';
+import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
+import { PerformanceTableType } from '../../generated/globalTypes';
 
 import ResultTitle from './ResultTitle';
 
 type Props = {
-  data?: Array<PerformanceData>;
-  loading: boolean;
-  error?: ApolloError;
+  businessTagId?: string;
+  locationTagId?: string;
 };
 
 export default function OverallPerformanceResult(props: Props) {
-  let { data, loading, error } = props;
-  let noData = !data || data?.length === 0;
+  let { businessTagId, locationTagId } = props;
+  let { data, loading, error } = useQuery<
+    GetPerformanceTable,
+    GetPerformanceTableVariables
+  >(GET_PERFORMANCE_TABLE_DATA, {
+    variables: {
+      performanceType: PerformanceTableType.OVERALL,
+      businessTagId,
+      locationTagId,
+    },
+  });
+  let noData =
+    !data?.performanceTable.data || data.performanceTable.data.length === 0;
   return (
     <Container>
       <ResultTitle title="Overall Performance" noData={noData} />
@@ -39,9 +54,9 @@ export default function OverallPerformanceResult(props: Props) {
             <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
             <DataTable.HeaderCell># Locations</DataTable.HeaderCell>
           </DataTable.HeaderRow>
-          {data &&
-            data?.length > 0 &&
-            data.map((row, index) => {
+          {data?.performanceTable.data &&
+            data?.performanceTable.data.length > 0 &&
+            data.performanceTable.data.map((row, index) => {
               let {
                 name = '',
                 avgRating = '',

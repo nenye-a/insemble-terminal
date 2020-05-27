@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { useMutation, useLazyQuery } from '@apollo/react-hooks';
+import { useMutation } from '@apollo/react-hooks';
 
 import { View, Text, Divider } from '../../core-ui';
 import { HeaderNavigationBar, PageTitle } from '../../components';
@@ -10,15 +10,12 @@ import {
   BACKGROUND_COLOR,
 } from '../../constants/colors';
 import { FONT_SIZE_XLARGE } from '../../constants/theme';
-import SvgArrowUp from '../../components/icons/arrow-up';
 import { SEARCH } from '../../graphql/queries/server/search';
-import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 import { Search, SearchVariables } from '../../generated/Search';
-import {
-  GetPerformanceTable,
-  GetPerformanceTableVariables,
-} from '../../generated/GetPerformanceTable';
-import { PerformanceTableType } from '../../generated/globalTypes';
+import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
+import { ResultQuery } from '../../types/types';
+import { getResultQueries } from '../../helpers';
+import SvgArrowUp from '../../components/icons/arrow-up';
 
 import PerformanceByLocationResult from './PerformanceByLocationResult';
 import OverallPerformanceResult from './OverallPerformanceResult';
@@ -28,28 +25,7 @@ export default function ResultsScene() {
     Search,
     SearchVariables
   >(SEARCH);
-
-  let [
-    getOverallPerformance,
-    {
-      loading: overallPerformanceLoading,
-      data: overallPerformanceData,
-      error: overallPerformanceError,
-    },
-  ] = useLazyQuery<GetPerformanceTable, GetPerformanceTableVariables>(
-    GET_PERFORMANCE_TABLE_DATA,
-  );
-
-  let [
-    getLocationPerformance,
-    {
-      loading: locationPerformanceLoading,
-      data: locationPerformanceData,
-      error: locationPerformanceError,
-    },
-  ] = useLazyQuery<GetPerformanceTable, GetPerformanceTableVariables>(
-    GET_PERFORMANCE_TABLE_DATA,
-  );
+  let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
 
   let onSubmit = (searchVariables: SearchVariables) => {
     submitSearch({
@@ -59,34 +35,23 @@ export default function ResultsScene() {
 
   useEffect(() => {
     if (submitSearchData) {
-      let { businessTag, locationTag } = submitSearchData.search;
+      let { reviewTag, businessTag, locationTag } = submitSearchData.search;
       if (businessTag && locationTag) {
-        let { id: businessTagId } = businessTag;
-        let { id: locationTagId } = locationTag;
-
-        getOverallPerformance({
-          variables: {
-            performanceType: PerformanceTableType.OVERALL,
-            businessTagId,
-            locationTagId,
-          },
+        let queries = getResultQueries({
+          reviewTag,
+          businessTag,
+          locationTag,
         });
-        getLocationPerformance({
-          variables: {
-            performanceType: PerformanceTableType.ADDRESS,
-            businessTagId,
-            locationTagId,
-          },
-        });
+        setResultQueries(queries);
       }
     }
-  }, [submitSearchData, getLocationPerformance, getOverallPerformance]);
+  }, [submitSearchData]);
 
   return (
     <View>
       {/* TODO: disable search bar on loading */}
       <HeaderNavigationBar showSearchBar={true} onSearchPress={onSubmit} />
-      {submitSearchData ? (
+      {submitSearchData?.search ? (
         <>
           <PageTitle
             reviewTag={submitSearchData.search.reviewTag}
@@ -94,16 +59,26 @@ export default function ResultsScene() {
             locationTag={submitSearchData.search.locationTag}
           />
           <Container>
-            <OverallPerformanceResult
-              loading={overallPerformanceLoading}
-              data={overallPerformanceData?.performanceTable.data}
-              error={overallPerformanceError}
-            />
-            <PerformanceByLocationResult
-              loading={locationPerformanceLoading}
-              data={locationPerformanceData?.performanceTable.data}
-              error={locationPerformanceError}
-            />
+            {resultQueries.map(({ reviewTag, type }) => {
+              if (reviewTag === ReviewTag.PERFORMANCE) {
+                if (type === PerformanceTableType.OVERALL) {
+                  return (
+                    <OverallPerformanceResult
+                      businessTagId={submitSearchData?.search.businessTag?.id}
+                      locationTagId={submitSearchData?.search.locationTag?.id}
+                    />
+                  );
+                } else if (type === PerformanceTableType.ADDRESS) {
+                  return (
+                    <PerformanceByLocationResult
+                      businessTagId={submitSearchData?.search.businessTag?.id}
+                      locationTagId={submitSearchData?.search.locationTag?.id}
+                    />
+                  );
+                }
+              }
+              return null;
+            })}
           </Container>
         </>
       ) : (
