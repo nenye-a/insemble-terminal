@@ -8,19 +8,24 @@ import { THEME_COLOR, DISABLED_TEXT_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
+import { ReviewTag } from '../../generated/globalTypes';
 
 type Props = {
   title: string;
   noData?: boolean;
+  reviewTag: ReviewTag;
+  tableId: string;
 };
 
 export default function ResultTitle(props: Props) {
-  let { title, noData = false } = props;
+  let { title, noData = false, reviewTag, tableId } = props;
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
 
   let pinPopover = <PinPopover onClickAway={() => setPinPopoverOpen(false)} />;
-  let comparisonPopover = <ComparisonPopover />;
+  let comparisonPopover = (
+    <ComparisonPopover reviewTag={reviewTag} tableId={tableId} />
+  );
   return (
     <Container>
       <Title noData={noData}>{title}</Title>

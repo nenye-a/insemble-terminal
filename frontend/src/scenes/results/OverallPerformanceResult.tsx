@@ -9,7 +9,7 @@ import {
   GetPerformanceTableVariables,
 } from '../../generated/GetPerformanceTable';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { PerformanceTableType } from '../../generated/globalTypes';
+import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -35,7 +35,12 @@ export default function OverallPerformanceResult(props: Props) {
     !data?.performanceTable.data || data.performanceTable.data.length === 0;
   return (
     <Container>
-      <ResultTitle title="Overall Performance" noData={noData} />
+      <ResultTitle
+        title="Overall Performance"
+        noData={noData}
+        reviewTag={ReviewTag.PERFORMANCE}
+        tableId={data?.performanceTable.id || ''}
+      />
       {loading ? (
         <LoadingIndicator />
       ) : error ? (

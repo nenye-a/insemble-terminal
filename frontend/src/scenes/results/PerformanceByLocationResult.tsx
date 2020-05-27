@@ -8,7 +8,7 @@ import {
   GetPerformanceTable,
   GetPerformanceTableVariables,
 } from '../../generated/GetPerformanceTable';
-import { PerformanceTableType } from '../../generated/globalTypes';
+import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
@@ -37,7 +37,12 @@ export default function PerformanceByLocationResult(props: Props) {
 
   return (
     <Container>
-      <ResultTitle title="By Location" noData={noData} />
+      <ResultTitle
+        title="By Location"
+        noData={noData}
+        reviewTag={ReviewTag.PERFORMANCE}
+        tableId={data?.performanceTable.id || ''}
+      />
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
