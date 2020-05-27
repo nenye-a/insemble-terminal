@@ -33,9 +33,6 @@ def search_locations():
         )
 
     for location in opaque_locations:
-        # placeholder to skip LA for now (need to figure out geowithin issues)
-        if location['rank'] == 2:
-            continue
         print("Starting to search for locations in {}. Id for this location "
               "in the Regions database is {}".format(
                   location["name"], location["_id"]
@@ -45,11 +42,11 @@ def search_locations():
                     utils.from_geojson(location["viewport"]["se"]))
         for term in ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
                      "bars", "arcade", "gym", "medical", "dentist", "shipping"]:
-            if term in location['searched_terms']:
+            if 'searched_terms' in location and term in location['searched_terms']:
                 continue
             staged_finder(center, viewport, term, course_zoom=15,
                           eliminated_regions=eliminated_geojson)
-            utils.DB_REGIONS.update_one({'_id': location['_id']}, {'$push': {
+            utils.DB_REGIONS.update_one({'_id': location['_id']}, {'$addToSet': {
                 'searched_terms': term
             }})
             print("Completed seacher {} for {}.".format(location['name'], term))
