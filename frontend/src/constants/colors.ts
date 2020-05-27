@@ -22,6 +22,7 @@ export const DEFAULT_TEXT_COLOR = DARKER_GRAY;
 export const RED_TEXT = RED;
 export const MUTED_TEXT_COLOR = LIGHT_GRAY;
 export const DARK_TEXT_COLOR = DARK_GRAY;
+export const DISABLED_TEXT_COLOR = SLIGHT_GRAY;
 export const LINK_COLOR = BLUE;
 
 // DataTable colors
@@ -49,3 +50,6 @@ export const ALERT_BACKGROUND_COLOR = LIGHT_PURPLE;
 export const DISABLED_PILL_COLOR = SLIGHT_GRAY;
 
 export const GREY_DIVIDER = LIGHT_GRAY;
+
+export const EMPTY_COMPONENT_BACKGROUND = SLIGHT_GRAY;
+export const ERROR_COMPONENT_BACKGROUND = SLIGHT_GRAY;
