@@ -55,6 +55,7 @@ const Touchable = styled(View)<ViewProps>`
   user-select: none;
   transition-property: opacity;
   transition-duration: 0.15s;
+  outline: none;
   ${(props) => (props.href == null ? undefined : linkStyles)}
   ${(props) =>
     props.disabled &&
