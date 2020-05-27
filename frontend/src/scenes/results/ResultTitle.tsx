@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import Popover from 'react-tiny-popover';
 
 import { View, Text, TouchableOpacity } from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
@@ -18,28 +19,39 @@ export default function ResultTitle(props: Props) {
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
 
+  let pinPopover = <PinPopover onClickAway={() => setPinPopoverOpen(false)} />;
+  let comparisonPopover = <ComparisonPopover />;
   return (
     <Container>
       <Title noData={noData}>{title}</Title>
       <Row>
-        <View>
-          <Touchable onPress={() => setComparisonPopoverOpen(true)}>
-            <SvgRoundAdd />
-          </Touchable>
-          {comparisonPopoverOpen && (
-            <ComparisonPopover
-              onClickAway={() => setComparisonPopoverOpen(false)}
-            />
+        <Popover
+          isOpen={comparisonPopoverOpen}
+          content={comparisonPopover}
+          position={['bottom']}
+          onClickOutside={() => setComparisonPopoverOpen(false)}
+          align="end"
+        >
+          {(ref) => (
+            <Touchable ref={ref} onPress={() => setComparisonPopoverOpen(true)}>
+              <SvgRoundAdd />
+            </Touchable>
           )}
-        </View>
-        <View>
-          <Touchable onPress={() => setPinPopoverOpen(true)}>
-            <SvgPin />
-          </Touchable>
-          {pinPopoverOpen && (
-            <PinPopover onClickAway={() => setPinPopoverOpen(false)} />
+        </Popover>
+        <Popover
+          isOpen={pinPopoverOpen}
+          content={pinPopover}
+          position={['bottom']}
+          onClickOutside={() => setPinPopoverOpen(false)}
+          align="end"
+          containerStyle={{ overflow: 'visible' }}
+        >
+          {(ref) => (
+            <Touchable ref={ref} onPress={() => setPinPopoverOpen(true)}>
+              <SvgPin />
+            </Touchable>
           )}
-        </View>
+        </Popover>
       </Row>
     </Container>
   );
@@ -54,7 +66,6 @@ const Container = styled(View)`
   justify-content: space-between;
   align-items: center;
   position: relative;
-  z-index: 99;
 `;
 
 const Title = styled(Text)<TitleProps>`

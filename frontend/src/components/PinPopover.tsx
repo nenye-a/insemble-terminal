@@ -1,14 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import {
-  ClickAway,
-  Card,
-  View,
-  Text,
-  Button,
-  TouchableOpacity,
-} from '../core-ui';
+import { Card, View, Text, Button, TouchableOpacity } from '../core-ui';
 import {
   DARK_TEXT_COLOR,
   LIGHTER_GRAY,
@@ -33,54 +26,50 @@ export default function PinPopover(props: Props) {
   ];
   let noList = terminalList.length === 0;
   // TODO: get terminal list
-  return (
-    <ClickAway onClickAway={onClickAway}>
-      <Container>
-        {noList ? (
-          <AddNewTerminalForm onClose={onClickAway} />
-        ) : (
-          <>
-            <Title>Select the terminal to add this data feed to.</Title>
-            <ListContainer>
-              {terminalList.map(({ name, numFeeds }, index) => (
-                <Row key={index}>
-                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>{name}</Text>
-                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>
-                    {numFeeds} existing feeds
-                  </Text>
-                </Row>
-              ))}
-            </ListContainer>
-          </>
-        )}
 
-        <ButtonContainer>
-          <Button
-            text="Cancel"
-            size="small"
-            mode="secondary"
-            onPress={onClickAway}
-          />
-          <Button
-            text="Confirm"
-            size="small"
-            onPress={() => {
-              // call BE
-            }}
-            style={{ marginLeft: 8 }}
-          />
-        </ButtonContainer>
-      </Container>
-    </ClickAway>
+  return (
+    <Container>
+      {noList ? (
+        <AddNewTerminalForm onClose={onClickAway} />
+      ) : (
+        <>
+          <Title>Select the terminal to add this data feed to.</Title>
+          <ListContainer>
+            {terminalList.map(({ name, numFeeds }, index) => (
+              <Row key={index}>
+                <Text fontWeight={FONT_WEIGHT_MEDIUM}>{name}</Text>
+                <Text fontWeight={FONT_WEIGHT_MEDIUM}>
+                  {numFeeds} existing feeds
+                </Text>
+              </Row>
+            ))}
+          </ListContainer>
+        </>
+      )}
+
+      <ButtonContainer>
+        <Button
+          text="Cancel"
+          size="small"
+          mode="secondary"
+          onPress={onClickAway}
+        />
+        <Button
+          text="Confirm"
+          size="small"
+          onPress={() => {
+            // call BE
+          }}
+          style={{ marginLeft: 8 }}
+        />
+      </ButtonContainer>
+    </Container>
   );
 }
 
 const Container = styled(Card)`
   margin-top: 12px;
   padding: 20px 30px;
-  position: absolute;
-  right: 0;
-  z-index: 99;
   width: 514px;
   max-height: 285px;
   overflow: visible;

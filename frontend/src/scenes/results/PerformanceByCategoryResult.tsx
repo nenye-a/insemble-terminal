@@ -8,8 +8,8 @@ import {
   GetPerformanceTable,
   GetPerformanceTableVariables,
 } from '../../generated/GetPerformanceTable';
-import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 import { PerformanceTableType } from '../../generated/globalTypes';
+import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -19,29 +19,31 @@ type Props = {
   locationTagId?: string;
 };
 
-export default function OverallPerformanceResult(props: Props) {
+export default function PerformanceByCategoryResult(props: Props) {
   let { businessTagId, locationTagId } = props;
+
   let { data, loading, error } = useQuery<
     GetPerformanceTable,
     GetPerformanceTableVariables
   >(GET_PERFORMANCE_TABLE_DATA, {
     variables: {
-      performanceType: PerformanceTableType.OVERALL,
+      performanceType: PerformanceTableType.CATEGORY,
       businessTagId,
       locationTagId,
     },
   });
   let noData =
     !data?.performanceTable.data || data.performanceTable.data.length === 0;
+
   return (
     <Container>
-      <ResultTitle title="Overall Performance" noData={noData} />
+      <ResultTitle title="By Category" noData={noData} />
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
         <ErrorComponent />
       ) : noData ? (
-        <EmptyDataComponent text="Overall data is not available at this scope. Please widen area of search to see." />
+        <EmptyDataComponent text="Category data is not available at this scope. Please widen area of search to see." />
       ) : (
         <PerformanceTable data={data?.performanceTable.data || []} />
       )}

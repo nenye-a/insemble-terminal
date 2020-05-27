@@ -44,3 +44,7 @@ body.tab-pressed *:focus {
   outline: 2px solid #ece9f6 !important; /* for non-webkit browsers */
   outline: 2px auto -webkit-focus-ring-color !important;
 }
+
+.react-tiny-popover-container {
+  overflow: visible !important;
+}

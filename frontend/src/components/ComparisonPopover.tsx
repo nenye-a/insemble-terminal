@@ -1,14 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import {
-  ClickAway,
-  Card,
-  View,
-  Text,
-  TouchableOpacity,
-  Divider,
-} from '../core-ui';
+import { Card, View, Text, TouchableOpacity, Divider } from '../core-ui';
 import {
   DARK_TEXT_COLOR,
   THEME_COLOR,
@@ -20,65 +13,54 @@ import { SearchVariables } from '../generated/Search';
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
 
-type Props = {
-  onClickAway: () => void;
-};
-export default function ComparisonPopover(props: Props) {
-  let { onClickAway } = props;
+export default function ComparisonPopover() {
   let [activeComparison, setActiveComparison] = useState<
     Array<SearchVariables>
   >([]);
   return (
-    <ClickAway onClickAway={onClickAway}>
-      <Container>
-        {activeComparison.length > 0 && (
-          <View>
-            <Title>Active Comparison</Title>
-            {/* TODO: get array from BE */}
-            {activeComparison.map((comparison, idx) => (
-              <Row key={idx}>
-                <SearchFilterBar
-                  defaultReviewTag={comparison.reviewTag as ReviewTag}
-                  defaultBusinessTag={''}
-                  defaultLocationTag={
-                    comparison.locationTag as LocationTagInput
-                  }
-                  disableAll
-                />
-                <CloseContainer
-                  onPress={() => {
-                    // TODO: call be to remove comparison
-                  }}
-                >
-                  <SvgRoundClose />
-                </CloseContainer>
-              </Row>
-            ))}
-            <ComparisonDivider />
-          </View>
-        )}
+    <Container>
+      {activeComparison.length > 0 && (
         <View>
-          <Title>Please select a query to compare with this table.</Title>
-          <SearchFilterBar
-            disableReviewTag={true}
-            defaultReviewTag="Performance"
-            onSearchPress={(searchTags) => {
-              // TODO: check if search valid, call be, move to active comparison arr
-              setActiveComparison([...activeComparison, searchTags]);
-            }}
-          />
+          <Title>Active Comparison</Title>
+          {/* TODO: get array from BE */}
+          {activeComparison.map((comparison, idx) => (
+            <Row key={idx}>
+              <SearchFilterBar
+                defaultReviewTag={comparison.reviewTag as ReviewTag}
+                defaultBusinessTag={''}
+                defaultLocationTag={comparison.locationTag as LocationTagInput}
+                disableAll
+              />
+              <CloseContainer
+                onPress={() => {
+                  // TODO: call be to remove comparison
+                }}
+              >
+                <SvgRoundClose />
+              </CloseContainer>
+            </Row>
+          ))}
+          <ComparisonDivider />
         </View>
-      </Container>
-    </ClickAway>
+      )}
+      <View style={{ zIndex: 99 }}>
+        <Title>Please select a query to compare with this table.</Title>
+        <SearchFilterBar
+          disableReviewTag={true}
+          defaultReviewTag="Performance"
+          onSearchPress={(searchTags) => {
+            // TODO: check if search valid, call be, move to active comparison arr
+            setActiveComparison([...activeComparison, searchTags]);
+          }}
+        />
+      </View>
+    </Container>
   );
 }
 
 const Container = styled(Card)`
   margin-top: 12px;
   padding: 20px 30px;
-  position: absolute;
-  right: 0;
-  z-index: 99;
   width: 721px;
   overflow: visible;
 `;
