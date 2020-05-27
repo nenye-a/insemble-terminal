@@ -305,6 +305,18 @@ def view_locations(query):
     pd.DataFrame(data).to_csv(THIS_DIR + '/files/generated_locations.csv')
 
 
+def view_coordinates(query):
+
+    locations = utils.DB_COORDINATES.find(dict(query, **{'query_point': {'$exists': True}}))
+    data = []
+    for item in locations:
+        data.append({
+            'lat': item['query_point']['coordinates'][1],
+            'lng': item['query_point']['coordinates'][0]
+        })
+    pd.DataFrame(data).to_csv(THIS_DIR + '/files/generated_coordinates.csv')
+
+
 if __name__ == "__main__":
     # generate_report('Great Clips', custom_query={'address': {
     #     '$regex': ".*FL",
@@ -318,6 +330,14 @@ if __name__ == "__main__":
     # categories_terminal()
     # deterimine_cities()
     # determine_overlap()
-    view_locations({
-        'address': {"$regex": "NY"}
+    # view_locations({
+    #     'address': {"$regex": "NY"}
+    # })
+    view_coordinates({
+        'center': utils.to_geojson((33.98536, -118.22843)),
+        'zoom': 14,
+        '$or': [
+            {'stage': 2},
+            {'stage': 3}
+        ]
     })

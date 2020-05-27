@@ -272,7 +272,6 @@ class GenericScraper(object):
             except poolexceptions.WorkerLostError:
                 self.logger.error('Worker crashed and exited prematurely. Closing pool '
                                   'and restarting request.')
-                worker_crash = True
         finally:
             request_finish = time.time()
             try:
@@ -280,12 +279,19 @@ class GenericScraper(object):
                 pool.terminate()
                 pool_terminated_time = time.time()
                 self.logger.info("Pool terminated in {} seconds.".format(round(pool_terminated_time - request_finish, 2)))
-            except BaseException:
-                self.logger.error('Exiting, too many files.')
-                raise
-            finally:
-                if worker_crash:
-                    return self.async_request(queries, pool_limit)
+            except Exception as e:
+                self.logger.error('Exiting, due to {}. Pool may have failed to to close.'.format(e))
+                self.logger.info('Retrying Pool Termination!')
+                count = 0
+                while count < 3:
+                    try:
+                        pool.terminate()
+                        break
+                    except Exception:
+                        count += 1
+                        self.logger('Failed to terminate pool. Retrying in 2 seconds. '
+                                    'Num Retries is {}...'.format(count))
+                        time.sleep(2)
 
         self.logger.info("Actual Request Time: {}".format(round(request_finish - request_start, 2)))
         self.logger.info("Total Request Time: {}".format(round(pool_terminated_time - request_start, 2)))

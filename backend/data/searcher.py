@@ -5,6 +5,7 @@ Crawler that searches for all the locations that it sshould update.
 '''
 
 import utils
+import time
 import google
 import pymongo.errors
 import datetime as dt
@@ -109,6 +110,8 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
     if not has_document:
         stage_dict = {'stage': 1}
         region_points = divide_region(center, viewport, course_zoom)
+        if not region_points:
+            region_points = _retry_region(center, viewport, course_zoom)
         if len(region_points) > 2000:
             course_zoom = course_zoom - 1
             region_points = divide_region(center, viewport, course_zoom)
@@ -206,6 +209,21 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
         # remaining_queries = remaining_queries - num_queried if remaining_queries else None
 
         _print_log(stage, term, num_queried, locations_inserted, results_inserted, log)
+
+
+def _retry_region(center, viewport, course_zoom):
+    """
+    Retries dividing region 3 times before quiting.
+    """
+    count = 0
+    while count < 3:
+        time.sleep(2)  # wait 3 seconds between attempts
+        count += 1
+        result = divide_region(center, viewport, course_zoom)
+        if result:
+            return result
+        print("Retrying division of the region. Num attempts: {}".format(count))
+    return None
 
 
 def _determine_remaining_queries(query, stage, term):
