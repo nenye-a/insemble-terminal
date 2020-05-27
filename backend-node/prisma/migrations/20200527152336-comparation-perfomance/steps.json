@@ -1,0 +1,169 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateModel",
+      "model": "ComparePerformanceData"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "id",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "ComparePerformanceData",
+          "field": "id"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "ComparePerformanceData",
+          "field": "id"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "cuid()"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "ComparePerformanceData",
+          "field": "id"
+        },
+        "directive": "id"
+      }
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "name",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "avgRating",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "totalSales",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "numReview",
+      "type": "Int",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "numLocation",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateModel",
+      "model": "ComparationTag"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparationTag",
+      "field": "id",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "ComparationTag",
+          "field": "id"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "ComparationTag",
+          "field": "id"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "cuid()"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "ComparationTag",
+          "field": "id"
+        },
+        "directive": "id"
+      }
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparationTag",
+      "field": "locationTag",
+      "type": "LocationTag",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparationTag",
+      "field": "businessTag",
+      "type": "BusinessTag",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparationTag",
+      "field": "performance",
+      "type": "Performance",
+      "arity": "List"
+    },
+    {
+      "tag": "CreateField",
+      "model": "Performance",
+      "field": "comparationTags",
+      "type": "ComparationTag",
+      "arity": "List"
+    },
+    {
+      "tag": "CreateField",
+      "model": "Performance",
+      "field": "compareData",
+      "type": "ComparePerformanceData",
+      "arity": "List"
+    }
+  ]
+}
