@@ -13,11 +13,7 @@ import { SearchVariables } from '../generated/Search';
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
 
-type Props = {
-  onClickAway: () => void;
-};
-export default function ComparisonPopover(props: Props) {
-  let { onClickAway } = props;
+export default function ComparisonPopover() {
   let [activeComparison, setActiveComparison] = useState<
     Array<SearchVariables>
   >([]);

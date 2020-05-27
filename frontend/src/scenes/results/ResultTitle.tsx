@@ -20,9 +20,7 @@ export default function ResultTitle(props: Props) {
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
 
   let pinPopover = <PinPopover onClickAway={() => setPinPopoverOpen(false)} />;
-  let comparisonPopover = (
-    <ComparisonPopover onClickAway={() => setComparisonPopoverOpen(false)} />
-  );
+  let comparisonPopover = <ComparisonPopover />;
   return (
     <Container>
       <Title noData={noData}>{title}</Title>
