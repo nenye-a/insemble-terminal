@@ -33,9 +33,6 @@ def search_locations():
         )
 
     for location in opaque_locations:
-        # placeholder to skip LA for now (need to figure out geowithin issues)
-        if location['rank'] == 2:
-            continue
         print("Starting to search for locations in {}. Id for this location "
               "in the Regions database is {}".format(
                   location["name"], location["_id"]
