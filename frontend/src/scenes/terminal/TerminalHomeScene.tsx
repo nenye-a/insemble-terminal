@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { View, Text, TextInput, Button } from '../../core-ui';
@@ -7,10 +7,16 @@ import { THEME_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 
 import TerminalCard from './TerminalCard';
+import AddNewTerminalModal from './AddNewTerminalModal';
 
 export default function TerminalHomeScene() {
+  let [addModalVisible, setAddModalVisible] = useState(false);
   return (
     <View>
+      <AddNewTerminalModal
+        visible={addModalVisible}
+        onClose={() => setAddModalVisible(false)}
+      />
       <PageTitle text="Personal Terminals" />
       <ContentContainer>
         <TitleContainer>
@@ -24,7 +30,11 @@ export default function TerminalHomeScene() {
               icon={true}
               iconStyle={{ top: 2, right: 3 }}
             />
-            <Button text="New Terminal" size="small" />
+            <Button
+              text="New Terminal"
+              size="small"
+              onPress={() => setAddModalVisible(true)}
+            />
           </Row>
         </TitleContainer>
         <CardContainer>
