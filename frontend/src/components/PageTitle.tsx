@@ -1,27 +1,30 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Text, View } from '../../core-ui';
-import { ReviewTag, LocationTagType } from '../../generated/globalTypes';
+import { Text, View } from '../core-ui';
+import { ReviewTag, LocationTagType } from '../generated/globalTypes';
 import {
   Search_search_businessTag as BusinessTag,
   Search_search_locationTag as LocationTag,
-} from '../../generated/Search';
-import { THEME_COLOR, WHITE } from '../../constants/colors';
-import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
-import { capitalize } from '../../helpers';
+} from '../generated/Search';
+import { THEME_COLOR, WHITE } from '../constants/colors';
+import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import { capitalize } from '../helpers';
 
 type Props = {
   reviewTag?: ReviewTag | null;
   businessTag?: BusinessTag | null;
   locationTag?: LocationTag | null;
+  text?: string;
 };
 
 export default function PageTitle(props: Props) {
-  let { reviewTag, businessTag, locationTag } = props;
+  let { reviewTag, businessTag, locationTag, text } = props;
 
-  let formattedReview = capitalize(reviewTag || '');
-  let formattedBusiness = capitalize(businessTag?.params || '');
+  let formattedReview = reviewTag ? capitalize(reviewTag) : '';
+  let formattedBusiness = businessTag?.params
+    ? capitalize(businessTag?.params)
+    : '';
   let formattedLocation =
     locationTag?.type === LocationTagType.ADDRESS
       ? `near ${locationTag.params}`
@@ -34,7 +37,7 @@ export default function PageTitle(props: Props) {
 
   return (
     <TitleContainer>
-      <Title>{formattedText}</Title>
+      <Title>{text ? text : formattedText}</Title>
       {locationTag?.type === LocationTagType.NATION && (
         <USText>All United States</USText>
       )}
