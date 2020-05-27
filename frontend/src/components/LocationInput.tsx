@@ -37,7 +37,6 @@ export default function LocationInput(props: Props) {
     onPlaceSelected,
     label,
     containerStyle,
-    icon,
     disabled,
     defaultValue,
     ...otherProps
@@ -101,9 +100,7 @@ export default function LocationInput(props: Props) {
       }}
       disabled={disabled}
       style={
-        icon
-          ? { paddingRight: 36 }
-          : selectedPlace.current?.formatted_address || defaultValue
+        selectedPlace.current?.formatted_address || defaultValue
           ? {
               textAlign: 'center',
               minWidth: 40,

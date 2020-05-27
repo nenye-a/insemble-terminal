@@ -15,6 +15,7 @@ import {
   SHADOW_COLOR,
 } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import AddNewTerminalForm from '../scenes/terminal/AddNewTerminalForm';
 
 type Props = {
   onClickAway: () => void;
@@ -36,11 +37,7 @@ export default function PinPopover(props: Props) {
     <ClickAway onClickAway={onClickAway}>
       <Container>
         {noList ? (
-          <View style={{ alignItems: 'flex-start' }}>
-            <Title>You do not have any existing terminals.</Title>
-            <Button text="Add a Terminal" size="small" />
-            {/* TODO: add terminal scene */}
-          </View>
+          <AddNewTerminalForm onClose={onClickAway} />
         ) : (
           <>
             <Title>Select the terminal to add this data feed to.</Title>
