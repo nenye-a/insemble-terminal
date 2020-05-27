@@ -1,25 +1,39 @@
 import React from 'react';
 import styled from 'styled-components';
-import { ApolloError } from 'apollo-client';
+import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
+import { EmptyDataComponent, ErrorComponent } from '../../components';
 import {
-  DataTable,
-  EmptyDataComponent,
-  ErrorComponent,
-} from '../../components';
-import { GetPerformanceTable_performanceTable_data as PerformanceData } from '../../generated/GetPerformanceTable';
+  GetPerformanceTable,
+  GetPerformanceTableVariables,
+} from '../../generated/GetPerformanceTable';
+import { PerformanceTableType } from '../../generated/globalTypes';
+import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
+import PerformanceTable from './PerformanceTable';
+
 type Props = {
-  data?: Array<PerformanceData>;
-  loading: boolean;
-  error?: ApolloError;
+  businessTagId?: string;
+  locationTagId?: string;
 };
 
 export default function PerformanceByLocationResult(props: Props) {
-  let { data, loading, error } = props;
-  let noData = !data || data?.length === 0;
+  let { businessTagId, locationTagId } = props;
+
+  let { data, loading, error } = useQuery<
+    GetPerformanceTable,
+    GetPerformanceTableVariables
+  >(GET_PERFORMANCE_TABLE_DATA, {
+    variables: {
+      performanceType: PerformanceTableType.ADDRESS,
+      businessTagId,
+      locationTagId,
+    },
+  });
+  let noData =
+    !data?.performanceTable.data || data.performanceTable.data.length === 0;
 
   return (
     <Container>
@@ -31,32 +45,10 @@ export default function PerformanceByLocationResult(props: Props) {
       ) : noData ? (
         <EmptyDataComponent text="Location data is not available at this scope. Please widen area of search to see." />
       ) : (
-        <DataTable>
-          <DataTable.HeaderRow>
-            <DataTable.HeaderCell width={220}>Address</DataTable.HeaderCell>
-            <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
-            <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
-            <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
-          </DataTable.HeaderRow>
-          {data &&
-            data?.length > 0 &&
-            data.map((row, index) => {
-              let {
-                name = '',
-                avgRating = '',
-                numReview = '',
-                totalSales = '',
-              } = row;
-              return (
-                <DataTable.Row key={index}>
-                  <DataTable.Cell width={220}>{name}</DataTable.Cell>
-                  <DataTable.Cell align="right">{totalSales}</DataTable.Cell>
-                  <DataTable.Cell align="right">{avgRating}</DataTable.Cell>
-                  <DataTable.Cell align="right">{numReview}</DataTable.Cell>
-                </DataTable.Row>
-              );
-            })}
-        </DataTable>
+        <PerformanceTable
+          data={data?.performanceTable.data || []}
+          showNumLocation={false}
+        />
       )}
     </Container>
   );
