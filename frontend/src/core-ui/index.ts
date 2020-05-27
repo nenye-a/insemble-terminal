@@ -9,6 +9,7 @@ export { default as Form } from './Form';
 export { default as Label } from './Label';
 export { default as Link } from './Link';
 export { default as LoadingIndicator } from './LoadingIndicator';
+export { default as Modal } from './Modal';
 export { default as Pill } from './Pill';
 export { default as Text } from './Text';
 export { default as TextInput } from './TextInput';
