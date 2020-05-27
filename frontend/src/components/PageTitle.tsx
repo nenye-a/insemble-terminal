@@ -33,7 +33,7 @@ export default function PageTitle(props: Props) {
         locationTag?.type === LocationTagType.STATE
       ? `in ${locationTag?.params}`
       : '';
-  let formattedText = `${formattedBusiness} ${formattedReview} ${formattedLocation}`;
+  let formattedText = `${formattedBusiness} ${formattedReview} ${formattedLocation}`.trim();
 
   return (
     <TitleContainer>
