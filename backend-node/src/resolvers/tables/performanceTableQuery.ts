@@ -66,6 +66,9 @@ let performanceTableResolver: FieldResolver<
         },
       },
     });
+    performance = performance.filter(
+      ({ comparationTags }) => comparationTags.length === 0,
+    );
   }
 
   let selectedPerformanceTable;
@@ -209,7 +212,6 @@ let performanceTableResolver: FieldResolver<
       throw new Error('Fail to create data.');
     }
   }
-
   return selectedPerformanceTable;
 };
 
