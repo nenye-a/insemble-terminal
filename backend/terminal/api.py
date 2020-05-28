@@ -3,9 +3,10 @@ from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
 from .serializers import SearchSerializer, PerformanceSerializer
-import data.performance as performance
-import data.news as news
 import datetime as dt
+import performance
+import news
+
 
 '''
 
@@ -89,7 +90,8 @@ class PerformanceAPI(BasicAPI):
 
         data = []
         if business['businessType'] == 'BUSINESS':
-            # Details for the business.
+
+            # ADDRESS + BUSINESS
             if location['locationType'] == 'ADDRESS':
                 row = performance.performance(business['params'], location['params'])
                 if not row:
@@ -105,12 +107,35 @@ class PerformanceAPI(BasicAPI):
                         data_type=data_type
                     )
                     return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
+            # CITY & COUNTY + BUSINESS
+            elif location['locationType'] in ['CITY', 'COUNTY']:
+                raw_data = performance.aggregate_performance(
+                    business['params'], location['params'], location['locationType'])
+                if data_type == 'OVERALL':
+                    raw_data and data.append(raw_data['overall'])
+                elif data_type == 'ADDRESS':
+                    raw_data and data.extend(raw_data['data'])
+
+            # OTHER SCOPES UNIMPLEMENTED
             else:
                 return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
         elif business['businessType'] == 'CATEGORY':
-            return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
-        else:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+            # ADDRESS & CITY & COUNTY + CATEGORY
+            if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                raw_data = performance.category_performance(
+                    business['params'], location['params'], location['locationType'])
+                if data_type == 'OVERALL':
+                    raw_data and data.append(raw_data['overall'])
+                elif data_type == 'BRAND':
+                    raw_data and data.extend(raw_data['by_brand'])
+                elif data_type == 'ADDRESS':
+                    raw_data and data.extend(raw_data['by_location'])
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
         now = dt.datetime.utcnow()
         result = {

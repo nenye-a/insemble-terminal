@@ -38,7 +38,11 @@ DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
 
 def create_index(collection):
     if collection.lower() == 'terminal':
-        DB_TERMINAL_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
+        DB_TERMINAL_PLACES.create_index(
+            [('name', 1), ('address', 1)],
+            unique=True,
+            partialFilterExpression={'name': {'$exists': True}, 'address': {'$exists': True}}
+        )
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
@@ -49,6 +53,7 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
         DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+        DB_TERMINAL_PLACES.create_index([('city', 1)])
     if collection.lower() == 'coordinates':
         DB_COORDINATES.create_index([('center', 1)])
         DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
@@ -64,7 +69,11 @@ def create_index(collection):
         DB_REGIONS.create_index([('viewport', 1)], sparse=True)
         DB_REGIONS.create_index([('center', 1)])
         DB_REGIONS.create_index([('type', 1)])
-        DB_REGIONS.create_index([('rank', 1), ('type', 1)], unique=True, sparse=True)
+        DB_REGIONS.create_index(
+            [('rank', 1), ('type', 1)],
+            unique=True,
+            partialFilterExpression={'rank': {'$exists': True}, 'type': {'$exists': True}}
+        )
     # TODO: Remove or Archive Minesweeper items.
     if collection.lower() == 'ms_coordinates':
         DB_MS_COORDINATES.create_index([('center', 1)])
@@ -110,14 +119,19 @@ def to_snake_case(word):
 
 
 def snake_case_to_word(snake_case_word, caps='all'):
-    words = snake_case_word.split('_')
+    return modify_word(snake_case_word, caps, '_')
+
+
+def modify_word(word, caps='all', splitter=" "):
+    words = word.split(splitter)
     if caps == "first":
         words[0].capitalize()
     elif caps == "all":
         words = [word.capitalize() for word in words]
     elif caps == "upper":
         words = [word.upper() for word in words]
-
+    elif caps == "lower":
+        words = [word.lower() for word in words]
     return " ".join(words)
 
 
@@ -308,7 +322,7 @@ if __name__ == "__main__":
         print(to_snake_case("Santa Monica"))
 
     def test_snake_to_word():
-        print(snake_case_to_word("el"))
+        print(snake_case_to_word("el_paso_texas"))
 
     def test_round_object():
         print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello"]))
@@ -344,7 +358,7 @@ if __name__ == "__main__":
     # test_state_code_to_name()
     # test_parse_city()
     # test_to_snake_case()
-    # test_snake_to_word()
+    test_snake_to_word()
     # test_round_object()
     # test_extract_city()
     # test_chunks()

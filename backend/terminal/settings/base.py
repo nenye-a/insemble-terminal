@@ -1,12 +1,17 @@
 # https://docs.djangoproject.com/en/1.10/ref/settings/
 
 import os
+import sys
 
 from decouple import config  # noqa
 
+# Path to include data when in insemble folder
 
 BASE_DIR = os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__))))
+
+INSIGHTS_DIR = os.path.abspath(os.path.join(BASE_DIR, 'data'))
+sys.path.append(INSIGHTS_DIR)
 
 
 def base_dir_join(*args):
