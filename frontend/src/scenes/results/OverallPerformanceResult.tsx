@@ -9,7 +9,7 @@ import {
   GetPerformanceTableVariables,
 } from '../../generated/GetPerformanceTable';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { PerformanceTableType } from '../../generated/globalTypes';
+import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -21,7 +21,7 @@ type Props = {
 
 export default function OverallPerformanceResult(props: Props) {
   let { businessTagId, locationTagId } = props;
-  let { data, loading, error } = useQuery<
+  let { data, loading, error, refetch } = useQuery<
     GetPerformanceTable,
     GetPerformanceTableVariables
   >(GET_PERFORMANCE_TABLE_DATA, {
@@ -33,9 +33,24 @@ export default function OverallPerformanceResult(props: Props) {
   });
   let noData =
     !data?.performanceTable.data || data.performanceTable.data.length === 0;
+
   return (
     <Container>
-      <ResultTitle title="Overall Performance" noData={noData} />
+      <ResultTitle
+        title="Overall Performance"
+        noData={noData}
+        reviewTag={ReviewTag.PERFORMANCE}
+        tableId={data?.performanceTable.id || ''}
+        onTableIdChange={(newTableId: string) => {
+          refetch({
+            performanceType: PerformanceTableType.OVERALL,
+            businessTagId,
+            locationTagId,
+            tableId: newTableId,
+          });
+        }}
+        comparisonTags={data?.performanceTable.comparationTags}
+      />
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
@@ -43,7 +58,10 @@ export default function OverallPerformanceResult(props: Props) {
       ) : noData ? (
         <EmptyDataComponent text="Overall data is not available at this scope. Please widen area of search to see." />
       ) : (
-        <PerformanceTable data={data?.performanceTable.data || []} />
+        <PerformanceTable
+          data={data?.performanceTable.data || []}
+          compareData={data?.performanceTable.compareData}
+        />
       )}
     </Container>
   );
