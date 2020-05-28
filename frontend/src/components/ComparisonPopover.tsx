@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 
@@ -17,13 +17,15 @@ import {
   GREY_DIVIDER,
 } from '../constants/colors';
 import { capitalize } from '../helpers';
-import { ReviewTag } from '../generated/globalTypes';
+import { ReviewTag, CompareActionType } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
+import { LocationTag, BusinessTagResult } from '../types/types';
+import { GetPerformanceTable_performanceTable_comparationTags as ComparationTag } from '../generated/GetPerformanceTable';
 import {
-  AddComparison,
-  AddComparisonVariables,
-} from '../generated/AddComparison';
-import { ADD_COMPARISON } from '../graphql/queries/server/comparison';
+  UpdateComparison,
+  UpdateComparisonVariables,
+} from '../generated/UpdateComparison';
+import { UPDATE_COMPARISON } from '../graphql/queries/server/comparison';
 
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
@@ -31,64 +33,120 @@ import SvgRoundClose from './icons/round-close';
 type Props = {
   reviewTag: ReviewTag;
   tableId: string;
+  onTableIdChange?: (tableId: string) => void;
+  activeComparison?: Array<ComparationTag>;
 };
 
 export default function ComparisonPopover(props: Props) {
-  let { reviewTag, tableId } = props;
-
+  let {
+    reviewTag,
+    tableId,
+    onTableIdChange,
+    activeComparison: activeComparisonProp = [],
+  } = props;
+  let [activeComparison, setActiveComparison] = useState<Array<any>>(
+    activeComparisonProp || [],
+  );
   let [
-    addComparison,
+    updateComparison,
     {
-      data: addComparisonData,
-      loading: addComparisonLoading,
-      error: addComparisonError,
+      data: updateComparisonData,
+      loading: updateComparisonLoading,
+      error: updateComparisonError,
     },
-  ] = useMutation<AddComparison, AddComparisonVariables>(ADD_COMPARISON);
+  ] = useMutation<UpdateComparison, UpdateComparisonVariables>(
+    UPDATE_COMPARISON,
+    {
+      // temp solution to handle https://github.com/apollographql/apollo-client/issues/6070
+      onError: () => {},
+    },
+  );
 
   useEffect(() => {
-    // callback to parent
-  }, [addComparisonData]);
+    let mapFn = ({
+      id,
+      locationTag,
+      businessTag,
+    }: {
+      id: string;
+      locationTag: LocationTag;
+      businessTag: BusinessTagResult;
+    }) => ({
+      id,
+      locationTag: locationTag
+        ? {
+            id: locationTag.id,
+            type: locationTag.type,
+            params: locationTag.params,
+          }
+        : null,
+      businessTag: businessTag
+        ? {
+            id: businessTag.id,
+            type: businessTag.type,
+            params: businessTag.params,
+          }
+        : null,
+    });
+
+    if (updateComparisonData) {
+      onTableIdChange &&
+        onTableIdChange(updateComparisonData.updateComparison.tableId);
+      let activeComparisonList = updateComparisonData.updateComparison.comparationTags.map(
+        mapFn,
+      );
+
+      setActiveComparison(activeComparisonList);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [updateComparisonData]);
+
   return (
     <Container>
       <Alert
-        visible={!!addComparisonError}
-        text={addComparisonError?.message || ''}
+        visible={!!updateComparisonError}
+        text={updateComparisonError?.message || ''}
       />
-      {addComparisonData?.addComparison.comparationTags &&
-        addComparisonData.addComparison.comparationTags.length > 0 && (
-          <View>
-            <Title>Active Comparison</Title>
-            {/* TODO: get array from BE */}
-            {addComparisonData.addComparison.comparationTags.map(
-              (comparison, idx) => (
-                <Row key={idx}>
-                  <SearchFilterBar
-                    defaultReviewTag={capitalize(reviewTag)}
-                    defaultBusinessTag={comparison.businessTag as BusinessTag}
-                    defaultLocationTag={
-                      comparison.locationTag
-                        ? {
-                            params: comparison.locationTag.params,
-                            type: comparison.locationTag.type,
-                          }
-                        : undefined
-                    }
-                    disableAll
-                  />
-                  <CloseContainer
-                    onPress={() => {
-                      // TODO: call be to remove comparison
-                    }}
-                  >
-                    <SvgRoundClose />
-                  </CloseContainer>
-                </Row>
-              ),
-            )}
-            <ComparisonDivider />
-          </View>
-        )}
-      {addComparisonLoading ? (
+      {activeComparison && activeComparison.length > 0 ? (
+        <View>
+          <Title>Active Comparison</Title>
+          {activeComparison.map((comparison) => (
+            <Row key={'row_' + comparison.id}>
+              <SearchFilterBar
+                key={'search_' + comparison.id}
+                defaultReviewTag={capitalize(reviewTag)}
+                defaultBusinessTag={comparison.businessTag as BusinessTag}
+                defaultLocationTag={
+                  comparison.locationTag
+                    ? {
+                        params: comparison.locationTag.params,
+                        type: comparison.locationTag.type,
+                      }
+                    : undefined
+                }
+                disableAll
+              />
+              <CloseContainer
+                key={'del_' + comparison.id}
+                onPress={() => {
+                  updateComparison({
+                    variables: {
+                      reviewTag,
+                      comparationTagId: comparison.id,
+                      tableId,
+                      actionType: CompareActionType.DELETE,
+                    },
+                  });
+                }}
+              >
+                <SvgRoundClose />
+              </CloseContainer>
+            </Row>
+          ))}
+          <ComparisonDivider />
+        </View>
+      ) : null}
+      {updateComparisonLoading ? (
         <LoadingIndicator />
       ) : (
         <View>
@@ -99,13 +157,14 @@ export default function ComparisonPopover(props: Props) {
             onSearchPress={(searchTags) => {
               let { businessTag, businessTagId, locationTag } = searchTags;
               // TODO: check if search valid, call be, move to active comparison arr
-              addComparison({
+              updateComparison({
                 variables: {
                   reviewTag,
                   businessTag,
                   businessTagId,
                   locationTag,
                   tableId,
+                  actionType: CompareActionType.ADD,
                 },
               });
             }}
@@ -131,7 +190,7 @@ const Title = styled(Text)`
 const Row = styled(View)`
   flex-direction: row;
   align-items: center;
-
+  margin: 2px 0;
   svg {
     color: ${THEME_COLOR};
     &:hover {

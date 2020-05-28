@@ -1,57 +1,33 @@
 import gql from 'graphql-tag';
 
-export const ADD_COMPARISON = gql`
-  mutation AddComparison(
+export const UPDATE_COMPARISON = gql`
+  mutation UpdateComparison(
     $reviewTag: ReviewTag!
     $businessTag: BusinessTagInput
     $businessTagId: String
     $locationTag: LocationTagInput
     $tableId: String!
+    $comparationTagId: String
+    $actionType: CompareActionType!
   ) {
-    addComparison(
+    updateComparison(
       reviewTag: $reviewTag
       businessTag: $businessTag
       businessTagId: $businessTagId
       locationTag: $locationTag
       tableId: $tableId
-    ) {
-      comparationTags {
-        id
-        locationTag {
-          id
-          params
-          type
-        }
-        businessTag {
-          id
-          params
-          type
-        }
-      }
-      reviewTag
-      tableId
-    }
-  }
-`;
-
-export const DELETE_COMPARISON = gql`
-  mutation DeleteComparison(
-    $reviewTag: ReviewTag!
-    $comparationTagId: String!
-    $tableId: String!
-  ) {
-    deleteComparison(
-      reviewTag: $reviewTag
       comparationTagId: $comparationTagId
-      tableId: $tableId
+      actionType: $actionType
     ) {
       comparationTags {
         id
         locationTag {
+          id
           params
           type
         }
         businessTag {
+          id
           params
           type
         }
