@@ -3,7 +3,7 @@ export * from './auth/registerMutation';
 export * from './auth/userVerificationQuery';
 
 export * from './search/searchMutation';
-export * from './compare/addComparisonMutation';
+export * from './compare/updateComparisonMutation';
 export * from './compare/deleteComparisonMutation';
 export * from './tags/businessTagsQuery';
 
