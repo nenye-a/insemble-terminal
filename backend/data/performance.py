@@ -42,25 +42,51 @@ def performance(name, address):
         return None
 
 
-def city_performance(name, city):
+def aggregate_performance(name, location, scope):
 
-    # look for places in our database using regexes + search to match tot items.
-    matching_places = list(utils.DB_TERMINAL_PLACES.find({
-        '$text': {'$search': name},
-        'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
-        'city': {"$regex": r"^" + utils.modify_word(city[:5]), "$options": "i"},
-        'google_details': {'$exists': True}
-    }))
+    if scope.lower() == 'city':
+        # look for places in our database using regexes + search to match to items.
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            '$text': {'$search': name},
+            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'google_details': {'$exists': True}
+        }))
+    elif scope.lower() == 'county':
+        region = utils.DB_REGIONS.find_one({
+            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'type': 'county'
+        })
+        if not region:
+            return None
+        matching_places = utils.DB_TERMINAL_PLACES.find({
+            '$text': {'$search': name},
+            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+            'location': {'$geoWithin': {'$geometry': region['geometry']}},
+            'google_details': {'$exists': True}
+        })
 
     if not matching_places:
         return None
+
+    data = combine_parse_details(matching_places)
+    if data['overall']['name'] is None:
+        data['overall']['name'] = name
+
+    return data
+
+
+def combine_parse_details(list_places):
+    """
+    Provided un-parsed places details, will generate combined report.
+    """
 
     location_data = []
     index_sum, index_count = 0, 0
     rating_sum, rating_count = 0, 0
     num_rating_sum, num_rating_count = 0, 0
     corrected_name = None
-    for place in matching_places:
+    for place in list_places:
         details = parse_details(place['google_details'])
         corrected_name = details['name'] if not corrected_name else None
         details['name'] = details.pop('address')
@@ -75,17 +101,14 @@ def city_performance(name, city):
             num_rating_count += 1
             num_rating_sum += details['avgReviews']
 
-    if corrected_name is None:
-        corrected_name = name
-
     return {
-        'overall': [{
+        'overall': {
             'name': corrected_name,
             'salesVolumeIndex': round(index_sum / index_count) if index_count != 0 else None,
             'avgRating': round(rating_sum / rating_count) if rating_count != 0 else None,
             'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
             'numLocations': len(location_data)
-        }],
+        },
         'data': location_data
     }
 
@@ -174,10 +197,10 @@ if __name__ == "__main__":
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
         print(performance(name, address))
 
-    def test_city_performance():
-        performance_data = city_performance("Starbucks", "Los Angeles")
+    def test_aggregate_performance():
+        performance_data = aggregate_performance("Starbucks", "Los Angeles Co", "county")
         print(performance_data)
         print(len(performance_data['data']))
 
     # test_performance()
-    test_city_performance()
+    test_aggregate_performance()
