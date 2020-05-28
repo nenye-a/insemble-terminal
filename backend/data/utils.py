@@ -38,7 +38,11 @@ DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
 
 def create_index(collection):
     if collection.lower() == 'terminal':
-        DB_TERMINAL_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
+        DB_TERMINAL_PLACES.create_index(
+            [('name', 1), ('address', 1)],
+            unique=True,
+            partialFilterExpression={'name': {'$exists': True}, 'address': {'$exists': True}}
+        )
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
@@ -64,7 +68,11 @@ def create_index(collection):
         DB_REGIONS.create_index([('viewport', 1)], sparse=True)
         DB_REGIONS.create_index([('center', 1)])
         DB_REGIONS.create_index([('type', 1)])
-        DB_REGIONS.create_index([('rank', 1), ('type', 1)], unique=True, sparse=True)
+        DB_REGIONS.create_index(
+            [('rank', 1), ('type', 1)],
+            unique=True,
+            partialFilterExpression={'rank': {'$exists': True}, 'type': {'$exists': True}}
+        )
     # TODO: Remove or Archive Minesweeper items.
     if collection.lower() == 'ms_coordinates':
         DB_MS_COORDINATES.create_index([('center', 1)])
@@ -337,7 +345,7 @@ if __name__ == "__main__":
 
     # RUN
 
-    # create_index("terminal")
+    create_index("terminal")
 
     # TESTS
 

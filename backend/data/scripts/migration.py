@@ -60,9 +60,43 @@ def import_LA():
         'searched': True
     }
 
-    utils.DB_REGIONS.insert_one(LA)
+    # utils.DB_REGIONS.insert_one(LA)
+
+
+def add_city():
+
+    region = utils.DB_REGIONS.find_one({'name': {"$regex": "^Los.*"}, 'type': 'city-box'})
+
+    while True:
+
+        pipeline = [
+            {
+                '$match': {
+                    'address': {'$exists': True},
+                    'city': {'$exists': False},
+                }
+            },
+            {'$sample': {'size': 5000}},
+            {'$project': {'_id': 1, 'address': 1}}
+        ]
+
+        if not pipeline:
+            return
+
+        locations = list(utils.DB_TERMINAL_PLACES.aggregate(pipeline))
+
+        for item in locations:
+            item['city'] = utils.extract_city(item['address'])
+
+        print('Items updated. Example Item: {}'.format(item))
+
+        for item in locations:
+            utils.DB_TERMINAL_PLACES.update_one({'_id': item['_id']}, {'$set': item})
+
+        print('Batch_complete. Next Batch Now')
 
 
 if __name__ == "__main__":
     # migrate_terminal()
-    import_LA()
+    add_city()
+    # import_LA()
