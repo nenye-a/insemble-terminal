@@ -10,7 +10,6 @@ import { ComparationTag } from '../../types/types';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
 import { ReviewTag, LocationTagType } from '../../generated/globalTypes';
-import SvgClose from '../../components/icons/close';
 
 type Props = {
   title: string;
@@ -66,9 +65,10 @@ export default function ResultTitle(props: Props) {
         {formattedCompareText && (
           <>
             <CompareText>{formattedCompareText}</CompareText>
-            <Touchable onPress={() => {}}>
+            {/* TODO: enable when endpoint ready */}
+            {/* <Touchable onPress={() => {}}>
               <SvgClose />
-            </Touchable>
+            </Touchable> */}
           </>
         )}
         <Popover
