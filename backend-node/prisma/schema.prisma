@@ -94,7 +94,7 @@ model PerformanceData {
   avgRating     String
   totalSales    String
   numReview     Int
-  numLocation   Int? 
+  numLocation   Int?
 }
 
 model ComparePerformanceData {
@@ -103,7 +103,7 @@ model ComparePerformanceData {
   avgRating     String
   totalSales    String
   numReview     Int
-  numLocation   Int? 
+  numLocation   Int?
 }
 
 model ComparationTag {
@@ -132,7 +132,7 @@ model NewsData {
   link          String
   published     String
   source        String
-  description   String 
+  description   String
   relevance     Float
 }
 
@@ -142,7 +142,7 @@ model CompareNewsData {
   link          String
   published     String
   source        String
-  description   String 
+  description   String
   relevance     Float
 }
 

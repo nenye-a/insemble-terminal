@@ -62,7 +62,7 @@ class PerformanceAPI(BasicAPI):
             dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS' <-supported | unsupported rightnow -> ['CITY'|'STATE']
         }
 
-        Response: 
+        Response:
             {
                 createdAt: Date,
                 updatedAt: Date,
@@ -224,7 +224,7 @@ class AcitivtyAPI(BasicAPI):
         }
         # In future, we might add data_type and have a list of activities
 
-        Response: 
+        Response:
             {
                 createdAt: Date,
                 updatedAt: Date,

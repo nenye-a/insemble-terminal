@@ -36,10 +36,14 @@ export default function getResultQueries(
       businessTag &&
       (!locationTag || locationTag?.type === LocationTagType.NATION)
     ) {
-      queries.push({
-        reviewTag,
-        type: PerformanceTableType.STATE,
-      });
+
+      if(!location || locationTag?.type === LocationTagType.NATION) {
+
+        queries.push({
+          reviewTag,
+          type: PerformanceTableType.STATE,
+        });
+      }
     }
     if (
       businessTag &&

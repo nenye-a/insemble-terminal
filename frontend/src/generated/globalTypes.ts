@@ -1,5 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
+// @generated
 // This file was automatically generated and should not be edited.
 
 //==============================================================
@@ -14,6 +15,11 @@ export enum BusinessTagType {
 export enum BusinessType {
   BUSINESS = "BUSINESS",
   CATEGORY = "CATEGORY",
+}
+
+export enum CompareActionType {
+  ADD = "ADD",
+  DELETE = "DELETE",
 }
 
 export enum LocationTagType {
@@ -57,6 +63,14 @@ export interface BusinessTagInput {
 export interface LocationTagInput {
   params: string;
   type: LocationTagType;
+}
+
+export interface UserRegisterInput {
+  company: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
 }
 
 //==============================================================
