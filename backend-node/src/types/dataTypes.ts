@@ -1,5 +1,5 @@
 export type PyPerformanceData = {
-  name: string;
+  name?: string;
   salesVolumeIndex?: number;
   avgRating?: number;
   avgReviews?: number;
