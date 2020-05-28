@@ -130,7 +130,7 @@ class NewsAPI(BasicAPI):
     def get(self, request, *args, **kwargs):
         """
 
-        Retrieve the performance data for a brand/category & location scope.
+        Retrieve the news data for a brand/category & location scope.
 
         Parameters: {
             location: {
@@ -141,14 +141,12 @@ class NewsAPI(BasicAPI):
                 businessType: 'BUSINESS' | 'CATEGORY'
                 params: string
             }
-            dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
         }
 
         Response: {
-            performance: {
+            news: {
                 createdAt: Date,
                 updatedAt: Date,
-                dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
                 data: [
                     {
                         title: string,
@@ -156,7 +154,7 @@ class NewsAPI(BasicAPI):
                         published: Date,
                         source: string,
                         description: string,
-                        relevance: 241.0
+                        relevance: float
                     },
                 ]
             }
