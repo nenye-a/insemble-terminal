@@ -6,30 +6,71 @@ import { View, Text, TouchableOpacity } from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
 import { THEME_COLOR, DISABLED_TEXT_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
+import { GetPerformanceTable_performanceTable_comparationTags as ComparationTag } from '../../generated/GetPerformanceTable';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
-import { ReviewTag } from '../../generated/globalTypes';
+import { ReviewTag, LocationTagType } from '../../generated/globalTypes';
+import SvgClose from '../../components/icons/close';
 
 type Props = {
   title: string;
   noData?: boolean;
   reviewTag: ReviewTag;
   tableId: string;
+  onTableIdChange?: (tableId: string) => void;
+  comparisonTags?: Array<ComparationTag>;
 };
 
 export default function ResultTitle(props: Props) {
-  let { title, noData = false, reviewTag, tableId } = props;
+  let {
+    title,
+    noData = false,
+    reviewTag,
+    tableId,
+    onTableIdChange,
+    comparisonTags,
+  } = props;
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
 
   let pinPopover = <PinPopover onClickAway={() => setPinPopoverOpen(false)} />;
   let comparisonPopover = (
-    <ComparisonPopover reviewTag={reviewTag} tableId={tableId} />
+    <ComparisonPopover
+      reviewTag={reviewTag}
+      tableId={tableId}
+      onTableIdChange={onTableIdChange}
+      activeComparison={comparisonTags}
+    />
   );
+
+  let compareLocationText =
+    comparisonTags && comparisonTags.length > 0
+      ? comparisonTags.length === 1 && comparisonTags[0].locationTag
+        ? comparisonTags[0].locationTag.type === LocationTagType.ADDRESS
+          ? `near ${comparisonTags[0].locationTag.params}`
+          : `in ${comparisonTags[0].locationTag.params}`
+        : ''
+      : '';
+
+  let formattedCompareText =
+    comparisonTags?.length === 1
+      ? `Comparing with ${comparisonTags[0].businessTag?.params} ${compareLocationText}`
+      : comparisonTags && comparisonTags?.length > 0
+      ? `Comparing with ${comparisonTags.length} queries`
+      : '';
+
   return (
     <Container>
       <Title noData={noData}>{title}</Title>
       <Row>
+        {formattedCompareText && (
+          <>
+            <CompareText>{formattedCompareText}</CompareText>
+            <Touchable onPress={() => {}}>
+              <SvgClose />
+            </Touchable>
+          </>
+        )}
         <Popover
           isOpen={comparisonPopoverOpen}
           content={comparisonPopover}
@@ -91,4 +132,8 @@ const Touchable = styled(TouchableOpacity)`
       opacity: 0.7;
     }
   }
+`;
+
+const CompareText = styled(Text)`
+  color: ${THEME_COLOR};
 `;
