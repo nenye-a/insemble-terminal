@@ -557,13 +557,16 @@ def divide_region(center, viewport, ground_zoom):
     nearby_request_url = nearby_scraper.build_request('', lat, lng, ground_zoom)
 
     print("requesting {}".format(nearby_request_url))
-    lat, lng, size_var = nearby_scraper.request(
-        nearby_request_url,
-        quality_proxy=True,
-        headers={"referer": "https://www.google.com/"},
-        timeout=5,
-        res_parser=geo_scraper.default_parser
-    )
+    try:
+        lat, lng, size_var = nearby_scraper.request(
+            nearby_request_url,
+            quality_proxy=True,
+            headers={"referer": "https://www.google.com/"},
+            timeout=5,
+            res_parser=geo_scraper.default_parser
+        )
+    except Exception:
+        return None
     nw, se = google.get_viewport(lat, lng, size_var)
     diameter = {"vertical": abs(nw[0] - se[0]), "horizontal": abs(nw[1] - se[1])}
     print("nw {} se {}".format(nw, se))

@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import psutil
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(THIS_DIR)
 
@@ -12,7 +13,7 @@ import random
 import scrape_utils
 
 from functools import partial
-from billiard import exceptions as poolexceptions
+import billiard.exceptions as poolexceptions
 from billiard.pool import Pool
 
 CRAWLERA_CERT = THIS_DIR + '/crawlera-ca.crt'
@@ -214,9 +215,7 @@ class GenericScraper(object):
         """
 
         request_start = time.time()
-
         num_queries = len(queries)
-        worker_crash = False
 
         if num_queries < 1:
             self.logger.warning('atleast one query must be provided.')
@@ -272,7 +271,10 @@ class GenericScraper(object):
             except poolexceptions.WorkerLostError:
                 self.logger.error('Worker crashed and exited prematurely. Closing pool '
                                   'and restarting request.')
-                worker_crash = True
+            except OSError as e:
+                self.logger.error('OSError {}. Too many files, flushing open descriptors'
+                                  '/connectors and restarting program.'.format(e))
+                restart_program()
         finally:
             request_finish = time.time()
             try:
@@ -280,13 +282,28 @@ class GenericScraper(object):
                 pool.terminate()
                 pool_terminated_time = time.time()
                 self.logger.info("Pool terminated in {} seconds.".format(round(pool_terminated_time - request_finish, 2)))
-            except BaseException:
-                self.logger.error('Exiting, too many files.')
-                raise
-            finally:
-                if worker_crash:
-                    return self.async_request(queries, pool_limit)
+            except UnboundLocalError as e:
+                self.logger.error('UnboundLocalError {}. Likely due to failed pool '
+                                  'closure due to uninstantiated pool'.format(e))
+                restart_program()
 
         self.logger.info("Actual Request Time: {}".format(round(request_finish - request_start, 2)))
         self.logger.info("Total Request Time: {}".format(round(pool_terminated_time - request_start, 2)))
         return results
+
+
+def restart_program():
+    """
+    Restarts the current program, with file objects and descriptors
+    cleanup
+    """
+
+    try:
+        p = psutil.Process(os.getpid())
+        for handler in p.open_files() + p.connections():
+            os.close(handler.fd)
+    except Exception as e:
+        print("Failed to fully flush due to {}".format(e))
+
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
