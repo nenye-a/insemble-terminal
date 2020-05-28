@@ -6,7 +6,7 @@ import { View, Text, TouchableOpacity } from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
 import { THEME_COLOR, DISABLED_TEXT_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
-import { GetPerformanceTable_performanceTable_comparationTags as ComparationTag } from '../../generated/GetPerformanceTable';
+import { ComparationTag } from '../../types/types';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
 import { ReviewTag, LocationTagType } from '../../generated/globalTypes';

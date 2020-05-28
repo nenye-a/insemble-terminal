@@ -19,8 +19,7 @@ import {
 import { capitalize } from '../helpers';
 import { ReviewTag, CompareActionType } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
-import { LocationTag, BusinessTagResult } from '../types/types';
-import { GetPerformanceTable_performanceTable_comparationTags as ComparationTag } from '../generated/GetPerformanceTable';
+import { LocationTag, BusinessTagResult, ComparationTag } from '../types/types';
 import {
   UpdateComparison,
   UpdateComparisonVariables,
@@ -44,7 +43,7 @@ export default function ComparisonPopover(props: Props) {
     onTableIdChange,
     activeComparison: activeComparisonProp = [],
   } = props;
-  let [activeComparison, setActiveComparison] = useState<Array<any>>(
+  let [activeComparison, setActiveComparison] = useState<Array<ComparationTag>>(
     activeComparisonProp || [],
   );
   let [

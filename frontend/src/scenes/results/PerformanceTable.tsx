@@ -18,7 +18,7 @@ export default function PerformanceTable(props: Props) {
   return (
     <DataTable>
       <DataTable.HeaderRow>
-        <DataTable.HeaderCell width={220}>Company</DataTable.HeaderCell>
+        <DataTable.HeaderCell width={260}>Company</DataTable.HeaderCell>
         <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
         <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
         <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
@@ -40,7 +40,7 @@ export default function PerformanceTable(props: Props) {
               key={'compare' + index}
               style={{ backgroundColor: TABLE_PURPLE_BACKGROUND }}
             >
-              <DataTable.Cell width={220}>{name}</DataTable.Cell>
+              <DataTable.Cell width={260}>{name}</DataTable.Cell>
               <DataTable.Cell align="right">{totalSales}</DataTable.Cell>
               <DataTable.Cell align="right">{avgRating}</DataTable.Cell>
               <DataTable.Cell align="right">{numReview}</DataTable.Cell>
@@ -60,7 +60,7 @@ export default function PerformanceTable(props: Props) {
         } = row;
         return (
           <DataTable.Row key={index}>
-            <DataTable.Cell width={220}>{name}</DataTable.Cell>
+            <DataTable.Cell width={260}>{name}</DataTable.Cell>
             <DataTable.Cell align="right">{totalSales}</DataTable.Cell>
             <DataTable.Cell align="right">{avgRating}</DataTable.Cell>
             <DataTable.Cell align="right">{numReview}</DataTable.Cell>
