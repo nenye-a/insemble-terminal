@@ -78,7 +78,7 @@ export default function SearchFilterBar(props: Props) {
       {businessTagLoading ? (
         <LoadingIndicator />
       ) : businessTagData ? (
-        <Container>
+        <>
           <SearchContainer>
             <DataFilterContainer
               disabled={disableAll || disableReviewTag}
@@ -148,12 +148,13 @@ export default function SearchFilterBar(props: Props) {
                   setErrorMessage('Search combination is not valid');
                 }
               }}
+              stopPropagation={true}
             >
               <SvgSearch />
             </TouchableOpacity>
           </SearchContainer>
           {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
-        </Container>
+        </>
       ) : null}
       {dataTypeFilterVisible && (
         <PillSelector
@@ -170,10 +171,6 @@ export default function SearchFilterBar(props: Props) {
     </View>
   );
 }
-
-const Container = styled(View)`
-  margin-left: 64px;
-`;
 
 const SearchContainer = styled(View)`
   flex-direction: row;
