@@ -29,14 +29,14 @@ export default function MainRoute() {
               return (
                 <Redirect
                   to={{
-                    pathname: authorization.redirectPath || '/',
+                    pathname: authorization.redirectPath || '/login',
                   }}
                 />
               );
             }
             return (
               <Route
-                key={index}
+                key={index.toString() + routeProps.path}
                 render={() => (
                   <View>
                     {showHeader && <HeaderNavigationBar />}
