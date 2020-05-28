@@ -22,7 +22,7 @@ type Props = {
 export default function PerformanceByCategoryResult(props: Props) {
   let { businessTagId, locationTagId } = props;
 
-  let { data, loading, error } = useQuery<
+  let { data, loading, error, refetch } = useQuery<
     GetPerformanceTable,
     GetPerformanceTableVariables
   >(GET_PERFORMANCE_TABLE_DATA, {
@@ -42,6 +42,15 @@ export default function PerformanceByCategoryResult(props: Props) {
         noData={noData}
         reviewTag={ReviewTag.PERFORMANCE}
         tableId={data?.performanceTable.id || ''}
+        onTableIdChange={(newTableId: string) => {
+          refetch({
+            performanceType: PerformanceTableType.CATEGORY,
+            businessTagId,
+            locationTagId,
+            tableId: newTableId,
+          });
+        }}
+        comparisonTags={data?.performanceTable.comparationTags}
       />
       {loading ? (
         <LoadingIndicator />
