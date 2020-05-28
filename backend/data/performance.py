@@ -4,6 +4,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.extend([THIS_DIR, BASE_DIR])
 
+import time
 import google
 import utils
 
@@ -113,6 +114,52 @@ def combine_parse_details(list_places):
     }
 
 
+def category_performance(category, location):
+
+    retries, backoff = 0, 1
+    coordinates = None
+    while not coordinates or retries > 5:
+        try:
+            coordinates = utils.to_geojson(google.get_lat_lng(location))
+        except Exception:
+            retries += 1
+            print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
+            time.sleep(1 + backoff)
+            backoff += 1
+
+    matching_locations = list(utils.DB_TERMINAL_PLACES.find({
+        'location': {'$near': {'$geometry': coordinates,
+                               '$maxDistance': utils.miles_to_meters(0.5)}},
+        'type': utils.modify_word(category)
+    }))
+
+    if not matching_locations:
+        return None
+
+    overall_details = combine_parse_details(matching_locations)
+    brand_dict = section_by_brand(matching_locations)
+    brand_details = [combine_parse_details(location_list)['overall'] for location_list in brand_dict.values()]
+
+    overall_details['overall']['name'] = utils.modify_word(category)
+
+    return {
+        'overall': overall_details['overall'],
+        'by_location': overall_details['data'],
+        'by_brand': brand_details
+    }
+
+
+def section_by_brand(list_locations):
+    """
+    Given a list of locations, will section them off by brand.
+    """
+
+    my_dict = {}
+    for location in list_locations:
+        my_dict[location['name']] = my_dict.get(location['name'], []) + [location]
+    return my_dict
+
+
 def parse_details(details):
 
     sales_index = activity_score(details['activity'])
@@ -202,5 +249,11 @@ if __name__ == "__main__":
         print(performance_data)
         print(len(performance_data['data']))
 
+    def test_category_performance():
+        import pprint
+        performance = category_performance("Mexican Restaurant", "Los Angeles")
+        pprint.pprint(performance)
+
     # test_performance()
-    test_aggregate_performance()
+    # test_aggregate_performance()
+    test_category_performance()

@@ -76,7 +76,7 @@ def update_all_categories():
 
 def update_categories():
 
-    region = utils.DB_REGIONS.find_one({'name': {"$regex": "^Los.*"}, 'type': 'city-box'})
+    # region = utils.DB_REGIONS.find_one({'name': {"$regex": "^Los.*"}, 'type': 'city-box'})
 
     while True:
 
@@ -85,7 +85,7 @@ def update_categories():
                 'type': {'$exists': False},
                 'google_details': {'$exists': True},
                 'google_details.type': {'$ne': None},
-                'location': {'$geoWithin': {'$geometry': region['geometry']}}
+                # 'location': {'$geoWithin': {'$geometry': region['geometry']}}
             }},
             {'$sample': {'size': 2000}}
         ]
