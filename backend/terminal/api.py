@@ -90,6 +90,7 @@ class PerformanceAPI(BasicAPI):
 
         data = []
         if business['businessType'] == 'BUSINESS':
+
             # ADDRESS + BUSINESS
             if location['locationType'] == 'ADDRESS':
                 row = performance.performance(business['params'], location['params'])
@@ -106,20 +107,35 @@ class PerformanceAPI(BasicAPI):
                         data_type=data_type
                     )
                     return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
             # CITY & COUNTY + BUSINESS
-            elif location['locationType'] == 'CITY' or location['locationType'] == 'COUNTY':
+            elif location['locationType'] in ['CITY', 'COUNTY']:
                 raw_data = performance.aggregate_performance(
                     business['params'], location['params'], location['locationType'])
                 if data_type == 'OVERALL':
                     raw_data and data.append(raw_data['overall'])
                 elif data_type == 'ADDRESS':
                     raw_data and data.extend(raw_data['data'])
+
+            # OTHER SCOPES UNIMPLEMENTED
             else:
                 return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
         elif business['businessType'] == 'CATEGORY':
-            return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
-        else:
-            return Response({}, status=status.HTTP_400_BAD_REQUEST)
+
+            # ADDRESS & CITY & COUNTY + CATEGORY
+            if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                raw_data = performance.category_performance(
+                    business['params'], location['params'], location['locationType'])
+                if data_type == 'OVERALL':
+                    raw_data and data.append(raw_data['overall'])
+                elif data_type == 'BRAND':
+                    raw_data and data.extend(raw_data['by_brand'])
+                elif data_type == 'ADDRESS':
+                    raw_data and data.extend(raw_data['by_location'])
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
         now = dt.datetime.utcnow()
         result = {
