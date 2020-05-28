@@ -45,6 +45,57 @@ def activity(name, address):
     }
 
 
+def aggregate_activity(name, location, scope):
+
+    if scope.lower() == 'city':
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            '$text': {'$search': name},
+            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'google_details.activity': {'$ne': None}
+        }))
+    elif scope.lower() == 'county':
+        region = utils.DB_REGIONS.find_one({
+            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'type': 'county'
+        })
+        if not region:
+            return None
+        matching_places = utils.DB_TERMINAL_PLACES.find({
+            '$text': {'$search': name},
+            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+            'location': {'$geoWithin': {'$geometry': region['geometry']}},
+            'google_details.activity': {'$ne': None}
+        })
+
+    if not matching_places:
+        return None
+
+    name = matching_places[0]['name']
+
+    return {
+        'name': name,
+        'location': location,
+        'activity': combine_avg_activity(matching_places)
+    }
+
+
+def combine_avg_activity(list_places):
+
+    count_dict = {}
+    avg_dict = {}
+    for place in list_places:
+        activity = place['google_details']['activity']
+        packaged_data = package_activity(avg_hourly_activity(activity))
+        if packaged_data:
+            for hour in packaged_data:
+                count_dict[hour] = count_dict.get(hour, 0) + 1
+                avg_dict[hour] = (packaged_data[hour] + avg_dict.get(hour, 0) * (count_dict[hour] - 1)) / \
+                    count_dict[hour]
+
+    return utils.round_object(avg_dict)
+
+
 def avg_hourly_activity(activity):
     """Will dertemine the average activity of each hour over a week"""
     activity_by_hour = list(zip(*activity))
@@ -74,4 +125,9 @@ if __name__ == "__main__":
     def test_activity():
         print(activity("Starbucks", "3900 Cross Creek Rd"))
 
-    test_activity()
+    def test_aggregate_activity():
+        print(aggregate_activity("Starbucks", "Los Angeles", "City"), "\n")
+        print(aggregate_activity("Starbucks", "Los Angeles Count", "County"))
+
+    # test_activity()
+    test_aggregate_activity()
