@@ -5,6 +5,7 @@ BASE_DIR = os.path.dirname(THIS_DIR)
 sys.path.extend([THIS_DIR, BASE_DIR])
 
 import performance
+import re
 import utils
 import pandas as pd
 from fuzzywuzzy import fuzz
@@ -266,20 +267,6 @@ def deterimine_cities():
     pd.Series(list(set(cities))).to_csv('cities.csv')
 
 
-def determine_overlap():
-    locations = list(utils.DB_TERMINAL_PLACES.find({'name': {'$exists': True}, 'address': {'$exists': True}}, {'name': 1, 'address': 1}))
-    names = [place['name'] for place in locations]
-    addresses = [place['address'] for place in locations]
-    overlap = utils.DB_TERMINAL_PLACES.find({
-        'name': {'$nin': names},
-        'address': {'$nin': addresses}
-    }, {'name': 1, 'address': 1})
-    print(list(overlap)[:50])
-    # print(overlap)
-    # print(utils.DB_TERMINAL_PLACES.count_documents({}))
-    # print(utils.DB_STAGING_RESULTS.count_documents({}))
-
-
 def get_stage_locations():
 
     locations = utils.DB_COORDINATES.find({
@@ -333,11 +320,4 @@ if __name__ == "__main__":
     # view_locations({
     #     'address': {"$regex": "NY"}
     # })
-    view_coordinates({
-        'center': utils.to_geojson((33.98536, -118.22843)),
-        'zoom': 14,
-        '$or': [
-            {'stage': 2},
-            {'stage': 3}
-        ]
-    })
+    deterimine_cities()
