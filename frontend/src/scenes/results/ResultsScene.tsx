@@ -26,7 +26,9 @@ export default function ResultsScene() {
   let [
     submitSearch,
     { data: submitSearchData, loading: submitSearchLoading },
-  ] = useMutation<Search, SearchVariables>(SEARCH);
+  ] = useMutation<Search, SearchVariables>(SEARCH, {
+    onError: () => {},
+  });
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
 
   let onSubmit = (searchVariables: SearchVariables) => {
