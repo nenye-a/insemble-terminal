@@ -270,7 +270,7 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
     print("STAGE: Number of Results Inserted: {}".format(results_inserted))
 
     timestamp = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
-    print("Last Update: ".format(timestamp.ctime()))
+    print("Last Update: {}".format(timestamp.ctime()))
 
     utils.DB_LOG.update_one(log, {
         '$inc': {
