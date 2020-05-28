@@ -10,13 +10,13 @@ import {
   Dropdown,
   LoadingIndicator,
 } from '../core-ui';
+import { parsePlaceType, isSearchCombinationValid } from '../helpers';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { BACKGROUND_COLOR, MUTED_TEXT_COLOR } from '../constants/colors';
 import {
   ReviewTag,
   LocationTagInput,
   BusinessTagInput,
-  LocationTagType,
 } from '../generated/globalTypes';
 import { SearchVariables } from '../generated/Search';
 import {
@@ -68,6 +68,7 @@ export default function SearchFilterBar(props: Props) {
   let [selectedPlace, setSelectedPlace] = useState<LocationTagInput | null>(
     defaultLocationTag || null,
   );
+  let [errorMessage, setErrorMessage] = useState('');
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
     GetBusinessTag
   >(GET_BUSINESS_TAG);
@@ -78,72 +79,80 @@ export default function SearchFilterBar(props: Props) {
         <LoadingIndicator />
       ) : businessTagData ? (
         <Container>
-          <DataFilterContainer
-            disabled={disableAll || disableReviewTag}
-            onPress={() => {
-              setDataTypeFilterVisible(!dataTypeFilterVisible);
-            }}
-          >
-            {selectedDataType ? (
-              <Pill disabled={disableAll || disableReviewTag}>
-                {selectedDataType}
-              </Pill>
-            ) : (
-              <Text>Search for data</Text>
-            )}
-          </DataFilterContainer>
-          <SpacedText>of</SpacedText>
-          <Dropdown<SelectedBusiness | null>
-            selectedOption={selectedBusiness}
-            onOptionSelected={setSelectedBusiness}
-            options={businessTagData.businessTags}
-            placeholder="Any business/category"
-            optionExtractor={(item) => {
-              if (typeof item === 'string') {
-                return item;
-              }
-              return item?.params || '';
-            }}
-            disabled={disableAll}
-          />
-          <SpacedText>in</SpacedText>
-          <SearchLocationInput
-            placeholder="Any Location"
-            onPlaceSelected={(place) => {
-              if (place?.address) {
-                setSelectedPlace({
-                  params: place.address,
-                  type: 'ADDRESS' as LocationTagType,
-                });
-              } else {
-                setSelectedPlace(null);
-              }
-            }}
-            disabled={disableAll}
-            defaultValue={defaultLocationTag?.params}
-          />
-          <TouchableOpacity
-            disabled={disableAll}
-            onPress={() => {
-              // TODO: validate search input
-              onSearchPress &&
-                onSearchPress({
-                  reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
-                  businessTag: (typeof selectedBusiness === 'string'
-                    ? { type: 'BUSINESS', params: selectedBusiness }
-                    : undefined) as BusinessTagInput,
-                  businessTagId:
-                    selectedBusiness &&
-                    typeof selectedBusiness !== 'string' &&
-                    selectedBusiness?.id
-                      ? selectedBusiness.id
-                      : undefined,
-                  locationTag: selectedPlace ? selectedPlace : undefined,
-                });
-            }}
-          >
-            <SvgSearch />
-          </TouchableOpacity>
+          <SearchContainer>
+            <DataFilterContainer
+              disabled={disableAll || disableReviewTag}
+              onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
+            >
+              {selectedDataType ? (
+                <Pill disabled={disableAll || disableReviewTag}>
+                  {selectedDataType}
+                </Pill>
+              ) : (
+                <Text>Search for data</Text>
+              )}
+            </DataFilterContainer>
+            <SpacedText>of</SpacedText>
+            <Dropdown<SelectedBusiness | null>
+              selectedOption={selectedBusiness}
+              onOptionSelected={setSelectedBusiness}
+              options={businessTagData.businessTags}
+              placeholder="Any business/category"
+              optionExtractor={(item) => {
+                if (typeof item === 'string') {
+                  return item;
+                }
+                return item?.params || '';
+              }}
+              disabled={disableAll}
+            />
+            <SpacedText>in</SpacedText>
+            <SearchLocationInput
+              placeholder="Any Location"
+              onPlaceSelected={(place) => {
+                if (place?.address) {
+                  setSelectedPlace({
+                    params: place.address,
+                    type: parsePlaceType(place.placeType),
+                  });
+                } else {
+                  setSelectedPlace(null);
+                }
+              }}
+              disabled={disableAll}
+              defaultValue={defaultLocationTag?.params}
+            />
+            <TouchableOpacity
+              onPress={() => {
+                let isValid = isSearchCombinationValid(
+                  selectedDataType,
+                  selectedBusiness,
+                  selectedPlace,
+                );
+                if (isValid) {
+                  onSearchPress &&
+                    onSearchPress({
+                      reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                      businessTag: (typeof selectedBusiness === 'string'
+                        ? { type: 'BUSINESS', params: selectedBusiness }
+                        : undefined) as BusinessTagInput,
+                      businessTagId:
+                        selectedBusiness &&
+                        typeof selectedBusiness !== 'string' &&
+                        selectedBusiness?.id
+                          ? selectedBusiness.id
+                          : undefined,
+                      locationTag: selectedPlace ? selectedPlace : undefined,
+                    });
+                } else {
+                  setErrorMessage('Search combination is not valid');
+                }
+              }}
+            >
+              <SvgSearch />
+            </TouchableOpacity>
+          </SearchContainer>
+          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
         </Container>
       ) : null}
       {dataTypeFilterVisible && (
@@ -163,6 +172,10 @@ export default function SearchFilterBar(props: Props) {
 }
 
 const Container = styled(View)`
+  margin-left: 64px;
+`;
+
+const SearchContainer = styled(View)`
   flex-direction: row;
   align-items: center;
   width: 640px;
@@ -188,4 +201,8 @@ const SpacedText = styled(Text)`
   padding: 0 8px;
   color: ${MUTED_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
+`;
+
+const ErrorMessage = styled(Text)`
+  padding-top: 2px;
 `;

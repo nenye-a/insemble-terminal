@@ -7,7 +7,6 @@ import {
   HEADER_SHADOW_COLOR,
   DARK_TEXT_COLOR,
 } from '../constants/colors';
-import { NAVBAR_HEIGHT } from '../constants/theme';
 import { SearchVariables } from '../generated/Search';
 
 import InsembleLogo from './InsembleLogo';
@@ -56,10 +55,9 @@ const Container = styled(View)`
   flex-direction: row;
   align-items: center;
   width: 100vw;
-  height: ${NAVBAR_HEIGHT};
   background-color: ${WHITE};
   box-shadow: 0px 1px 1px 0px ${HEADER_SHADOW_COLOR};
-  padding: 0px 32px;
+  padding: 12px 32px;
   position: sticky;
   top: 0px;
   z-index: 99;
