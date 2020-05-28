@@ -114,30 +114,55 @@ def combine_parse_details(list_places):
     }
 
 
-def category_performance(category, location):
+def category_performance(category, location, scope):
 
-    retries, backoff = 0, 1
-    coordinates = None
-    while not coordinates or retries > 5:
-        try:
-            coordinates = utils.to_geojson(google.get_lat_lng(location))
-        except Exception:
-            retries += 1
-            print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
-            time.sleep(1 + backoff)
-            backoff += 1
+    if scope.lower() == 'address':
+        retries, backoff = 0, 1
+        coordinates = None
+        while not coordinates or retries > 5:
+            try:
+                coordinates = utils.to_geojson(google.get_lat_lng(location))
+            except Exception:
+                retries += 1
+                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
+                time.sleep(1 + backoff)
+                backoff += 1
 
-    matching_locations = list(utils.DB_TERMINAL_PLACES.find({
-        'location': {'$near': {'$geometry': coordinates,
-                               '$maxDistance': utils.miles_to_meters(0.5)}},
-        'type': utils.modify_word(category)
-    }))
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            'location': {'$near': {'$geometry': coordinates,
+                                   '$maxDistance': utils.miles_to_meters(0.5)}},
+            'type': utils.modify_word(category),
+            'google_details': {'$exists': True}
+        }))
+    elif scope.lower() == 'city':
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
+            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'google_details': {'$exists': True}
+        }))
+    elif scope.lower() == 'county':
+        region = utils.DB_REGIONS.find_one({
+            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'type': 'county'
+        })
+        if not region:
+            return None
+        matching_places = utils.DB_TERMINAL_PLACES.find({
+            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
+            'location': {'$geoWithin': {'$geometry': region['geometry']}},
+            'google_details': {'$exists': True}
+        })
 
-    if not matching_locations:
+    if not matching_places:
         return None
 
-    overall_details = combine_parse_details(matching_locations)
-    brand_dict = section_by_brand(matching_locations)
+    return categorical_data(matching_places, category)
+
+
+def categorical_data(matching_places, category):
+
+    overall_details = combine_parse_details(matching_places)
+    brand_dict = section_by_brand(matching_places)
     brand_details = [combine_parse_details(location_list)['overall'] for location_list in brand_dict.values()]
 
     overall_details['overall']['name'] = utils.modify_word(category)
@@ -251,9 +276,16 @@ if __name__ == "__main__":
 
     def test_category_performance():
         import pprint
-        performance = category_performance("Mexican Restaurant", "Los Angeles")
+        performance = category_performance("Mexican Restaurant", "371 E 2nd Street, LA", "address")
+        pprint.pprint(performance)
+
+    def test_category_performance_higher_scope():
+        import pprint
+        # performance = category_performance("Mexican Restaurant", "Los Angeles", "city")
+        performance = category_performance("Mexican Restaurant", "Los Angeles County", "county")
         pprint.pprint(performance)
 
     # test_performance()
     # test_aggregate_performance()
-    test_category_performance()
+    # test_category_performance()
+    test_category_performance_higher_scope()
