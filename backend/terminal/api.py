@@ -62,8 +62,8 @@ class PerformanceAPI(BasicAPI):
             dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS' <-supported | unsupported rightnow -> ['CITY'|'STATE']
         }
 
-        Response: {
-            performance: {
+        Response: 
+            {
                 createdAt: Date,
                 updatedAt: Date,
                 dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
@@ -77,7 +77,6 @@ class PerformanceAPI(BasicAPI):
                     }
                 ]
             }
-        }
 
         """
 
@@ -169,8 +168,8 @@ class NewsAPI(BasicAPI):
             }
         }
 
-        Response: {
-            news: {
+        Response:
+            {
                 createdAt: Date,
                 updatedAt: Date,
                 data: [
@@ -184,7 +183,6 @@ class NewsAPI(BasicAPI):
                     },
                 ]
             }
-        }
 
         """
 
@@ -216,40 +214,40 @@ class AcitivtyAPI(BasicAPI):
 
         Parameters: {
             location: {
-                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <- supported | unsupported => 'STATE'|'NATION'
                 params: string
             }
             business: {
-                businessType: 'BUSINESS' | 'CATEGORY'
+                businessType: 'BUSINESS' <- supported | -> unsupported ['CATEGORY']
                 params: string
             }
         }
+        # In future, we might add data_type and have a list of activities
 
-        Response: {
-            news: {
+        Response: 
+            {
                 createdAt: Date,
                 updatedAt: Date,
                 data: [
                     {
                         name: string,
                         location: string,
-                        activity: {
-                            4am: int,
-                            5am: int,
-                            6am: int,
-                            7am: int,
-                            8am: int,
+                        activity: {           - # 4AM, 5AM, 12AM - 3AM may not be in result
+                            4am?: number,
+                            5am?: number,
+                            6am: number,
+                            7am: number,
+                            8am: number,
                             ...
-                            11pm: int,
-                            12am: int,
-                            1am: int,
-                            2am: int,
-                            3am: int
+                            11pm: number,
+                            12am?: number,
+                            1am?: number,
+                            2am?: number,
+                            3am?: number
                         }
                     },
                 ]
             }
-        }
 
         """
 
@@ -257,10 +255,31 @@ class AcitivtyAPI(BasicAPI):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        location = params['location']['params']
-        business = params['business']['params']
+        location = params['location']
+        business = params['business']
 
         data = []
+        if business['businessType'] == 'BUSINESS':
+
+            # ADDRESS + BUSINESS
+            if location['locationType'] == 'ADDRESS':
+                row = activity.activity(business['params'], location['params'])
+                if row:
+                    data.append(row)
+
+            # CITY & COUNTY + BUSINESS
+            elif location['locationType'] in ['CITY', 'COUNTY']:
+                row = activity.aggregate_activity(
+                    business['params'], location['params'], location['locationType'])
+                if row:
+                    data.append(row)
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        elif business['businessType'] == 'CATEGORY':
+            error = "'CATEGORY' not supported for activity requests"
+            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
 
         now = dt.datetime.utcnow()
         return Response({
