@@ -2,7 +2,7 @@ import { queryField, FieldResolver, arg, stringArg } from 'nexus';
 import axios from 'axios';
 
 import { Root, Context } from 'serverTypes';
-import { PyPerformanceResponse } from 'dataTypes';
+import { PyPerformanceResponse, PyPerformanceData } from 'dataTypes';
 import { API_URI } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
@@ -12,7 +12,7 @@ let performanceTableResolver: FieldResolver<
   'performanceTable'
 > = async (
   _: Root,
-  { performanceType, businessTagId, locationTagId },
+  { performanceType, businessTagId, locationTagId, tableId },
   context: Context,
 ) => {
   let businessTag = businessTagId
@@ -29,16 +29,44 @@ let performanceTableResolver: FieldResolver<
         },
       })
     : undefined;
-  let performance = await context.prisma.performance.findMany({
-    where: {
-      type: performanceType,
-      businessTag: businessTag ? { id: businessTag.id } : undefined,
-      locationTag: locationTag ? { id: locationTag.id } : undefined,
-    },
-    include: {
-      data: true,
-    },
-  });
+  let performance;
+  if (tableId) {
+    let selectedPerformanceById = await context.prisma.performance.findOne({
+      where: { id: tableId },
+      include: {
+        locationTag: true,
+        businessTag: true,
+        comparationTags: {
+          include: {
+            locationTag: true,
+            businessTag: true,
+          },
+        },
+      },
+    });
+    if (!selectedPerformanceById) {
+      throw new Error('Table not found');
+    }
+    performance = [selectedPerformanceById];
+  } else {
+    performance = await context.prisma.performance.findMany({
+      where: {
+        type: performanceType,
+        businessTag: businessTag ? { id: businessTag.id } : null,
+        locationTag: locationTag ? { id: locationTag.id } : null,
+      },
+      include: {
+        locationTag: true,
+        businessTag: true,
+        comparationTags: {
+          include: {
+            locationTag: true,
+            businessTag: true,
+          },
+        },
+      },
+    });
+  }
 
   let selectedPerformanceTable;
   if (performance.length) {
@@ -50,17 +78,58 @@ let performanceTableResolver: FieldResolver<
           await axios.get(`${API_URI}/api/performance`, {
             params: {
               dataType: performanceType,
-              location: locationTag
-                ? { locationType: locationTag.type, params: locationTag.params }
+              location: selectedPerformanceTable.locationTag
+                ? {
+                    locationType: selectedPerformanceTable.locationTag.type,
+                    params: selectedPerformanceTable.locationTag.params,
+                  }
                 : undefined,
-              business: businessTag
-                ? { businessType: businessTag.type, params: businessTag.params }
+              business: selectedPerformanceTable.businessTag
+                ? {
+                    businessType: selectedPerformanceTable.businessTag.type,
+                    params: selectedPerformanceTable.businessTag.params,
+                  }
                 : undefined,
             },
             paramsSerializer: axiosParamsSerializer,
           })
         ).data;
         let performanceData = performanceUpdate.data.map(
+          ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
+            return {
+              name,
+              avgRating: avgRating ? `${avgRating}` : '0',
+              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
+              numLocation: numLocations,
+              numReview: avgReviews || 0,
+            };
+          },
+        );
+        let rawCompareData: Array<PyPerformanceData> = [];
+        for (let comparationTag of selectedPerformanceTable.comparationTags) {
+          let compareDataUpdate: PyPerformanceResponse = (
+            await axios.get(`${API_URI}/api/performance`, {
+              params: {
+                dataType: performanceType,
+                location: comparationTag.locationTag
+                  ? {
+                      locationType: comparationTag.locationTag.type,
+                      params: comparationTag.locationTag.params,
+                    }
+                  : undefined,
+                business: comparationTag.businessTag
+                  ? {
+                      businessType: comparationTag.businessTag.type,
+                      params: comparationTag.businessTag.params,
+                    }
+                  : undefined,
+              },
+              paramsSerializer: axiosParamsSerializer,
+            })
+          ).data;
+          rawCompareData = rawCompareData.concat(compareDataUpdate.data);
+        }
+        let compareData = rawCompareData.map(
           ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
             return {
               name,
@@ -78,10 +147,18 @@ let performanceTableResolver: FieldResolver<
             },
           },
         });
+        await context.prisma.comparePerformanceData.deleteMany({
+          where: {
+            performance: {
+              id: selectedPerformanceTable.id,
+            },
+          },
+        });
         selectedPerformanceTable = await context.prisma.performance.update({
           where: { id: selectedPerformanceTable.id },
           data: {
             data: { create: performanceData },
+            compareData: { create: compareData },
             updatedAt: new Date(),
           },
         });
@@ -142,6 +219,7 @@ let performanceTable = queryField('performanceTable', {
     performanceType: arg({ type: 'PerformanceTableType', required: true }),
     businessTagId: stringArg(),
     locationTagId: stringArg(),
+    tableId: stringArg(),
   },
   resolve: performanceTableResolver,
 });
