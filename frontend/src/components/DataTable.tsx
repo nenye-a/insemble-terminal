@@ -53,14 +53,15 @@ const Cell = styled(View)<CellProps>`
   ${({ width }) =>
     width &&
     css`
-      max-width: ${width} + 'px';
-      min-width: ${width} + 'px';
+      width: ${width}px;
+      max-width: ${width}px;
+      min-width: ${width}px;
     `}
   flex: 1;
   flex-direction: row;
   align-items: center;
   justify-content: ${({ align }) => CellAlign[align || 'left']};
-  padding: 0 24px;
+  padding: 0 18px;
   color: ${DEFAULT_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
   font-size: ${FONT_SIZE_NORMAL};
