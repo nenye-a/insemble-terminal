@@ -65,8 +65,6 @@ def import_LA():
 
 def add_city():
 
-    region = utils.DB_REGIONS.find_one({'name': {"$regex": "^Los.*"}, 'type': 'city-box'})
-
     while True:
 
         pipeline = [
@@ -96,19 +94,8 @@ def add_city():
         print('Batch_complete. Next Batch Now')
 
 
-def update_regions():
-
-    regions = utils.DB_REGIONS.find({'type': 'county'}, {'name': 1, '_id': 1})
-    for region in regions:
-        name_list = region['name'].split(' - ')
-        region['name'] = name_list[0] + ' County'
-        if len(name_list) > 1:
-            region['name'] = region['name'] + ' - ' + name_list[1]
-        utils.DB_REGIONS.update_one({'_id': region['_id']}, {'$set': region})
-
-
 if __name__ == "__main__":
     # migrate_terminal()
-    # add_city()
+    add_city()
     # import_LA()
-    update_regions()
+    # pass

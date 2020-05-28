@@ -5,6 +5,7 @@ BASE_DIR = os.path.dirname(THIS_DIR)
 sys.path.extend([THIS_DIR, BASE_DIR])
 
 # import pickle
+import utils
 import pandas as pd
 from fuzzywuzzy import process
 
@@ -49,9 +50,58 @@ def generate_comparison():
     pd.DataFrame(data).sort_values(by=['diff'], ascending=False).to_csv(THIS_DIR + '/categorydiff.csv')
 
 
-def get_without_categories():
+def update_all_categories():
 
-    pass
+    # Will not work until we have mongodb 4.2 installed on remote mongodb database
+
+    sorted_types = list(utils.DB_TERMINAL_PLACES.aggregate([
+        {'$match': {'google_details': {'$exists': True}}},
+        {'$addFields': {
+            'type': {
+                '$arrayElemAt': [
+                    {
+                        '$split': [
+                            '$google_details.type', ' in '
+                        ]
+                    }, 0
+                ]
+            }
+        }},
+        # {'$limit': 100},
+        # {'$out': "test_aggregation"}
+        {'$merge': "places"}
+    ]))
+    print(sorted_types)
+
+
+def update_categories():
+
+    region = utils.DB_REGIONS.find_one({'name': {"$regex": "^Los.*"}, 'type': 'city-box'})
+
+    while True:
+
+        pipeline = [
+            {'$match': {
+                'type': {'$exists': False},
+                'google_details': {'$exists': True},
+                'google_details.type': {'$ne': None},
+                'location': {'$geoWithin': {'$geometry': region['geometry']}}
+            }},
+            {'$sample': {'size': 2000}}
+        ]
+
+        locations = list(utils.DB_TERMINAL_PLACES.aggregate(pipeline))
+
+        count = 0
+        for location in locations:
+            my_type = utils.modify_word(location['google_details']['type'].split(" in ")[0])
+            location['type'] = my_type
+            utils.DB_TERMINAL_PLACES.update_one({'_id': location['_id']}, {'$set': {
+                'type': my_type
+            }})
+            count += 1
+            if count % 500 == 0:
+                print("{} updated in this batch.".format(count))
 
 
 if __name__ == "__main__":
@@ -61,5 +111,7 @@ if __name__ == "__main__":
     #     ascending=False
     # ).set_index('category').to_csv(THIS_DIR + '/sortedcategorydiff.csv')
 
-    print(sum(INSEMBLE.values()))
-    print(sum(TERMINAL.values()))
+    # print(sum(INSEMBLE.values()))
+    # print(sum(TERMINAL.values()))
+
+    update_categories()
