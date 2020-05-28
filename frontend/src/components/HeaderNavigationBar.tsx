@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
+import { useQuery, useLazyQuery } from '@apollo/react-hooks';
+import { useHistory } from 'react-router-dom';
 
 import { TouchableOpacity, View, Button } from '../core-ui';
 import {
@@ -8,6 +10,8 @@ import {
   DARK_TEXT_COLOR,
 } from '../constants/colors';
 import { SearchVariables } from '../generated/Search';
+import { GetUserProfile } from '../generated/GetUserProfile';
+import { GET_USER_PROFILE } from '../graphql/queries/server/profile';
 
 import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
@@ -20,7 +24,18 @@ type Props = {
 
 export default function HeaderNavigationBar(props: Props) {
   let { onSearchPress, showSearchBar = false } = props;
-  let loggedIn = false; // TODO: change when connecting to BE
+  let history = useHistory();
+  let [getProfile, { loading, data, refetch }] = useLazyQuery<GetUserProfile>(
+    GET_USER_PROFILE,
+    {
+      fetchPolicy: 'network-only',
+    },
+  );
+
+  useEffect(() => {
+    getProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Container>
@@ -32,14 +47,21 @@ export default function HeaderNavigationBar(props: Props) {
           <SearchFilterBar onSearchPress={onSearchPress} />
         </SearchContainer>
       )}
-      {loggedIn ? (
+      {loading ? null : data ? (
         <RowEnd flex>
           <TerminalButton
             mode="transparent"
             text="Terminals"
             textProps={{ style: { color: DARK_TEXT_COLOR } }}
+            onPress={() => {
+              history.push('/terminals');
+            }}
           />
-          <ProfileMenuDropdown name="Name" email="example@email.com" />
+          <ProfileMenuDropdown
+            name={data.userProfile.firstName}
+            email={data.userProfile.email}
+            refetchProfile={refetch}
+          />
         </RowEnd>
       ) : (
         <RowEnd flex>
