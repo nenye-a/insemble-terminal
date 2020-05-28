@@ -5,7 +5,7 @@ import { deleteComparisonResolver } from './deleteComparisonMutation';
 
 export let updateComparisonResolver: FieldResolver<
   'Mutation',
-  'udpateComparison'
+  'updateComparison'
 > = async (
   _,
   {
@@ -234,7 +234,7 @@ export let updateComparisonResolver: FieldResolver<
   };
 };
 
-export let updateComparation = mutationField('udpateComparison', {
+export let updateComparation = mutationField('updateComparison', {
   type: 'ComparisonMutation',
   args: {
     actionType: arg({ type: 'CompareActionType', required: true }),
