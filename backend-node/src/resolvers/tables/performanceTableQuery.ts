@@ -100,7 +100,7 @@ let performanceTableResolver: FieldResolver<
         let performanceData = performanceUpdate.data.map(
           ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
             return {
-              name,
+              name: name || '-',
               avgRating: avgRating ? `${avgRating}` : '0',
               totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
               numLocation: numLocations,
@@ -135,7 +135,7 @@ let performanceTableResolver: FieldResolver<
         let compareData = rawCompareData.map(
           ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
             return {
-              name,
+              name: name || '-',
               avgRating: avgRating ? `${avgRating}` : '0',
               totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
               numLocation: numLocations,
@@ -188,7 +188,7 @@ let performanceTableResolver: FieldResolver<
       let performanceData = performanceUpdate.data.map(
         ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
           return {
-            name,
+            name: name || '-',
             avgRating: avgRating ? `${avgRating}` : '0',
             totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
             numLocation: numLocations,
