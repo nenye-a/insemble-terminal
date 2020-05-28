@@ -287,3 +287,72 @@ class AcitivtyAPI(BasicAPI):
             'updatedAt': now,
             'data': data
         })
+
+
+class CoverageAPI(BasicAPI):
+
+    serializer_class = SearchSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        Retrieve the coverage data for a brand/category & location scope.
+
+        Parameters: {
+            location: {
+                locationType: 'CITY'|'COUNTY' <- supported | unsupported => 'STATE'|'NATION'|'ADDRESS'
+                params: string
+            }
+            business: {
+                businessType: 'BUSINESS' | 'CATEGORY'
+                params: string
+            }
+        }
+        # In future, we might add data_type and have a list of activities
+
+        Response: 
+            {
+                createdAt: Date,
+                updatedAt: Date,
+                data: {
+                    name: string,
+                    location: string,
+                    num_locations: int
+                    coverage: [
+                        {
+                            business_name: string,
+                            num_locations: string
+                            locations: [
+                                {
+                                    lat: float,
+                                    lng: float,
+                                    name: string,
+                                    address: string,
+                                    rating: string,
+                                    num_reviews: number
+                                }
+                                ... (many more locations)
+                            ]
+                        },
+                        ... (many more businesses)
+                    ]
+                },
+            }
+
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        location = params['location']
+        business = params['business']
+
+        data = []
+
+        now = dt.datetime.utcnow()
+        return Response({
+            'createdAt': now,
+            'updatedAt': now,
+            'data': data
+        })

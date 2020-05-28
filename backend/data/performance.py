@@ -60,6 +60,8 @@ def aggregate_performance(name, location, scope):
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
         })
+    else:
+        return None
 
     if not matching_places:
         return None

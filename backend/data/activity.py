@@ -1,5 +1,3 @@
-import time
-import google
 import utils
 import performance
 
@@ -67,6 +65,8 @@ def aggregate_activity(name, location, scope):
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details.activity': {'$ne': None}
         })
+    else:
+        return None
 
     if not matching_places:
         return None
