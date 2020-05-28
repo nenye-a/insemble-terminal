@@ -37,18 +37,71 @@ def performance(name, address):
 
     place_details = get_details(name, address)
     if place_details:
-        sales_index = activity_score(place_details['activity'])
-
-        return {
-            'name': place_details['name'],
-            'address': place_details['address'],
-            'salesVolumeIndex': sales_index if sales_index != 0 else None,
-            'avgRating': place_details['rating'],
-            'avgReviews': place_details['num_reviews'],
-            'numLocations': None
-        }
+        return parse_details(place_details)
     else:
         return None
+
+
+def city_performance(name, city):
+
+    # look for places in our database using regexes + search to match tot items.
+    matching_places = list(utils.DB_TERMINAL_PLACES.find({
+        '$text': {'$search': name},
+        'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+        'city': {"$regex": r"^" + utils.modify_word(city[:5]), "$options": "i"},
+        'google_details': {'$exists': True}
+    }))
+
+    if not matching_places:
+        return None
+
+    location_data = []
+    index_sum, index_count = 0, 0
+    rating_sum, rating_count = 0, 0
+    num_rating_sum, num_rating_count = 0, 0
+    corrected_name = None
+    for place in matching_places:
+        details = parse_details(place['google_details'])
+        corrected_name = details['name'] if not corrected_name else None
+        details['name'] = details.pop('address')
+        location_data.append(details)
+        if details['salesVolumeIndex']:
+            index_count += 1
+            index_sum += details['salesVolumeIndex']
+        if details['avgRating']:
+            rating_count += 1
+            rating_sum += details['avgRating']
+        if details['avgReviews']:
+            num_rating_count += 1
+            num_rating_sum += details['avgReviews']
+
+    if corrected_name is None:
+        corrected_name = name
+
+    return {
+        'overall': [{
+            'name': corrected_name,
+            'salesVolumeIndex': round(index_sum / index_count) if index_count != 0 else None,
+            'avgRating': round(rating_sum / rating_count) if rating_count != 0 else None,
+            'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
+            'numLocations': len(location_data)
+        }],
+        'data': location_data
+    }
+
+
+def parse_details(details):
+
+    sales_index = activity_score(details['activity'])
+
+    return {
+        'name': details['name'],
+        'address': details['address'],
+        'salesVolumeIndex': sales_index if sales_index != 0 else None,
+        'avgRating': details['rating'],
+        'avgReviews': details['num_reviews'],
+        'numLocations': None
+    }
 
 
 def get_details(name, address):
@@ -121,4 +174,10 @@ if __name__ == "__main__":
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
         print(performance(name, address))
 
-    test_performance()
+    def test_city_performance():
+        performance_data = city_performance("Starbucks", "Los Angeles")
+        print(performance_data)
+        print(len(performance_data['data']))
+
+    # test_performance()
+    test_city_performance()
