@@ -1,14 +1,24 @@
 import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
 
 import { Context } from 'serverTypes';
+import { deleteComparisonResolver } from './deleteComparisonMutation';
 
-export let addComparisonResolver: FieldResolver<
+export let updateComparisonResolver: FieldResolver<
   'Mutation',
-  'addComparison'
+  'udpateComparison'
 > = async (
   _,
-  { reviewTag, businessTag, locationTag, businessTagId, tableId },
+  {
+    reviewTag,
+    businessTag,
+    locationTag,
+    businessTagId,
+    tableId,
+    actionType,
+    comparationTagId,
+  },
   context: Context,
+  info,
 ) => {
   let selectedBusinessTag;
   let selectedLocationTag;
@@ -88,6 +98,17 @@ export let addComparisonResolver: FieldResolver<
 
   switch (reviewTag) {
     case 'PERFORMANCE':
+      if (actionType === 'DELETE') {
+        if (!comparationTagId) {
+          throw new Error('Please selece comparationTag you want to delete');
+        }
+        return await deleteComparisonResolver(
+          _,
+          { reviewTag, comparationTagId, tableId },
+          context,
+          info,
+        );
+      }
       let table = await context.prisma.performance.findOne({
         where: { id: tableId },
         select: {
@@ -213,14 +234,16 @@ export let addComparisonResolver: FieldResolver<
   };
 };
 
-export let addComparation = mutationField('addComparison', {
+export let updateComparation = mutationField('udpateComparison', {
   type: 'ComparisonMutation',
   args: {
+    actionType: arg({ type: 'CompareActionType', required: true }),
+    comparationTagId: stringArg(),
     reviewTag: arg({ type: 'ReviewTag', required: true }),
     businessTag: arg({ type: 'BusinessTagInput' }),
     businessTagId: stringArg(),
     locationTag: arg({ type: 'LocationTagInput' }),
     tableId: stringArg({ required: true }),
   },
-  resolve: addComparisonResolver,
+  resolve: updateComparisonResolver,
 });
