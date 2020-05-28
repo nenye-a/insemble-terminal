@@ -6,11 +6,12 @@ from .serializers import SearchSerializer, PerformanceSerializer
 import datetime as dt
 import performance
 import news
+import activity
 
 
 '''
 
-terminal Django API.
+Terminal Django API.
 
 '''
 
@@ -51,14 +52,14 @@ class PerformanceAPI(BasicAPI):
 
         Parameters: {
             location: {
-                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <-supported | unsupported rightnow ->['STATE'|'NATION']
                 params: string
             }
             business: {
                 businessType: 'BUSINESS' | 'CATEGORY'
                 params: string
             }
-            dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
+            dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS' <-supported | unsupported rightnow -> ['CITY'|'STATE']
         }
 
         Response: {
@@ -159,7 +160,7 @@ class NewsAPI(BasicAPI):
 
         Parameters: {
             location: {
-                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <-supported | unsupported rightnow ->['STATE'|'NATION']
                 params: string
             }
             business: {
@@ -195,6 +196,71 @@ class NewsAPI(BasicAPI):
         business = params['business']['params']
 
         data = news.news(business, location)
+
+        now = dt.datetime.utcnow()
+        return Response({
+            'createdAt': now,
+            'updatedAt': now,
+            'data': data
+        })
+
+
+class AcitivtyAPI(BasicAPI):
+
+    serializer_class = SearchSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        Retrieve the activity data for a brand/category & location scope.
+
+        Parameters: {
+            location: {
+                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                params: string
+            }
+            business: {
+                businessType: 'BUSINESS' | 'CATEGORY'
+                params: string
+            }
+        }
+
+        Response: {
+            news: {
+                createdAt: Date,
+                updatedAt: Date,
+                data: [
+                    {
+                        name: string,
+                        location: string,
+                        activity: {
+                            4am: int,
+                            5am: int,
+                            6am: int,
+                            7am: int,
+                            8am: int,
+                            ...
+                            11pm: int,
+                            12am: int,
+                            1am: int,
+                            2am: int,
+                            3am: int
+                        }
+                    },
+                ]
+            }
+        }
+
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        location = params['location']['params']
+        business = params['business']['params']
+
+        data = []
 
         now = dt.datetime.utcnow()
         return Response({
