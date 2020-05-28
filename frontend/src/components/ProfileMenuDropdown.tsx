@@ -1,5 +1,7 @@
 import React, { ComponentProps, useState } from 'react';
 import styled from 'styled-components';
+import { useHistory } from 'react-router-dom';
+import { ApolloQueryResult } from 'apollo-client';
 
 import { TouchableOpacity, Text, View, ClickAway } from '../core-ui';
 import {
@@ -14,35 +16,42 @@ import {
   FONT_WEIGHT_MEDIUM,
   FONT_SIZE_SEMI_MEDIUM,
 } from '../constants/theme';
+import { localStorage } from '../helpers';
+import { GetUserProfile } from '../generated/GetUserProfile';
 import arrowIcon from '../assets/images/arrow-down.svg';
 
 type Props = {
   name: string;
   email: string;
+  refetchProfile: () => Promise<ApolloQueryResult<GetUserProfile>>;
 };
 
-const MENUS = [
-  {
-    label: 'Manage Account',
-    onPress: () => {},
-  },
-  {
-    label: 'Give Feedback',
-    onPress: () => {},
-  },
-  {
-    label: 'Help',
-    onPress: () => {},
-  },
-  {
-    label: 'Sign Out',
-    onPress: () => {},
-  },
-];
 export default function ProfileMenuDropdown(props: Props) {
-  let { name, email } = props;
+  let { name, email, refetchProfile } = props;
   let [menuOpen, setMenuOpen] = useState(false);
-
+  let history = useHistory();
+  const MENUS = [
+    {
+      label: 'Manage Account',
+      onPress: () => {},
+    },
+    {
+      label: 'Give Feedback',
+      onPress: () => {},
+    },
+    {
+      label: 'Help',
+      onPress: () => {},
+    },
+    {
+      label: 'Sign Out',
+      onPress: () => {
+        localStorage.removeToken();
+        history.push('/login');
+        refetchProfile();
+      },
+    },
+  ];
   return (
     <ClickAway
       onClickAway={() => {
@@ -73,10 +82,10 @@ export default function ProfileMenuDropdown(props: Props) {
                 {email}
               </Text>
             </Header>
-            {MENUS.map(({ label }, index) => {
+            {MENUS.map(({ label, onPress }, index) => {
               let lastIndex = index === MENUS.length - 1;
               return (
-                <OptionContainer key={index} onPress={() => {}}>
+                <OptionContainer key={index} onPress={onPress}>
                   <Text
                     fontWeight={FONT_WEIGHT_MEDIUM}
                     color={lastIndex ? THEME_COLOR : DARK_TEXT_COLOR}

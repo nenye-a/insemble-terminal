@@ -52,7 +52,7 @@ export default function Button(props: Props) {
       type="button"
       disabled={loading || disabled}
       mode={mode}
-      onStopPropagation={stopPropagation}
+      stopPropagation={stopPropagation}
       size={size}
       shape={shape}
       {...otherProps}

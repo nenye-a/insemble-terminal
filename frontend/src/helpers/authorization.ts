@@ -5,8 +5,8 @@ let credentials = {
 };
 
 export let isAuthorized = {
-  redirectPath: '/',
-  isAuthorized: !!credentials.token,
+  redirectPath: '/login',
+  isAuthorized: !!localStorage.getToken(),
 };
 
 export function getCredentials() {
