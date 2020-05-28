@@ -49,12 +49,8 @@ export let deleteComparisonResolver: FieldResolver<
             every: { id: { not: selectedComparationId } },
           },
           type: table.type,
-          businessTag: table.businessTag
-            ? { id: table.businessTag.id }
-            : undefined,
-          locationTag: table.locationTag
-            ? { id: table.locationTag.id }
-            : undefined,
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
         },
         select: {
           id: true,

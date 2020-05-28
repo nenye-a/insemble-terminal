@@ -8,5 +8,7 @@ export let Performance = objectType({
     t.model.businessTag();
     t.model.locationTag();
     t.model.data();
+    t.model.comparationTags();
+    t.model.compareData();
   },
 });
