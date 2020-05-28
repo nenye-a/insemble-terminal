@@ -13,7 +13,7 @@ import random
 import scrape_utils
 
 from functools import partial
-from billiard import exceptions as poolexceptions
+import billiard.exceptions as poolexceptions
 from billiard.pool import Pool
 
 CRAWLERA_CERT = THIS_DIR + '/crawlera-ca.crt'
