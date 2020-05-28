@@ -33,3 +33,31 @@ export const ADD_COMPARISON = gql`
     }
   }
 `;
+
+export const DELETE_COMPARISON = gql`
+  mutation DeleteComparison(
+    $reviewTag: ReviewTag!
+    $comparationTagId: String!
+    $tableId: String!
+  ) {
+    deleteComparison(
+      reviewTag: $reviewTag
+      comparationTagId: $comparationTagId
+      tableId: $tableId
+    ) {
+      comparationTags {
+        id
+        locationTag {
+          params
+          type
+        }
+        businessTag {
+          params
+          type
+        }
+      }
+      reviewTag
+      tableId
+    }
+  }
+`;
