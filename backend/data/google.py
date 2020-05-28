@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from decouple import config
 
 from scrape.scraper import GenericScraper
-from parsers import google_detail_parser
+from parsers import google_detail_parser, google_news_parser
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 HEADERS = {"referer": "https://www.google.com/"}
@@ -72,7 +72,17 @@ def get_many_google_details(places, projection=None):
     return detailer.many_google_details(places, projection=projection)
 
 
+def get_news(query):
+    news_scraper = GoogleNewsScraper('NEWS SCRAPER')
+    return news_scraper.get_news(query)
+
+
+def get_many_news(queries):
+    news_scraper = GoogleNewsScraper('NEWS SCRAPER')
+    return news_scraper.get_many_news(queries)
+
 # Classes
+
 
 class GoogleNearby(GenericScraper):
 
@@ -385,6 +395,58 @@ class GoogleDetails(GenericScraper):
         return result
 
 
+class GoogleNewsScraper(GenericScraper):
+
+    BASE_URL = "https://news.google.com/search?q={}"
+
+    @staticmethod
+    def build_request(query):
+
+        query = query.replace(' ', '+')
+        url = GoogleNewsScraper.BASE_URL.format(query)
+        return url
+
+    @staticmethod
+    def default_parser(response):
+        if response.status_code != 200:
+            return None
+        return google_news_parser(response)
+
+    def response_parse(self, response):
+        return self.default_parser(response)
+
+    def get_news(self, query):
+
+        url = self.build_request(query)
+        try:
+            result = self.request(
+                url,
+                headers=HEADERS,
+                quality_proxy=True,
+                timeout=5
+            )
+            return result
+        except Exception as e:
+            print("Error has occured in GeoCode: {} - request_url: {}".format(e, url))
+            return None
+
+    def get_many_news(self, queries):
+        queries = [{
+            'url': self.build_request(query),
+            'meta': query
+        } for query in queries]
+        results = self.async_request(
+            queries,
+            headers=HEADERS,
+            quality_proxy=True,
+            timeout=5
+        )
+        news = []
+        for result in results:
+            result['data'] and news.extend(result['data'])
+        return news
+
+
 def query_region_random(region, search_terms, num_results):
     # using a region (city, state, etc), this queries the region for the specified search terms at random
     # returning a set of establishments with their addresses as a string
@@ -509,6 +571,24 @@ if __name__ == "__main__":
         print(details)
         print("{}\nGot the many details in {} seconds.".format(len(details), goog_time - goog_start))
 
+    def get_news_test():
+        news_query = "commercial real estate news"
+        news = get_news(news_query)
+        print(news)
+
+    def get_many_news_test():
+        news_queries = [
+            "commercial real estate news",
+            "real estate news",
+            "awesome news",
+            "hi news"
+        ]
+        my_queries = get_many_news(news_queries)
+        print(my_queries)
+        print(len(my_queries))
+
+    # get_news_test()
+    get_many_news_test()
     # get_google_activity_test()
     # get_many_lat_lng_test()
     # get_lat_lng_test()

@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 import django_js_reverse.views
 
 from rest_framework import routers
-from .api import BasicAPI, PerformanceAPI
+from .api import BasicAPI, PerformanceAPI, NewsAPI
 
 router = routers.DefaultRouter()
 
@@ -19,5 +19,6 @@ urlpatterns = [
 
     # NOTE: Test Route, please remove in future
     path(r'api/test', BasicAPI.as_view(), name="test"),
-    path(r'api/performance', PerformanceAPI.as_view(), name='performance')
+    path(r'api/performance', PerformanceAPI.as_view(), name='performance'),
+    path(r'api/news', NewsAPI.as_view(), name='news'),
 ]

@@ -47,7 +47,7 @@ class GenericScraper(object):
 
     def get_header(self, header=None):
         my_header = {
-            'User-Agent': random.choice(self.user_agents)
+            # 'User-Agent': random.choice(self.user_agents)
         }
         if header:
             my_header.update(my_header)
@@ -199,7 +199,7 @@ class GenericScraper(object):
         if parser_string == 'headers':
             return lambda res: res.headers if res.status_code == 200 else None
 
-    def async_request(self, queries, pool_limit=20, timeout=30, quality_proxy=False, us_only=False, headers=None,
+    def async_request(self, queries, pool_limit=20, timeout=10, quality_proxy=False, us_only=False, headers=None,
                       proxies=None, res_parser=None, meta_function=None, remove_nones=True):
         """
         Provided a list of queries, will multi-process the quries. Queries

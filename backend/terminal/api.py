@@ -2,8 +2,9 @@
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
-from .serializers import PerformanceSerializer
+from .serializers import SearchSerializer, PerformanceSerializer
 import data.performance as performance
+import data.news as news
 import datetime as dt
 
 '''
@@ -111,11 +112,68 @@ class PerformanceAPI(BasicAPI):
         else:
             return Response({}, status=status.HTTP_400_BAD_REQUEST)
 
+        now = dt.datetime.utcnow()
         result = {
-            'createAt': dt.datetime.utcnow(),
-            'updatedAt': dt.datetime.utcnow(),
+            'createAt': now,
+            'updatedAt': now,
             'dataType': data_type,
             'data': data
         }
 
         return Response(result, status=status.HTTP_200_OK)
+
+
+class NewsAPI(BasicAPI):
+
+    serializer_class = SearchSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        Retrieve the news data for a brand/category & location scope.
+
+        Parameters: {
+            location: {
+                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                params: string
+            }
+            business: {
+                businessType: 'BUSINESS' | 'CATEGORY'
+                params: string
+            }
+        }
+
+        Response: {
+            news: {
+                createdAt: Date,
+                updatedAt: Date,
+                data: [
+                    {
+                        title: string,
+                        link: url_string,
+                        published: Date,
+                        source: string,
+                        description: string,
+                        relevance: float
+                    },
+                ]
+            }
+        }
+
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        location = params['location']['params']
+        business = params['business']['params']
+
+        data = news.news(business, location)
+
+        now = dt.datetime.utcnow()
+        return Response({
+            'createdAt': now,
+            'updatedAt': now,
+            'data': data
+        })
