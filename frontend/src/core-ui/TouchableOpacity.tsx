@@ -7,11 +7,11 @@ type PressHandler = () => void;
 
 type Props = Omit<ViewProps, 'onClick'> & {
   onPress?: PressHandler;
-  onStopPropagation?: boolean;
+  stopPropagation?: boolean;
 };
 
 export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
-  let { onPress, href, onStopPropagation, disabled, ...otherProps } = props;
+  let { onPress, href, stopPropagation, disabled, ...otherProps } = props;
   let isLink = href != null;
   let isLocalLink = isLink && isLocalURL(href);
   return (
@@ -23,7 +23,7 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
       ref={forwardedRef}
       {...otherProps}
       onClick={(event: MouseEvent) => {
-        if (onStopPropagation) {
+        if (stopPropagation) {
           event.stopPropagation();
         }
         if (isLocalLink && !(event.metaKey || event.ctrlKey)) {
