@@ -4,10 +4,10 @@
 // This file was automatically generated and should not be edited.
 
 // ====================================================
-// GraphQL mutation operation: UserLogin
+// GraphQL query operation: GetUserProfile
 // ====================================================
 
-export interface UserLogin_login_user {
+export interface GetUserProfile_userProfile {
   __typename: "User";
   id: string;
   email: string;
@@ -15,19 +15,12 @@ export interface UserLogin_login_user {
   lastName: string;
   avatar: string | null;
   company: string;
+  description: string | null;
+  title: string | null;
+  address: string | null;
+  pendingEmail: boolean;
 }
 
-export interface UserLogin_login {
-  __typename: "Auth";
-  token: string;
-  user: UserLogin_login_user;
-}
-
-export interface UserLogin {
-  login: UserLogin_login;
-}
-
-export interface UserLoginVariables {
-  email: string;
-  password: string;
+export interface GetUserProfile {
+  userProfile: GetUserProfile_userProfile;
 }
