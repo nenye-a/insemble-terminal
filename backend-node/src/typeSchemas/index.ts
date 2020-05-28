@@ -14,3 +14,5 @@ export * from './ComparisonMutation';
 
 export * from './PerformanceTable';
 export * from './PerformanceData';
+export * from './ComparePerformanceData';
+export * from './ComaparationTag';
