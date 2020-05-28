@@ -120,6 +120,8 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
         coords = [dict(run_identifier, **stage_dict, **{'query_point': utils.to_geojson(query_point)})
                   for query_point in region_points]
         try:
+            print("Region Points Type", type(region_points))
+            print("Coord Type", type(coords))
             log_identifier['1st_stage_points'] = len(coords)
             log_identifier['created_at'] = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
             print(log_identifier)
