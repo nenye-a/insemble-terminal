@@ -7,6 +7,7 @@ import datetime as dt
 import performance
 import news
 import activity
+import data.coverage as coverage
 
 
 '''
@@ -348,7 +349,36 @@ class CoverageAPI(BasicAPI):
         location = params['location']
         business = params['business']
 
-        data = []
+        data = {}
+        if location['locationType'] == 'ADDRESS':
+            error = "'ADDRESS' not supported for coverage requests"
+            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
+        if business['businessType'] == 'BUSINESS':
+
+            # CITY & COUNTY + BUSINESS
+            if location['locationType'] in ['CITY', 'COUNTY']:
+                coverage_data = coverage.coverage(
+                    business['params'], location['params'], location['locationType'])
+                if coverage_data:
+                    data = coverage_data
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+        elif business['businessType'] == 'CATEGORY':
+
+            # CITY & COUNTY + CATEGORY
+            if location['locationType'] in ['CITY', 'COUNTY']:
+                coverage_data = coverage.category_coverage(
+                    business['params'], location['params'], location['locationType'])
+                if coverage_data:
+                    data = coverage_data
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
         now = dt.datetime.utcnow()
         return Response({
