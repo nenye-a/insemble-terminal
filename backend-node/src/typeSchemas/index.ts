@@ -15,4 +15,7 @@ export * from './ComparisonMutation';
 export * from './PerformanceTable';
 export * from './PerformanceData';
 export * from './ComparePerformanceData';
-export * from './ComaparationTag';
+
+export * from './NewsTable';
+export * from './NewsData';
+export * from './CompareNewsData';
