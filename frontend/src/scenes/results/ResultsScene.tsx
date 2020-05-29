@@ -21,6 +21,7 @@ import PerformanceByLocationResult from './PerformanceByLocationResult';
 import OverallPerformanceResult from './OverallPerformanceResult';
 import PerformanceByBrandResult from './PerformanceByBrandResult';
 import PerformanceByCategoryResult from './PerformanceByCategoryResult';
+import LatestNewsResult from './LatestNewsResult';
 
 export default function ResultsScene() {
   let [
@@ -61,37 +62,25 @@ export default function ResultsScene() {
             locationTag={submitSearchData.search.locationTag}
           />
           <Container>
-            {resultQueries.map(({ reviewTag, type }) => {
+            {resultQueries.map(({ reviewTag, type }, idx) => {
+              let key = `${reviewTag}-${type}-${idx}`;
+              let props = {
+                key,
+                businessTagId: submitSearchData?.search.businessTag?.id,
+                locationTagId: submitSearchData?.search.locationTag?.id,
+              };
               if (reviewTag === ReviewTag.PERFORMANCE) {
                 if (type === PerformanceTableType.OVERALL) {
-                  return (
-                    <OverallPerformanceResult
-                      businessTagId={submitSearchData?.search.businessTag?.id}
-                      locationTagId={submitSearchData?.search.locationTag?.id}
-                    />
-                  );
+                  return <OverallPerformanceResult {...props} />;
                 } else if (type === PerformanceTableType.ADDRESS) {
-                  return (
-                    <PerformanceByLocationResult
-                      businessTagId={submitSearchData?.search.businessTag?.id}
-                      locationTagId={submitSearchData?.search.locationTag?.id}
-                    />
-                  );
+                  return <PerformanceByLocationResult {...props} />;
                 } else if (type === PerformanceTableType.BRAND) {
-                  return (
-                    <PerformanceByBrandResult
-                      businessTagId={submitSearchData?.search.businessTag?.id}
-                      locationTagId={submitSearchData?.search.locationTag?.id}
-                    />
-                  );
+                  return <PerformanceByBrandResult {...props} />;
                 } else if (type === PerformanceTableType.CATEGORY) {
-                  return (
-                    <PerformanceByCategoryResult
-                      businessTagId={submitSearchData?.search.businessTag?.id}
-                      locationTagId={submitSearchData?.search.locationTag?.id}
-                    />
-                  );
+                  return <PerformanceByCategoryResult {...props} />;
                 }
+              } else if (reviewTag === ReviewTag.NEWS) {
+                return <LatestNewsResult {...props} />;
               }
               return null;
             })}
