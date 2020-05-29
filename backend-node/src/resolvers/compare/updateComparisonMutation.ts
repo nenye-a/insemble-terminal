@@ -2,6 +2,7 @@ import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
 
 import { Context } from 'serverTypes';
 import { deleteComparisonResolver } from './deleteComparisonMutation';
+import { todayMinOneH } from '../../helpers/todayMinOneH';
 
 export let updateComparisonResolver: FieldResolver<
   'Mutation',
@@ -95,7 +96,11 @@ export let updateComparisonResolver: FieldResolver<
   } else {
     comparationTag = comparationTags[0];
   }
-
+  let table;
+  let selectedComparationIds;
+  let selectedComparationId = comparationTag.id;
+  let newComparationIds: Array<string> = [];
+  let tables;
   switch (reviewTag) {
     case 'PERFORMANCE':
       if (actionType === 'DELETE') {
@@ -109,7 +114,7 @@ export let updateComparisonResolver: FieldResolver<
           info,
         );
       }
-      let table = await context.prisma.performance.findOne({
+      table = await context.prisma.performance.findOne({
         where: { id: tableId },
         select: {
           id: true,
@@ -127,7 +132,6 @@ export let updateComparisonResolver: FieldResolver<
         },
       });
 
-      let selectedComparationId = comparationTag.id;
       if (!table) {
         throw new Error('Selected table not found.');
       }
@@ -173,12 +177,9 @@ export let updateComparisonResolver: FieldResolver<
       ) {
         throw new Error('Cannot add with same comparation.');
       }
-      let selectedComparationIds = table.comparationTags.map(({ id }) => id);
-      let newComparationIds = [
-        ...selectedComparationIds,
-        selectedComparationId,
-      ];
-      let tables = await context.prisma.performance.findMany({
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = [...selectedComparationIds, selectedComparationId];
+      tables = await context.prisma.performance.findMany({
         where: {
           comparationTags: {
             some: { id: selectedComparationId },
@@ -232,12 +233,161 @@ export let updateComparisonResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
-            updatedAt: new Date(new Date().getTime() - 60 * 60000),
+            updatedAt: todayMinOneH(),
           },
           select: {
             id: true,
             data: true,
             type: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+    case 'NEWS':
+      if (actionType === 'DELETE') {
+        if (!comparationTagId) {
+          throw new Error('Please selece comparationTag you want to delete');
+        }
+        return await deleteComparisonResolver(
+          _,
+          { reviewTag, comparationTagId, tableId },
+          context,
+          info,
+        );
+      }
+      table = await context.prisma.news.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      if (actionType === 'DELETE_ALL') {
+        let news = await context.prisma.news.findMany({
+          where: {
+            businessTag: table.businessTag
+              ? { id: table.businessTag.id }
+              : null,
+            locationTag: table.locationTag
+              ? { id: table.locationTag.id }
+              : null,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        news = news.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
+        );
+        return {
+          reviewTag,
+          tableId: news[0].id,
+          comparationTags: news[0].comparationTags,
+        };
+      }
+      if (
+        table.businessTag?.id === comparationTag.businessTag?.id &&
+        table.locationTag?.id === comparationTag.locationTag?.id
+      ) {
+        throw new Error('Cannot compare the same tag');
+      }
+      if (
+        table.comparationTags.some(({ id }) => selectedComparationId === id)
+      ) {
+        throw new Error('Cannot add with same comparation.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = [...selectedComparationIds, selectedComparationId];
+      tables = await context.prisma.news.findMany({
+        where: {
+          comparationTags: {
+            some: { id: selectedComparationId },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.news.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
             businessTag: true,
             locationTag: true,
             comparationTags: {

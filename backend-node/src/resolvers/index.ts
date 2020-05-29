@@ -9,3 +9,4 @@ export * from './compare/deleteComparisonMutation';
 export * from './tags/businessTagsQuery';
 
 export * from './tables/performanceTableQuery';
+export * from './tables/newsTableQuery';
