@@ -12,8 +12,10 @@ export const SEMI_PURPLE = '#6749AA';
 export const PURPLE = '#674CA7';
 export const DARKER_PURPLE = '#674EA7';
 
+const SOFT_PINK = '#AA496E';
 const RED = '#FF0000';
 const BLUE = '#4082FF';
+const GREEN = '#11B24F';
 
 export const THEME_COLOR = PURPLE;
 
@@ -54,3 +56,13 @@ export const GREY_DIVIDER = LIGHT_GRAY;
 
 export const EMPTY_COMPONENT_BACKGROUND = SLIGHT_GRAY;
 export const ERROR_COMPONENT_BACKGROUND = SLIGHT_GRAY;
+
+export const CHART_COLORS = [
+  THEME_COLOR,
+  SOFT_PINK,
+  BLUE,
+  GREEN,
+  RED,
+  LIGHT_PURPLE,
+  GRAY,
+];
