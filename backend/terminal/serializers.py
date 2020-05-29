@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .constants import LOCATION_TYPES, BUSINESS_TYPES, DATA_TYPES
+from .constants import LOCATION_TYPES, BUSINESS_TYPES, PERFORMANCE_DATA_TYPES, OWNERSHIP_DATA_TYPES
 
 '''
 
@@ -87,6 +87,29 @@ class SearchSerializer(serializers.Serializer):
         return attrs
 
 
+class OptionalSearchSerializer(serializers.Serializer):
+
+    """
+    Same as Search Serializer, but allows you to have location and or business,
+    as long as they are serialized correctly.
+    """
+
+    location = serializers.JSONField(required=False)
+    business = serializers.JSONField(required=False)
+
+    def validate(self, attrs):
+        if 'location' in attrs:
+            locationserializer = LocationSerializer(data=attrs['location'])
+            locationserializer.is_valid(raise_exception=True)
+            attrs['location'] = locationserializer.validated_data
+        if 'business' in attrs:
+            businessserializer = BusinessSerializer(data=attrs['business'])
+            businessserializer.is_valid(raise_exception=True)
+            attrs['business'] = businessserializer.validated_data
+
+        return attrs
+
+
 class PerformanceSerializer(SearchSerializer):
 
     dataType = serializers.CharField(max_length=8)
@@ -94,10 +117,32 @@ class PerformanceSerializer(SearchSerializer):
     def validate(self, attrs):
         attrs['dataType'] = attrs['dataType'].upper()
 
-        if attrs['dataType'] not in DATA_TYPES:
+        if attrs['dataType'] not in PERFORMANCE_DATA_TYPES:
             error_message = {}
             error_message['status_detail'] = [
-                'Please provide a valid data type. Valid data types are: ' + str(DATA_TYPES)
+                'Please provide a valid data type. Valid data types are: ' + str(PERFORMANCE_DATA_TYPES)
+            ]
+            raise serializers.ValidationError(error_message)
+
+        return super().validate(attrs)
+
+
+class OwnershipSerializer(OptionalSearchSerializer):
+
+    dataType = serializers.CharField(max_length=8)
+
+    def validate(self, attrs):
+
+        if not ('location' in attrs or 'business' in attrs):
+            raise serializers.ValidationError({'status_details': [
+                'Please provide either a location or a business.']})
+
+        attrs['dataType'] = attrs['dataType'].upper()
+
+        if attrs['dataType'] not in OWNERSHIP_DATA_TYPES:
+            error_message = {}
+            error_message['status_detail'] = [
+                'Please provide a valid data type. Valid data types are: ' + str(OWNERSHIP_DATA_TYPES)
             ]
             raise serializers.ValidationError(error_message)
 

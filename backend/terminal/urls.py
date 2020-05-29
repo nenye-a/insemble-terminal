@@ -5,7 +5,8 @@ from django.contrib import admin
 import django_js_reverse.views
 
 from rest_framework import routers
-from .api import BasicAPI, PerformanceAPI, NewsAPI, AcitivtyAPI, CoverageAPI
+from .api import (BasicAPI, PerformanceAPI, NewsAPI, AcitivtyAPI, CoverageAPI,
+                  OwnershipAPI)
 
 router = routers.DefaultRouter()
 
@@ -22,4 +23,5 @@ urlpatterns = [
     path(r'api/news', NewsAPI.as_view(), name='news'),
     path(r'api/activity', AcitivtyAPI.as_view(), name='activity'),
     path(r'api/coverage', CoverageAPI.as_view(), name='coverage'),
+    path(r'api/ownership', OwnershipAPI.as_view(), name='ownership')
 ]
