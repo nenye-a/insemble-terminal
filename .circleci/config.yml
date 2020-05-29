@@ -67,8 +67,6 @@ jobs:
   #     - run:
   #         command: (cd backend; coverage run manage.py test)
   #     - run:
-  #         command: (cd frontend; yarn run test)
-  #     - run:
   #         command: |
   #           mkdir -p test-reports/
   #           coverage xml -o test-reports/results.xml
@@ -83,7 +81,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-
       - restore_cache:
           keys:
             - v1-dependencies-{{ checksum "frontend/yarn.lock" }}
