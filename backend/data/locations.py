@@ -593,6 +593,7 @@ def google_detailer(batch_size=300, wait=True, additional_query=None):
     Google detail collector.
     """
 
+    # TODO: ADD THE CITY & TYPE DETAILS TO THE DOCUMENT WHILE DETAILING
     query = {'google_details': {'$exists': False}, 'address': {'$exists': True}}
     additional_query and query.update(additional_query)
 

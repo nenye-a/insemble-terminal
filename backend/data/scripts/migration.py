@@ -6,6 +6,9 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import utils
 
+TEST = "terminal.test"
+TEST_DB = utils.SYSTEM_MONGO.get_collection(TEST)
+
 
 def migrate_terminal():
 
@@ -94,8 +97,37 @@ def add_city():
         print('Batch_complete. Next Batch Now')
 
 
+def add_city_fast():
+
+    print(utils.DB_TERMINAL_PLACES.update_many({
+        'city': {'$exists': False}
+    }, [
+        {'$set': {
+            'city': {'$regexFind': {
+                'input': '$address',
+                'regex': r'([^,]+), ([A-Z]{2}) (\d{5})'
+            }}
+        }},
+        {'$set': {
+            'city': {
+                '$substr': [
+                    {
+                        '$arrayElemAt': ["$city.captures", 0]
+                    }, 1, -1
+                ]
+            }
+        }}
+    ]).modified_count)
+
+
+def test_db():
+    h = list(utils.DB_TERMINAL_PLACES.find({'city': {'$exists': False}, 'type': {'$exists': False}}).limit(10000))
+    TEST_DB.insert_many(h)
+
+
 if __name__ == "__main__":
     # migrate_terminal()
-    add_city()
+    # add_city()
     # import_LA()
-    # pass
+    add_city_fast()
+    pass
