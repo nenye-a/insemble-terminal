@@ -590,7 +590,7 @@ if __name__ == "__main__":
     # get_news_test()
     get_many_news_test()
     # get_google_activity_test()
-    # get_many_lat_lng_test()
+    get_many_lat_lng_test()
     # get_lat_lng_test()
     # get_nearby_test()
     # get_many_nearby_test()
