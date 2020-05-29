@@ -18,6 +18,7 @@ def google_detail_parser(response):
 
         return: {
             name: "Spitz - Little Tokyo"
+            website: 'https://spitzrestaurant.com/spitz-little-tokyo-los-angeles/'
             num_stars: 4.4
             num_reviews: 662
             price: "$$"
@@ -51,6 +52,14 @@ def google_detail_parser(response):
         name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
     except Exception:
         name = None
+
+    WEBSITE_LOCATOR_RX = r'<div class="QqG1Sd"><[\w\-\s\"\=]+href="[\'"]?([^\'" >]+)"'
+    WEBSITE_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    WEBSITE_RX = r'"[\'"]?([^\'" >]+)"'
+    try:
+        website = re.search(WEBSITE_RX, re.search(WEBSITE_NARROW_RX, re.search(WEBSITE_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+    except Exception:
+        website = None
 
     RATING_LOCATOR_RX = r'class="Aq14fc"[\w\-\s\"\=]+>\d+\.\d+<\/span>'
     RATING_RX = r'\d+\.\d+'
@@ -175,6 +184,7 @@ def google_detail_parser(response):
     store = {
         "url": response.url,
         "name": name,
+        "website": website,
         "rating": rating,
         "num_reviews": num_reviews,
         "price": price,
