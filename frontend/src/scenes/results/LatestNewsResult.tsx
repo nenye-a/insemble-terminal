@@ -5,6 +5,11 @@ import { useQuery } from '@apollo/react-hooks';
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
 import { ReviewTag } from '../../generated/globalTypes';
+import {
+  GetNewsTable,
+  GetNewsTableVariables,
+} from '../../generated/GetNewsTable';
+import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
 import NewsTable from './NewsTable';
@@ -17,17 +22,16 @@ type Props = {
 export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId } = props;
   let { data, loading, error, refetch } = useQuery<
-    GetPerformanceTable,
-    GetPerformanceTableVariables
-  >(GET_PERFORMANCE_TABLE_DATA, {
+    GetNewsTable,
+    GetNewsTableVariables
+  >(GET_NEWS_TABLE_DATA, {
     variables: {
-      performanceType: PerformanceTableType.OVERALL,
       businessTagId,
       locationTagId,
     },
   });
-  let noData =
-    !data?.performanceTable.data || data.performanceTable.data.length === 0;
+
+  let noData = !data?.newsTable.data || data.newsTable.data.length === 0;
 
   return (
     <Container>
@@ -35,16 +39,13 @@ export default function LatestNewsResult(props: Props) {
         title="Latest News"
         noData={noData}
         reviewTag={ReviewTag.NEWS}
-        tableId={data?.performanceTable.id || ''}
+        tableId={data?.newsTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
-            performanceType: PerformanceTableType.OVERALL,
-            businessTagId,
-            locationTagId,
             tableId: newTableId,
           });
         }}
-        comparisonTags={data?.performanceTable.comparationTags}
+        comparisonTags={data?.newsTable.comparationTags}
       />
       {loading ? (
         <LoadingIndicator />
@@ -54,8 +55,8 @@ export default function LatestNewsResult(props: Props) {
         <EmptyDataComponent text="News not available at this scope. Widen scope of search to see latest news." />
       ) : (
         <NewsTable
-          data={data?.performanceTable.data || []}
-          compareData={data?.performanceTable.compareData}
+          data={data?.newsTable.data || []}
+          compareData={data?.newsTable.compareData}
         />
       )}
     </Container>

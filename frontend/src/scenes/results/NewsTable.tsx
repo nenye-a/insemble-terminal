@@ -1,11 +1,15 @@
 import React from 'react';
 
 import { DataTable } from '../../components';
+import {
+  GetNewsTable_newsTable_data as NewsData,
+  GetNewsTable_newsTable_compareData as NewsCompareData,
+} from '../../generated/GetNewsTable';
 import { TABLE_PURPLE_BACKGROUND } from '../../constants/colors';
 
 type Props = {
-  data: Array<any>; // change to news data
-  compareData?: Array<any>; // change to news data
+  data: Array<NewsData>;
+  compareData?: Array<NewsCompareData>;
 };
 
 export default function NewsTable(props: Props) {
@@ -19,25 +23,33 @@ export default function NewsTable(props: Props) {
       </DataTable.HeaderRow>
       {compareData &&
         compareData.map((row, index) => {
-          let { name = '', source = '', postDate = '' } = row;
+          let { title = '', link = '', source = '', published } = row;
           return (
             <DataTable.Row
               key={'compare-news' + index}
               style={{ backgroundColor: TABLE_PURPLE_BACKGROUND }}
+              onPress={() => {
+                window.open(link, '_blank');
+              }}
             >
-              <DataTable.Cell width={500}>{name}</DataTable.Cell>
+              <DataTable.Cell width={500}>{title}</DataTable.Cell>
               <DataTable.Cell>{source}</DataTable.Cell>
-              <DataTable.Cell align="right">{postDate}</DataTable.Cell>
+              <DataTable.Cell align="right">{published}</DataTable.Cell>
             </DataTable.Row>
           );
         })}
       {data.map((row, index) => {
-        let { name = '', source = '', postDate = '' } = row;
+        let { title = '', link = '', source = '', published } = row;
         return (
-          <DataTable.Row key={index}>
-            <DataTable.Cell width={500}>{name}</DataTable.Cell>
+          <DataTable.Row
+            key={index}
+            onPress={() => {
+              window.open(link, '_blank');
+            }}
+          >
+            <DataTable.Cell width={500}>{title}</DataTable.Cell>
             <DataTable.Cell>{source}</DataTable.Cell>
-            <DataTable.Cell align="right">{postDate}</DataTable.Cell>
+            <DataTable.Cell align="right">{published}</DataTable.Cell>
           </DataTable.Row>
         );
       })}

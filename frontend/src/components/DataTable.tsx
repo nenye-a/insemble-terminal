@@ -1,20 +1,22 @@
 import React, { ReactNode, ComponentProps } from 'react';
 import styled, { css } from 'styled-components';
 
-import { View, Text } from '../core-ui';
+import { View, Text, TouchableOpacity } from '../core-ui';
 import {
   WHITE,
   TABLE_HEADER_BACKGROUND,
   TABLE_BORDER_COLOR,
   DEFAULT_TEXT_COLOR,
+  SHADOW_COLOR,
 } from '../constants/colors';
 import { FONT_SIZE_NORMAL, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 
 type Props = {
   children?: ReactNode;
 };
-type RowProps = {
+type RowProps = ViewProps & {
   height?: string;
+  onPress?: () => void;
 };
 
 type CellProps = ComponentProps<typeof View> & {
@@ -36,6 +38,17 @@ function HeaderCell({ children, ...otherProps }: HeaderCellProps) {
       <HeaderCellText>{children}</HeaderCellText>
     </Cell>
   );
+}
+
+function Row({ height, onPress, children }: RowProps) {
+  if (onPress) {
+    return (
+      <TouchableRow onPress={onPress} height={height}>
+        {children}
+      </TouchableRow>
+    );
+  }
+  return <DefaultRow height={height}>{children}</DefaultRow>;
 }
 
 let CellAlign = {
@@ -68,11 +81,10 @@ const Cell = styled(View)<CellProps>`
   font-family: 'Avenir';
 `;
 
-const Row = styled(View)<RowProps>`
+let rowStyle = css`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  height: ${(props) => (props.height ? props.height : '40px')};
   border-bottom-width: 1px;
   border-color: ${TABLE_BORDER_COLOR};
   &:last-of-type {
@@ -80,7 +92,20 @@ const Row = styled(View)<RowProps>`
   }
 `;
 
-const HeaderRow = styled(Row)`
+const DefaultRow = styled(View)<RowProps>`
+  ${rowStyle};
+  height: ${(props) => (props.height ? props.height : '40px')};
+`;
+
+const TouchableRow = styled(TouchableOpacity)<RowProps>`
+  ${rowStyle};
+  height: ${(props) => (props.height ? props.height : '40px')};
+  &:hover {
+    box-shadow: ${SHADOW_COLOR};
+  }
+`;
+
+const HeaderRow = styled(DefaultRow)`
   background-color: ${TABLE_HEADER_BACKGROUND};
   height: 28px;
 `;

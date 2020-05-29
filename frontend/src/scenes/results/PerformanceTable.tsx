@@ -25,11 +25,17 @@ export default function PerformanceTable(props: Props) {
     <DataTable>
       <DataTable.HeaderRow>
         <DataTable.HeaderCell width={260}>{headerTitle}</DataTable.HeaderCell>
-        <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
-        <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
-        <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
+        <DataTable.HeaderCell width={180} align="right">
+          Sales volume index ▲
+        </DataTable.HeaderCell>
+        <DataTable.HeaderCell align="right">Avg rating</DataTable.HeaderCell>
+        <DataTable.HeaderCell align="right">
+          Avg # of reviews
+        </DataTable.HeaderCell>
         {showNumLocation && (
-          <DataTable.HeaderCell># Locations</DataTable.HeaderCell>
+          <DataTable.HeaderCell width={120} align="right">
+            # Locations
+          </DataTable.HeaderCell>
         )}
       </DataTable.HeaderRow>
       {compareData &&
@@ -47,11 +53,15 @@ export default function PerformanceTable(props: Props) {
               style={{ backgroundColor: TABLE_PURPLE_BACKGROUND }}
             >
               <DataTable.Cell width={260}>{name}</DataTable.Cell>
-              <DataTable.Cell align="right">{totalSales}</DataTable.Cell>
+              <DataTable.Cell width={180} align="right">
+                {totalSales}
+              </DataTable.Cell>
               <DataTable.Cell align="right">{avgRating}</DataTable.Cell>
               <DataTable.Cell align="right">{numReview}</DataTable.Cell>
               {showNumLocation && (
-                <DataTable.Cell align="right">{numLocation}</DataTable.Cell>
+                <DataTable.Cell width={120} align="right">
+                  {numLocation}
+                </DataTable.Cell>
               )}
             </DataTable.Row>
           );
@@ -67,11 +77,15 @@ export default function PerformanceTable(props: Props) {
         return (
           <DataTable.Row key={index}>
             <DataTable.Cell width={260}>{name}</DataTable.Cell>
-            <DataTable.Cell align="right">{totalSales}</DataTable.Cell>
+            <DataTable.Cell width={180} align="right">
+              {totalSales}
+            </DataTable.Cell>
             <DataTable.Cell align="right">{avgRating}</DataTable.Cell>
             <DataTable.Cell align="right">{numReview}</DataTable.Cell>
             {showNumLocation && (
-              <DataTable.Cell align="right">{numLocation}</DataTable.Cell>
+              <DataTable.Cell width={120} align="right">
+                {numLocation}
+              </DataTable.Cell>
             )}
           </DataTable.Row>
         );
