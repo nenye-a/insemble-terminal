@@ -480,7 +480,7 @@ def google_news_parser(response):
 def remove_old_news(news_list, date=None):
     cleaned_list = []
     if not date:
-        date = dt.datetime.utcnow() - dt.timedelta(weeks=2)
+        date = dt.datetime.utcnow() - dt.timedelta(weeks=10)
 
     for news in news_list:
         published_date = news['published'].astimezone(pytz.utc).replace(tzinfo=None)
