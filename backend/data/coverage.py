@@ -81,7 +81,7 @@ def category_coverage(category, location, scope):
 
 
 def categorical_data(list_places):
-    brand_dict = performance.section_by_brand(list_places)
+    brand_dict = performance.section_by_key(list_places, 'name')
     coverage_dict = {k: extract_coverage(v) for k, v in brand_dict.items()}
     coverage = [{
         'busines_name': brand,

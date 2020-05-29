@@ -72,13 +72,15 @@ def get_many_google_details(places, projection=None):
     return detailer.many_google_details(places, projection=projection)
 
 
-def get_news(query):
+def get_news(query, num_retries=None):
     news_scraper = GoogleNewsScraper('NEWS SCRAPER')
+    num_retries and news_scraper.set_retries(max_retries=num_retries)
     return news_scraper.get_news(query)
 
 
-def get_many_news(queries):
+def get_many_news(queries, num_retries=None):
     news_scraper = GoogleNewsScraper('NEWS SCRAPER')
+    num_retries and news_scraper.set_retries(max_retries=num_retries)
     return news_scraper.get_many_news(queries)
 
 # Classes
@@ -135,7 +137,8 @@ class GoogleNearby(GenericScraper):
         coord_dict = {}
         for pair in unparsed_section:
             try:
-                coord_dict[re.search(REGEX_ADDRESS, pair).group().replace(AMPERSAND, "&")] = ast.literal_eval(re.search(REGEX_LATLNG_4, pair).group())
+                coord_dict[re.search(REGEX_ADDRESS, pair).group().replace(AMPERSAND, "&")
+                           ] = ast.literal_eval(re.search(REGEX_LATLNG_4, pair).group())
             except AttributeError:
                 continue
 

@@ -2,7 +2,8 @@
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
-from .serializers import SearchSerializer, PerformanceSerializer, OwnershipSerializer
+from .serializers import (SearchSerializer, OptionalSearchSerializer, PerformanceSerializer,
+                          OwnershipSerializer)
 import datetime as dt
 import performance
 import news
@@ -85,12 +86,36 @@ class PerformanceAPI(BasicAPI):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        location = params['location']
-        business = params['business']
+        location = params['location'] if 'location' in params else None
+        business = params['business'] if 'business' in params else None
         data_type = params['dataType']
 
+        if location is None:
+            error = "National scope is not supported for performance requests."
+            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
         data = []
-        if business['businessType'] == 'BUSINESS':
+
+        if business is None:
+
+            # NO BUSINESS & LOCATION
+            if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                raw_data = performance.category_performance(
+                    None, location['params'], location['locationType'])
+                if raw_data:
+                    if data_type == 'CATEGORY':
+                        data.extend(raw_data['by_category'])
+                    elif data_type == 'BRAND':
+                        data.extend(raw_data['by_brand'])
+                    else:
+                        error = "{data_type} not supported for request Location Only requests.".format(
+                            data_type=data_type
+                        )
+                        return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+        elif business['businessType'] == 'BUSINESS':
 
             # ADDRESS + BUSINESS
             if location['locationType'] == 'ADDRESS':
@@ -151,7 +176,7 @@ class PerformanceAPI(BasicAPI):
 
 class NewsAPI(BasicAPI):
 
-    serializer_class = SearchSerializer
+    serializer_class = OptionalSearchSerializer
 
     def get(self, request, *args, **kwargs):
         """
@@ -191,8 +216,8 @@ class NewsAPI(BasicAPI):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        location = params['location']['params']
-        business = params['business']['params']
+        location = params['location']['params'] if 'location' in params else None
+        business = params['business']['params'] if 'business' in params else None
 
         data = news.news(business, location)
 

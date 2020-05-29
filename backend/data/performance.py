@@ -73,7 +73,54 @@ def aggregate_performance(name, location, scope):
     return data
 
 
-def combine_parse_details(list_places):
+def category_performance(category, location, scope):
+    exists_dict = {'$exists': True}
+    data_name = category if category else location
+
+    if scope.lower() == 'address':
+        retries, backoff = 0, 1
+        coordinates = None
+        while not coordinates or retries > 5:
+            try:
+                coordinates = utils.to_geojson(google.get_lat_lng(location))
+            except Exception:
+                retries += 1
+                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
+                time.sleep(1 + backoff)
+                backoff += 1
+
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            'location': {'$near': {'$geometry': coordinates,
+                                   '$maxDistance': utils.miles_to_meters(0.5)}},
+            'type': utils.modify_word(category) if category else exists_dict,
+            'google_details': {'$exists': True}
+        }))
+    elif scope.lower() == 'city':
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"} if category else exists_dict,
+            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'google_details': {'$exists': True}
+        }))
+    elif scope.lower() == 'county':
+        region = utils.DB_REGIONS.find_one({
+            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'type': 'county'
+        })
+        if not region:
+            return None
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"} if category else exists_dict,
+            'location': {'$geoWithin': {'$geometry': region['geometry']}},
+            'google_details': {'$exists': True}
+        }))
+
+    if not matching_places:
+        return None
+
+    return categorical_data(matching_places, data_name)
+
+
+def combine_parse_details(list_places, forced_name=None, default_name=None):
     """
     Provided un-parsed places details, will generate combined report.
     """
@@ -98,9 +145,12 @@ def combine_parse_details(list_places):
             num_rating_count += 1
             num_rating_sum += details['avgReviews']
 
+    if default_name and corrected_name is None:
+        corrected_name = default_name
+
     return {
         'overall': {
-            'name': corrected_name,
+            'name': corrected_name if not forced_name else forced_name,
             'salesVolumeIndex': round(index_sum / index_count) if index_count != 0 else None,
             'avgRating': round(rating_sum / rating_count) if rating_count != 0 else None,
             'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
@@ -110,74 +160,34 @@ def combine_parse_details(list_places):
     }
 
 
-def category_performance(category, location, scope):
-
-    if scope.lower() == 'address':
-        retries, backoff = 0, 1
-        coordinates = None
-        while not coordinates or retries > 5:
-            try:
-                coordinates = utils.to_geojson(google.get_lat_lng(location))
-            except Exception:
-                retries += 1
-                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
-                time.sleep(1 + backoff)
-                backoff += 1
-
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'location': {'$near': {'$geometry': coordinates,
-                                   '$maxDistance': utils.miles_to_meters(0.5)}},
-            'type': utils.modify_word(category),
-            'google_details': {'$exists': True}
-        }))
-    elif scope.lower() == 'city':
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
-            'google_details': {'$exists': True}
-        }))
-    elif scope.lower() == 'county':
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.modify_word(location)},
-            'type': 'county'
-        })
-        if not region:
-            return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details': {'$exists': True}
-        }))
-
-    if not matching_places:
-        return None
-
-    return categorical_data(matching_places, category)
-
-
-def categorical_data(matching_places, category):
+def categorical_data(matching_places, data_name):
 
     overall_details = combine_parse_details(matching_places)
-    brand_dict = section_by_brand(matching_places)
-    brand_details = [combine_parse_details(location_list)['overall'] for location_list in brand_dict.values()]
+    brand_dict = section_by_key(matching_places, 'name')
+    brand_details = [combine_parse_details(location_list, default_name=brand)['overall']
+                     for brand, location_list in brand_dict.items()]
+    category_dict = section_by_key(matching_places, 'type')
+    category_details = [combine_parse_details(location_list, forced_name=category)['overall']
+                        for category, location_list in category_dict.items()]
 
-    overall_details['overall']['name'] = utils.modify_word(category)
+    overall_details['overall']['name'] = utils.modify_word(data_name)
 
     return {
         'overall': overall_details['overall'],
         'by_location': overall_details['data'],
-        'by_brand': brand_details
+        'by_brand': brand_details,
+        'by_category': category_details
     }
 
 
-def section_by_brand(list_locations):
+def section_by_key(list_locations, key):
     """
     Given a list of locations, will section them off by brand.
     """
 
     my_dict = {}
     for location in list_locations:
-        my_dict[location['name']] = my_dict.get(location['name'], []) + [location]
+        my_dict[location[key]] = my_dict.get(location[key], []) + [location]
     return my_dict
 
 
@@ -272,16 +282,18 @@ if __name__ == "__main__":
 
     def test_category_performance():
         import pprint
-        performance = category_performance("Mexican Restaurant", "371 E 2nd Street, LA", "address")
+        # performance = category_performance("Mexican Restaurant", "371 E 2nd Street, LA", "address")
+        performance = category_performance(None, "371 E 2nd Street, LA", "address")
         pprint.pprint(performance)
 
     def test_category_performance_higher_scope():
         import pprint
-        # performance = category_performance("Mexican Restaurant", "Los Angeles", "city")
+        performance = category_performance("Mexican Restaurant", "Los Angeles", "city")
         performance = category_performance("Mexican Restaurant", "Los Angeles County", "county")
-        pprint.pprint(performance['by_brand'])
+        # performance = category_performance(None, "Los Angeles", "County")
+        print(performance['by_category'])
 
     # test_performance()
     # test_aggregate_performance()
     # test_category_performance()
-    test_category_performance_higher_scope()
+    # test_category_performance_higher_scope()

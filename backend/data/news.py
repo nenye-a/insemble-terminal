@@ -44,13 +44,15 @@ NEWS_TERMS = ["retail news", "commercial real estate news", "closings", "opening
 def news(business=None, location=None):
 
     if business and location:
-        news = google.get_many_news([business + " " + location, business])
+        news = google.get_many_news([business + " " + location, business], num_retries=2)
     elif business:
         news = google.get_news(business)
     elif location:
         news_search_terms = [" ".join([location, news_term]) for news_term in
                              NEWS_TERMS] if location else NEWS_TERMS.copy()
-        news = google.get_many_news(news_search_terms)
+        news = google.get_many_news(news_search_terms, num_retries=1)
+    else:
+        news = google.get_many_news(NEWS_TERMS, num_retries=1)
 
     news_with_relevance = add_news_relevance(news, business, location)
     relevant_news = most_relevant(news_with_relevance)
