@@ -1,5 +1,5 @@
-export default function getPublishedDate(date: string) {
-  let dateNow = new Date(Date.now());
+export default function getPublishedDate(date: string, now = Date.now()) {
+  let dateNow = new Date(now);
   let dateParam = new Date(date);
   let difference = Number(dateNow) - Number(dateParam);
 
