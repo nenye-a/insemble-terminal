@@ -126,9 +126,41 @@ export let updateComparisonResolver: FieldResolver<
           },
         },
       });
+
       let selectedComparationId = comparationTag.id;
       if (!table) {
         throw new Error('Selected table not found.');
+      }
+      if (actionType === 'DELETE_ALL') {
+        let performance = await context.prisma.performance.findMany({
+          where: {
+            type: table.type,
+            businessTag: table.businessTag
+              ? { id: table.businessTag.id }
+              : null,
+            locationTag: table.locationTag
+              ? { id: table.locationTag.id }
+              : null,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        performance = performance.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
+        );
+        return {
+          reviewTag,
+          tableId: performance[0].id,
+          comparationTags: performance[0].comparationTags,
+        };
       }
       if (
         table.businessTag?.id === comparationTag.businessTag?.id &&
