@@ -86,12 +86,36 @@ class PerformanceAPI(BasicAPI):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        location = params['location']
-        business = params['business']
+        location = params['location'] if 'location' in params else None
+        business = params['business'] if 'business' in params else None
         data_type = params['dataType']
 
+        if location is None:
+            error = "National scope is not supported for performance requests."
+            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
         data = []
-        if business['businessType'] == 'BUSINESS':
+
+        if business is None:
+
+            # NO BUSINESS & LOCATION
+            if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                raw_data = performance.category_performance(
+                    None, location['params'], location['locationType'])
+                if raw_data:
+                    if data_type == 'CATEGORY':
+                        data.extend(raw_data['by_category'])
+                    elif data_type == 'BRAND':
+                        data.extend(raw_data['by_brand'])
+                    else:
+                        error = "{data_type} not supported for request Location Only requests.".format(
+                            data_type=data_type
+                        )
+                        return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+        elif business['businessType'] == 'BUSINESS':
 
             # ADDRESS + BUSINESS
             if location['locationType'] == 'ADDRESS':
