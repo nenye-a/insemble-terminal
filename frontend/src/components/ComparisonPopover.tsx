@@ -39,10 +39,11 @@ type Props = {
 export default function ComparisonPopover(props: Props) {
   let {
     reviewTag,
-    tableId,
+    tableId: tableIdProp,
     onTableIdChange,
     activeComparison: activeComparisonProp = [],
   } = props;
+  let [tableId, setTableId] = useState('');
   let [activeComparison, setActiveComparison] = useState<Array<ComparationTag>>(
     activeComparisonProp || [],
   );
@@ -94,11 +95,18 @@ export default function ComparisonPopover(props: Props) {
       let activeComparisonList = updateComparisonData.updateComparison.comparationTags.map(
         mapFn,
       );
-
+      setTableId(updateComparisonData.updateComparison.tableId);
       setActiveComparison(activeComparisonList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateComparisonData]);
+
+  useEffect(() => {
+    if (!tableId) {
+      setTableId(tableIdProp);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tableIdProp]);
 
   return (
     <Container>
@@ -155,7 +163,6 @@ export default function ComparisonPopover(props: Props) {
             defaultReviewTag={capitalize(reviewTag)}
             onSearchPress={(searchTags) => {
               let { businessTag, businessTagId, locationTag } = searchTags;
-              // TODO: check if search valid, call be, move to active comparison arr
               updateComparison({
                 variables: {
                   reviewTag,
