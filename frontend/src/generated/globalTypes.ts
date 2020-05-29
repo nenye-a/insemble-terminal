@@ -20,6 +20,7 @@ export enum BusinessType {
 export enum CompareActionType {
   ADD = "ADD",
   DELETE = "DELETE",
+  DELETE_ALL = "DELETE_ALL",
 }
 
 export enum LocationTagType {
