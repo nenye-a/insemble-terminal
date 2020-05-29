@@ -593,7 +593,6 @@ def google_detailer(batch_size=300, wait=True, additional_query=None):
     Google detail collector.
     """
 
-    # TODO: ADD THE CITY & TYPE DETAILS TO THE DOCUMENT WHILE DETAILING
     query = {'google_details': {'$exists': False}, 'address': {'$exists': True}}
     additional_query and query.update(additional_query)
 
@@ -620,9 +619,13 @@ def google_detailer(batch_size=300, wait=True, additional_query=None):
         google_details = google.get_many_google_details(places)
 
         for details in google_details:
+            city = utils.extract_city(details['meta']['address'])
+            place_type = utils.modify_word(details['data']['type'].split(" in ")[0])
             utils.DB_TERMINAL_PLACES.update_one({
                 '_id': details['meta']['_id']
             }, {'$set': {
+                'type': place_type,
+                'city': city,
                 'google_details': details['data']
             }})
             print('GOOGLE_COLLECTOR: Updated {} at {} ({}) with google details.'.format(
@@ -859,7 +862,7 @@ if __name__ == "__main__":
 
     # collect_random_expansion("Los Angeles", "restaurants", batch_size=100)
     # collect_random_expansion("Los Angeles", "stores", batch_size=100)
-    collect_minesweeper("Los Angeles", "restaurants", batch_size=80)
+    # collect_minesweeper("Los Angeles", "restaurants", batch_size=80)
     # get_locations_region_test() # warning--running on starbucks over a region as large as los angeles takes a long time
     # collect_locations_test()
     # divide_region_test()
@@ -868,6 +871,6 @@ if __name__ == "__main__":
     #     '$text': {'$search': 'Clips'},
     #     'address': {"$regex": ".*FL"}
     # })
-    # google_detailer(batch_size=300)
+    google_detailer(batch_size=10)
     # location_detailer(batch_size=300)
     # opentable_detailer(batch_size=10)
