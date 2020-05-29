@@ -43,12 +43,15 @@ NEWS_TERMS = ["retail news", "commercial real estate news", "closings", "opening
 
 def news(business=None, location=None):
 
-    news_search_terms = [" ".join([location, news_term]) for news_term in
-                         NEWS_TERMS] if location else NEWS_TERMS.copy()
-    business and news_search_terms.append(business)
-    business and location and news_search_terms.append(" ".join([business, location]))
+    if business and location:
+        news = google.get_many_news([business + " " + location, business])
+    elif business:
+        news = google.get_news(business)
+    elif location:
+        news_search_terms = [" ".join([location, news_term]) for news_term in
+                             NEWS_TERMS] if location else NEWS_TERMS.copy()
+        news = google.get_many_news(news_search_terms)
 
-    news = google.get_many_news(news_search_terms)
     news_with_relevance = add_news_relevance(news, business, location)
     relevant_news = most_relevant(news_with_relevance)
     return relevant_news
@@ -104,9 +107,6 @@ def most_relevant(*news_lists):
     existing_titles = set()
     most_relevant_news = []
     for news_list in news_lists:
-        print(news_list[:10])
-        print(len(news_list))
-        print("=====")
         for news in news_list:
             if news['title'] not in existing_titles:
                 most_relevant_news.append(news)
@@ -117,4 +117,5 @@ def most_relevant(*news_lists):
 
 if __name__ == "__main__":
     # print(news(business='Cheesecake Factory'))
+    # print(news(business='Cheesecake Factory', location='Santa Monica'))
     print(news(location='Santa Monica'))
