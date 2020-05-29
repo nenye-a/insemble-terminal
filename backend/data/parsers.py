@@ -437,35 +437,62 @@ def opentable_parser_all(response):
 
     return stores
 
-
 def google_news_parser(response):
 
-    soup = BeautifulSoup(response.content, "html.parser")
+    stew = response.text
+    NEWS_LOCATOR_RX = r'<article(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#])+|(\s\>)+|(\>)+|(\>\w)+|(\w\>)+|(<a )+|(<\/a>)+|(<h4)+|(<\/h4)+|(<h3)+|(<\/h3)+|(<div)+|(<\/div)+|(<span)+|(<\/span)+|(<time)+|(<\/time)+|(<menu)+|(<\/menu)+|(\/[\w\;\/])+)+'
+
+    TITLE_LOCATOR_RX = r'DY5T1d(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#])|(>))+'
+    TITLE_NARROW_RX = r'\>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    LINK_LOCATOR_RX = r'jslog="95014;[\s\w\=\"\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+    LINK_NARROW_RX = r'http[\s\w\=\"\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+    SOURCE_LOCATOR_RX = r'class="wEwyrc AVN2gc uQIVzc Sksgp">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    SOURCE_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    PUBLISHED_LOCATOR_RX = r'datetime=[\"\w\-\:]+'
+    PUBLISHED_NARROW_RX = r'\"[\w\-\:]+'
+
+    DESCRIPTION_LOCATOR_RX = r'xBbh9">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    DESCRIPTION_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
 
     results = []
-    for g in soup.find_all('div', class_='NiLAwe y6IFtc R7GTQ keNKEd j7vNaf nID9nc'):
-        anchors = g.find_all('a')
-        divs = g.find_all('div')
-        if anchors:
-            link = "https://news.google.com" + anchors[0]['href'][1:]
-            source = anchors[3].text
-            title = g.find('h3').text
-            if not g.find('time'):
-                continue
-            published = tparser.parse(g.find('time')['datetime'])
-            description = divs[1].text
-            # image = g.find('img')['src']
-            item = {
-                "title": title,
-                "link": link,
-                "published": published,
-                "source": source,
-                "description": description,
-                # "image": image # NOTE: removed for now for potential legal issues
-            }
-            results.append(item)
-    return remove_old_news(results)
+    for match in re.finditer(NEWS_LOCATOR_RX, stew):
+        beef = match.group()
 
+        try:
+            title = utils.format_punct(re.search(TITLE_NARROW_RX, re.search(TITLE_LOCATOR_RX, beef).group()).group()[1:])
+        except Exception:
+            title = None
+
+        try:
+            link = re.search(LINK_NARROW_RX, re.search(LINK_LOCATOR_RX, beef).group()).group()
+        except Exception:
+            link = None
+
+        try:
+            source = utils.format_punct(re.search(SOURCE_NARROW_RX, re.search(SOURCE_LOCATOR_RX, beef).group()).group()[1:])
+        except Exception:
+            source = None
+
+        try:
+            published = tparser.parse(re.search(PUBLISHED_NARROW_RX, re.search(PUBLISHED_LOCATOR_RX, beef).group()).group()[1:])
+        except Exception:
+            # TODO: Do we actually continue if we don't have a published date?
+            continue
+
+        try:
+            description = utils.format_punct(re.search(DESCRIPTION_NARROW_RX, re.search(DESCRIPTION_LOCATOR_RX, beef).group()).group()[1:])
+        except Exception:
+            description = None
+
+        item = {
+            "title": title,
+            "link": link,
+            "published": published,
+            "source": source,
+            "description": description,
+        }
+        results.append(item)
+    return remove_old_news(results)
 
 def remove_old_news(news_list, date=None):
     cleaned_list = []
