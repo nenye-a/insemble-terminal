@@ -7,6 +7,7 @@ import datetime as dt
 import performance
 import news
 import activity
+import data.coverage as coverage
 
 
 '''
@@ -280,6 +281,104 @@ class AcitivtyAPI(BasicAPI):
         elif business['businessType'] == 'CATEGORY':
             error = "'CATEGORY' not supported for activity requests"
             return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
+        now = dt.datetime.utcnow()
+        return Response({
+            'createdAt': now,
+            'updatedAt': now,
+            'data': data
+        })
+
+
+class CoverageAPI(BasicAPI):
+
+    serializer_class = SearchSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        Retrieve the coverage data for a brand/category & location scope.
+
+        Parameters: {
+            location: {
+                locationType: 'CITY'|'COUNTY' <- supported | unsupported => 'STATE'|'NATION'|'ADDRESS'
+                params: string
+            }
+            business: {
+                businessType: 'BUSINESS' | 'CATEGORY'
+                params: string
+            }
+        }
+        # In future, we might add data_type and have a list of activities
+
+        Response: 
+            {
+                createdAt: Date,
+                updatedAt: Date,
+                data: {
+                    name: string,
+                    location: string,
+                    num_locations: int
+                    coverage: [
+                        {
+                            business_name: string,
+                            num_locations: string
+                            locations: [
+                                {
+                                    lat: float,
+                                    lng: float,
+                                    name: string,
+                                    address: string,
+                                    rating: string,
+                                    num_reviews: number
+                                }
+                                ... (many more locations)
+                            ]
+                        },
+                        ... (many more businesses)
+                    ]
+                },
+            }
+
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        location = params['location']
+        business = params['business']
+
+        data = {}
+        if location['locationType'] == 'ADDRESS':
+            error = "'ADDRESS' not supported for coverage requests"
+            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
+        if business['businessType'] == 'BUSINESS':
+
+            # CITY & COUNTY + BUSINESS
+            if location['locationType'] in ['CITY', 'COUNTY']:
+                coverage_data = coverage.coverage(
+                    business['params'], location['params'], location['locationType'])
+                if coverage_data:
+                    data = coverage_data
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+
+        elif business['businessType'] == 'CATEGORY':
+
+            # CITY & COUNTY + CATEGORY
+            if location['locationType'] in ['CITY', 'COUNTY']:
+                coverage_data = coverage.category_coverage(
+                    business['params'], location['params'], location['locationType'])
+                if coverage_data:
+                    data = coverage_data
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
         now = dt.datetime.utcnow()
         return Response({
