@@ -1,5 +1,6 @@
 import google
 import requests
+from decouple import config
 
 HUNT_KEY = config("HUNT_KEY")
 
@@ -45,27 +46,50 @@ def find_retail_contacts(name, address=None):
 
         # return json of crittenden/icsc contacts and hunter contacts
         website = google.get_google_details(name, address, 'website')
-        # TODO: check if hunter can take websites that aren't just domains
         contacts = get_emails(website)
 
     return company, contacts
 
 def get_emails(domain):
     url = 'https://api.hunter.io/v2/domain-search?domain={}&api_key={}'.format(domain, HUNT_KEY)
-    response, _id = requests.get(url)
+    response = requests.get(url).json()
 
     try:
         return [{"email": item['value'], "first_name": item['first_name'], "last_name": item['last_name'],
-                 "position": item['position'], "confidence": item['confidence']} for item in response['data']['emails']]
+                 "position": item['position'], "confidence": item['confidence'], "phone": item['phone_number'],
+                 "linkedin": item['linkedin'], "twitter": item['twitter']} for item in response['data']['emails']]
     except:
         print("Could not resolve emails for", domain, ". Got", response['meta'])
         return None
 
+# TODO: may need to parse through google responses to find company contact (if not present in side panel)
+# parse first few responses
+# evaluate name to see if it matches
+
 def google_company(name):
     # google the company to see if their info comes up
+    # TODO: make scraper to handle this
     # TODO: use example link to search details "https://www.google.com/search?rlz=1C5CHFA_enUS873US873&q=Yum!+Brands&stick=H4sIAAAAAAAAAOPgE-LQz9U3sExON1MCs7JKDAq0DDLKrfST83NyUpNLMvPz9POL0hPzMqsSQZxiq4LEotS8EgVkwUWs3JGluYoKTkWJeSnFO1gZARUkj21ZAAAA&sa=X&ved=2ahUKEwjdkKij8tXpAhXOqZ4KHVRpATEQmxMoATAlegQIBxAD&biw=1440&bih=821"
 
     # get domain name from first search result
     info = {"name": None, "domain": None, "description": None, "stock": None, "headquarters": None, "revenue": None,
             "num_employees": None, "subsidiaries": None, "phone": None}
     return info
+
+if __name__ == "__main__":
+    def get_emails_test():
+        domain = 'www.verizonwireless.com'
+        print(domain, get_emails(domain))
+        domain = 'http://www.verizonwireless.com/stores/california/los-angeles/koreatown-201776/?INTCMP=INT-LOS-NON-EN-MAKEAPPT-06212015-1LOS1-RE'
+        print(domain, get_emails(domain))
+        domain = 'www.sportclips.com'
+        print(domain, get_emails(domain))
+        domain = 'https://www.daikoku-ten.com/'
+        print(domain, get_emails(domain))
+        domain = 'https://www.shiekh.com/stores/shiekh-legacy-downtown-la'
+        print(domain, get_emails(domain))
+
+    def google_company_test():
+
+
+    get_emails_test()

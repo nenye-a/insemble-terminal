@@ -206,6 +206,188 @@ def google_detail_parser(response):
 
     return store
 
+def google_company_parser(response):
+    """
+        Parses http request response from google web search of restaurant or store.
+
+        return: {
+            "name": None,
+            "website": None,
+            "description": None,
+            "stock": None,
+            "headquarters": None,
+            "revenue": None,
+            "num_employees": None,
+            "subsidiaries": None,
+            "phone": None
+        }
+
+        """
+
+    stew = response.text
+
+    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
+    NAME_NARROW_RX = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+
+    try:
+        name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+    except Exception:
+        name = None
+
+    WEBSITE_LOCATOR_RX = r'<div class="QqG1Sd"><[\w\-\s\"\=]+href="[\'"]?([^\'" >]+)"'
+    WEBSITE_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    WEBSITE_RX = r'"[\'"]?([^\'" >]+)"'
+    try:
+        website = re.search(WEBSITE_RX, re.search(WEBSITE_NARROW_RX, re.search(WEBSITE_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+    except Exception:
+        website = None
+
+    RATING_LOCATOR_RX = r'class="Aq14fc"[\w\-\s\"\=]+>\d+\.\d+<\/span>'
+    RATING_RX = r'\d+\.\d+'
+    try:
+        rating = float(re.search(RATING_RX, re.search(RATING_LOCATOR_RX, stew).group()).group())
+    except Exception:
+        rating = None
+
+    NUM_REVIEWS_LOCATOR_RX = r'<span>[\d\,\s]+Google reviews<\/span>'
+    NUM_REVIEWS_RX = r'[\d\,]+'
+    try:
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(NUM_REVIEWS_LOCATOR_RX, stew).group()).group())
+    except Exception:
+        num_reviews = None
+
+    PRICE_LOCATOR_RX = r'class="YhemCb"[\w\s\,\-\=\"]+>\$+'
+    PRICE_RX = r'\$+'
+    try:
+        price = re.search(PRICE_RX, re.search(PRICE_LOCATOR_RX, stew).group()).group()
+    except BaseException:
+        price = None
+
+    TYPE_LOCATOR_RX = r'class="YhemCb">[\w\s\,\-]+<\/span>'
+    TYPE_NARROW_RX = r'>[\w\s\,\-]+<'
+    TYPE_RX = r'[\w\s\,\-]+'
+    try:
+        type = re.search(TYPE_RX, re.search(TYPE_NARROW_RX, re.search(TYPE_LOCATOR_RX, stew).group()).group()).group()
+    except Exception:
+        type = None
+
+    # using two ways to parse description based on html response
+    DESCRIPTION_LOCATOR_RX1 = r'class="Yy0acb">[\w\s\,\-\&\;\'\.]+<\/span>'
+    DESCRIPTION_NARROW_RX1 = r'>[\w\s\,\-\&\;\'\.]+<'
+    DESCRIPTION_RX1 = r'[\w\s\,\-\&\;\'\.]+'
+    DESCRIPTION_LOCATOR_RX2 = r'class="ggV7z"[\w\-\s\"\=]+><span>[\w\s\,\-\&\;\'\.]+<\/span>'
+    DESCRIPTION_NARROW_RX2 = r'<span>[\w\s\,\-\&\;\'\.]+<\/span>'
+    DESCRIPTION_RX2 = r'>[\w\s\,\-\&\;\'\.]+<'
+    try:
+        description = re.search(DESCRIPTION_RX1, re.search(DESCRIPTION_NARROW_RX1,
+                                                           re.search(DESCRIPTION_LOCATOR_RX1,
+                                                                     stew).group()).group()).group().replace("&amp;", "&")
+    except Exception:
+        try:
+            description = re.search(DESCRIPTION_RX2, re.search(DESCRIPTION_NARROW_RX2,
+                                                               re.search(DESCRIPTION_LOCATOR_RX2,
+                                                                         stew).group()).group()).group()[1:-1].replace("&amp;", "&")
+        except Exception:
+            description = None
+
+    OPERATIONS_LOCATOR_RX = r'class="asD7Oe" aria-label="[\w\-\s\=]+"'
+    OPERATIONS_NARROW_RX = r'aria-label="[\w\-\s\=]+"'
+    OPERATIONS_RX = r'"[\w\-\s\=]+"'
+
+    try:
+        operations_options = [re.search(OPERATIONS_RX, re.search(OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
+                              for located_rx in re.findall(OPERATIONS_LOCATOR_RX, stew)]
+        operations = {"dine_in": operations_options[0],
+                      "takeout": operations_options[1],
+                      "delivery": operations_options[2]}
+    except Exception:
+        operations = None
+
+    ADDRESS_LOCATOR_RX = r'class="LrzXr">[\w\s\,\-\&\;\'\.]+<\/span>'
+    ADDRESS_RX = r'>[\w\s\,\-\&\;\'\.]+<'
+    try:
+        address = re.search(ADDRESS_RX, re.search(ADDRESS_LOCATOR_RX, stew).group()).group()[1:-1]
+    except Exception:
+        address = None
+
+    HOURS_LOCATOR_RX = r'<td class="SKNSIb">[\w\']+<\/td><td>[\w\–]+<\/td>'
+    HOURS_NARROWER_RX = r'>[\w\–\']+<'
+    try:
+        bracket_schedule = [tuple(re.findall(HOURS_NARROWER_RX, day_schedule)) for day_schedule in re.findall(HOURS_LOCATOR_RX, stew)]
+        hours = {day[1:-1]: opentime[1:-1] for (day, opentime) in bracket_schedule}
+    except Exception:
+        hours = None
+
+    MENU_LOCATOR_RX = r'class="jSC49b">Menu:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    MENU_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    MENU_RX = r'"[\'"]?([^\'" >]+)"'
+    try:
+        menu_link = re.search(MENU_RX, re.search(MENU_NARROW_RX, re.search(MENU_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+    except Exception:
+        menu_link = None
+
+    PHONE_LOCATOR_RX = r'class="zgWrF">[\d\(\)\s\-\,]+<\/span>'
+    PHONE_RX = r'>[\d\(\)\s\-\,]+<'
+    try:
+        phone = re.search(PHONE_RX, re.search(PHONE_LOCATOR_RX, stew).group()).group()[1:-1]
+    except Exception:
+        phone = None
+
+    ORDERING_LOCATOR_RX = r'class="jSC49b">Order:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    ORDERING_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    ORDERING_RX = r'"[\'"]?([^\'" >]+)"'
+    try:
+        online_ordering_platforms = re.search(ORDERING_RX, re.search(ORDERING_NARROW_RX,
+                                                                     re.search(ORDERING_LOCATOR_RX,
+                                                                               stew).group()).group()).group()[1:-1]
+    except Exception:
+        online_ordering_platforms = None
+
+    SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
+    SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
+    SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
+    try:
+        self_description = re.search(SELF_DESC_RX, re.search(SELF_DESC_NARROW_RX,
+                                                             re.search(SELF_DESC_LOCATOR_RX,
+                                                                       stew).group()).group()).group()[1:-1]
+    except Exception:
+        self_description = None
+
+    try:
+        # find the 18 or 24 hour activity distribution,depending on which is present
+        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, stew)]
+        if len(data) == 0:
+            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, stew)]
+        activity = data
+    except Exception:
+        activity = None
+
+    store = {
+        "url": response.url,
+        "name": name,
+        "website": website,
+        "rating": rating,
+        "num_reviews": num_reviews,
+        "price": price,
+        "type": type,
+        "description": description,
+        "activity": activity,
+        "operations": operations,
+        "address": address,
+        "hours": hours,
+        "menu_link": menu_link,
+        "phone": phone,
+        "online_ordering_platforms": online_ordering_platforms,  # TODO: edit so it gets more than one
+        "events": None,
+        "other_platform_ratings": None,
+        "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
+        "self_description": self_description,
+        "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+    }
+
+    return store
+
 
 def opentable_parser(response):
     """
