@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Popover from 'react-tiny-popover';
+import { useMutation } from '@apollo/react-hooks';
 
-import { View, Text, TouchableOpacity } from '../../core-ui';
+import { View, Text, TouchableOpacity, LoadingIndicator } from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
 import { THEME_COLOR, DISABLED_TEXT_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { ComparationTag } from '../../types/types';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
-import { ReviewTag, LocationTagType } from '../../generated/globalTypes';
+import SvgRoundClose from '../../components/icons/round-close';
+import {
+  ReviewTag,
+  LocationTagType,
+  CompareActionType,
+} from '../../generated/globalTypes';
+import { UPDATE_COMPARISON } from '../../graphql/queries/server/comparison';
+import {
+  UpdateComparison,
+  UpdateComparisonVariables,
+} from '../../generated/UpdateComparison';
 
 type Props = {
   title: string;
@@ -31,6 +42,12 @@ export default function ResultTitle(props: Props) {
   } = props;
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
+  let [updateComparison, { loading, data }] = useMutation<
+    UpdateComparison,
+    UpdateComparisonVariables
+  >(UPDATE_COMPARISON, {
+    onError: () => {},
+  });
 
   let pinPopover = <PinPopover onClickAway={() => setPinPopoverOpen(false)} />;
   let comparisonPopover = (
@@ -58,19 +75,38 @@ export default function ResultTitle(props: Props) {
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
 
+  useEffect(() => {
+    if (data?.updateComparison.tableId) {
+      onTableIdChange && onTableIdChange(data.updateComparison.tableId);
+    }
+  }, [data, onTableIdChange]);
+
   return (
     <Container>
       <Title noData={noData}>{title}</Title>
       <Row>
-        {formattedCompareText && (
-          <>
-            <CompareText>{formattedCompareText}</CompareText>
-            {/* TODO: enable when endpoint ready */}
-            {/* <Touchable onPress={() => {}}>
-              <SvgClose />
-            </Touchable> */}
-          </>
-        )}
+        {formattedCompareText ? (
+          loading ? (
+            <LoadingIndicator />
+          ) : (
+            <>
+              <CompareText>{formattedCompareText}</CompareText>
+              <Touchable
+                onPress={() => {
+                  updateComparison({
+                    variables: {
+                      actionType: CompareActionType.DELETE_ALL,
+                      tableId,
+                      reviewTag,
+                    },
+                  });
+                }}
+              >
+                <SvgRoundClose />
+              </Touchable>
+            </>
+          )
+        ) : null}
         <Popover
           isOpen={comparisonPopoverOpen}
           content={comparisonPopover}
@@ -122,6 +158,7 @@ const Title = styled(Text)<TitleProps>`
 
 const Row = styled(View)`
   flex-direction: row;
+  align-items: center;
 `;
 
 const Touchable = styled(TouchableOpacity)`

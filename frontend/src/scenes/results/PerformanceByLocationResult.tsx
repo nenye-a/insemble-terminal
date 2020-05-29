@@ -62,6 +62,7 @@ export default function PerformanceByLocationResult(props: Props) {
         <PerformanceTable
           data={data?.performanceTable.data || []}
           showNumLocation={false}
+          headerTitle="Address"
         />
       )}
     </Container>

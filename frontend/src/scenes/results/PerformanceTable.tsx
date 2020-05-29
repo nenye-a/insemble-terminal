@@ -11,14 +11,20 @@ type Props = {
   data: Array<PerformanceTableData>;
   compareData?: Array<PerformanceTableCompareData>;
   showNumLocation?: boolean;
+  headerTitle?: string;
 };
 
 export default function PerformanceTable(props: Props) {
-  let { data, compareData, showNumLocation = true } = props;
+  let {
+    data,
+    compareData,
+    showNumLocation = true,
+    headerTitle = 'Company',
+  } = props;
   return (
     <DataTable>
       <DataTable.HeaderRow>
-        <DataTable.HeaderCell width={260}>Company</DataTable.HeaderCell>
+        <DataTable.HeaderCell width={260}>{headerTitle}</DataTable.HeaderCell>
         <DataTable.HeaderCell>Sales volume index</DataTable.HeaderCell>
         <DataTable.HeaderCell>Avg rating</DataTable.HeaderCell>
         <DataTable.HeaderCell>Avg # of reviews</DataTable.HeaderCell>
