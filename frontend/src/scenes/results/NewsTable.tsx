@@ -6,6 +6,7 @@ import {
   GetNewsTable_newsTable_compareData as NewsCompareData,
 } from '../../generated/GetNewsTable';
 import { TABLE_PURPLE_BACKGROUND } from '../../constants/colors';
+import { getPublishedDate } from '../../helpers';
 
 type Props = {
   data: Array<NewsData>;
@@ -14,6 +15,7 @@ type Props = {
 
 export default function NewsTable(props: Props) {
   let { data, compareData } = props;
+
   return (
     <DataTable>
       <DataTable.HeaderRow>
@@ -34,7 +36,9 @@ export default function NewsTable(props: Props) {
             >
               <DataTable.Cell width={500}>{title}</DataTable.Cell>
               <DataTable.Cell>{source}</DataTable.Cell>
-              <DataTable.Cell align="right">{published}</DataTable.Cell>
+              <DataTable.Cell align="right">
+                {getPublishedDate(published)}
+              </DataTable.Cell>
             </DataTable.Row>
           );
         })}
@@ -49,7 +53,9 @@ export default function NewsTable(props: Props) {
           >
             <DataTable.Cell width={500}>{title}</DataTable.Cell>
             <DataTable.Cell>{source}</DataTable.Cell>
-            <DataTable.Cell align="right">{published}</DataTable.Cell>
+            <DataTable.Cell align="right">
+              {getPublishedDate(published)}
+            </DataTable.Cell>
           </DataTable.Row>
         );
       })}

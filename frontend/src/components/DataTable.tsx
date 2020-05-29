@@ -40,15 +40,19 @@ function HeaderCell({ children, ...otherProps }: HeaderCellProps) {
   );
 }
 
-function Row({ height, onPress, children }: RowProps) {
+function Row({ height, onPress, children, ...otherProps }: RowProps) {
   if (onPress) {
     return (
-      <TouchableRow onPress={onPress} height={height}>
+      <TouchableRow onPress={onPress} height={height} {...otherProps}>
         {children}
       </TouchableRow>
     );
   }
-  return <DefaultRow height={height}>{children}</DefaultRow>;
+  return (
+    <DefaultRow height={height} {...otherProps}>
+      {children}
+    </DefaultRow>
+  );
 }
 
 let CellAlign = {

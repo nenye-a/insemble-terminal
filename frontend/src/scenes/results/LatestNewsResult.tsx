@@ -56,7 +56,7 @@ export default function LatestNewsResult(props: Props) {
       ) : (
         <NewsTable
           data={data?.newsTable.data || []}
-          compareData={data?.newsTable.compareData}
+          compareData={data?.newsTable.compareData || []}
         />
       )}
     </Container>
