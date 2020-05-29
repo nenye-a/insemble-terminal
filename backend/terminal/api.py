@@ -6,11 +6,12 @@ from .serializers import SearchSerializer, PerformanceSerializer
 import datetime as dt
 import performance
 import news
+import activity
 
 
 '''
 
-terminal Django API.
+Terminal Django API.
 
 '''
 
@@ -51,18 +52,18 @@ class PerformanceAPI(BasicAPI):
 
         Parameters: {
             location: {
-                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <-supported | unsupported rightnow ->['STATE'|'NATION']
                 params: string
             }
             business: {
                 businessType: 'BUSINESS' | 'CATEGORY'
                 params: string
             }
-            dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
+            dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS' <-supported | unsupported rightnow -> ['CITY'|'STATE']
         }
 
-        Response: {
-            performance: {
+        Response: 
+            {
                 createdAt: Date,
                 updatedAt: Date,
                 dataType: 'BRAND'|'CATEGORY'|'OVERALL'|'ADDRESS'|'CITY'|'STATE'
@@ -76,7 +77,6 @@ class PerformanceAPI(BasicAPI):
                     }
                 ]
             }
-        }
 
         """
 
@@ -159,7 +159,7 @@ class NewsAPI(BasicAPI):
 
         Parameters: {
             location: {
-                locationType: 'ADDRESS'|'CITY'|'COUNTY'|'STATE'|'NATION'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <-supported | unsupported rightnow ->['STATE'|'NATION']
                 params: string
             }
             business: {
@@ -168,8 +168,8 @@ class NewsAPI(BasicAPI):
             }
         }
 
-        Response: {
-            news: {
+        Response:
+            {
                 createdAt: Date,
                 updatedAt: Date,
                 data: [
@@ -183,7 +183,6 @@ class NewsAPI(BasicAPI):
                     },
                 ]
             }
-        }
 
         """
 
@@ -195,6 +194,92 @@ class NewsAPI(BasicAPI):
         business = params['business']['params']
 
         data = news.news(business, location)
+
+        now = dt.datetime.utcnow()
+        return Response({
+            'createdAt': now,
+            'updatedAt': now,
+            'data': data
+        })
+
+
+class AcitivtyAPI(BasicAPI):
+
+    serializer_class = SearchSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        Retrieve the activity data for a brand/category & location scope.
+
+        Parameters: {
+            location: {
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <- supported | unsupported => 'STATE'|'NATION'
+                params: string
+            }
+            business: {
+                businessType: 'BUSINESS' <- supported | -> unsupported ['CATEGORY']
+                params: string
+            }
+        }
+        # In future, we might add data_type and have a list of activities
+
+        Response: 
+            {
+                createdAt: Date,
+                updatedAt: Date,
+                data: [
+                    {
+                        name: string,
+                        location: string,
+                        activity: {           - # 4AM, 5AM, 12AM - 3AM may not be in result
+                            4am?: number,
+                            5am?: number,
+                            6am: number,
+                            7am: number,
+                            8am: number,
+                            ...
+                            11pm: number,
+                            12am?: number,
+                            1am?: number,
+                            2am?: number,
+                            3am?: number
+                        }
+                    },
+                ]
+            }
+
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        location = params['location']
+        business = params['business']
+
+        data = []
+        if business['businessType'] == 'BUSINESS':
+
+            # ADDRESS + BUSINESS
+            if location['locationType'] == 'ADDRESS':
+                row = activity.activity(business['params'], location['params'])
+                if row:
+                    data.append(row)
+
+            # CITY & COUNTY + BUSINESS
+            elif location['locationType'] in ['CITY', 'COUNTY']:
+                row = activity.aggregate_activity(
+                    business['params'], location['params'], location['locationType'])
+                if row:
+                    data.append(row)
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
+        elif business['businessType'] == 'CATEGORY':
+            error = "'CATEGORY' not supported for activity requests"
+            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
 
         now = dt.datetime.utcnow()
         return Response({

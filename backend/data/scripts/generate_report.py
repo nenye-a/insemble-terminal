@@ -304,6 +304,24 @@ def view_coordinates(query):
     pd.DataFrame(data).to_csv(THIS_DIR + '/files/generated_coordinates.csv')
 
 
+def observe_activity():
+
+    import pprint
+
+    places_with_activity = list(utils.DB_TERMINAL_PLACES.find({'google_details.activity': {'$ne': None}}))
+    stat_dict = {}
+    for place in places_with_activity:
+        activity = place['google_details']['activity']
+        activity_index = "{} days".format(len(activity))
+        stat_dict[activity_index] = stat_dict.get(activity_index, 0) + 1
+
+        for day in activity:
+            day_index = "{} hours".format(len(day))
+            stat_dict[day_index] = stat_dict.get(day_index, 0) + 1
+
+    pprint.pprint(stat_dict)
+
+
 if __name__ == "__main__":
     # generate_report('Great Clips', custom_query={'address': {
     #     '$regex': ".*FL",
@@ -320,4 +338,5 @@ if __name__ == "__main__":
     # view_locations({
     #     'address': {"$regex": "NY"}
     # })
-    deterimine_cities()
+    # deterimine_cities()
+    observe_activity()

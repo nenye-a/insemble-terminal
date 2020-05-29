@@ -1,12 +1,11 @@
 from django.conf.urls import include, url  # noqa
 from django.urls import path
 from django.contrib import admin
-from django.shortcuts import redirect
 
 import django_js_reverse.views
 
 from rest_framework import routers
-from .api import BasicAPI, PerformanceAPI, NewsAPI
+from .api import BasicAPI, PerformanceAPI, NewsAPI, AcitivtyAPI
 
 router = routers.DefaultRouter()
 
@@ -21,4 +20,5 @@ urlpatterns = [
     path(r'api/test', BasicAPI.as_view(), name="test"),
     path(r'api/performance', PerformanceAPI.as_view(), name='performance'),
     path(r'api/news', NewsAPI.as_view(), name='news'),
+    path(r'api/activity', AcitivtyAPI.as_view(), name='activity')
 ]
