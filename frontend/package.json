@@ -9,7 +9,7 @@
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\"",
     "lint": "eslint --max-warnings 0 \"src/**/*.{ts,tsx}\"",
-    "jest": "jest --coverage --passWithNoTests",
+    "jest": "react-scripts test --passWithNoTests --watchAll=false",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest",
     "schema:generate": "cd ../backend-node && yarn generate:schema && cd ../frontend",
     "apollo:generate": "yarn schema:generate && apollo codegen:generate --excludes=node_modules/* --includes=src/**/*.ts --localSchemaFile=../backend-node/src/generated/schema.graphql  --target typescript --tagName gql --outputFlat src/generated"
@@ -52,6 +52,7 @@
     "eslint-config-kodefox": "^0.2.2",
     "prettier": "^2.0.5",
     "react-test-renderer": "^16.13.1",
+    "ts-jest": "^26.0.0",
     "typescript": "^3.9.2"
   },
   "eslintConfig": {
