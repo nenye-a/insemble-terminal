@@ -110,11 +110,16 @@ class OptionalSearchSerializer(serializers.Serializer):
         return attrs
 
 
-class PerformanceSerializer(SearchSerializer):
+class PerformanceSerializer(OptionalSearchSerializer):
 
     dataType = serializers.CharField(max_length=8)
 
     def validate(self, attrs):
+
+        if not ('location' in attrs or 'business' in attrs):
+            raise serializers.ValidationError({'status_details': [
+                'Please provide either a location or a business.']})
+
         attrs['dataType'] = attrs['dataType'].upper()
 
         if attrs['dataType'] not in PERFORMANCE_DATA_TYPES:

@@ -2,7 +2,8 @@
 from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
-from .serializers import SearchSerializer, PerformanceSerializer, OwnershipSerializer
+from .serializers import (SearchSerializer, OptionalSearchSerializer, PerformanceSerializer,
+                          OwnershipSerializer)
 import datetime as dt
 import performance
 import news
@@ -151,7 +152,7 @@ class PerformanceAPI(BasicAPI):
 
 class NewsAPI(BasicAPI):
 
-    serializer_class = SearchSerializer
+    serializer_class = OptionalSearchSerializer
 
     def get(self, request, *args, **kwargs):
         """
@@ -191,8 +192,8 @@ class NewsAPI(BasicAPI):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        location = params['location']['params']
-        business = params['business']['params']
+        location = params['location']['params'] if 'location' in params else None
+        business = params['business']['params'] if 'business' in params else None
 
         data = news.news(business, location)
 
