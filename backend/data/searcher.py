@@ -285,8 +285,8 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
 
 def _timed_refresh():
     """Refreshes scraper after a specified amount of time"""
-    hours = 0.75
-    seconds = hours * 60 * 60
+    minutes = 10
+    seconds = minutes * 60
     if (dt.datetime.now() - RUN_TIME).seconds > seconds:
         utils.restart_program()
 
