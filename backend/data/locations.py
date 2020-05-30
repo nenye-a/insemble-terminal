@@ -711,11 +711,9 @@ def opentable_detailer(batch_size=300, wait=True):
                     continue
 
                 potential_candidate = utils.DB_TERMINAL_PLACES.find_one({
-                    '$text': {
-                        '$search': details['name']
-                    },
+                    'name': {"$regex": r'^' + details['name'][10], "$options": "i"},
                     # if the item has the same location as us and no open table details,
-                    # then htis is definitely our location and should be updated
+                    # then it is definitely our location and should be updated
                     'location': {
                         '$near': {
                             '$geometry': query_location,
@@ -728,26 +726,23 @@ def opentable_detailer(batch_size=300, wait=True):
                 if potential_candidate:
                     # If item contains location, then this is our location, and we should give it details.
                     utils.DB_TERMINAL_PLACES.update_one({
-                        'location': potential_candidate['location']
+                        '_id': potential_candidate['_id']
                     }, {'$set': {
                         'opentable_details': details,
-                        'nearby_location': {
-                            'location': query_location,
-                            'distance': distance
-                        }
                     }})
+                    print('OPENTABLE_COLLECTOR: BONUS Update {}({}) with opentable details.'.format(
+                        potential_candidate['name'],
+                        potential_candidate['_id']
+                    ))
                     continue
-                # NOTE: Here's where we could call get_lat_lng on all the left over items
-                # that don't have a location match or opentable details, but an address.
-                # This may take a long time and so has been omitted.
 
-                # Otherwise --
-                # Nothing in database with these details, let's insert.
-                utils.DB_TERMINAL_PLACES.insert_one({
-                    'name': details['name'],
-                    'opentable_details': details,
-                })
-                print("Inserted new item with name {} to database".format(details['name']))
+                # # Otherwise --
+                # # Nothing in database with these details, let's insert.
+                # utils.DB_TERMINAL_PLACES.insert_one({
+                #     'name': details['name'],
+                #     'opentable_details': details,
+                # })
+                # print("Inserted new item with name {} to database".format(details['name']))
         print('Batch complete, searching for more locations.')
 
 
@@ -871,6 +866,6 @@ if __name__ == "__main__":
     #     '$text': {'$search': 'Clips'},
     #     'address': {"$regex": ".*FL"}
     # })
-    google_detailer(batch_size=10)
+    # google_detailer(batch_size=10)
     # location_detailer(batch_size=300)
-    # opentable_detailer(batch_size=10)
+    opentable_detailer(batch_size=10)
