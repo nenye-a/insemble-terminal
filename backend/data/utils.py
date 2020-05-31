@@ -24,6 +24,7 @@ SPACE_RE = re.compile(r' +')
 ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
 AMPERSAND = '\\\\u0026'
 APOSTROPHE = '&#39;'
+SPACE = '\xa0'
 
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
@@ -255,7 +256,7 @@ def format_search(name, address):
     return encode_word(name) + "+" + encode_word(address)
 
 def format_punct(text):
-    return text.replace(AMPERSAND, "&").replace(APOSTROPHE, "'")
+    return text.replace(AMPERSAND, "&").replace(APOSTROPHE, "'").replace(SPACE, " ")
 
 
 def get_alternative_source(key, preffered_dict, default_dict):

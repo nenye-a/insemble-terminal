@@ -211,15 +211,18 @@ def google_company_parser(response):
         Parses http request response from google web search of restaurant or store.
 
         return: {
-            "name": None,
-            "website": None,
-            "description": None,
-            "stock": None,
-            "headquarters": None,
-            "revenue": None,
-            "num_employees": None,
-            "subsidiaries": None,
-            "phone": None
+            "name": 'Yum! Brands',
+            "category": 'Fast food company',
+            "website": 'yum.com',
+            "description": 'Yum! Brands, Inc., formerly Tricon Global Restaurants, Inc., is an American fast food corporation listed on the Fortune 1000. Yum! operates the brands KFC, Pizza Hut, Taco Bell, The Habit Burger Grill, and WingStreet worldwide, except in China, where the brands are operated by a separate company, Yum China.',
+            "stock": ['YUM', '(NYSE)', '-1.08 (-1.19%)', 'May 29, 4:00 PM EDT - ', ''],
+            "headquarters": 'Louisville, KY',
+            "revenue": '5.597 billion USD (FY December 31, 2019)',
+            "num_employees": '34,000 (FY December 31, 2019)',
+            "parents": None
+            "subsidiaries": ['KFC', 'Pizza Hut', 'Taco Bell', 'WingStreet', 'MORE'],
+            "time_of_scrape": string - ex. '04-17-2020_20:39:36'
+
         }
 
         """
@@ -231,162 +234,102 @@ def google_company_parser(response):
     NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
 
     try:
-        name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+        name = utils.format_punct(re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1])
     except Exception:
         name = None
 
-    WEBSITE_LOCATOR_RX = r'<div class="QqG1Sd"><[\w\-\s\"\=]+href="[\'"]?([^\'" >]+)"'
-    WEBSITE_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
-    WEBSITE_RX = r'"[\'"]?([^\'" >]+)"'
+    CATEGORY_LOCATOR_RX = r'<div class="wwUB2c PZPZlf"[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\>\<]+'
+    CATEGORY_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+<'
+
     try:
-        website = re.search(WEBSITE_RX, re.search(WEBSITE_NARROW_RX, re.search(WEBSITE_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+        category = re.search(CATEGORY_NARROW_RX, re.search(CATEGORY_LOCATOR_RX, stew).group()).group()[1:-1]
+    except Exception:
+        category = None
+
+    WEBSITE_LOCATOR_RX = r'class="ellip">[\'"]?([^\'" >]+)'
+    WEBSITE_NARROW_RX = r'>[\'"]?([^\'" >]+)<'
+    try:
+        website = re.search(WEBSITE_NARROW_RX, re.search(WEBSITE_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
         website = None
 
-    RATING_LOCATOR_RX = r'class="Aq14fc"[\w\-\s\"\=]+>\d+\.\d+<\/span>'
-    RATING_RX = r'\d+\.\d+'
+    DESCRIPTION_LOCATOR_RX = r'class="bNg8Rb">Description<\/h2><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+'
+    DESCRIPTION_NARROW_RX = r'span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+'
+    DESCRIPTION_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+'
     try:
-        rating = float(re.search(RATING_RX, re.search(RATING_LOCATOR_RX, stew).group()).group())
+        description = utils.format_punct(re.search(DESCRIPTION_RX, re.search(DESCRIPTION_NARROW_RX,
+                                                           re.search(DESCRIPTION_LOCATOR_RX,
+                                                                     stew).group()).group()).group()[1:])
     except Exception:
-        rating = None
+        description = None
 
-    NUM_REVIEWS_LOCATOR_RX = r'<span>[\d\,\s]+Google reviews<\/span>'
-    NUM_REVIEWS_RX = r'[\d\,]+'
+    HEADQUARTERS_LOCATOR_RX = r'Headquarters<\/a>(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/])+|(<span)|(<\/span>)|(><)|(>))+'
+    HEADQUARTERS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+
     try:
-        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(NUM_REVIEWS_LOCATOR_RX, stew).group()).group())
+        headquarters = re.search(HEADQUARTERS_NARROW_RX, re.search(HEADQUARTERS_LOCATOR_RX, stew).group()).group()[1:]
+    except:
+        headquarters = None
+
+    REVENUE_LOCATOR_RX = r'Revenue<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(>))+'
+    REVENUE_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+
+    try:
+        revenue = utils.format_punct(re.search(REVENUE_NARROW_RX, re.search(REVENUE_LOCATOR_RX, stew).group()).group()[1:])
+    except:
+        revenue = None
+
+    EMPLOYEES_LOCATOR_RX = r'Number of employees<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(>))+'
+    EMPLOYEES_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+
+    try:
+        num_employees = re.search(EMPLOYEES_NARROW_RX, re.search(EMPLOYEES_LOCATOR_RX, stew).group()).group()[1:]
+    except:
+        num_employees = None
+
+    PARENTS_LOCATOR_RX = r'Parent organizations<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\!\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>))+'
+    PARENTS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+
+    try:
+        parents = [item[1:] for item in
+                        re.findall(PARENTS_NARROW_RX, re.search(PARENTS_LOCATOR_RX, stew).group()) if
+                        len(item[1:]) > 2]
     except Exception:
-        num_reviews = None
+        parents = None
 
-    PRICE_LOCATOR_RX = r'class="YhemCb"[\w\s\,\-\=\"]+>\$+'
-    PRICE_RX = r'\$+'
-    try:
-        price = re.search(PRICE_RX, re.search(PRICE_LOCATOR_RX, stew).group()).group()
-    except BaseException:
-        price = None
+    SUBSIDIARIES_LOCATOR_RX = r'Subsidiaries<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\!\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>))+'
+    SUBSIDIARIES_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
 
-    TYPE_LOCATOR_RX = r'class="YhemCb">[\w\s\,\-]+<\/span>'
-    TYPE_NARROW_RX = r'>[\w\s\,\-]+<'
-    TYPE_RX = r'[\w\s\,\-]+'
     try:
-        type = re.search(TYPE_RX, re.search(TYPE_NARROW_RX, re.search(TYPE_LOCATOR_RX, stew).group()).group()).group()
+        subsidiaries = [item[1:] for item in
+                        re.findall(SUBSIDIARIES_NARROW_RX, re.search(SUBSIDIARIES_LOCATOR_RX, stew).group()) if len(item[1:])>2]
     except Exception:
-        type = None
+        subsidiaries = None
 
-    # using two ways to parse description based on html response
-    DESCRIPTION_LOCATOR_RX1 = r'class="Yy0acb">[\w\s\,\-\&\;\'\.]+<\/span>'
-    DESCRIPTION_NARROW_RX1 = r'>[\w\s\,\-\&\;\'\.]+<'
-    DESCRIPTION_RX1 = r'[\w\s\,\-\&\;\'\.]+'
-    DESCRIPTION_LOCATOR_RX2 = r'class="ggV7z"[\w\-\s\"\=]+><span>[\w\s\,\-\&\;\'\.]+<\/span>'
-    DESCRIPTION_NARROW_RX2 = r'<span>[\w\s\,\-\&\;\'\.]+<\/span>'
-    DESCRIPTION_RX2 = r'>[\w\s\,\-\&\;\'\.]+<'
-    try:
-        description = re.search(DESCRIPTION_RX1, re.search(DESCRIPTION_NARROW_RX1,
-                                                           re.search(DESCRIPTION_LOCATOR_RX1,
-                                                                     stew).group()).group()).group().replace("&amp;", "&")
-    except Exception:
-        try:
-            description = re.search(DESCRIPTION_RX2, re.search(DESCRIPTION_NARROW_RX2,
-                                                               re.search(DESCRIPTION_LOCATOR_RX2,
-                                                                         stew).group()).group()).group()[1:-1].replace("&amp;", "&")
-        except Exception:
-            description = None
-
-    OPERATIONS_LOCATOR_RX = r'class="asD7Oe" aria-label="[\w\-\s\=]+"'
-    OPERATIONS_NARROW_RX = r'aria-label="[\w\-\s\=]+"'
-    OPERATIONS_RX = r'"[\w\-\s\=]+"'
+    STOCK_LOCATOR_RX = r'Stock price<\/a>(([\s\w\=\"\;\-\:\.\?\&\$\%\,\(\)\—\!\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>)|(<br)|(<\/a>))+'
+    STOCK_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\:\(\)\—\|\+\[\]\*\#\/]+'
 
     try:
-        operations_options = [re.search(OPERATIONS_RX, re.search(OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
-                              for located_rx in re.findall(OPERATIONS_LOCATOR_RX, stew)]
-        operations = {"dine_in": operations_options[0],
-                      "takeout": operations_options[1],
-                      "delivery": operations_options[2]}
+        stock = [item[1:].replace("Disclaimer", "") for item in re.findall(STOCK_NARROW_RX, re.search(STOCK_LOCATOR_RX, stew).group()) if len(item[1:])>2]
     except Exception:
-        operations = None
+        stock = None
 
-    ADDRESS_LOCATOR_RX = r'class="LrzXr">[\w\s\,\-\&\;\'\.]+<\/span>'
-    ADDRESS_RX = r'>[\w\s\,\-\&\;\'\.]+<'
-    try:
-        address = re.search(ADDRESS_RX, re.search(ADDRESS_LOCATOR_RX, stew).group()).group()[1:-1]
-    except Exception:
-        address = None
-
-    HOURS_LOCATOR_RX = r'<td class="SKNSIb">[\w\']+<\/td><td>[\w\–]+<\/td>'
-    HOURS_NARROWER_RX = r'>[\w\–\']+<'
-    try:
-        bracket_schedule = [tuple(re.findall(HOURS_NARROWER_RX, day_schedule)) for day_schedule in re.findall(HOURS_LOCATOR_RX, stew)]
-        hours = {day[1:-1]: opentime[1:-1] for (day, opentime) in bracket_schedule}
-    except Exception:
-        hours = None
-
-    MENU_LOCATOR_RX = r'class="jSC49b">Menu:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
-    MENU_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
-    MENU_RX = r'"[\'"]?([^\'" >]+)"'
-    try:
-        menu_link = re.search(MENU_RX, re.search(MENU_NARROW_RX, re.search(MENU_LOCATOR_RX, stew).group()).group()).group()[1:-1]
-    except Exception:
-        menu_link = None
-
-    PHONE_LOCATOR_RX = r'class="zgWrF">[\d\(\)\s\-\,]+<\/span>'
-    PHONE_RX = r'>[\d\(\)\s\-\,]+<'
-    try:
-        phone = re.search(PHONE_RX, re.search(PHONE_LOCATOR_RX, stew).group()).group()[1:-1]
-    except Exception:
-        phone = None
-
-    ORDERING_LOCATOR_RX = r'class="jSC49b">Order:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
-    ORDERING_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
-    ORDERING_RX = r'"[\'"]?([^\'" >]+)"'
-    try:
-        online_ordering_platforms = re.search(ORDERING_RX, re.search(ORDERING_NARROW_RX,
-                                                                     re.search(ORDERING_LOCATOR_RX,
-                                                                               stew).group()).group()).group()[1:-1]
-    except Exception:
-        online_ordering_platforms = None
-
-    SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
-    SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
-    SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
-    try:
-        self_description = re.search(SELF_DESC_RX, re.search(SELF_DESC_NARROW_RX,
-                                                             re.search(SELF_DESC_LOCATOR_RX,
-                                                                       stew).group()).group()).group()[1:-1]
-    except Exception:
-        self_description = None
-
-    try:
-        # find the 18 or 24 hour activity distribution,depending on which is present
-        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, stew)]
-        if len(data) == 0:
-            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, stew)]
-        activity = data
-    except Exception:
-        activity = None
-
-    store = {
+    company = {
         "url": response.url,
         "name": name,
+        "category": category,
         "website": website,
-        "rating": rating,
-        "num_reviews": num_reviews,
-        "price": price,
-        "type": type,
         "description": description,
-        "activity": activity,
-        "operations": operations,
-        "address": address,
-        "hours": hours,
-        "menu_link": menu_link,
-        "phone": phone,
-        "online_ordering_platforms": online_ordering_platforms,  # TODO: edit so it gets more than one
-        "events": None,
-        "other_platform_ratings": None,
-        "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
-        "self_description": self_description,
+        "stock": stock,
+        "headquarters": headquarters,
+        "revenue": revenue,
+        "num_employees": num_employees,
+        "parents": parents,
+        "subsidiaries": subsidiaries,
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
-    return store
+    return company
 
 
 def opentable_parser(response):
@@ -677,6 +620,7 @@ def google_news_parser(response):
             description = None
 
         item = {
+            "url": response.url,
             "title": title,
             "link": link,
             "published": published,
@@ -703,3 +647,14 @@ def remove_old_news(news_list, date=None):
 #     if response.status_code != 200:
 #         return None
 #     return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
+
+if __name__ == "__main__":
+    import requests
+    from pprint import pprint
+    USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+    HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
+    url = 'https://www.google.com/search?rlz=1C5CHFA_enUS873US873&biw=1440&bih=821&ei=gyrUXvTkItHQ9APw1KCQBQ&q=yum+brands&oq=yum+brands&gs_lcp=CgZwc3ktYWIQAzIECAAQQzIECAAQQzIECAAQQzICCAAyAggAMgIIADICCAAyAggAMgIIADICCAA6BAgAEEc6BQgAEIMBOgQIABAKUMzciAFY9-mIAWDo6ogBaAJwA3gAgAFsiAGFCJIBBDExLjGYAQCgAQGqAQdnd3Mtd2l6&sclient=psy-ab&ved=0ahUKEwi0stitjt_pAhVRKH0KHXAqCFIQ4dUDCAw&uact=5'
+    response = requests.get(url, headers=HEADERS)
+    company = google_company_parser(response)
+    pprint(company)
+    print(company)

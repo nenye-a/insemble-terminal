@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from decouple import config
 
 from scrape.scraper import GenericScraper
-from parsers import google_detail_parser, google_news_parser
+from parsers import google_detail_parser, google_news_parser, google_company_parser
 
 USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
 HEADERS = {"referer": "https://www.google.com/"}
@@ -20,7 +20,6 @@ REGEX_LATLNG_3 = r'\[\d+\.\d\,[\-\d]+\.\d+\,[\-\d]+\.\d+\]'
 REGEX_LATLNG_4 = r'[\-\d]+\.\d+\,[\-\d]+\.\d+'
 REGEX_COORD_ADDRESS = r'[\-\d]+\.\d+\,[\-\d]+\.\d+\]\\\w\,[\\\"\w\:]+\,[\"\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+' \
                       r'\[[\\\"\w\s\'\-\:\,]+\]\\\w[\\\"\w\s\'\:\,\-\=\&\;\.\+\(\)\!\*\@\#\$\%\|]+'
-AMPERSAND = '\\\\u0026'
 GOOG_KEY = config("GOOG_KEY")
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
 LNG_VIEWPORT_MULTIPLIER = 0.00000072025608
@@ -71,6 +70,9 @@ def get_many_google_details(places, projection=None):
     detailer = GoogleDetails('GOOGLE DETAILS')
     return detailer.many_google_details(places, projection=projection)
 
+def get_company(name, projection=None):
+    company_scraper = GoogleCompany('GOOGLE COMPANY')
+    return company_scraper.get_details(name, projection=projection)
 
 def get_news(query, num_retries=None):
     news_scraper = GoogleNewsScraper('NEWS SCRAPER')
@@ -107,7 +109,7 @@ class GoogleNearby(GenericScraper):
     def default_parser(response):
         if response.status_code != 200:
             return None
-        return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
+        return {utils.format_punct(item) for item in set(re.findall(REGEX_ADDRESS, response.text))}
 
     @staticmethod
     def parse_zoom(response):
@@ -137,7 +139,7 @@ class GoogleNearby(GenericScraper):
         coord_dict = {}
         for pair in unparsed_section:
             try:
-                coord_dict[re.search(REGEX_ADDRESS, pair).group().replace(AMPERSAND, "&")
+                coord_dict[utils.format_punct(re.search(REGEX_ADDRESS, pair).group())
                            ] = ast.literal_eval(re.search(REGEX_LATLNG_4, pair).group())
             except AttributeError:
                 continue
@@ -397,6 +399,85 @@ class GoogleDetails(GenericScraper):
                 return None
         return result
 
+
+class GoogleCompany(GenericScraper):
+
+    BASE_URL = 'https://www.google.com/search?hl=en&q={}&sourceid=chrome&ie=UTF-8'
+
+    @ staticmethod
+    def build_request(name):
+
+        name = utils.encode_word(name)
+        url = GoogleCompany.BASE_URL.format(name)
+        print(url)
+        return url
+
+    def get_details(self, name, projection=None):
+        """
+
+        Parameters:
+            name: string
+            projection: string - example: 'stock, headquarters, num_employees'
+
+        Return:
+            returns an object that contains the projected fields. If no fields
+            are projected, will return the entire details:
+
+            {
+            "name": 'Yum! Brands',
+            "category": 'Fast food company',
+            "website": 'yum.com',
+            "description": 'Yum! Brands, Inc., formerly Tricon Global Restaurants, Inc., is an American fast food corporation listed on the Fortune 1000. Yum! operates the brands KFC, Pizza Hut, Taco Bell, The Habit Burger Grill, and WingStreet worldwide, except in China, where the brands are operated by a separate company, Yum China.',
+            "stock": ['YUM', '(NYSE)', '-1.08 (-1.19%)', 'May 29, 4:00 PM EDT - ', ''],
+            "headquarters": 'Louisville, KY',
+            "revenue": '5.597 billion USD (FY December 31, 2019)',
+            "num_employees": '34,000 (FY December 31, 2019)',
+            "parents": None
+            "subsidiaries": ['KFC', 'Pizza Hut', 'Taco Bell', 'WingStreet', 'MORE'],
+            "time_of_scrape": string - ex. '04-17-2020_20:39:36'
+            }
+
+        """
+
+        url = self.build_request(name)
+        try:
+            data = self.request(
+                url,
+                quality_proxy=True,
+                timeout=5,
+                meta={
+                    'name': name
+                }
+            )
+            if not data:
+                return None
+            data = data['data']
+            projection_list = projection.strip().split(',') if projection else None
+            if projection_list and data:
+                data = {key: data[key] for key in projection_list}
+
+            return data
+        except Exception as e:
+            print("Error has occured in GoogleDetails: {} - request_url: {}".format(e, url))
+            return None
+
+    @ staticmethod
+    def default_parser(response):
+        if response.status_code != 200:
+            return None
+        return google_company_parser(response)
+
+    def response_parse(self, response):
+        """
+        Parses detail results into the required fields
+        """
+        return self.default_parser(response)
+
+    def use_meta(self, result, meta):
+        if 'name' in meta and result:
+            if not utils.fuzzy_match(meta['name'], result['name']):
+                return None
+        return result
 
 class GoogleNewsScraper(GenericScraper):
 
