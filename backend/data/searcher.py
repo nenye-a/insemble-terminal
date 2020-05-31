@@ -207,7 +207,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
         # remaining_queries = remaining_queries - num_queried if remaining_queries else None
 
         _print_log(stage, term, num_queried, locations_inserted, results_inserted, log)
-        _timed_refresh()
+        # _timed_refresh()
 
 
 def _get_region(center, viewport, course_zoom):

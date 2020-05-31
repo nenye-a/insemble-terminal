@@ -237,12 +237,13 @@ class GenericScraper(object):
         if pool_limit > num_queries:
             # prevent the number of processes from exceeding the queries
             pool_limit = num_queries
-
+        segfault = None
         results = []
         try:
             pool = Pool(pool_limit)
             self.logger.info('Executing multi-queries starting with {}'.format(queries[0]))
             try:
+                segfault = True  # catch segfaults that tend to occur in the line after
                 for new_result in pool.imap_unordered(
                     partial(
                         self.request,
@@ -265,6 +266,7 @@ class GenericScraper(object):
                             len(results), 1))
                     else:
                         self.logger.info('Failed result, returned None')
+                segfault = False  # no segfault if we made it through the loop.
             except KeyboardInterrupt:
                 self.logger.info('Program interrupted by user. Returning all details '
                                  'gathered so far.')
@@ -283,6 +285,10 @@ class GenericScraper(object):
                 pool.terminate()
                 pool_terminated_time = time.time()
                 self.logger.info("Pool terminated in {} seconds.".format(round(pool_terminated_time - request_finish, 2)))
+                if segfault:
+                    self.logger.error("Program has seen an unexpected segfault."
+                                      " Waiting 15 seconds, then retrying.")
+                    utils.restart_program()
             except UnboundLocalError as e:
                 self.logger.error('UnboundLocalError {}. Likely due to failed pool '
                                   'closure due to uninstantiated pool'.format(e))
