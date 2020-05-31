@@ -180,7 +180,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
             res_parser=google.GoogleNearby.parse_address_latlng
         ))
         if not results:
-            continue
+            results = {}
         new_locations = list(results.values())
         results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
                    for k, v in results.items()]
@@ -190,12 +190,12 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
                          for location in new_locations]
 
         try:
-            utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
+            results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
             results_inserted = len(results)
         except utils.BWE as bwe:
             results_inserted = bwe.details['nInserted']
         try:
-            utils.DB_COORDINATES.insert_many(new_locations, ordered=False)
+            new_locations and utils.DB_COORDINATES.insert_many(new_locations, ordered=False)
             locations_inserted = len(new_locations)
         except utils.BWE as bwe:
             locations_inserted = bwe.details['nInserted']
