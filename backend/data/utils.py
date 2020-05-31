@@ -1,4 +1,6 @@
 import os
+import sys
+import psutil
 import re
 import geopy.distance
 import random
@@ -319,6 +321,25 @@ def extract_city(address):
         return None
     else:
         return match[0][0].strip()
+
+
+def restart_program():
+    """
+    Restarts the current program, with file objects and descriptors
+    cleanup
+    """
+
+    print('\nRestarting Program...\n')
+
+    try:
+        p = psutil.Process(os.getpid())
+        for handler in p.open_files() + p.connections():
+            os.close(handler.fd)
+    except Exception as e:
+        print("Failed to fully flush due to {}".format(e))
+
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
 
 
 if __name__ == "__main__":

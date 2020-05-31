@@ -1,20 +1,21 @@
 import os
 import sys
 import time
-import psutil
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(THIS_DIR)
+BASE_DIR = os.path.dirname(THIS_DIR)
+sys.path.extend([THIS_DIR, BASE_DIR])
 
+import json
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-import json
-import random
-import scrape_utils
 
 from functools import partial
-import billiard.exceptions as poolexceptions
+from billiard import exceptions as poolexceptions
 from billiard.pool import Pool
+
+import utils
+import scrape_utils
 
 CRAWLERA_CERT = THIS_DIR + '/crawlera-ca.crt'
 requests.packages.urllib3.disable_warnings()
@@ -236,12 +237,13 @@ class GenericScraper(object):
         if pool_limit > num_queries:
             # prevent the number of processes from exceeding the queries
             pool_limit = num_queries
-
+        segfault = None
         results = []
         try:
             pool = Pool(pool_limit)
             self.logger.info('Executing multi-queries starting with {}'.format(queries[0]))
             try:
+                segfault = True  # catch segfaults that tend to occur in the line after
                 for new_result in pool.imap_unordered(
                     partial(
                         self.request,
@@ -264,6 +266,7 @@ class GenericScraper(object):
                             len(results), 1))
                     else:
                         self.logger.info('Failed result, returned None')
+                segfault = False  # no segfault if we made it through the loop.
             except KeyboardInterrupt:
                 self.logger.info('Program interrupted by user. Returning all details '
                                  'gathered so far.')
@@ -271,10 +274,10 @@ class GenericScraper(object):
             except poolexceptions.WorkerLostError:
                 self.logger.error('Worker crashed and exited prematurely. Closing pool '
                                   'and restarting request.')
-            except OSError as e:
-                self.logger.error('OSError {}. Too many files, flushing open descriptors'
-                                  '/connectors and restarting program.'.format(e))
-                restart_program()
+        except OSError as e:
+            self.logger.error('OSError {}. Too many files, flushing open descriptors'
+                              '/connectors and restarting program.'.format(e))
+            utils.restart_program()
         finally:
             request_finish = time.time()
             try:
@@ -282,28 +285,16 @@ class GenericScraper(object):
                 pool.terminate()
                 pool_terminated_time = time.time()
                 self.logger.info("Pool terminated in {} seconds.".format(round(pool_terminated_time - request_finish, 2)))
+                if segfault:
+                    self.logger.error("Program has seen an unexpected segfault."
+                                      " Waiting 15 seconds, then retrying.")
+                    time.sleep(15)
+                    utils.restart_program()
             except UnboundLocalError as e:
                 self.logger.error('UnboundLocalError {}. Likely due to failed pool '
                                   'closure due to uninstantiated pool'.format(e))
-                restart_program()
+                utils.restart_program()
 
         self.logger.info("Actual Request Time: {}".format(round(request_finish - request_start, 2)))
         self.logger.info("Total Request Time: {}".format(round(pool_terminated_time - request_start, 2)))
         return results
-
-
-def restart_program():
-    """
-    Restarts the current program, with file objects and descriptors
-    cleanup
-    """
-
-    try:
-        p = psutil.Process(os.getpid())
-        for handler in p.open_files() + p.connections():
-            os.close(handler.fd)
-    except Exception as e:
-        print("Failed to fully flush due to {}".format(e))
-
-    python = sys.executable
-    os.execl(python, python, *sys.argv)

@@ -12,6 +12,7 @@ import datetime as dt
 from locations import divide_region
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
+RUN_TIME = dt.datetime.now()
 
 
 def search_locations():
@@ -109,22 +110,17 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
     has_document = utils.DB_COORDINATES.find_one(run_identifier)
     if not has_document:
         stage_dict = {'stage': 1}
-        region_points = divide_region(center, viewport, course_zoom)
-        if not region_points:
-            region_points = _retry_region(center, viewport, course_zoom)
+        region_points = _get_region(center, viewport, course_zoom)
         if len(region_points) > 2000:
             course_zoom = course_zoom - 1
-            region_points = divide_region(center, viewport, course_zoom)
+            region_points = _get_region(center, viewport, course_zoom)
             run_identifier['zoom'] = course_zoom
             log_identifier['zoom'] = course_zoom
         coords = [dict(run_identifier, **stage_dict, **{'query_point': utils.to_geojson(query_point)})
                   for query_point in region_points]
         try:
-            print("Region Points Type", type(region_points))
-            print("Coord Type", type(coords))
             log_identifier['1st_stage_points'] = len(coords)
             log_identifier['created_at'] = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
-            print(log_identifier)
             utils.DB_LOG.insert_one(log_identifier)
             utils.DB_COORDINATES.insert_many(coords, ordered=False)
         except pymongo.errors.DuplicateKeyError:
@@ -184,7 +180,7 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
             res_parser=google.GoogleNearby.parse_address_latlng
         ))
         if not results:
-            continue
+            results = {}
         new_locations = list(results.values())
         results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
                    for k, v in results.items()]
@@ -194,12 +190,12 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
                          for location in new_locations]
 
         try:
-            utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
+            results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
             results_inserted = len(results)
         except utils.BWE as bwe:
             results_inserted = bwe.details['nInserted']
         try:
-            utils.DB_COORDINATES.insert_many(new_locations, ordered=False)
+            new_locations and utils.DB_COORDINATES.insert_many(new_locations, ordered=False)
             locations_inserted = len(new_locations)
         except utils.BWE as bwe:
             locations_inserted = bwe.details['nInserted']
@@ -211,19 +207,20 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
         # remaining_queries = remaining_queries - num_queried if remaining_queries else None
 
         _print_log(stage, term, num_queried, locations_inserted, results_inserted, log)
+        # _timed_refresh()
 
 
-def _retry_region(center, viewport, course_zoom):
+def _get_region(center, viewport, course_zoom):
     """
-    Retries dividing region 10 times before quiting.
+    Tries dividing region 10 times before quiting.
     """
     count = 0
     while count < 10:
-        time.sleep(2)  # wait 3 seconds between attempts
-        count += 1
         result = divide_region(center, viewport, course_zoom)
         if result:
             return result
+        time.sleep(2)  # wait 2 seconds between attempts
+        count += 1
         print("Retrying division of the region. Num attempts: {}".format(count))
     return None
 
@@ -284,6 +281,14 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
             term + '_updated_last': timestamp
         }
     })
+
+
+def _timed_refresh():
+    """Refreshes scraper after a specified amount of time"""
+    minutes = 10
+    seconds = minutes * 60
+    if (dt.datetime.now() - RUN_TIME).seconds > seconds:
+        utils.restart_program()
 
 
 if __name__ == "__main__":
