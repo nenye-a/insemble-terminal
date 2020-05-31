@@ -288,6 +288,7 @@ class GenericScraper(object):
                 if segfault:
                     self.logger.error("Program has seen an unexpected segfault."
                                       " Waiting 15 seconds, then retrying.")
+                    time.sleep(15)
                     utils.restart_program()
             except UnboundLocalError as e:
                 self.logger.error('UnboundLocalError {}. Likely due to failed pool '
