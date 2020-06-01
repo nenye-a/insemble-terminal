@@ -105,7 +105,7 @@ export let updateComparisonResolver: FieldResolver<
     case 'PERFORMANCE':
       if (actionType === 'DELETE') {
         if (!comparationTagId) {
-          throw new Error('Please selece comparationTag you want to delete');
+          throw new Error('Please select comparationTag you want to delete');
         }
         return await deleteComparisonResolver(
           _,

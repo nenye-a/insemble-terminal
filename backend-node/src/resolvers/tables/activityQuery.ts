@@ -15,17 +15,17 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
 ) => {
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
-      where: {
-        id: businessTagId,
-      },
-    })
+        where: {
+          id: businessTagId,
+        },
+      })
     : undefined;
   let locationTag = locationTagId
     ? await context.prisma.locationTag.findOne({
-      where: {
-        id: locationTagId,
-      },
-    })
+        where: {
+          id: locationTagId,
+        },
+      })
     : undefined;
 
   let activity;
@@ -45,7 +45,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
       },
     });
     if (!selectedActivityById) {
-      throw new Error('Modal not Found.')
+      throw new Error('Modal not Found.');
     }
     activity = [selectedActivityById];
   } else {
@@ -66,29 +66,31 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         },
       },
     });
-    activity = activity.filter(({ comparationTags }) => comparationTags.length === 0);
+    activity = activity.filter(
+      ({ comparationTags }) => comparationTags.length === 0,
+    );
   }
 
   let selectedActivity;
   if (activity.length) {
     // Return the table without any comparison tags.
     selectedActivity = activity[0];
-    let updateData = timeCheck(selectedActivity.updatedAt)
+    let updateData = timeCheck(selectedActivity.updatedAt);
     if (updateData) {
       // update data (should be likely combined with if no table exists)
       try {
         let activityUpdate = await getActivityData(
           selectedActivity.locationTag,
-          selectedActivity.businessTag
-        )
+          selectedActivity.businessTag,
+        );
         let activityData = activityUpdate.data.map(
           ({ name, location, activity }) => {
             return {
               name: name || '-',
               location: location || '-',
-              activityData: flipKeys(activity)
+              activityData: { create: flipKeys(activity) },
             };
-          }
+          },
         );
         let rawCompareData: Array<PyActivityData> = [];
         for (let comparationTag of selectedActivity.comparationTags) {
@@ -97,15 +99,15 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
               params: {
                 location: selectedActivity.locationTag
                   ? {
-                    locationType: selectedActivity.locationTag.type,
-                    params: selectedActivity.locationTag.params,
-                  }
+                      locationType: selectedActivity.locationTag.type,
+                      params: selectedActivity.locationTag.params,
+                    }
                   : undefined,
                 business: selectedActivity.businessTag
                   ? {
-                    businessType: selectedActivity.businessTag.type,
-                    params: selectedActivity.businessTag.params
-                  }
+                      businessType: selectedActivity.businessTag.type,
+                      params: selectedActivity.businessTag.params,
+                    }
                   : undefined,
               },
               paramsSerializer: axiosParamsSerializer,
@@ -113,15 +115,13 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
           ).data;
           rawCompareData = rawCompareData.concat(compareDataUpdate.data);
         }
-        let compareData = rawCompareData.map(
-          ({ name, location, activity }) => {
-            return {
-              name: name || '-',
-              location: location || '-',
-              activityData: flipKeys(activity)
-            };
-          }
-        );
+        let compareData = rawCompareData.map(({ name, location, activity }) => {
+          return {
+            name: name || '-',
+            location: location || '-',
+            activityData: { create: flipKeys(activity) },
+          };
+        });
         await context.prisma.activityData.deleteMany({
           where: {
             activity: {
@@ -145,24 +145,21 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
           },
         });
       } catch (e) {
-        console.log(e)
-        throw new Error('Fail to update date.')
+        console.log(e);
+        throw new Error('Fail to update date.');
       }
     }
   } else {
     try {
-      let activityUpdate = await getActivityData(
-        locationTag,
-        businessTag
-      )
+      let activityUpdate = await getActivityData(locationTag, businessTag);
       let activityData = activityUpdate.data.map(
         ({ name, location, activity }) => {
           return {
             name: name || '-',
             location: location || '-',
-            activityData: { create: flipKeys(activity) }
+            activityData: { create: flipKeys(activity) },
           };
-        }
+        },
       );
       selectedActivity = await context.prisma.activity.create({
         data: {
@@ -176,7 +173,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         },
       });
     } catch (e) {
-      console.log(e)
+      console.log(e);
       throw new Error('Fail to create data.');
     }
   }
@@ -185,52 +182,39 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
 
 const getActivityData = async (
   locationTag: LocationTag | null | undefined,
-  businessTag: BusinessTag | null | undefined
+  businessTag: BusinessTag | null | undefined,
 ) => {
   let activityUpdate: PyActivityResponse = (
     await axios.get(`${API_URI}/api/activity`, {
       params: {
         location: locationTag
           ? {
-            locationType: locationTag.type,
-            params: locationTag.params,
-          }
+              locationType: locationTag.type,
+              params: locationTag.params,
+            }
           : undefined,
         business: businessTag
           ? {
-            businessType: businessTag.type,
-            params: businessTag.params
-          }
+              businessType: businessTag.type,
+              params: businessTag.params,
+            }
           : undefined,
       },
       paramsSerializer: axiosParamsSerializer,
     })
   ).data;
-  return activityUpdate
-}
-
-// const convertActivity = (activityUpdate: PyActivityResponse) => {
-//   let activityData = activityUpdate.data.map(
-//     ({ name, location, activity }) => {
-//       return {
-//         name: name || '-',
-//         location: location || '-',
-//         activityData: flipKeys(activity)
-//       };
-//     }
-//   );
-//   return activityData
-// }
+  return activityUpdate;
+};
 
 const flipKeys = (activity: PyActivityTimes) => {
   let activityData = Object();
   for (let [key, value] of Object.entries(activity)) {
     /* '1AM' -> 'AM1' or '12AM' -> 'AM12' */
-    let newKey = key.slice(-2).concat(key.slice(0, -2))
-    activityData[newKey] = value
+    let newKey = key.slice(-2).concat(key.slice(0, -2));
+    activityData[newKey] = value;
   }
-  return activityData
-}
+  return activityData;
+};
 
 let activityTable = queryField('activityTable', {
   type: 'Activity',
