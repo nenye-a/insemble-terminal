@@ -649,12 +649,13 @@ def remove_old_news(news_list, date=None):
 #     return {item.replace(AMPERSAND, "&") for item in set(re.findall(REGEX_ADDRESS, response.text))}
 
 if __name__ == "__main__":
-    import requests
-    from pprint import pprint
-    USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
-    HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
-    url = 'https://www.google.com/search?rlz=1C5CHFA_enUS873US873&biw=1440&bih=821&ei=gyrUXvTkItHQ9APw1KCQBQ&q=yum+brands&oq=yum+brands&gs_lcp=CgZwc3ktYWIQAzIECAAQQzIECAAQQzIECAAQQzICCAAyAggAMgIIADICCAAyAggAMgIIADICCAA6BAgAEEc6BQgAEIMBOgQIABAKUMzciAFY9-mIAWDo6ogBaAJwA3gAgAFsiAGFCJIBBDExLjGYAQCgAQGqAQdnd3Mtd2l6&sclient=psy-ab&ved=0ahUKEwi0stitjt_pAhVRKH0KHXAqCFIQ4dUDCAw&uact=5'
-    response = requests.get(url, headers=HEADERS)
-    company = google_company_parser(response)
-    pprint(company)
-    print(company)
+    def google_company_test():
+        import requests
+        from pprint import pprint
+        USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+        HEADERS = {"user-agent": USER_AGENT, "referer": "https://www.google.com/"}
+        url = 'https://www.google.com/search?rlz=1C5CHFA_enUS873US873&biw=1440&bih=821&ei=gyrUXvTkItHQ9APw1KCQBQ&q=yum+brands&oq=yum+brands&gs_lcp=CgZwc3ktYWIQAzIECAAQQzIECAAQQzIECAAQQzICCAAyAggAMgIIADICCAAyAggAMgIIADICCAA6BAgAEEc6BQgAEIMBOgQIABAKUMzciAFY9-mIAWDo6ogBaAJwA3gAgAFsiAGFCJIBBDExLjGYAQCgAQGqAQdnd3Mtd2l6&sclient=psy-ab&ved=0ahUKEwi0stitjt_pAhVRKH0KHXAqCFIQ4dUDCAw&uact=5'
+        response = requests.get(url, headers=HEADERS)
+        company = google_company_parser(response)
+        pprint(company)
+        print(company)

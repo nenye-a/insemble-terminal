@@ -13,9 +13,9 @@ def find_property_contacts(address):
     name = find_owner_name(address)
 
     # find the headquarters, phone number, and website of the company
-    company = google_company(name)
+    company = google.get_company(name)
     # check hunter for emails
-    contacts = get_emails(company['domain'])
+    contacts = get_emails(company['website'])
 
     # check crittenden/icsc for contacts
     # TODO: check crittenden/icsc for contacts
@@ -30,12 +30,12 @@ def find_owner_name(address):
 # retail contact lookup
 def find_retail_contacts(name, address=None):
     # find the general company information
-    company = google_company(name)
-    # TODO: check crittenden/ICSC for company info, maybe wrap into general company lookup function with google_company
+    company = google.get_company(name)
+    # TODO: check crittenden/ICSC for company info, maybe wrap into general company lookup function with google_company()
 
     if address is None:
         # if just the name, get the general contact list
-        domain = company['domain']
+        domain = company['website']
         contacts = get_emails(domain)
         # TODO: check crittenden/icsc for contacts
 
@@ -46,11 +46,12 @@ def find_retail_contacts(name, address=None):
 
         # return json of crittenden/icsc contacts and hunter contacts
         website = google.get_google_details(name, address, 'website')
-        contacts = get_emails(website)
+        contacts = get_emails(website['website']) if website is not None else []
 
     return company, contacts
 
 def get_emails(domain):
+    if domain is None: return None
     url = 'https://api.hunter.io/v2/domain-search?domain={}&api_key={}'.format(domain, HUNT_KEY)
     response = requests.get(url).json()
 
@@ -66,16 +67,6 @@ def get_emails(domain):
 # parse first few responses
 # evaluate name to see if it matches
 
-def google_company(name):
-    # google the company to see if their info comes up
-    # TODO: make scraper to handle this
-    # TODO: use example link to search details "https://www.google.com/search?rlz=1C5CHFA_enUS873US873&q=Yum!+Brands&stick=H4sIAAAAAAAAAOPgE-LQz9U3sExON1MCs7JKDAq0DDLKrfST83NyUpNLMvPz9POL0hPzMqsSQZxiq4LEotS8EgVkwUWs3JGluYoKTkWJeSnFO1gZARUkj21ZAAAA&sa=X&ved=2ahUKEwjdkKij8tXpAhXOqZ4KHVRpATEQmxMoATAlegQIBxAD&biw=1440&bih=821"
-
-    # get domain name from first search result
-    info = {"name": None, "domain": None, "description": None, "stock": None, "headquarters": None, "revenue": None,
-            "num_employees": None, "subsidiaries": None, "phone": None}
-    return info
-
 if __name__ == "__main__":
     def get_emails_test():
         domain = 'www.verizonwireless.com'
@@ -89,7 +80,16 @@ if __name__ == "__main__":
         domain = 'https://www.shiekh.com/stores/shiekh-legacy-downtown-la'
         print(domain, get_emails(domain))
 
-    def google_company_test():
+    def find_retail_contacts_test():
+        from pprint import pprint
+        name = 'Ramonas'
+        address = '3728 Crenshaw Blvd, Los Angeles, CA 90016'
+        pprint(find_retail_contacts(name, address))
+        print("----------------------------")
+        name = 'Gamestop'
+        address = '3935 Grand Ave C-1, Chino, CA 91710'
+        pprint(find_retail_contacts(name, address))
 
 
-    get_emails_test()
+    # get_emails_test()
+    find_retail_contacts_test()
