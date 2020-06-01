@@ -20,7 +20,7 @@ export * from './NewsTable';
 export * from './NewsData';
 export * from './CompareNewsData';
 
-export * from './Activity';
+export * from './ActivityTable';
 export * from './ActivityData';
 export * from './ActivityTimes';
 export * from './CompareActivityData';

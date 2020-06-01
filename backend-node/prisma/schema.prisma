@@ -167,30 +167,30 @@ model SearchLog {
 
 model ActivityTimes {
   id   String @default(cuid()) @id
-  AM1  Int
-  AM2  Int
-  AM3  Int
-  AM4  Int
-  AM5  Int
-  AM6  Int
-  AM7  Int
-  AM8  Int
-  AM9  Int
-  AM10 Int
-  AM11 Int
-  PM12 Int
-  PM1  Int
-  PM2  Int
-  PM3  Int
-  PM4  Int
-  PM5  Int
-  PM6  Int
-  PM7  Int
-  PM8  Int
-  PM9  Int
-  PM10 Int
-  PM11 Int
-  AM12 Int
+  AM1  Int?
+  AM2  Int?
+  AM3  Int?
+  AM4  Int?
+  AM5  Int?
+  AM6  Int?
+  AM7  Int?
+  AM8  Int?
+  AM9  Int?
+  AM10 Int?
+  AM11 Int?
+  PM12 Int?
+  PM1  Int?
+  PM2  Int?
+  PM3  Int?
+  PM4  Int?
+  PM5  Int?
+  PM6  Int?
+  PM7  Int?
+  PM8  Int?
+  PM9  Int?
+  PM10 Int?
+  PM11 Int?
+  AM12 Int?
 }
 
 model ActivityData {
