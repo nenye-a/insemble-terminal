@@ -3,6 +3,7 @@ import { ApolloProvider } from '@apollo/react-hooks';
 
 import MainRoute from './router/MainRoute';
 import apolloClient from './graphql/apolloClient';
+import AuthProvider from './context/AuthContext';
 import './App.css';
 
 function App() {
@@ -29,7 +30,9 @@ function App() {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <MainRoute />
+      <AuthProvider>
+        <MainRoute />
+      </AuthProvider>
     </ApolloProvider>
   );
 }

@@ -5,12 +5,14 @@ import { Redirect } from 'react-router-dom';
 import { useMutation } from '@apollo/react-hooks';
 
 import { TextInput, Button, View, Form, Alert } from '../../core-ui';
-import { validateEmail, localStorage } from '../../helpers';
+import { validateEmail } from '../../helpers';
 import { UserLogin, UserLoginVariables } from '../../generated/UserLogin';
 import { USER_LOGIN } from '../../graphql/queries/server/auth';
+import { useAuth } from '../../context';
 
 export default function Login() {
   let { register, handleSubmit, errors } = useForm();
+  let { login: saveToken } = useAuth();
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
   let [login, { data, loading, error }] = useMutation<
     UserLogin,
@@ -26,7 +28,7 @@ export default function Login() {
 
   if (data?.login.token) {
     let { token } = data.login;
-    localStorage.saveToken(token);
+    saveToken(token);
     return <Redirect to="/results" />;
   }
 

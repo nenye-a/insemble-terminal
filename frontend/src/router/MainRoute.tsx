@@ -1,53 +1,44 @@
 import React from 'react';
-import {
-  BrowserRouter as Router,
-  Switch,
-  Route,
-  Redirect,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import { View } from '../core-ui';
+import { AuthScene } from '../scenes';
+import { useAuth } from '../context/AuthContext';
 import HeaderNavigationBar from '../components/HeaderNavigationBar';
 
-import routes from './routes';
+import {
+  authenticatedRoutes,
+  unAuthenticatedRoutes,
+  RouteType,
+} from './routes';
 
 export default function MainRoute() {
+  let { isAuthenticated } = useAuth();
+  let mapFn = (
+    { component: Component, showHeader = true, ...routeProps }: RouteType,
+    index: number,
+  ) => {
+    return (
+      <Route
+        key={index.toString() + routeProps.path}
+        render={() => (
+          <View>
+            {showHeader && <HeaderNavigationBar />}
+            <Component />
+          </View>
+        )}
+        {...routeProps}
+      />
+    );
+  };
+
   return (
     <Router>
       <Switch>
-        {routes.map(
-          (
-            {
-              component: Component,
-              showHeader = true,
-              authorization,
-              ...routeProps
-            },
-            index,
-          ) => {
-            if (authorization && !authorization.isAuthorized) {
-              return (
-                <Redirect
-                  to={{
-                    pathname: authorization.redirectPath || '/login',
-                  }}
-                />
-              );
-            }
-            return (
-              <Route
-                key={index.toString() + routeProps.path}
-                render={() => (
-                  <View>
-                    {showHeader && <HeaderNavigationBar />}
-                    <Component />
-                  </View>
-                )}
-                {...routeProps}
-              />
-            );
-          },
-        )}
+        {isAuthenticated
+          ? authenticatedRoutes.map(mapFn)
+          : unAuthenticatedRoutes.map(mapFn)}
+        <Route component={AuthScene} />
       </Switch>
     </Router>
   );
