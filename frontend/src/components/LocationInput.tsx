@@ -63,7 +63,7 @@ export default function LocationInput(props: Props) {
   }, []);
 
   useEffect(() => {
-    if (inputRef.current) {
+    if (!isLoading && inputRef.current) {
       let options = {
         types: ['geocode'],
         componentRestrictions: { country: 'us' },
