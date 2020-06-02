@@ -339,7 +339,7 @@ class CoverageAPI(BasicAPI):
             {
                 createdAt: Date,
                 updatedAt: Date,
-                data: {
+                data: [{
                     name: string,
                     location: string,
                     num_locations: int
@@ -361,7 +361,7 @@ class CoverageAPI(BasicAPI):
                         },
                         ... (many more businesses)
                     ]
-                },
+                }],
             }
 
         """
@@ -373,7 +373,8 @@ class CoverageAPI(BasicAPI):
         location = params['location']
         business = params['business']
 
-        data = {}
+        # data = {}
+        data = []
         if location['locationType'] == 'ADDRESS':
             error = "'ADDRESS' not supported for coverage requests"
             return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
@@ -385,7 +386,7 @@ class CoverageAPI(BasicAPI):
                 coverage_data = coverage.coverage(
                     business['params'], location['params'], location['locationType'])
                 if coverage_data:
-                    data = coverage_data
+                    data.append(coverage_data)
 
             # OTHER SCOPES UNIMPLEMENTED
             else:
@@ -398,7 +399,7 @@ class CoverageAPI(BasicAPI):
                 coverage_data = coverage.category_coverage(
                     business['params'], location['params'], location['locationType'])
                 if coverage_data:
-                    data = coverage_data
+                    data.append(coverage_data)
 
             # OTHER SCOPES UNIMPLEMENTED
             else:
