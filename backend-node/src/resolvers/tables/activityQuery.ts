@@ -176,7 +176,6 @@ const getActivityData = async (
   locationTag: LocationTag | null | undefined,
   businessTag: BusinessTag | null | undefined,
 ) => {
-  console.log(locationTag, businessTag);
   let activityUpdate: PyActivityResponse = (
     await axios.get(`${API_URI}/api/activity`, {
       params: {
