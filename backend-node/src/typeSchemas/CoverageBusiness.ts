@@ -3,9 +3,11 @@ import { objectType } from 'nexus';
 export let CoverageBusiness = objectType({
   name: 'CoverageBusiness',
   definition(t) {
-    t.model.id();
-    t.model.businessName();
-    t.model.numLocations();
-    t.model.locations();
+    t.string('businessName', { nullable: true });
+    t.int('numLocations', { nullable: true });
+    t.field('locations', {
+      type: 'CoverageLocation',
+      list: true,
+    });
   },
 });

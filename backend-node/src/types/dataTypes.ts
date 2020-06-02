@@ -79,17 +79,37 @@ export type PyCoverageBusiness = {
   business_name: string;
   num_locations: number;
   locations: Array<PyCoverageLocations>;
-}
+};
 
 export type PyCoverageData = {
   name: string;
   location: string;
   num_locations: number;
   coverage: Array<PyCoverageBusiness>;
-}
+};
 
 export type PyCoverageResponse = {
   createdAt: Date;
   updatedAt: Date;
   data: PyCoverageData[];
-}
+};
+
+export type ActivityGraphData = {
+  name: string;
+  business: string;
+  amount: number;
+};
+
+export type LocationPin = {
+  lat: number;
+  lng: number;
+  name?: string;
+  address?: string;
+  numReviews?: number;
+};
+
+export type BusinessData = {
+  businessName?: string;
+  numLocations?: number;
+  locations: Array<LocationPin>;
+};

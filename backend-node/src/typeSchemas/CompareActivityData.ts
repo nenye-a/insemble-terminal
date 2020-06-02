@@ -1,4 +1,6 @@
 import { objectType } from 'nexus';
+import { prisma } from '../prisma';
+import { ActivityGraphData } from 'dataTypes';
 
 export let CompareActivityData = objectType({
   name: 'CompareActivityData',
@@ -6,6 +8,18 @@ export let CompareActivityData = objectType({
     t.model.id();
     t.model.name();
     t.model.location();
-    t.model.activityData();
+    t.field('activityData', {
+      type: 'ActivityTimes',
+      resolve: async ({ id }) => {
+        let activityData = await prisma.compareActivityData.findOne({
+          where: { id },
+        });
+        let parseActivityData: Array<ActivityGraphData> = JSON.parse(
+          activityData?.activityData || '[]',
+        );
+        return parseActivityData;
+      },
+      list: true,
+    });
   },
 });
