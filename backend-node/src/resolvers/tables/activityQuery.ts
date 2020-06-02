@@ -94,25 +94,10 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         );
         let rawCompareData: Array<PyActivityData> = [];
         for (let comparationTag of selectedActivity.comparationTags) {
-          let compareDataUpdate: PyActivityResponse = (
-            await axios.get(`${API_URI}/api/activity`, {
-              params: {
-                location: selectedActivity.locationTag
-                  ? {
-                      locationType: selectedActivity.locationTag.type,
-                      params: selectedActivity.locationTag.params,
-                    }
-                  : undefined,
-                business: selectedActivity.businessTag
-                  ? {
-                      businessType: selectedActivity.businessTag.type,
-                      params: selectedActivity.businessTag.params,
-                    }
-                  : undefined,
-              },
-              paramsSerializer: axiosParamsSerializer,
-            })
-          ).data;
+          let compareDataUpdate = await getActivityData(
+            comparationTag.locationTag,
+            comparationTag.businessTag,
+          );
           rawCompareData = rawCompareData.concat(compareDataUpdate.data);
         }
         let compareData = rawCompareData.map(({ name, location, activity }) => {
