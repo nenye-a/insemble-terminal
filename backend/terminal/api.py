@@ -413,14 +413,14 @@ class CoverageAPI(BasicAPI):
         })
 
 
-class OwnershipAPI(BasicAPI):
+class InfoAPI(BasicAPI):
 
     serializer_class = OwnershipSerializer
 
     def get(self, request, *args, **kwargs):
         """
 
-        (MOCK) ----- Retrieve the ownership data for a location or business.
+        (MOCK) ----- Retrieve the Info for a location or business.
                      Mock version implemented as the real data is under development.
 
         Parameters: {
@@ -432,29 +432,19 @@ class OwnershipAPI(BasicAPI):
                 businessType: 'BUSINESS' <- supported | unsupported -> 'CATEGORY'
                 params: string
             }
-            dataType: 'INFO' | 'CONTACTS'
         }
+        dataType: 'COMAPNY' | 'PROPERTY'
 
         Response: 
             {
                 createdAt: Date,
                 updatedAt: Date,
                 data: {
-                    contacts?: [
-                        {
-                            name: string
-                            title: string
-                            phone: string
-                            email: string
-                        }
-                    ]
-                    info?: {
-                        parent_company: string
-                        headquarters: string
-                        phone: string
-                        website: string
-                        last_update: date
-                    }
+                    parent_company: string
+                    headquarters: string
+                    phone: string
+                    website: string
+                    last_update: date
                 }
             }
 
@@ -476,8 +466,97 @@ class OwnershipAPI(BasicAPI):
                 business['businessType'])]}, status=status.HTTP_400_BAD_REQUEST)
 
         # TODO: implement actual details
+        data = {}
+
+        if dataType == 'PROPERTY':
+            # INFO + ADDRESS
+            if location:
+                row = {
+                    'parent_company': '*********** Concealed',
+                    'headquarters': '*********** Concealed',
+                    'phone': '(***) *** - **** Concealed',
+                    'website': '**************.com Concealed',
+                    'last_update': dt.datetime.now()
+                }
+                data = row
+
+        elif dataType == 'COMPANY':
+            # INFO + BUSINESS
+            if business:
+                row = {
+                    'parent_company': '*********** Concealed',
+                    'headquarters': '*********** Concealed',
+                    'phone': '(***) *** - **** Concealed',
+                    'website': '**************.com Concealed',
+                    'last_update': dt.datetime.now()
+                }
+                data = row
+
+        now = dt.datetime.utcnow()
+        return Response({
+            'createdAt': now,
+            'updatedAt': now,
+            'data': data
+        })
+
+
+class ContactAPI(BasicAPI):
+
+    serializer_class = OwnershipSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+
+        (MOCK) ----- Retrieve the contact data for a location or business.
+                     Mock version implemented as the real data is under development.
+
+        Parameters: {
+            location: {
+                locationType: 'ADDRESS' <- supported | unsupported -> 'STATE'|'NATION'|'CITY'|'COUNTY'
+                params: string
+            }
+            business: { (Optional)
+                businessType: 'BUSINESS' <- supported | unsupported -> 'CATEGORY'
+                params: string
+            }
+        }
+        dataType: 'COMAPNY' | 'PROPERTY'
+
+        Response: 
+            {
+                createdAt: Date,
+                updatedAt: Date,
+                data: [
+                    {
+                        name: string
+                        title: string
+                        phone: string
+                        email: string
+                    }
+                ]
+            }
+
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        location = params['location'] if 'location' in params else None
+        business = params['business'] if 'business' in params else None
+        dataType = params['dataType']
+
+        if location and location['locationType'] != 'ADDRESS':
+            return Response({'status_detail': ['{} not supported.'.format(
+                location['locationType'])]}, status=status.HTTP_400_BAD_REQUEST)
+        if business and business['businessType'] != 'BUSINESS':
+            return Response({'status_detail': ['{} not supported.'.format(
+                business['businessType'])]}, status=status.HTTP_400_BAD_REQUEST)
+
+        # TODO: implement actual details
         data = []
-        if dataType == 'CONTACTS':
+
+        if dataType == 'PROPERTY':
             # CONTACTS + ADDRESS
             if location:
                 row = {
@@ -488,6 +567,7 @@ class OwnershipAPI(BasicAPI):
                 }
                 data.append(row)
 
+        elif dataType == 'COMPANY':
             # BRAND + ADDRESS
             if business:
                 row = {
@@ -495,30 +575,6 @@ class OwnershipAPI(BasicAPI):
                     'title': '************',
                     'phone': '(***) *** - ****',
                     'email': '********@*********.com'
-                }
-                data.append(row)
-
-        elif dataType == 'INFO':
-
-            # INFO + ADDRESS
-            if location:
-                row = {
-                    'parent_company': '*********** Concealed',
-                    'headquarters': '*********** Concealed',
-                    'phone': '(***) *** - **** Concealed',
-                    'website': '**************.com Concealed',
-                    'last_update': dt.datetime.now()
-                }
-                data.append(row)
-
-            # INFO + BUSINESS
-            if business:
-                row = {
-                    'parent_company': '*********** Concealed',
-                    'headquarters': '*********** Concealed',
-                    'phone': '(***) *** - **** Concealed',
-                    'website': '**************.com Concealed',
-                    'last_update': dt.datetime.now()
                 }
                 data.append(row)
 
