@@ -12,3 +12,5 @@ export * from './tables/performanceTableQuery';
 export * from './tables/newsTableQuery';
 export * from './tables/activityQuery';
 export * from './tables/coverageQuery';
+export * from './tables/ownershipContactQuery';
+export * from './tables/ownershipInfoQuery';

@@ -94,6 +94,33 @@ export type PyCoverageResponse = {
   data: PyCoverageData[];
 };
 
+export type PyContactData = {
+  name?: string;
+  title?: string;
+  phone?: string;
+  email?: string;
+};
+
+export type PyOwnershipContactResponse = {
+  createdAt: Date;
+  updatedAt: Date;
+  data: PyContactData[];
+};
+
+export type PyInfoData = {
+  parent_company?: string;
+  headquarters?: string;
+  phone?: string;
+  website?: string;
+  last_update?: string;
+};
+
+export type PyOwnershipInfoResponse = {
+  createdAt: Date;
+  updatedAt: Date;
+  data: PyInfoData;
+};
+
 export type ActivityGraphData = {
   name: string;
   business: string;

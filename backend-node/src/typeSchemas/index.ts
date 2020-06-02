@@ -30,3 +30,8 @@ export * from './CoverageData';
 export * from './CompareCoverageData';
 export * from './CoverageBusiness';
 export * from './CoverageLocation';
+
+export * from './OwnershipContactTable';
+export * from './OwnershipContactData';
+export * from './OwnershipInfoTable';
+export * from './OwnershipInfoData';
