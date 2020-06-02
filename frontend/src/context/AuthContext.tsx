@@ -40,6 +40,9 @@ export const useAuth = () => useContext(AuthContext);
 export default function AuthProvider(props: Props) {
   let [getProfile, { loading, data }] = useLazyQuery<GetUserProfile>(
     GET_USER_PROFILE,
+    {
+      fetchPolicy: 'network-only',
+    },
   );
   let [user, setUser] = useState<User | null>(null);
 
