@@ -1,7 +1,6 @@
 import React, { ComponentProps, useState } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
-import { ApolloQueryResult } from 'apollo-client';
 
 import { TouchableOpacity, Text, View, ClickAway } from '../core-ui';
 import {
@@ -16,19 +15,12 @@ import {
   FONT_WEIGHT_MEDIUM,
   FONT_SIZE_SEMI_MEDIUM,
 } from '../constants/theme';
-import { localStorage } from '../helpers';
-import { GetUserProfile } from '../generated/GetUserProfile';
 import arrowIcon from '../assets/images/arrow-down.svg';
+import { useAuth } from '../context/AuthContext';
 
-type Props = {
-  name: string;
-  email: string;
-  refetchProfile: () => Promise<ApolloQueryResult<GetUserProfile>>;
-};
-
-export default function ProfileMenuDropdown(props: Props) {
-  let { name, email, refetchProfile } = props;
+export default function ProfileMenuDropdown() {
   let [menuOpen, setMenuOpen] = useState(false);
+  let { user, logout } = useAuth();
   let history = useHistory();
   const MENUS = [
     {
@@ -46,9 +38,8 @@ export default function ProfileMenuDropdown(props: Props) {
     {
       label: 'Sign Out',
       onPress: () => {
-        localStorage.removeToken();
+        logout();
         history.push('/login');
-        refetchProfile();
       },
     },
   ];
@@ -64,7 +55,7 @@ export default function ProfileMenuDropdown(props: Props) {
           setMenuOpen(!menuOpen);
         }}
       >
-        <Placeholder>{name}</Placeholder>
+        <Placeholder>{user?.firstName}</Placeholder>
         <ArrowIcon src={arrowIcon} alt="arrow-icon" isOpen={menuOpen} />
       </TouchableContainer>
       {menuOpen && (
@@ -76,10 +67,10 @@ export default function ProfileMenuDropdown(props: Props) {
                 fontSize={FONT_SIZE_SEMI_MEDIUM}
                 fontWeight={FONT_WEIGHT_MEDIUM}
               >
-                {name}
+                {user?.firstName}
               </Text>
               <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
-                {email}
+                {user?.email}
               </Text>
             </Header>
             {MENUS.map(({ label, onPress }, index) => {

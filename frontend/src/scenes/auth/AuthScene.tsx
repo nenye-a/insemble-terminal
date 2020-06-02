@@ -1,11 +1,12 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 
-import { localStorage } from '../../helpers';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AuthScene() {
-  let token = localStorage.getToken();
-  if (!!token) {
+  let { isAuthenticated } = useAuth();
+
+  if (isAuthenticated) {
     return <Redirect to="/results" />;
   }
   return <Redirect to="/login" />;

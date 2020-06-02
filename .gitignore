@@ -46,3 +46,7 @@ spritesmith.scss
 
 # templated email
 tmp_email/
+
+# Local Netlify folder
+.netlify
+

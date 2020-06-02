@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { useLazyQuery } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 
 import { TouchableOpacity, View, Button } from '../core-ui';
@@ -9,9 +8,8 @@ import {
   HEADER_SHADOW_COLOR,
   DARK_TEXT_COLOR,
 } from '../constants/colors';
+import { useAuth } from '../context';
 import { SearchVariables } from '../generated/Search';
-import { GetUserProfile } from '../generated/GetUserProfile';
-import { GET_USER_PROFILE } from '../graphql/queries/server/profile';
 
 import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
@@ -25,17 +23,7 @@ type Props = {
 export default function HeaderNavigationBar(props: Props) {
   let { onSearchPress, showSearchBar = false } = props;
   let history = useHistory();
-  let [getProfile, { loading, data, refetch }] = useLazyQuery<GetUserProfile>(
-    GET_USER_PROFILE,
-    {
-      fetchPolicy: 'network-only',
-    },
-  );
-
-  useEffect(() => {
-    getProfile();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  let { isAuthenticated } = useAuth();
 
   return (
     <Container>
@@ -47,7 +35,7 @@ export default function HeaderNavigationBar(props: Props) {
           <SearchFilterBar onSearchPress={onSearchPress} />
         </SearchContainer>
       )}
-      {loading ? null : data ? (
+      {isAuthenticated ? (
         <RowEnd flex>
           <TerminalButton
             mode="transparent"
@@ -57,11 +45,7 @@ export default function HeaderNavigationBar(props: Props) {
               history.push('/terminals');
             }}
           />
-          <ProfileMenuDropdown
-            name={data.userProfile.firstName}
-            email={data.userProfile.email}
-            refetchProfile={refetch}
-          />
+          <ProfileMenuDropdown />
         </RowEnd>
       ) : (
         <RowEnd flex>
