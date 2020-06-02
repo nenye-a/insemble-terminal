@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 generator client {
@@ -189,6 +189,13 @@ model Activity {
   compareData     CompareActivityData[]
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
+}
+
+model CoverageBusiness {
+  id           String             @default(cuid()) @id
+  businessName String?
+  numLocations Int?
+  locations    String
 }
 
 model CoverageData {
