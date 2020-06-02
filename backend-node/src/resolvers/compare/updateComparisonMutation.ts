@@ -261,7 +261,7 @@ export let updateComparisonResolver: FieldResolver<
     case 'NEWS':
       if (actionType === 'DELETE') {
         if (!comparationTagId) {
-          throw new Error('Please selece comparationTag you want to delete');
+          throw new Error('Please select comparationTag you want to delete');
         }
         return await deleteComparisonResolver(
           _,
@@ -365,6 +365,306 @@ export let updateComparisonResolver: FieldResolver<
           return { id: compId };
         });
         table = await context.prisma.news.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+    case 'ACTIVITY':
+      if (actionType === 'DELETE') {
+        if (!comparationTagId) {
+          throw new Error('Please select comparationTag you want to delete');
+        }
+        return await deleteComparisonResolver(
+          _,
+          { reviewTag, comparationTagId, tableId },
+          context,
+          info,
+        );
+      }
+      table = await context.prisma.activity.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      if (actionType === 'DELETE_ALL') {
+        let activity = await context.prisma.activity.findMany({
+          where: {
+            businessTag: table.businessTag
+              ? { id: table.businessTag.id }
+              : null,
+            locationTag: table.locationTag
+              ? { id: table.locationTag.id }
+              : null,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        activity = activity.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
+        );
+        return {
+          reviewTag,
+          tableId: activity[0].id,
+          comparationTags: activity[0].comparationTags,
+        };
+      }
+      if (
+        table.businessTag?.id === comparationTag.businessTag?.id &&
+        table.locationTag?.id === comparationTag.locationTag?.id
+      ) {
+        throw new Error('Cannot compare the same tag');
+      }
+      if (
+        table.comparationTags.some(({ id }) => selectedComparationId === id)
+      ) {
+        throw new Error('Cannot add with same comparation.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = [...selectedComparationIds, selectedComparationId];
+      tables = await context.prisma.activity.findMany({
+        where: {
+          comparationTags: {
+            some: { id: selectedComparationId },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.activity.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+    case 'COVERAGE':
+      if (actionType === 'DELETE') {
+        if (!comparationTagId) {
+          throw new Error('Please select comparationTag you want to delete');
+        }
+        return await deleteComparisonResolver(
+          _,
+          { reviewTag, comparationTagId, tableId },
+          context,
+          info,
+        );
+      }
+      table = await context.prisma.coverage.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      if (actionType === 'DELETE_ALL') {
+        let coverage = await context.prisma.coverage.findMany({
+          where: {
+            businessTag: table.businessTag
+              ? { id: table.businessTag.id }
+              : null,
+            locationTag: table.locationTag
+              ? { id: table.locationTag.id }
+              : null,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        coverage = coverage.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
+        );
+        return {
+          reviewTag,
+          tableId: coverage[0].id,
+          comparationTags: coverage[0].comparationTags,
+        };
+      }
+      if (
+        table.businessTag?.id === comparationTag.businessTag?.id &&
+        table.locationTag?.id === comparationTag.locationTag?.id
+      ) {
+        throw new Error('Cannot compare the same tag');
+      }
+      if (
+        table.comparationTags.some(({ id }) => selectedComparationId === id)
+      ) {
+        throw new Error('Cannot add with same comparation.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = [...selectedComparationIds, selectedComparationId];
+      tables = await context.prisma.coverage.findMany({
+        where: {
+          comparationTags: {
+            some: { id: selectedComparationId },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.coverage.create({
           data: {
             businessTag: table.businessTag
               ? {
