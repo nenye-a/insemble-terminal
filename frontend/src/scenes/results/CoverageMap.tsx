@@ -2,6 +2,7 @@ import React from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
+import { GRAY } from '../../constants/colors';
 
 type Props = {
   data: Array<CoverageData>; // TODO: change type
@@ -49,7 +50,10 @@ function pinSymbol(color: string) {
       'M6.3,16.8v-.035c.462-2.22,2.038-4.405,4.192-6.555l.269-.247.115-.106A5.189,5.189,0,0,0,12.3,6.3,5.773,5.773,0,0,0,6.3.8h0a5.773,5.773,0,0,0-6,5.5A5.189,5.189,0,0,0,1.723,9.857l.115.106a1.71,1.71,0,0,0,.269.247c2.154,2.15,3.731,4.335,4.192,6.555V16.8m0-8.141A2.476,2.476,0,0,1,3.723,6.3,2.476,2.476,0,0,1,6.3,3.937,2.476,2.476,0,0,1,8.877,6.3,2.476,2.476,0,0,1,6.3,8.659Z',
     fillColor: color,
     fillOpacity: 1,
-    strokeWeight: 0,
+    strokeWeight: 1,
+    strokeColor: GRAY,
+    strokeOpacity: 0.2,
+    scale: 1.5,
   };
 }
 
