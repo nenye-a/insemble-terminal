@@ -28,7 +28,7 @@ export const DISABLED_TEXT_COLOR = SLIGHT_GRAY;
 export const LINK_COLOR = BLUE;
 
 // DataTable colors
-export const TABLE_BORDER_COLOR = DARK_GRAY;
+export const TABLE_BORDER_COLOR = LIGHTER_GRAY;
 export const TABLE_HEADER_BACKGROUND = DARKER_PURPLE;
 export const TABLE_PURPLE_BACKGROUND = LIGHT_PURPLE;
 

@@ -118,9 +118,15 @@ const HeaderCellText = styled(Text)`
   color: ${WHITE};
 `;
 
+const Body = styled(View)`
+  height: 350px;
+  overflow-y: scroll;
+`;
+
 DataTable.HeaderRow = HeaderRow;
 DataTable.HeaderCell = HeaderCell;
 DataTable.Row = Row;
 DataTable.Cell = Cell;
+DataTable.Body = Body;
 
 export default DataTable;
