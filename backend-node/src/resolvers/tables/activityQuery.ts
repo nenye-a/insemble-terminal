@@ -2,11 +2,12 @@ import { queryField, FieldResolver, stringArg } from 'nexus';
 import axios from 'axios';
 
 import { Root, Context } from 'serverTypes';
-import { PyActivityData, PyActivityTimes, PyActivityResponse } from 'dataTypes';
+import { PyActivityData, PyActivityResponse } from 'dataTypes';
 import { API_URI } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 import { LocationTag, BusinessTag } from '@prisma/client';
+import { objectToActivityGraph } from '../../helpers/objectToActivityGraph';
 
 let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
   _: Root,
@@ -85,10 +86,12 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         );
         let activityData = activityUpdate.data.map(
           ({ name, location, activity }) => {
+            let arrayActiviy = objectToActivityGraph(activity, name, location);
             return {
               name: name || '-',
               location: location || '-',
-              activityData: { create: flipKeys(activity) },
+              activityData:
+                arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
             };
           },
         );
@@ -101,10 +104,12 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
           rawCompareData = rawCompareData.concat(compareDataUpdate.data);
         }
         let compareData = rawCompareData.map(({ name, location, activity }) => {
+          let arrayActiviy = objectToActivityGraph(activity, name, location);
           return {
             name: name || '-',
             location: location || '-',
-            activityData: { create: flipKeys(activity) },
+            activityData:
+              arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
           };
         });
         await context.prisma.activityData.deleteMany({
@@ -139,10 +144,12 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
       let activityUpdate = await getActivityData(locationTag, businessTag);
       let activityData = activityUpdate.data.map(
         ({ name, location, activity }) => {
+          let arrayActiviy = objectToActivityGraph(activity, name, location);
           return {
             name: name || '-',
             location: location || '-',
-            activityData: { create: flipKeys(activity) },
+            activityData:
+              arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
           };
         },
       );
@@ -169,6 +176,7 @@ const getActivityData = async (
   locationTag: LocationTag | null | undefined,
   businessTag: BusinessTag | null | undefined,
 ) => {
+  console.log(locationTag, businessTag);
   let activityUpdate: PyActivityResponse = (
     await axios.get(`${API_URI}/api/activity`, {
       params: {
@@ -189,16 +197,6 @@ const getActivityData = async (
     })
   ).data;
   return activityUpdate;
-};
-
-const flipKeys = (activity: PyActivityTimes) => {
-  let activityData = Object();
-  for (let [key, value] of Object.entries(activity)) {
-    /* '1AM' -> 'AM1' or '12AM' -> 'AM12' */
-    let newKey = key.slice(-2).concat(key.slice(0, -2));
-    activityData[newKey] = value;
-  }
-  return activityData;
 };
 
 let activityTable = queryField('activityTable', {

@@ -15,17 +15,17 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
 ) => {
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
-      where: {
-        id: businessTagId,
-      },
-    })
+        where: {
+          id: businessTagId,
+        },
+      })
     : undefined;
   let locationTag = locationTagId
     ? await context.prisma.locationTag.findOne({
-      where: {
-        id: locationTagId,
-      },
-    })
+        where: {
+          id: locationTagId,
+        },
+      })
     : undefined;
 
   let coverage;
@@ -79,16 +79,16 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
           selectedCoverage.locationTag,
           selectedCoverage.businessTag,
         );
-        let coverageData = convertCoverage(coverageUpdate.data)
+        let coverageData = convertCoverage(coverageUpdate.data);
         let rawCompareData: Array<PyCoverageData> = [];
         for (let comparationTag of selectedCoverage.comparationTags) {
           let compareCoverageUpdate = await getCoverageData(
             comparationTag.locationTag,
-            comparationTag.businessTag
+            comparationTag.businessTag,
           );
           rawCompareData = rawCompareData.concat(compareCoverageUpdate.data);
         }
-        let compareData = convertCoverage(rawCompareData)
+        let compareData = convertCoverage(rawCompareData);
         await context.prisma.coverageData.deleteMany({
           where: {
             coverage: {
@@ -108,7 +108,7 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
           data: {
             data: { create: coverageData },
             compareData: { create: compareData },
-            updatedAt: new Date()
+            updatedAt: new Date(),
           },
         });
       } catch (e) {
@@ -120,7 +120,7 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
     try {
       let coverageUpdate = await getCoverageData(locationTag, businessTag);
       // console.log(coverageUpdate)
-      let coverageData = convertCoverage(coverageUpdate.data)
+      let coverageData = convertCoverage(coverageUpdate.data);
       selectedCoverage = await context.prisma.coverage.create({
         data: {
           data: { create: coverageData },
@@ -134,11 +134,11 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
       });
     } catch (e) {
       console.log(e);
-      throw new Error('Failed to create data.')
+      throw new Error('Failed to create data.');
     }
   }
   return selectedCoverage;
-}
+};
 
 const getCoverageData = async (
   locationTag: LocationTag | null | undefined,
@@ -149,22 +149,22 @@ const getCoverageData = async (
       params: {
         location: locationTag
           ? {
-            locationType: locationTag.type,
-            params: locationTag.params,
-          }
+              locationType: locationTag.type,
+              params: locationTag.params,
+            }
           : undefined,
         business: businessTag
           ? {
-            businessType: businessTag.type,
-            params: businessTag.params,
-          }
+              businessType: businessTag.type,
+              params: businessTag.params,
+            }
           : undefined,
       },
       paramsSerializer: axiosParamsSerializer,
     })
   ).data;
-  return coverageUpdate
-}
+  return coverageUpdate;
+};
 
 const convertCoverage = (coverageDataList: Array<PyCoverageData>) => {
   let coverageData = coverageDataList.map(
@@ -178,14 +178,14 @@ const convertCoverage = (coverageDataList: Array<PyCoverageData>) => {
                 lng,
                 name,
                 address,
-                numReviews: num_reviews
-              }
-            }
-          )
+                numReviews: num_reviews,
+              };
+            },
+          );
           return {
             businessName: business_name || '_',
             numLocations: num_locations || 0,
-            locations: { create: insertLocations }
+            locations: insertLocations,
           };
         },
       );
@@ -193,12 +193,13 @@ const convertCoverage = (coverageDataList: Array<PyCoverageData>) => {
         name: name || '-',
         location: location || '_',
         numLocations: num_locations || 0,
-        coverageData: { create: insertCoverage }
+        coverageData:
+          insertCoverage.length > 0 ? JSON.stringify(insertCoverage) : '[]',
       };
     },
   );
-  return coverageData
-}
+  return coverageData;
+};
 
 let coverageTable = queryField('coverageTable', {
   type: 'Coverage',
@@ -207,7 +208,7 @@ let coverageTable = queryField('coverageTable', {
     locationTagId: stringArg(),
     tableId: stringArg(),
   },
-  resolve: coverageResolver
-})
+  resolve: coverageResolver,
+});
 
 export { coverageTable };
