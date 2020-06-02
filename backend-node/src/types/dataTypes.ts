@@ -66,3 +66,30 @@ export type PyActivityResponse = {
   updatedAt: Date;
   data: Array<PyActivityData>;
 };
+
+export type PyCoverageLocations = {
+  lat: number;
+  lng: number;
+  name: string;
+  address: string;
+  num_reviews: number;
+};
+
+export type PyCoverageBusiness = {
+  business_name: string;
+  num_locations: number;
+  locations: Array<PyCoverageLocations>;
+}
+
+export type PyCoverageData = {
+  name: string;
+  location: string;
+  num_locations: number;
+  coverage: Array<PyCoverageBusiness>;
+}
+
+export type PyCoverageResponse = {
+  createdAt: Date;
+  updatedAt: Date;
+  data: PyCoverageData[];
+}
