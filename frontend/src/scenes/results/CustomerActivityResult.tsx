@@ -1,13 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
 import { ReviewTag } from '../../generated/globalTypes';
-import {
-  DUMMY_ACTIVITY_DATA,
-  DUMMY_ACTIVITY_COMPARE_DATA,
-} from '../../fixtures/dummyData';
+import { GetActivity, GetActivityVariables } from '../../generated/GetActivity';
+import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
 import ActivityChart from './ActivityChart';
@@ -17,29 +16,32 @@ type Props = {
   locationTagId?: string;
 };
 
-export default function CustomerActivityResult(_props: Props) {
-  // TODO: change to useQuery
-  let { data, loading, error } = {
-    loading: false,
-    data: {
-      data: DUMMY_ACTIVITY_DATA,
-      compareData: DUMMY_ACTIVITY_COMPARE_DATA,
+export default function CustomerActivityResult(props: Props) {
+  let { businessTagId, locationTagId } = props;
+  let { data, loading, error, refetch } = useQuery<
+    GetActivity,
+    GetActivityVariables
+  >(GET_ACTIVITY_DATA, {
+    variables: {
+      businessTagId,
+      locationTagId,
     },
-    error: null,
-  };
-  let noData = data.data.length === 0;
+  });
+  let noData = data?.activityTable.data.length === 0;
 
   return (
     <Container>
       <ResultTitle
         title="Customer Activity"
         noData={noData}
-        reviewTag={ReviewTag.PERFORMANCE} // change enum
-        tableId=""
-        onTableIdChange={(_newTableId: string) => {
-          // TODO: refetch
+        reviewTag={ReviewTag.ACTIVITY}
+        tableId={data?.activityTable.id || ''}
+        onTableIdChange={(newTableId: string) => {
+          refetch({
+            tableId: newTableId,
+          });
         }}
-        comparisonTags={[]}
+        comparisonTags={data?.activityTable.comparationTags}
       />
       {loading ? (
         <LoadingIndicator />
@@ -48,7 +50,10 @@ export default function CustomerActivityResult(_props: Props) {
       ) : noData ? (
         <EmptyDataComponent text="Consumer activity details are not available at this scope. Please include a brand." />
       ) : (
-        <ActivityChart data={data.data} compareData={data.compareData} />
+        <ActivityChart
+          data={data?.activityTable.data}
+          compareData={data?.activityTable.compareData}
+        />
       )}
     </Container>
   );

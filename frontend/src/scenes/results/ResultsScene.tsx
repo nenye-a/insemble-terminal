@@ -22,6 +22,7 @@ import OverallPerformanceResult from './OverallPerformanceResult';
 import PerformanceByBrandResult from './PerformanceByBrandResult';
 import PerformanceByCategoryResult from './PerformanceByCategoryResult';
 import LatestNewsResult from './LatestNewsResult';
+import CustomerActivityResult from './CustomerActivityResult';
 
 export default function ResultsScene() {
   let [
@@ -81,6 +82,8 @@ export default function ResultsScene() {
                 }
               } else if (reviewTag === ReviewTag.NEWS) {
                 return <LatestNewsResult {...props} />;
+              } else if (reviewTag === ReviewTag.ACTIVITY) {
+                return <CustomerActivityResult {...props} />;
               }
               return null;
             })}

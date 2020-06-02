@@ -106,3 +106,60 @@ export const GET_NEWS_TABLE_DATA = gql`
     }
   }
 `;
+
+export const GET_ACTIVITY_DATA = gql`
+  query GetActivity(
+    $businessTagId: String
+    $locationTagId: String
+    $tableId: String
+  ) {
+    activityTable(
+      businessTagId: $businessTagId
+      locationTagId: $locationTagId
+      tableId: $tableId
+    ) {
+      id
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      data {
+        name
+        location
+        activityData {
+          name
+          business
+          amount
+        }
+      }
+      compareData {
+        name
+        location
+        activityData {
+          name
+          business
+          amount
+        }
+      }
+      comparationTags {
+        id
+        locationTag {
+          id
+          params
+          type
+        }
+        businessTag {
+          id
+          params
+          type
+        }
+      }
+    }
+  }
+`;

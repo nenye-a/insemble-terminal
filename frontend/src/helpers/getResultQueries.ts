@@ -84,12 +84,11 @@ export default function getResultQueries(
       queries.push({ reviewTag, type: 'COVERAGE' });
     }
   }
-  // Enable this when reviewTag enum has Activity
-  // if (reviewTag === 'ACTIVITY') {
-  //   if (businessTag?.type === BusinessType.BUSINESS) {
-  //     queries.push({ reviewTag, type: 'ACTIVITY' });
-  //   }
-  // }
+  if (reviewTag === 'ACTIVITY') {
+    if (businessTag?.type === BusinessType.BUSINESS) {
+      queries.push({ reviewTag, type: 'ACTIVITY' });
+    }
+  }
   // brand only
   if (!reviewTag && businessTag?.type === BusinessType.BUSINESS) {
     queries.push({ reviewTag, type: 'NEWS' });
