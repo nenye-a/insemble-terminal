@@ -37,6 +37,14 @@ export default function isSearchCombinationValid(
       (typeof businessTag === 'string' ||
         businessTag?.type === BusinessType.BUSINESS) &&
       (!hasLocationTag ||
+        (hasLocationTag && locationTag?.type !== LocationTagType.ADDRESS))
+    ) {
+      return true;
+    } else if (
+      hasBusinessTag &&
+      typeof businessTag !== 'string' &&
+      businessTag?.type === BusinessType.CATEGORY &&
+      (!hasLocationTag ||
         (hasLocationTag &&
           locationTag?.type !== LocationTagType.ADDRESS &&
           locationTag?.type !== LocationTagType.NATION))
