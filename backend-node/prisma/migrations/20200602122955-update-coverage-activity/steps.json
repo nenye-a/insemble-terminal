@@ -1,0 +1,53 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "UpdateEnum",
+      "enum": "ReviewTag",
+      "createdValues": [
+        "ACTIVITY"
+      ]
+    },
+    {
+      "tag": "DeleteModel",
+      "model": "ActivityTimes"
+    },
+    {
+      "tag": "DeleteModel",
+      "model": "CoverageLocation"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "ActivityData",
+      "field": "activityData",
+      "type": "String"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "CompareActivityData",
+      "field": "activityData",
+      "type": "String"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "CoverageBusiness",
+      "field": "locations",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "CoverageData",
+      "field": "coverageData",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "CompareCoverageData",
+      "field": "coverageData",
+      "type": "String",
+      "arity": "Required"
+    }
+  ]
+}
