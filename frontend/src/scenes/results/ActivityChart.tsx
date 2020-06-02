@@ -1,5 +1,3 @@
-// TODO: remove this when BE ready
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import {
   LineChart,
@@ -24,18 +22,25 @@ import {
   FONT_SIZE_LARGE,
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
+import {
+  GetActivity_activityTable_data as ActivityTableData,
+  GetActivity_activityTable_compareData as ActivityTableCompareData,
+} from '../../generated/GetActivity';
 
 type Props = {
-  data: Array<any>;
-  compareData: Array<any>;
+  data?: Array<ActivityTableData>;
+  compareData?: Array<ActivityTableCompareData>;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ChartDatum = { [key: string]: any };
 
 export default function ActivityChart(props: Props) {
   let { data, compareData } = props;
 
-  let mergedData = [data, ...compareData];
+  let mergedData = [...data, ...compareData].map((item) => [
+    ...item.activityData,
+  ]);
 
   let { tooltipData, lineChartData } = prepareLineChartData(
     mergedData,
@@ -70,16 +75,20 @@ export default function ActivityChart(props: Props) {
       <Row>
         <LineChart height={200} width={745} data={lineChartData}>
           <CartesianGrid vertical={false} />
-          <XAxis dataKey="name" tick={textStyle} />
+          <XAxis
+            dataKey="name"
+            tick={textStyle}
+            tickFormatter={(val) => val.toLowerCase().replace('m', '')}
+          />
           <YAxis axisLine={false} tickLine={false} tick={textStyle} />
           <Tooltip wrapperStyle={textStyle} />
           {lines}
         </LineChart>
         <LegendContainer flex>
           {tooltipData.map((legend, idx) => (
-            <Row style={{ alignItems: 'center' }} key={idx}>
+            <Row style={{ alignItems: 'baseline' }} key={idx}>
               <Circle style={{ borderColor: CHART_COLORS[idx] }} />
-              <Text style={{ color: CHART_COLORS[idx] }}>{legend}</Text>
+              <Text>{legend.replace('(', '\n(')}</Text>
             </Row>
           ))}
         </LegendContainer>
