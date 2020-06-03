@@ -3,13 +3,21 @@ import google
 import utils
 import time
 
+TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 
-def google_detailer(batch_size=300, wait=True, additional_query=None):
+
+def google_detailer(batch_size=100, wait=True, additional_query=None):
     """
     Google detail collector.
     """
 
-    query = {'google_details': {'$exists': False}, 'address': {'$exists': True}}
+    query = {
+        '$or': [
+            {'last_update': {'$exists': False}},
+            {'last_update': {'$lt': dt.datetime.now() - dt.timedelta(weeks=2)}}
+        ],
+        'address': {'$exists': True}
+    }
     additional_query and query.update(additional_query)
 
     size = {'size': batch_size}
@@ -55,7 +63,11 @@ def google_detailer(batch_size=300, wait=True, additional_query=None):
                 details['meta']['address'],
                 details['meta']['_id']
             ))
-        print('GOOGLE_COLLECTOR: Batch complete, searching for more locations.')
+        print('GOOGLE_COLLECTOR: Batch complete, updated {count} places. '
+              'searching for more locations. Last Update: {update_time}'.format(
+                  count=len(google_details),
+                  update_time=dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+              ))
 
 
 def saved_update(query, update):
@@ -71,24 +83,29 @@ def saved_update(query, update):
     history = utils.DB_PLACES_HISTORY
     update_time = dt.datetime.now()
 
+    update['$set'] = dict(update.get('$set', {}),
+                          **{'last_update': update_time})
+
     previous = table.find_one_and_update(
         query,
-        dict(update, **{'$inc': {'version': 1},
-                        'last_update': update_time})
+        dict(update, **{'$inc': {'version': 1}})
     )
     new = table.find_one(query)
     diff = utils.dictionary_diff(previous, new)
-    diff.pop('version')
+    diff.pop('version'), diff.pop('last_update')
 
     if diff != {}:
         history_update = dict(diff, **{
-            "revision": previous.pop('version', 0),
+            "version": previous.pop('version', 0),
             "revised_time": update_time,
         })
 
         history.update_one({'place_id': previous['_id']}, {
             '$push': {
-                'revisions': history_update
+                'revisions': {
+                    '$each': [history_update],
+                    '$position': 0
+                }
             },
             '$setOnInsert': {
                 'place_id': previous['_id']
@@ -96,5 +113,20 @@ def saved_update(query, update):
         }, upsert=True)
 
 
+def check_recency():
+
+    twoweeks = dt.datetime.now() - dt.timedelta(weeks=2)
+    print("Not updated in last 2 weeks:", utils.DB_TERMINAL_PLACES.count_documents(
+        {'last_update': {'$lt': twoweeks}}
+    ))
+    print("Updated recently:", utils.DB_TERMINAL_PLACES.count_documents(
+        {'last_update': {'$gt': twoweeks}}
+    ))
+    print("No update timestamp:", utils.DB_TERMINAL_PLACES.count_documents(
+        {'last_update': {'$eq': None}}
+    ))
+
+
 if __name__ == "__main__":
-    pass
+    google_detailer(wait=True)
+    # check_recency()

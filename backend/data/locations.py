@@ -588,54 +588,6 @@ def get_zoom_radius(zoom):
     return BASELINE_RADIUS * 2**(BASELINE_ZOOM - zoom)
 
 
-def google_detailer(batch_size=300, wait=True, additional_query=None):
-    """
-    Google detail collector.
-    """
-
-    query = {'google_details': {'$exists': False}, 'address': {'$exists': True}}
-    additional_query and query.update(additional_query)
-
-    size = {'size': batch_size}
-
-    collecting = True
-
-    while collecting:
-
-        places = list(utils.DB_TERMINAL_PLACES.aggregate([
-            {'$match': query},
-            {'$sample': size}
-        ]))
-
-        if len(places) == 0:
-            if wait:
-                print('GOOGLE_COLLECTOR: No un-processed name_addresses observed, '
-                      'waiting 10 seconds for new locations...')
-                time.sleep(10)
-                continue
-            else:
-                collecting = False
-
-        google_details = google.get_many_google_details(places)
-
-        for details in google_details:
-            city = utils.extract_city(details['meta']['address'])
-            place_type = utils.modify_word(details['data']['type'].split(" in ")[0])
-            utils.DB_TERMINAL_PLACES.update_one({
-                '_id': details['meta']['_id']
-            }, {'$set': {
-                'type': place_type,
-                'city': city,
-                'google_details': details['data']
-            }})
-            print('GOOGLE_COLLECTOR: Updated {} at {} ({}) with google details.'.format(
-                details['meta']['name'],
-                details['meta']['address'],
-                details['meta']['_id']
-            ))
-        print('GOOGLE_COLLECTOR: Batch complete, searching for more locations.')
-
-
 def opentable_detailer(batch_size=300, wait=True):
     """
     FIXME: Needs to be fixed to run. $text and $geoNear can't be in the same query
@@ -862,10 +814,5 @@ if __name__ == "__main__":
     # collect_locations_test()
     # divide_region_test()
     # print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
-    # google_detailer(batch_size=120, additional_query={
-    #     '$text': {'$search': 'Clips'},
-    #     'address': {"$regex": ".*FL"}
-    # })
-    # google_detailer(batch_size=10)
     # location_detailer(batch_size=300)
     opentable_detailer(batch_size=10)

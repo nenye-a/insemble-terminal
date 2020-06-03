@@ -49,6 +49,8 @@ def create_index(collection):
             unique=True,
             partialFilterExpression={'name': {'$exists': True}, 'address': {'$exists': True}}
         )
+        DB_TERMINAL_PLACES.create_index([('last_update', -1)])
+        DB_TERMINAL_PLACES.create_index([('version', 1)])
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
@@ -440,7 +442,7 @@ if __name__ == "__main__":
 
     # RUN
 
-    create_index("places_history")
+    create_index("terminal")
 
     # TESTS
 
