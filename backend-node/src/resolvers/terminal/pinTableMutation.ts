@@ -16,6 +16,42 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
   if (!user) {
     throw new Error('User not found!');
   }
+  let table;
+  switch (tableType) {
+    case 'ACTIVITY':
+      table = await context.prisma.activity.findOne({
+        where: { id: tableId },
+      });
+      break;
+    case 'COVERAGE':
+      table = await context.prisma.coverage.findOne({
+        where: { id: tableId },
+      });
+      break;
+    case 'NEWS':
+      table = await context.prisma.news.findOne({
+        where: { id: tableId },
+      });
+      break;
+    case 'OWNERSHIP_CONTACT':
+      table = await context.prisma.ownershipContact.findOne({
+        where: { id: tableId },
+      });
+      break;
+    case 'OWNERSHIP_INFO':
+      table = await context.prisma.ownershipInfo.findOne({
+        where: { id: tableId },
+      });
+      break;
+    case 'PERFORMANCE':
+      table = await context.prisma.performance.findOne({
+        where: { id: tableId },
+      });
+      break;
+  }
+  if (!table) {
+    throw new Error('Table not found');
+  }
 
   let selectedTerminal = await context.prisma.terminal.findOne({
     where: {
