@@ -9,6 +9,8 @@ let isUserAuthenticated = rule()(async (_, __, ctx: Context) => {
 let permissions = shield({
   Query: {
     userProfile: isUserAuthenticated,
+    userTerminals: isUserAuthenticated,
+    terminal: isUserAuthenticated,
   },
   Mutation: {
     search: isUserAuthenticated,
