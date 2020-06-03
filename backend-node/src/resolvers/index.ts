@@ -17,3 +17,5 @@ export * from './tables/ownershipInfoQuery';
 
 export * from './terminal/userTerminalsQuery';
 export * from './terminal/terminalQuery';
+export * from './terminal/createTerminalMutation';
+export * from './terminal/deleteTerminalMutation';
