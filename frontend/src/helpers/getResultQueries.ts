@@ -73,7 +73,7 @@ export default function getResultQueries(
       (!businessTag || businessTag.type === BusinessType.BUSINESS) &&
       locationTag?.type === LocationTagType.ADDRESS
     ) {
-      queries.push({ reviewTag, type: 'PROPERTY_OWNER_INFORMATION' });
+      queries.push({ reviewTag, type: 'PROPERTY_INFORMATION' });
     }
   }
   if (reviewTag === ReviewTag.COVERAGE) {
