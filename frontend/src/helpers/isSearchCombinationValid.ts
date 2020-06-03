@@ -50,6 +50,15 @@ export default function isSearchCombinationValid(
     ) {
       return true;
     }
+  } else if (formattedReviewTag === ReviewTag.OWNERSHIP) {
+    if (locationTag?.type === LocationTagType.ADDRESS) {
+      return true;
+    } else if (
+      typeof businessTag === 'string' ||
+      businessTag?.type === BusinessType.BUSINESS
+    ) {
+      return true;
+    }
   } else if (!hasReviewTag) {
     if (
       (((typeof businessTag !== 'string' &&

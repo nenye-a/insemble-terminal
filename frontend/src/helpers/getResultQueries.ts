@@ -58,9 +58,6 @@ export default function getResultQueries(
   }
   if (reviewTag === ReviewTag.OWNERSHIP) {
     if (businessTag?.type === BusinessType.BUSINESS) {
-      queries.push({ reviewTag, type: 'COMPANY_INFORMATION' });
-    }
-    if (businessTag?.type === BusinessType.BUSINESS) {
       queries.push({ reviewTag, type: 'COMPANY_CONTACT' });
     }
     if (
@@ -68,6 +65,9 @@ export default function getResultQueries(
       locationTag?.type === LocationTagType.ADDRESS
     ) {
       queries.push({ reviewTag, type: 'PROPERTY_CONTACT' });
+    }
+    if (businessTag?.type === BusinessType.BUSINESS) {
+      queries.push({ reviewTag, type: 'COMPANY_INFORMATION' });
     }
     if (
       (!businessTag || businessTag.type === BusinessType.BUSINESS) &&

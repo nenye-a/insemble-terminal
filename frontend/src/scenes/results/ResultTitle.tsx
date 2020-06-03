@@ -29,6 +29,7 @@ type Props = {
   tableId: string;
   onTableIdChange?: (tableId: string) => void;
   comparisonTags?: Array<ComparationTag>;
+  canCompare?: boolean;
 };
 
 export default function ResultTitle(props: Props) {
@@ -39,6 +40,7 @@ export default function ResultTitle(props: Props) {
     tableId,
     onTableIdChange,
     comparisonTags,
+    canCompare = true,
   } = props;
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
@@ -107,19 +109,25 @@ export default function ResultTitle(props: Props) {
             </>
           )
         ) : null}
-        <Popover
-          isOpen={comparisonPopoverOpen}
-          content={comparisonPopover}
-          position={['bottom']}
-          onClickOutside={() => setComparisonPopoverOpen(false)}
-          align="end"
-        >
-          {(ref) => (
-            <Touchable ref={ref} onPress={() => setComparisonPopoverOpen(true)}>
-              <SvgRoundAdd />
-            </Touchable>
-          )}
-        </Popover>
+        {canCompare && (
+          <Popover
+            isOpen={comparisonPopoverOpen}
+            content={comparisonPopover}
+            position={['bottom']}
+            onClickOutside={() => setComparisonPopoverOpen(false)}
+            align="end"
+          >
+            {(ref) => (
+              <Touchable
+                ref={ref}
+                onPress={() => setComparisonPopoverOpen(true)}
+              >
+                <SvgRoundAdd />
+              </Touchable>
+            )}
+          </Popover>
+        )}
+
         <Popover
           isOpen={pinPopoverOpen}
           content={pinPopover}

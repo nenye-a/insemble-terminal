@@ -175,7 +175,7 @@ export const GET_OWNERSHIP_CONTACT_DATA = gql`
       ownershipType: $ownershipType
       businessTagId: $businessTagId
       locationTagId: $locationTagId
-      tabldId: $tableId
+      tableId: $tableId
     ) {
       id
       type
@@ -210,7 +210,7 @@ export const GET_OWNERSHIP_INFO_DATA = gql`
       ownershipType: $ownershipType
       businessTagId: $businessTagId
       locationTagId: $locationTagId
-      tabldId: $tableId
+      tableId: $tableId
     ) {
       id
       type

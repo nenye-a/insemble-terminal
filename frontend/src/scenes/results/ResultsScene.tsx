@@ -13,7 +13,7 @@ import { FONT_SIZE_XLARGE } from '../../constants/theme';
 import { SEARCH } from '../../graphql/queries/server/search';
 import { Search, SearchVariables } from '../../generated/Search';
 import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
-import { ResultQuery } from '../../types/types';
+import { ResultQuery, OwnershipType } from '../../types/types';
 import { getResultQueries } from '../../helpers';
 import SvgArrowUp from '../../components/icons/arrow-up';
 
@@ -23,6 +23,10 @@ import PerformanceByBrandResult from './PerformanceByBrandResult';
 import PerformanceByCategoryResult from './PerformanceByCategoryResult';
 import LatestNewsResult from './LatestNewsResult';
 import CustomerActivityResult from './CustomerActivityResult';
+import PropertyOwnerInformationResult from './PropertyOwnerInformationResult';
+import CompanyInformationResult from './CompanyInformationResult';
+import PropertyContactsResult from './PropertyContactsResult';
+import CompanyContactsResult from './CompanyContactsResult';
 
 export default function ResultsScene() {
   let [
@@ -84,6 +88,16 @@ export default function ResultsScene() {
                 return <LatestNewsResult {...props} />;
               } else if (reviewTag === ReviewTag.ACTIVITY) {
                 return <CustomerActivityResult {...props} />;
+              } else if (reviewTag === ReviewTag.OWNERSHIP) {
+                if (type === OwnershipType.PROPERTY_CONTACT) {
+                  return <PropertyContactsResult {...props} />;
+                } else if (type === OwnershipType.COMPANY_CONTACT) {
+                  return <CompanyContactsResult {...props} />;
+                } else if (type === OwnershipType.PROPERTY_INFORMATION) {
+                  return <PropertyOwnerInformationResult {...props} />;
+                } else if (type === OwnershipType.COMPANY_INFORMATION) {
+                  return <CompanyInformationResult {...props} />;
+                }
               }
               return null;
             })}

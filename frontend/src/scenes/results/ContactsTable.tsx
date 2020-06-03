@@ -1,13 +1,14 @@
 import React from 'react';
 
 import { DataTable } from '../../components';
+import { GetOwnershipContactData_ownershipContactTable_data as ContactData } from '../../generated/GetOwnershipContactData';
 
 type Props = {
-  data: Array<unknown>; // change later
+  data?: Array<ContactData>;
 };
 
 export default function ContactsTable(props: Props) {
-  let { data } = props;
+  let { data = [] } = props;
   return (
     <DataTable>
       <DataTable.HeaderRow>
@@ -16,13 +17,14 @@ export default function ContactsTable(props: Props) {
         <DataTable.HeaderCell align="right">Phone</DataTable.HeaderCell>
         <DataTable.HeaderCell align="right">Email</DataTable.HeaderCell>
       </DataTable.HeaderRow>
-      {data.map((_row, index) => {
+      {data.map((row, index) => {
+        let { name, email, phone, title } = row;
         return (
           <DataTable.Row key={index}>
-            <DataTable.Cell width={260}>{'name'}</DataTable.Cell>
-            <DataTable.Cell align="right">{'title'}</DataTable.Cell>
-            <DataTable.Cell align="right">{'phone'}</DataTable.Cell>
-            <DataTable.Cell align="right">{'email'}</DataTable.Cell>
+            <DataTable.Cell width={260}>{name}</DataTable.Cell>
+            <DataTable.Cell align="right">{title}</DataTable.Cell>
+            <DataTable.Cell align="right">{phone}</DataTable.Cell>
+            <DataTable.Cell align="right">{email}</DataTable.Cell>
           </DataTable.Row>
         );
       })}

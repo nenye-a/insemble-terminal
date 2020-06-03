@@ -4,7 +4,12 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
-import { ReviewTag } from '../../generated/globalTypes';
+import { ReviewTag, OwnershipType } from '../../generated/globalTypes';
+import {
+  GetOwnershipContactData,
+  GetOwnershipContactDataVariables,
+} from '../../generated/GetOwnershipContactData';
+import { GET_OWNERSHIP_CONTACT_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
 import ContactsTable from './ContactsTable';
@@ -16,14 +21,18 @@ type Props = {
 
 export default function CompanyContactsResult(props: Props) {
   let { businessTagId, locationTagId } = props;
-  let { data, loading, error, refetch } = {
-    data: [],
-    loading: false,
-    error: null,
-    refetch: () => {},
-  };
+  let { data, loading, error, refetch } = useQuery<
+    GetOwnershipContactData,
+    GetOwnershipContactDataVariables
+  >(GET_OWNERSHIP_CONTACT_DATA, {
+    variables: {
+      businessTagId,
+      locationTagId,
+      ownershipType: OwnershipType.COMPANY,
+    },
+  });
 
-  let noData = false;
+  let noData = data?.ownershipContactTable.data.length === 0;
 
   return (
     <Container>
@@ -31,11 +40,14 @@ export default function CompanyContactsResult(props: Props) {
         title="Company Contacts"
         noData={noData}
         reviewTag={ReviewTag.OWNERSHIP}
-        tableId={''}
-        onTableIdChange={(_newTableId: string) => {
-          refetch();
+        tableId={data?.ownershipContactTable.id || ''}
+        onTableIdChange={(newTableId: string) => {
+          refetch({
+            tableId: newTableId,
+            ownershipType: OwnershipType.COMPANY,
+          });
         }}
-        comparisonTags={[]}
+        canCompare={false}
       />
       {loading ? (
         <LoadingIndicator />
@@ -44,7 +56,7 @@ export default function CompanyContactsResult(props: Props) {
       ) : noData ? (
         <EmptyDataComponent text="Company contacts not available at this scope. Widen scope of search to see latest news." />
       ) : (
-        <ContactsTable data={[]} />
+        <ContactsTable data={data?.ownershipContactTable.data} />
       )}
     </Container>
   );

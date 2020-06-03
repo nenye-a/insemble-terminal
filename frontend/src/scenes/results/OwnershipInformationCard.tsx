@@ -6,15 +6,21 @@ import { FONT_WEIGHT_MEDIUM, FONT_SIZE_XSMALL } from '../../constants/theme';
 import { GRAY, SHADOW_COLOR, WHITE } from '../../constants/colors';
 
 type Props = {
-  name: string;
-  address: string;
-  phone: string;
-  website: string;
-  lastUpdate: string;
+  name?: string;
+  address?: string;
+  phone?: string;
+  website?: string;
+  lastUpdate?: string;
 };
 
 export default function OwnershipInformationCard(props: Props) {
-  let { name, address, phone, website, lastUpdate } = props;
+  let {
+    name = '',
+    address = '',
+    phone = '',
+    website = '',
+    lastUpdate = '',
+  } = props;
   return (
     <Container>
       <Row>
