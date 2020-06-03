@@ -16,24 +16,26 @@ HUNT_EMAIL_ENDPOINT = 'https://api.hunter.io/v2/email-finder?'
 # property contact lookup
 def find_property_contacts(address):
     # find the company who owns the property (using local city DB like data.lacity.org)
-    name = find_business_name(address)
+    businesses = find_business(address)
+    company = {}
+    contacts = {}
 
-    # find the headquarters, phone number, and website of the company
-    company = google.get_company(name)
-    # check hunter for emails
-    contacts = get_emails(company['website'])
+    # TODO: figure out best way to organize real estate info
+    for business in businesses:
+        # find the headquarters, phone number, and website of the company
+        business['company'] = google.get_company(business['business_name'])
+        # check hunter for emails
+        business['contacts'] = get_emails(business['company']['website'])
+        # find the name of the agent and mailing address of the business
+        business['agent'] = None
 
-    # find the name of the agent and mailing address of the business
-    # TODO: find agent name
 
     # check crittenden/icsc for contacts
     # TODO: check crittenden/icsc for contacts
 
     return company, contacts
 
-def find_business_name(address, business_name=None):
-    # TODO: look up the company in local city tax database
-
+def find_business(address, business_name=None):
     # preprocess address to be of searchable format
     formatted_address = convert_street_address(address)
 
