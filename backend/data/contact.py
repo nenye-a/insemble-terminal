@@ -13,6 +13,48 @@ sodaclient = Socrata("data.lacity.org", SODA_KEY)
 # Hunter.io endpoint. Refer to https://hunter.io/api-documentation/v2 for details.
 HUNT_EMAIL_ENDPOINT = 'https://api.hunter.io/v2/email-finder?'
 
+def retail_contact(name, address=None):
+    '''
+
+    :param name: str, name of retailer
+    :param address: str, address of retailer
+    :return: {
+    "business_name": str,
+    "headquarters": str,
+    "phone": str,
+    "website": str,
+    "last_updated": datetime
+    "contacts": [
+        "name": str,
+        "title": str,
+        "phone": str,
+        "email": str,
+        ]
+    }
+
+    '''
+
+    company, contacts = find_retail_contacts(name, address)
+    try:
+        business = find_business(address, name)[0]
+    except Exception:
+        business = None
+    return {
+        "business_name": business['business_name'] if business else company['name'],
+        "headquarters": business['mailing_address']+', '+business['mailing_city']+', '+business['mailing_zip_code'] if business else company['headquarters'],
+        "phone": company['phone'] if company else None, # TODO: no general company phone, this is just from retail location
+        "website": company['website'] if company else None,
+        "last_updated": company['time_of_scrape'] if company else None,
+        "contacts":[
+            {
+                "name": person['first_name']+" "+person['last_name'] if person['first_name'] and person['last_name'] else None, # TODO: someone may have first name, and not last name documented
+                "title": person['position'],
+                "phone": person['phone'],
+                "email": person['email'],
+            } for person in contacts if contacts
+        ]
+    }
+
 # property contact lookup
 def find_property_contacts(address):
     # find the company who owns the property (using local city DB like data.lacity.org)
@@ -36,6 +78,7 @@ def find_property_contacts(address):
     return company, contacts
 
 def find_business(address, business_name=None):
+    if address is None: return None
     # preprocess address to be of searchable format
     formatted_address = convert_street_address(address)
 
@@ -47,7 +90,7 @@ def find_business(address, business_name=None):
     if business_name:
         return [{'business_name': result['business_name'], 'mailing_address': result['mailing_address'],
                  'mailing_city': result['mailing_city'], 'mailing_zip_code': result['mailing_zip_code']}
-                for result in results if utils.fuzzy_match(result['business_name'], business_name)]
+                for result in results if utils.fuzzy_match(result['dba_name'], business_name)]
     else:
         return [{'business_name': result['business_name'], 'mailing_address': result['mailing_address'],
                  'mailing_city': result['mailing_city'], 'mailing_zip_code': result['mailing_zip_code']}
@@ -101,8 +144,18 @@ def find_retail_contacts(name, address=None):
         # TODO: check crittenden/icsc for contacts, location specific
 
         # return json of crittenden/icsc contacts and hunter contacts
-        website = google.get_google_details(name, address, 'website')
-        contacts = get_emails(website['website']) if website is not None else []
+        details = google.get_google_details(name, address, 'website,phone')
+        contacts = get_emails(details['website']) if details is not None else []
+        if company is None and details:
+            company = {"name": None, "category": None, "website": details['website'], "phone": details['phone'],
+                       "description": None, "stock": None, "headquarters": None, "revenue": None, "num_employees": None,
+                       "parents": None, "subsidiaries": None, "time_of_scrape": None}
+        elif company and details:
+            try:
+                company["phone"] = details['phone']
+                company["website"]
+            except Exception:
+                company["website"] = details['website']
 
     return company, contacts
 
@@ -146,6 +199,20 @@ if __name__ == "__main__":
         address = '3935 Grand Ave C-1, Chino, CA 91710'
         pprint(find_retail_contacts(name, address))
 
+    def test_retail_contact():
+        from pprint import pprint
+        name = 'Ramonas Mexican Food'
+        address = '3728 Crenshaw Blvd, Los Angeles, CA 90016'
+        pprint(retail_contact(name, address))
+        print("----------------------------")
+        name = 'Gamestop'
+        address = '3935 Grand Ave C-1, Chino, CA 91710'
+        pprint(retail_contact(name, address))
+        name = 'Daikokuya'
+        address = '327 E 1st St, Los Angeles, CA 90012'
+        pprint(retail_contact(name, address))
+
 
     # get_emails_test()
     # find_retail_contacts_test()
+    test_retail_contact()
