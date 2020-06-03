@@ -39,7 +39,9 @@ export default function OwnershipInformationCard(props: Props) {
         <LabelText>Website</LabelText>
         <Link href={website}>{website}</Link>
       </Row>
-      <LastUpdateText>Last Updated: {lastUpdate}</LastUpdateText>
+      <LastUpdateText>
+        Last Updated: {new Date(lastUpdate).toString()}
+      </LastUpdateText>
     </Container>
   );
 }
