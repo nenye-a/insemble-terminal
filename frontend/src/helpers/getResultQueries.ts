@@ -5,7 +5,7 @@ import {
   LocationTagType,
 } from '../generated/globalTypes';
 import { Search_search as Search } from '../generated/Search';
-import { ResultQuery } from '../types/types';
+import { ResultQuery, OwnershipType } from '../types/types';
 
 export default function getResultQueries(
   search: Omit<Search, '__typename'>,
@@ -58,22 +58,22 @@ export default function getResultQueries(
   }
   if (reviewTag === ReviewTag.OWNERSHIP) {
     if (businessTag?.type === BusinessType.BUSINESS) {
-      queries.push({ reviewTag, type: 'COMPANY_INFORMATION' });
+      queries.push({ reviewTag, type: OwnershipType.COMPANY_CONTACT });
+    }
+    if (
+      (!businessTag || businessTag.type === BusinessType.BUSINESS) &&
+      locationTag?.type === LocationTagType.ADDRESS
+    ) {
+      queries.push({ reviewTag, type: OwnershipType.PROPERTY_CONTACT });
     }
     if (businessTag?.type === BusinessType.BUSINESS) {
-      queries.push({ reviewTag, type: 'COMPANY_CONTACT' });
+      queries.push({ reviewTag, type: OwnershipType.COMPANY_INFORMATION });
     }
     if (
       (!businessTag || businessTag.type === BusinessType.BUSINESS) &&
       locationTag?.type === LocationTagType.ADDRESS
     ) {
-      queries.push({ reviewTag, type: 'PROPERTY_CONTACT' });
-    }
-    if (
-      (!businessTag || businessTag.type === BusinessType.BUSINESS) &&
-      locationTag?.type === LocationTagType.ADDRESS
-    ) {
-      queries.push({ reviewTag, type: 'PROPERTY_OWNER_INFORMATION' });
+      queries.push({ reviewTag, type: OwnershipType.PROPERTY_INFORMATION });
     }
   }
   if (reviewTag === ReviewTag.COVERAGE) {
@@ -84,31 +84,37 @@ export default function getResultQueries(
       queries.push({ reviewTag, type: 'COVERAGE' });
     }
   }
-  if (reviewTag === 'ACTIVITY') {
+  if (reviewTag === ReviewTag.ACTIVITY) {
     if (businessTag?.type === BusinessType.BUSINESS) {
       queries.push({ reviewTag, type: 'ACTIVITY' });
     }
   }
   // brand only
   if (!reviewTag && businessTag?.type === BusinessType.BUSINESS) {
-    queries.push({ reviewTag, type: 'NEWS' });
+    queries.push({ reviewTag: ReviewTag.NEWS, type: 'NEWS' });
     queries.push({
-      reviewTag,
+      reviewTag: ReviewTag.PERFORMANCE,
       type: PerformanceTableType.OVERALL,
     });
-    queries.push({ reviewTag, type: 'COVERAGE' });
-    queries.push({ reviewTag, type: 'ACTIVITY' });
-    queries.push({ reviewTag, type: 'COMPANY_INFORMATION' });
-    queries.push({ reviewTag, type: 'COMPANY_CONTACT' });
+    queries.push({ reviewTag: ReviewTag.COVERAGE, type: 'COVERAGE' });
+    queries.push({ reviewTag: ReviewTag.ACTIVITY, type: 'ACTIVITY' });
+    queries.push({
+      reviewTag: ReviewTag.OWNERSHIP,
+      type: OwnershipType.COMPANY_INFORMATION,
+    });
+    queries.push({
+      reviewTag: ReviewTag.OWNERSHIP,
+      type: OwnershipType.COMPANY_CONTACT,
+    });
   }
   if (!reviewTag && locationTag) {
-    queries.push({ reviewTag, type: 'NEWS' });
+    queries.push({ reviewTag: ReviewTag.NEWS, type: 'NEWS' });
     queries.push({
-      reviewTag,
+      reviewTag: ReviewTag.PERFORMANCE,
       type: PerformanceTableType.BRAND,
     });
     queries.push({
-      reviewTag,
+      reviewTag: ReviewTag.PERFORMANCE,
       type: PerformanceTableType.CATEGORY,
     });
   }

@@ -163,3 +163,74 @@ export const GET_ACTIVITY_DATA = gql`
     }
   }
 `;
+
+export const GET_OWNERSHIP_CONTACT_DATA = gql`
+  query GetOwnershipContactData(
+    $ownershipType: OwnershipType!
+    $businessTagId: String
+    $locationTagId: String
+    $tableId: String
+  ) {
+    ownershipContactTable(
+      ownershipType: $ownershipType
+      businessTagId: $businessTagId
+      locationTagId: $locationTagId
+      tableId: $tableId
+    ) {
+      id
+      type
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      data {
+        name
+        title
+        phone
+        email
+      }
+    }
+  }
+`;
+
+export const GET_OWNERSHIP_INFO_DATA = gql`
+  query GetOwnershipInfoData(
+    $ownershipType: OwnershipType!
+    $businessTagId: String
+    $locationTagId: String
+    $tableId: String
+  ) {
+    ownershipInfoTable(
+      ownershipType: $ownershipType
+      businessTagId: $businessTagId
+      locationTagId: $locationTagId
+      tableId: $tableId
+    ) {
+      id
+      type
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      data {
+        parentCompany
+        headquarters
+        phone
+        website
+        lastUpdate
+      }
+    }
+  }
+`;

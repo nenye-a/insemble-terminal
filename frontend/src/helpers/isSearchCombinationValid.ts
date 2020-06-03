@@ -23,14 +23,14 @@ export default function isSearchCombinationValid(
     // all case is valid
     return true;
   } else if (formattedReviewTag === ReviewTag.OWNERSHIP) {
-    if (
-      locationTag?.type === LocationTagType.ADDRESS ||
-      (typeof businessTag !== 'string' &&
-        businessTag?.params === BusinessType.BUSINESS)
+    if (locationTag?.type === LocationTagType.ADDRESS) {
+      return true;
+    } else if (
+      typeof businessTag === 'string' ||
+      businessTag?.type === BusinessType.BUSINESS
     ) {
       return true;
     }
-    return false;
   } else if (formattedReviewTag === ReviewTag.COVERAGE) {
     if (
       hasBusinessTag &&

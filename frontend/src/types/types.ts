@@ -26,3 +26,10 @@ export type ComparationTag = {
   locationTag: LocationTag;
   businessTag: BusinessTagResult;
 };
+
+export enum OwnershipType {
+  COMPANY_INFORMATION = 'COMPANY_INFORMATION',
+  COMPANY_CONTACT = 'COMPANY_CONTACT',
+  PROPERTY_CONTACT = 'PROPERTY_CONTACT',
+  PROPERTY_INFORMATION = 'PROPERTY_INFORMATION',
+}
