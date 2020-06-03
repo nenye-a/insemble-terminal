@@ -23,7 +23,7 @@ REGEX_COORD_ADDRESS = r'[\-\d]+\.\d+\,[\-\d]+\.\d+\]\\\w\,[\\\"\w\:]+\,[\"\w\-\s
 GOOG_KEY = config("GOOG_KEY")
 LAT_VIEWPORT_MULTIPLIER = 0.000000509499922
 LNG_VIEWPORT_MULTIPLIER = 0.00000072025608
-DEFALT_SCRAPER = GenericScraper('DEFAULT SCRAPER')
+DEFAULT_SCRAPER = GenericScraper('DEFAULT SCRAPER')
 
 
 # Helper Functions
@@ -458,7 +458,7 @@ class GoogleCompany(GenericScraper):
 
             return data
         except Exception as e:
-            print("Error has occured in GoogleDetails: {} - request_url: {}".format(e, url))
+            print("Error has occured in GoogleCompany: {} - request_url: {}".format(e, url))
             return None
 
     @ staticmethod
@@ -511,7 +511,7 @@ class GoogleNewsScraper(GenericScraper):
             )
             return result
         except Exception as e:
-            print("Error has occured in GeoCode: {} - request_url: {}".format(e, url))
+            print("Error has occured in GoogleNews: {} - request_url: {}".format(e, url))
             return None
 
     def get_many_news(self, queries):
@@ -598,6 +598,12 @@ if __name__ == "__main__":
         print(get_google_details(name, address))
         print(get_google_details(name, address, 'address'))
         print(get_google_details(name, address, 'address,name,rating,activity'))
+        name = "Spitz little tokyo"
+        address = "371 E 2nd st, los angeles"
+        print(get_google_details(name, address))
+        name = "Publix Super Market at Sugarloaf Crossing"
+        address = "4850 Sugarloaf Pkwy, Lawrenceville, GA 30044"
+        print(get_google_details(name, address))
 
     def get_nearby_test():
         venue_type = 'restaurants'
@@ -672,21 +678,21 @@ if __name__ == "__main__":
         print(len(my_queries))
 
     # get_news_test()
-    get_many_news_test()
+    # get_many_news_test()
     # get_google_activity_test()
-    get_many_lat_lng_test()
+    # get_many_lat_lng_test()
     # get_lat_lng_test()
     # get_nearby_test()
     # get_many_nearby_test()
-    # get_google_details_test()
+    get_google_details_test()
     # get_many_google_details_test()
 
-    url = 'https://www.google.com/maps/search/stores/@33.9559918,-118.5607461,17.39z'
-
-    nearby_scrape = GoogleNearby('NEARBY')
-    import requests
-    response = requests.get(url, headers=HEADERS)
-    addresses = nearby_scrape.response_parse(response)
-    print("addresses", len(addresses), addresses)
-    address_latlng = nearby_scrape.parse_address_latlng(response)
-    print("addresses lat lng", len(address_latlng), address_latlng)
+    # url = 'https://www.google.com/maps/search/stores/@33.9559918,-118.5607461,17.39z'
+    #
+    # nearby_scrape = GoogleNearby('NEARBY')
+    # import requests
+    # response = requests.get(url, headers=HEADERS)
+    # addresses = nearby_scrape.response_parse(response)
+    # print("addresses", len(addresses), addresses)
+    # address_latlng = nearby_scrape.parse_address_latlng(response)
+    # print("addresses lat lng", len(address_latlng), address_latlng)

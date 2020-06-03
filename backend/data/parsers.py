@@ -263,8 +263,8 @@ def google_company_parser(response):
     except Exception:
         description = None
 
-    HEADQUARTERS_LOCATOR_RX = r'Headquarters<\/a>(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/])+|(<span)|(<\/span>)|(><)|(>))+'
-    HEADQUARTERS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+    HEADQUARTERS_LOCATOR_RX = r'Headquarters<\/a>(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(<span)|(<\/span>)|(><)|(>))+'
+    HEADQUARTERS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
         headquarters = re.search(HEADQUARTERS_NARROW_RX, re.search(HEADQUARTERS_LOCATOR_RX, stew).group()).group()[1:]
@@ -287,8 +287,8 @@ def google_company_parser(response):
     except:
         num_employees = None
 
-    PARENTS_LOCATOR_RX = r'Parent organizations<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\!\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>))+'
-    PARENTS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+    PARENTS_LOCATOR_RX = r'Parent organizations<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\!\|\+\[\]\*\#\/\'])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>))+'
+    PARENTS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
         parents = [item[1:] for item in
@@ -297,8 +297,8 @@ def google_company_parser(response):
     except Exception:
         parents = None
 
-    SUBSIDIARIES_LOCATOR_RX = r'Subsidiaries<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\!\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>))+'
-    SUBSIDIARIES_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+    SUBSIDIARIES_LOCATOR_RX = r'Subsidiaries<\/a>(([\s\w\=\"\;\-\:\.\?\&\%\,\(\)\—\!\|\+\[\]\*\#\/\'])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>))+'
+    SUBSIDIARIES_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
         subsidiaries = [item[1:] for item in
@@ -306,8 +306,8 @@ def google_company_parser(response):
     except Exception:
         subsidiaries = None
 
-    STOCK_LOCATOR_RX = r'Stock price<\/a>(([\s\w\=\"\;\-\:\.\?\&\$\%\,\(\)\—\!\|\+\[\]\*\#\/])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>)|(<br)|(<\/a>))+'
-    STOCK_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\:\(\)\—\|\+\[\]\*\#\/]+'
+    STOCK_LOCATOR_RX = r'Stock price<\/a>(([\s\w\=\"\;\-\:\.\?\&\$\%\,\(\)\—\!\|\+\[\]\*\#\/\'])|(<span)|(<\/span>)|(<a)|(<\/a>)|(>)|(<br)|(<\/a>))+'
+    STOCK_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\:\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
         stock = [item[1:].replace("Disclaimer", "") for item in re.findall(STOCK_NARROW_RX, re.search(STOCK_LOCATOR_RX, stew).group()) if len(item[1:])>2]
@@ -575,19 +575,19 @@ def opentable_parser_all(response):
 def google_news_parser(response):
 
     stew = response.text
-    NEWS_LOCATOR_RX = r'<article(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#])+|(\s\>)+|(\>)+|(\>\w)+|(\w\>)+|(<a )+|(<\/a>)+|(<h4)+|(<\/h4)+|(<h3)+|(<\/h3)+|(<div)+|(<\/div)+|(<span)+|(<\/span)+|(<time)+|(<\/time)+|(<menu)+|(<\/menu)+|(\/[\w\;\/])+)+'
+    NEWS_LOCATOR_RX = r'<article(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'])+|(\s\>)+|(\>)+|(\>\w)+|(\w\>)+|(<a )+|(<\/a>)+|(<h4)+|(<\/h4)+|(<h3)+|(<\/h3)+|(<div)+|(<\/div)+|(<span)+|(<\/span)+|(<time)+|(<\/time)+|(<menu)+|(<\/menu)+|(\/[\w\;\/])+)+'
 
-    TITLE_LOCATOR_RX = r'DY5T1d(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#])|(>))+'
-    TITLE_NARROW_RX = r'\>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    TITLE_LOCATOR_RX = r'DY5T1d(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'])|(>))+'
+    TITLE_NARROW_RX = r'\>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
     LINK_LOCATOR_RX = r'jslog="95014;[\s\w\=\"\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
     LINK_NARROW_RX = r'http[\s\w\=\"\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
-    SOURCE_LOCATOR_RX = r'class="wEwyrc AVN2gc uQIVzc Sksgp">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
-    SOURCE_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    SOURCE_LOCATOR_RX = r'class="wEwyrc AVN2gc uQIVzc Sksgp">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
+    SOURCE_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
     PUBLISHED_LOCATOR_RX = r'datetime=[\"\w\-\:]+'
     PUBLISHED_NARROW_RX = r'\"[\w\-\:]+'
 
-    DESCRIPTION_LOCATOR_RX = r'xBbh9">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
-    DESCRIPTION_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+'
+    DESCRIPTION_LOCATOR_RX = r'xBbh9">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
+    DESCRIPTION_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
 
     results = []
     for match in re.finditer(NEWS_LOCATOR_RX, stew):
@@ -629,6 +629,53 @@ def google_news_parser(response):
         }
         results.append(item)
     return remove_old_news(results)
+
+def california_entity_parser(response):
+    """
+        Parse California business search site for search of a business entity,
+        ex: https://businesssearch.sos.ca.gov/CBS/SearchResults?filing=&SearchType=CORP&SearchCriteria=ARROWHEAD+BRASS+PRODUCTS+LLC&SearchSubType=Keyword
+
+        Parameter:
+            response: Response, an http get request response
+                            for a California business search search of an establishment
+        Return: [
+            {
+                "entity_number": str
+                "registration_date": str
+                "status": str
+                "entity_name": str
+                "Jurisdiction": str
+                "agent": str
+            }
+            ]
+
+    """
+
+    businesses = []
+    stew = response.text
+
+    #ENTITY_LOCATOR_RX = r'class="EntityHead"(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\s\>)+|(\>)+|(\>\w)+|(\w\>)+|(<tr)+|(<\/tr)+|(<th)+|(<\/th)+|(<tbody)+|(<td)+|(<\/td)+|(<label)+|(<\/label)+|(<button)+|(<\/button)+)+'
+    ENTITY_LOCATOR_RX = r'<td(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\>)|(<td)|(<\/td)|(<label)|(<\/label)|(<button)|(<\/button))+'
+    TABLE_CONTENT_RX = r'<td(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\>)|(<td)|(<label)|(<\/label)|(<button)|(<\/button))+'
+    ENTITY_NAME_LOCATOR_RX = r'class="btn-link EntityLink">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
+    ENTITY_NAME_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
+
+
+    for beef in re.finditer(ENTITY_LOCATOR_RX, stew):
+        entry = {}
+        columns = iter(["entity_number", "registration_date", "status", "entity_name", "jurisdiction", "agent"])
+        for tomato in re.finditer(TABLE_CONTENT_RX, beef.group()):
+            rice = tomato.group()[4:].strip()
+            try:
+                item = re.search(ENTITY_NAME_NARROW_RX, re.search(ENTITY_NAME_LOCATOR_RX, rice).group()).group()[1:]
+            except:
+                item = rice
+
+            item = item.strip()
+            entry[next(columns)] = item
+        businesses.append(entry)
+
+    return businesses
 
 def remove_old_news(news_list, date=None):
     cleaned_list = []
