@@ -4,15 +4,10 @@ import styled from 'styled-components';
 import { View, Text } from '../../core-ui';
 import { DataTable } from '../../components';
 import { WHITE } from '../../constants/colors';
+import { CoverageWithFill } from '../../types/types';
 
 type Props = {
-  data: Array<CoverageData>;
-};
-
-type CoverageData = {
-  name: string;
-  numLocations?: number;
-  fill: string;
+  data: Array<CoverageWithFill>;
 };
 
 export default function CoverageTable(props: Props) {
@@ -29,20 +24,22 @@ export default function CoverageTable(props: Props) {
       </LegendContainer>
       <DataTable>
         <DataTable.HeaderRow>
-          <DataTable.HeaderCell>Company</DataTable.HeaderCell>
+          <DataTable.HeaderCell width={200}>Company</DataTable.HeaderCell>
           <DataTable.HeaderCell align="right">
             Number Locations
           </DataTable.HeaderCell>
         </DataTable.HeaderRow>
         <DataTable.Body style={{ height: 'fit-content', maxHeight: 260 }}>
-          {data.map((row, index) => {
-            let { name = '', numLocations = 'N/A' } = row;
-            return (
-              <DataTable.Row key={'coverage-table-' + index}>
-                <DataTable.Cell>{name}</DataTable.Cell>
-                <DataTable.Cell align="right">{numLocations}</DataTable.Cell>
+          {data.map((item, index) => {
+            let { coverageData } = item;
+            return coverageData.map((row) => (
+              <DataTable.Row key={'coverage-table-' + row.businessName + index}>
+                <DataTable.Cell width={200}>{row.businessName}</DataTable.Cell>
+                <DataTable.Cell align="right">
+                  {row.numLocations}
+                </DataTable.Cell>
               </DataTable.Row>
-            );
+            ));
           })}
         </DataTable.Body>
       </DataTable>

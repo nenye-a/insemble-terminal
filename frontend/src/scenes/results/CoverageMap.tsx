@@ -1,44 +1,58 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY } from '../../constants/colors';
+import { CoverageWithFill, LocationLatLng } from '../../types/types';
 
 type Props = {
-  data: Array<CoverageData>; // TODO: change type
+  data: Array<CoverageWithFill>;
 };
-
-type CoverageData = {
-  name: string;
-  numLocations?: number;
-  fill: string;
-  locations: Array<Location>;
-};
-
-type Location = { lat: number; lng: number };
 
 function CoverageMap(props: Props) {
   let { data, ...otherProps } = props;
+  let mapRef = useRef<GoogleMap | null>(null);
+  let flatLocations = getFlatLocations(data);
+  let latArr = flatLocations.map(({ lat }) => lat);
+  let lngArr = flatLocations.map(({ lng }) => lng);
+
+  let defaultCenter = {
+    lat: latArr.reduce((a, b) => a + b, 0) / flatLocations.length,
+    lng: lngArr.reduce((a, b) => a + b, 0) / flatLocations.length,
+  };
+
+  useEffect(() => {
+    // so all markers will be visible
+    if (mapRef.current) {
+      let bounds = new google.maps.LatLngBounds();
+      flatLocations.forEach((loc) => bounds.extend(loc));
+      mapRef.current.fitBounds(bounds);
+    }
+  }, [flatLocations]);
+
   return (
     <GoogleMap
+      ref={mapRef}
       defaultOptions={{
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
       }}
-      // TODO: add helper to calculate default center
-      defaultCenter={{ lat: 34.0522, lng: -118.2437 }}
+      defaultCenter={defaultCenter}
       zoom={10}
       {...otherProps}
     >
       {data.map((item) => {
-        return item.locations.map((loc, index) => (
-          <Marker
-            key={'marker' + item.name + index}
-            position={loc}
-            icon={pinSymbol(item.fill)}
-          />
-        ));
+        return item.coverageData.map((covData) => {
+          let { locations } = covData;
+          return locations.map(({ lat, lng }, index) => (
+            <Marker
+              key={`marker-${item.name}-${index}`}
+              position={{ lat, lng }}
+              icon={pinSymbol(item.fill)}
+            />
+          ));
+        });
       })}
     </GoogleMap>
   );
@@ -55,6 +69,22 @@ function pinSymbol(color: string) {
     strokeOpacity: 0.2,
     scale: 1.5,
   };
+}
+
+function getFlatLocations(
+  data: Array<CoverageWithFill>,
+): Array<LocationLatLng> {
+  let locations: Array<LocationLatLng> = [];
+
+  data.forEach((item) =>
+    item.coverageData.forEach((covData) =>
+      covData.locations.forEach(({ lat, lng }) => {
+        locations.push({ lat, lng });
+      }),
+    ),
+  );
+
+  return locations;
 }
 
 const WithGoogleMap = withGoogleMap(CoverageMap);

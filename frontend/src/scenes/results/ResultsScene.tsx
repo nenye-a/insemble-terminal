@@ -27,6 +27,7 @@ import PropertyOwnerInformationResult from './PropertyOwnerInformationResult';
 import CompanyInformationResult from './CompanyInformationResult';
 import PropertyContactsResult from './PropertyContactsResult';
 import CompanyContactsResult from './CompanyContactsResult';
+import CoverageResult from './CoverageResult';
 
 export default function ResultsScene() {
   let [
@@ -98,6 +99,8 @@ export default function ResultsScene() {
                 } else if (type === OwnershipType.COMPANY_INFORMATION) {
                   return <CompanyInformationResult {...props} />;
                 }
+              } else if (reviewTag === ReviewTag.COVERAGE) {
+                return <CoverageResult {...props} />;
               }
               return null;
             })}

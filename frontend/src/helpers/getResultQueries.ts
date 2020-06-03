@@ -78,8 +78,11 @@ export default function getResultQueries(
   }
   if (reviewTag === ReviewTag.COVERAGE) {
     if (
-      businessTag?.type === BusinessType.BUSINESS &&
-      locationTag?.type !== LocationTagType.ADDRESS
+      (businessTag?.type === BusinessType.BUSINESS &&
+        locationTag?.type !== LocationTagType.ADDRESS) ||
+      (businessTag?.type === BusinessType.CATEGORY &&
+        locationTag?.type !== LocationTagType.NATION &&
+        locationTag?.type !== LocationTagType.ADDRESS)
     ) {
       queries.push({ reviewTag, type: 'COVERAGE' });
     }

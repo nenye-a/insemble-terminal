@@ -3,6 +3,10 @@ import {
   LocationTagType,
   BusinessType,
 } from '../generated/globalTypes';
+import {
+  GetCoverage_coverageTable_data as CoverageTableData,
+  GetCoverage_coverageTable_compareData as CoverageTableCompareData,
+} from '../generated/GetCoverage';
 
 export type ResultQuery = {
   reviewTag: ReviewTag | null;
@@ -33,3 +37,15 @@ export enum OwnershipType {
   PROPERTY_CONTACT = 'PROPERTY_CONTACT',
   PROPERTY_INFORMATION = 'PROPERTY_INFORMATION',
 }
+
+export type CoverageWithFill = (
+  | CoverageTableData
+  | CoverageTableCompareData
+) & {
+  fill: string;
+};
+
+export type LocationLatLng = {
+  lat: number;
+  lng: number;
+};
