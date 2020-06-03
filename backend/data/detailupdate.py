@@ -43,13 +43,14 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
         google_details = google.get_many_google_details(places)
 
         for details in google_details:
-            city = utils.extract_city(details['meta']['address'])
-            place_type = utils.modify_word(details['data']['type'].split(" in ")[0])
 
             update_details = {'google_details': details['data']}
             if 'type' not in details['meta']:
-                update_details['type'] = place_type
+                if 'type' in details['data'] and details['data']['type']:
+                    place_type = utils.modify_word(details['data']['type'].split(" in ")[0])
+                    update_details['type'] = place_type
             if 'city' not in details['meta']:
+                city = utils.extract_city(details['meta']['address'])
                 update_details['city'] = city
 
             place_query = {'_id': details['meta']['_id']}
