@@ -26,3 +26,4 @@ geopy
 matplotlib
 psycopg2
 fuzzywuzzy[speedup]
+sodapy
