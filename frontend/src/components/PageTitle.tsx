@@ -22,9 +22,7 @@ export default function PageTitle(props: Props) {
   let { reviewTag, businessTag, locationTag, text } = props;
 
   let formattedReview = reviewTag ? capitalize(reviewTag) : '';
-  let formattedBusiness = businessTag?.params
-    ? capitalize(businessTag?.params)
-    : '';
+  let formattedBusiness = businessTag?.params ? businessTag?.params : '';
   let formattedLocation =
     locationTag?.type === LocationTagType.ADDRESS
       ? `near ${locationTag.params}`
