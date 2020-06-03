@@ -44,3 +44,8 @@ export type CoverageWithFill = (
 ) & {
   fill: string;
 };
+
+export type LocationLatLng = {
+  lat: number;
+  lng: number;
+};

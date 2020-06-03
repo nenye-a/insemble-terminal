@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY } from '../../constants/colors';
-import { CoverageWithFill } from '../../types/types';
+import { CoverageWithFill, LocationLatLng } from '../../types/types';
 
 type Props = {
   data: Array<CoverageWithFill>;
@@ -11,15 +11,34 @@ type Props = {
 
 function CoverageMap(props: Props) {
   let { data, ...otherProps } = props;
+  let mapRef = useRef<GoogleMap | null>(null);
+  let flatLocations = getFlatLocations(data);
+  let latArr = flatLocations.map(({ lat }) => lat);
+  let lngArr = flatLocations.map(({ lng }) => lng);
+
+  let defaultCenter = {
+    lat: latArr.reduce((a, b) => a + b, 0) / flatLocations.length,
+    lng: lngArr.reduce((a, b) => a + b, 0) / flatLocations.length,
+  };
+
+  useEffect(() => {
+    // so all markers will be visible
+    if (mapRef.current) {
+      let bounds = new google.maps.LatLngBounds();
+      flatLocations.forEach((loc) => bounds.extend(loc));
+      mapRef.current.fitBounds(bounds);
+    }
+  }, [flatLocations]);
+
   return (
     <GoogleMap
+      ref={mapRef}
       defaultOptions={{
         mapTypeControl: false,
         fullscreenControl: false,
         streetViewControl: false,
       }}
-      // TODO: add helper to calculate default center
-      defaultCenter={{ lat: 34.0522, lng: -118.2437 }}
+      defaultCenter={defaultCenter}
       zoom={10}
       {...otherProps}
     >
@@ -50,6 +69,22 @@ function pinSymbol(color: string) {
     strokeOpacity: 0.2,
     scale: 1.5,
   };
+}
+
+function getFlatLocations(
+  data: Array<CoverageWithFill>,
+): Array<LocationLatLng> {
+  let locations: Array<LocationLatLng> = [];
+
+  data.forEach((item) =>
+    item.coverageData.forEach((covData) =>
+      covData.locations.forEach(({ lat, lng }) => {
+        locations.push({ lat, lng });
+      }),
+    ),
+  );
+
+  return locations;
 }
 
 const WithGoogleMap = withGoogleMap(CoverageMap);
