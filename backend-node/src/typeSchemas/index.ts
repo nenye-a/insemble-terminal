@@ -35,3 +35,6 @@ export * from './OwnershipContactTable';
 export * from './OwnershipContactData';
 export * from './OwnershipInfoTable';
 export * from './OwnershipInfoData';
+
+export * from './PinnedFeed';
+export * from './Terminal';
