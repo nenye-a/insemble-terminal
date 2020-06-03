@@ -53,8 +53,9 @@ export default function SignUpForm() {
 
   if (data) {
     if (data.register.message === 'success') {
-      // TODO: redirect to email verification scene
-      return <Redirect to="/login" />;
+      return (
+        <Redirect to={`/email-verification/${data.register.verificationId}`} />
+      );
     }
   }
   return (

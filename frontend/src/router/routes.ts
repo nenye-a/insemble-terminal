@@ -6,6 +6,8 @@ import {
   LoginScene,
   TerminalHomeScene,
   AuthScene,
+  EmailVerificationScene,
+  VerificationSuccessfulScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -23,6 +25,14 @@ export const unAuthenticatedRoutes = [
   }, // TODO: change component
   { path: '/signup', component: SignUpScene },
   { path: '/login', component: LoginScene },
+  {
+    path: '/email-verification/:verificationId',
+    component: EmailVerificationScene,
+  },
+  {
+    path: '/verification-successful',
+    component: VerificationSuccessfulScene,
+  },
 ];
 
 export const authenticatedRoutes: Array<RouteType> = [

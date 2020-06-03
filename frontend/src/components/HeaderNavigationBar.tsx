@@ -49,8 +49,21 @@ export default function HeaderNavigationBar(props: Props) {
         </RowEnd>
       ) : (
         <RowEnd flex>
-          <Button shape="round" mode="secondary" text="Sign in" />
-          <SignUpButton shape="round" text="Sign up" />
+          <Button
+            shape="round"
+            mode="secondary"
+            text="Sign in"
+            onPress={() => {
+              history.push('/login');
+            }}
+          />
+          <SignUpButton
+            shape="round"
+            text="Sign up"
+            onPress={() => {
+              history.push('/signup');
+            }}
+          />
         </RowEnd>
       )}
     </Container>
