@@ -3,8 +3,8 @@ export default function capitalize(sentence: string) {
   let capitalizedText = '';
   for (let word of wordArr) {
     let capitalizedWord =
-      word[0].toUpperCase() + word.substring(1).toLowerCase();
+      word[0].toUpperCase() + word.substring(1).toLowerCase() + ' ';
     capitalizedText += capitalizedWord;
   }
-  return capitalizedText;
+  return capitalizedText.trim();
 }
