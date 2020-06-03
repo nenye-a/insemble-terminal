@@ -84,7 +84,7 @@ export default function getResultQueries(
       queries.push({ reviewTag, type: 'COVERAGE' });
     }
   }
-  if (reviewTag === 'ACTIVITY') {
+  if (reviewTag === ReviewTag.ACTIVITY) {
     if (businessTag?.type === BusinessType.BUSINESS) {
       queries.push({ reviewTag, type: 'ACTIVITY' });
     }
@@ -93,7 +93,7 @@ export default function getResultQueries(
   if (!reviewTag && businessTag?.type === BusinessType.BUSINESS) {
     queries.push({ reviewTag: ReviewTag.NEWS, type: 'NEWS' });
     queries.push({
-      reviewTag,
+      reviewTag: ReviewTag.PERFORMANCE,
       type: PerformanceTableType.OVERALL,
     });
     queries.push({ reviewTag: ReviewTag.COVERAGE, type: 'COVERAGE' });

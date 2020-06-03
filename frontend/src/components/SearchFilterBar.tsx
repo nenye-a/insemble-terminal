@@ -132,7 +132,9 @@ export default function SearchFilterBar(props: Props) {
                 if (isValid) {
                   onSearchPress &&
                     onSearchPress({
-                      reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                      reviewTag: selectedDataType
+                        ? (selectedDataType.toUpperCase() as ReviewTag)
+                        : undefined,
                       businessTag: (typeof selectedBusiness === 'string'
                         ? { type: 'BUSINESS', params: selectedBusiness }
                         : undefined) as BusinessTagInput,
