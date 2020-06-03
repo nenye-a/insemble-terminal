@@ -31,6 +31,7 @@ DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
+DB_PLACES_HISTORY = SYSTEM_MONGO.get_collection(mongo.PLACES_HISTORY)
 DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
@@ -59,6 +60,11 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
+    if collection.lower() == 'places_history':
+        DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
+        DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
+        DB_PLACES_HISTORY.create_index([('revisions.version', 1)])
+        DB_PLACES_HISTORY.create_index([('revisions.revised_time', 1)])
     if collection.lower() == 'coordinates':
         DB_COORDINATES.create_index([('center', 1)])
         DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
@@ -255,6 +261,7 @@ def encode_word(word):
 def format_search(name, address):
     return encode_word(name) + "+" + encode_word(address)
 
+
 def format_punct(text):
     return text.replace(AMPERSAND, "&").replace(APOSTROPHE, "'").replace(SPACE, " ")
 
@@ -324,6 +331,33 @@ def extract_city(address):
         return match[0][0].strip()
 
 
+def dictionary_diff(previous, new, replaced=True):
+    """
+    Provided a dictionary, will return a dictionary of the values that have
+    been changed. By default will return the previous values of the changed
+    keys, but if 'replaced' == False, will return the the updated values of
+    the keys.
+
+    Only dictionaries are treated as root items. Additions or subtractions
+    to lists will return the whole list as a diff or insert, even if the
+    change is just an addition.
+    """
+
+    diff_dict = {}
+
+    for key in list(new.keys()) + list(previous.keys()):
+        new_value = new.get(key, None)
+        old_value = previous.get(key, None)
+
+        if old_value != new_value:
+            if isinstance(old_value, dict) and isinstance(new_value, dict):
+                diff_dict[key] = dictionary_diff(old_value, new_value, replaced)
+            else:
+                diff_dict[key] = old_value if replaced else new_value
+
+    return diff_dict
+
+
 def restart_program():
     """
     Restarts the current program, with file objects and descriptors
@@ -376,16 +410,45 @@ if __name__ == "__main__":
     def test_extract_city():
         print(extract_city("3006 S Sepulveda Blvd, Los Angeles, CA 90034"))
 
+    def test_dictionary_diff():
+        dict1 = {
+            "hello": 1,
+            "what": {
+                "me": 1,
+                "hi": 3,
+                "go": 5
+            },
+            "yoooo": [1, 3, 4],
+            "he": [2, 3]
+        }
+
+        dict2 = {
+            "hello": 4,  # diff here v dict1
+            "what": {
+                "me": 1,
+                "hi": 3,
+                "go": 10  # diff here v dict3
+            },
+            "yoooo": [1, 3, 4],
+            "hey": -1,
+            "he": [2, 3, 4]
+        }
+
+        print("1 -> 2\n{}\n".format(dictionary_diff(dict1, dict2)))
+        print("2 -> 1\n{}\n".format(dictionary_diff(dict2, dict1)))
+        print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
+
     # RUN
 
-    # create_index("terminal")
+    create_index("places_history")
 
     # TESTS
 
     # test_state_code_to_name()
     # test_parse_city()
     # test_to_snake_case()
-    test_snake_to_word()
+    # test_snake_to_word()
     # test_round_object()
     # test_extract_city()
     # test_chunks()
+    # test_dictionary_diff()
