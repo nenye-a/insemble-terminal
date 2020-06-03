@@ -1,5 +1,21 @@
 import gql from 'graphql-tag';
 
+const COMPARATION_TAGS = gql`
+  fragment ComparationTagFragment on ComparationTag {
+    id
+    locationTag {
+      id
+      params
+      type
+    }
+    businessTag {
+      id
+      params
+      type
+    }
+  }
+`;
+
 export const GET_PERFORMANCE_TABLE_DATA = gql`
   query GetPerformanceTable(
     $performanceType: PerformanceTableType!
@@ -42,20 +58,11 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
         totalSales
       }
       comparationTags {
-        id
-        locationTag {
-          id
-          params
-          type
-        }
-        businessTag {
-          id
-          params
-          type
-        }
+        ...ComparationTagFragment
       }
     }
   }
+  ${COMPARATION_TAGS}
 `;
 
 export const GET_NEWS_TABLE_DATA = gql`
@@ -79,17 +86,7 @@ export const GET_NEWS_TABLE_DATA = gql`
         type
       }
       comparationTags {
-        id
-        locationTag {
-          id
-          params
-          type
-        }
-        businessTag {
-          id
-          params
-          type
-        }
+        ...ComparationTagFragment
       }
       data {
         title
@@ -105,6 +102,7 @@ export const GET_NEWS_TABLE_DATA = gql`
       }
     }
   }
+  ${COMPARATION_TAGS}
 `;
 
 export const GET_ACTIVITY_DATA = gql`
@@ -148,20 +146,71 @@ export const GET_ACTIVITY_DATA = gql`
         }
       }
       comparationTags {
-        id
-        locationTag {
-          id
-          params
-          type
-        }
-        businessTag {
-          id
-          params
-          type
-        }
+        ...ComparationTagFragment
       }
     }
   }
+  ${COMPARATION_TAGS}
+`;
+
+export const GET_COVERAGE_DATA = gql`
+  query GetCoverage(
+    $businessTagId: String
+    $locationTagId: String
+    $tableId: String
+  ) {
+    coverageTable(
+      businessTagId: $businessTagId
+      locationTagId: $locationTagId
+      tableId: $tableId
+    ) {
+      id
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      data {
+        name
+        location
+        numLocations
+        coverageData {
+          businessName
+          numLocations
+          locations {
+            lat
+            lng
+            name
+            address
+          }
+        }
+      }
+      compareData {
+        name
+        location
+        numLocations
+        coverageData {
+          businessName
+          numLocations
+          locations {
+            lat
+            lng
+            name
+            address
+          }
+        }
+      }
+      comparationTags {
+        ...ComparationTagFragment
+      }
+    }
+  }
+  ${COMPARATION_TAGS}
 `;
 
 export const GET_OWNERSHIP_CONTACT_DATA = gql`

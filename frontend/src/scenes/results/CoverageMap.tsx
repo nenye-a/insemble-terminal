@@ -3,19 +3,11 @@ import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY } from '../../constants/colors';
+import { CoverageWithFill } from '../../types/types';
 
 type Props = {
-  data: Array<CoverageData>; // TODO: change type
+  data: Array<CoverageWithFill>;
 };
-
-type CoverageData = {
-  name: string;
-  numLocations?: number;
-  fill: string;
-  locations: Array<Location>;
-};
-
-type Location = { lat: number; lng: number };
 
 function CoverageMap(props: Props) {
   let { data, ...otherProps } = props;
@@ -32,13 +24,16 @@ function CoverageMap(props: Props) {
       {...otherProps}
     >
       {data.map((item) => {
-        return item.locations.map((loc, index) => (
-          <Marker
-            key={'marker' + item.name + index}
-            position={loc}
-            icon={pinSymbol(item.fill)}
-          />
-        ));
+        return item.coverageData.map((covData) => {
+          let { locations } = covData;
+          return locations.map(({ lat, lng }, index) => (
+            <Marker
+              key={`marker-${item.name}-${index}`}
+              position={{ lat, lng }}
+              icon={pinSymbol(item.fill)}
+            />
+          ));
+        });
       })}
     </GoogleMap>
   );
