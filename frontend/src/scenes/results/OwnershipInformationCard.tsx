@@ -42,7 +42,6 @@ const Container = styled(View)`
   padding: 8px 28px;
   background-color: ${WHITE};
   box-shadow: ${SHADOW_COLOR};
-  width: 600px;
 `;
 
 const Row = styled(View)`
