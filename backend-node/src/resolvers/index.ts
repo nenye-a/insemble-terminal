@@ -14,3 +14,6 @@ export * from './tables/activityQuery';
 export * from './tables/coverageQuery';
 export * from './tables/ownershipContactQuery';
 export * from './tables/ownershipInfoQuery';
+
+export * from './terminal/userTerminalsQuery';
+export * from './terminal/terminalQuery';
