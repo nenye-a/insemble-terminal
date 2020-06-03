@@ -71,7 +71,7 @@ def google_detail_parser(response):
     NUM_REVIEWS_LOCATOR_RX = r'<span>[\d\,\s]+Google reviews<\/span>'
     NUM_REVIEWS_RX = r'[\d\,]+'
     try:
-        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(NUM_REVIEWS_LOCATOR_RX, stew).group()).group())
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(NUM_REVIEWS_LOCATOR_RX, stew).group()).group().replace(",", ""))
     except Exception:
         num_reviews = None
 
@@ -120,7 +120,16 @@ def google_detail_parser(response):
                       "takeout": operations_options[1],
                       "delivery": operations_options[2]}
     except Exception:
-        operations = None
+        OPERATIONS_LOCATOR_RX = r'class="A4D4f" aria-label="[\w\-\s\=]+"'
+        try:
+            operations_options = [
+                re.search(OPERATIONS_RX, re.search(OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
+                for located_rx in re.findall(OPERATIONS_LOCATOR_RX, stew)]
+            operations = {"dine_in": operations_options[0],
+                          "takeout": operations_options[1],
+                          "delivery": operations_options[2]}
+        except Exception:
+            operations = None
 
     ADDRESS_LOCATOR_RX = r'class="LrzXr">[\w\s\,\-\&\;\'\.]+<\/span>'
     ADDRESS_RX = r'>[\w\s\,\-\&\;\'\.]+<'
@@ -129,8 +138,8 @@ def google_detail_parser(response):
     except Exception:
         address = None
 
-    HOURS_LOCATOR_RX = r'<td class="SKNSIb">[\w\']+<\/td><td>[\w\–]+<\/td>'
-    HOURS_NARROWER_RX = r'>[\w\–\']+<'
+    HOURS_LOCATOR_RX = r'<td class="SKNSIb">[\w\']+<\/td><td>[\w\–\:]+<\/td>'
+    HOURS_NARROWER_RX = r'>[\w\–\'\:]+<'
     try:
         bracket_schedule = [tuple(re.findall(HOURS_NARROWER_RX, day_schedule)) for day_schedule in re.findall(HOURS_LOCATOR_RX, stew)]
         hours = {day[1:-1]: opentime[1:-1] for (day, opentime) in bracket_schedule}
@@ -150,7 +159,13 @@ def google_detail_parser(response):
     try:
         phone = re.search(PHONE_RX, re.search(PHONE_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
-        phone = None
+        # if original regex isn't found
+        PHONE_LOCATOR_RX = r'Phone<\/a>(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$])|(\>)|(<a )|(<\/a>)|(<span)|(<\/span))+'
+        PHONE_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$]+'
+        try:
+            phone = re.search(PHONE_NARROW_RX, re.search(PHONE_LOCATOR_RX, stew).group()).group()[1:]
+        except Exception:
+            phone = None
 
     ORDERING_LOCATOR_RX = r'class="jSC49b">Order:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
     ORDERING_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
@@ -161,6 +176,23 @@ def google_detail_parser(response):
                                                                                stew).group()).group()).group()[1:-1]
     except Exception:
         online_ordering_platforms = None
+
+    OTHER_RATINGS_LOCATOR_RX = r'<div class="ssc8Re(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/])|(\>)|(<a )|(<\/a>)|(<span)|(<\/span))+'
+    OTHER_RATINGS_NARROW_RX = r'<a class=(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/])|(\>)|(<span)|(<\/span))+'
+    OTHER_RATINGS_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/]+'
+
+    try:
+        platform_ratings_preprocessed = [[item[1:] for item in re.findall(OTHER_RATINGS_RX, egg.group())] for egg in
+                                  re.finditer(OTHER_RATINGS_NARROW_RX, re.search(OTHER_RATINGS_LOCATOR_RX, stew).group())]
+
+        other_platform_ratings = []
+        for platform in platform_ratings_preprocessed:
+            if len(platform) == 3:
+                other_platform_ratings.append({"source": platform[0], "rating": ast.literal_eval(platform[1][:-2])
+                if platform[1][-2:]=='/5' else '', "num_reviews": utils.get_one_int_from_str(platform[2])})
+
+    except Exception:
+        other_platform_ratings = None
 
     SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
     SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
@@ -198,7 +230,7 @@ def google_detail_parser(response):
         "phone": phone,
         "online_ordering_platforms": online_ordering_platforms,  # TODO: edit so it gets more than one
         "events": None,
-        "other_platform_ratings": None,
+        "other_platform_ratings": other_platform_ratings,
         "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
         "self_description": self_description,
         "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
@@ -393,7 +425,7 @@ def opentable_parser(response):
     NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
     NUM_REVIEWS_RX = r'\(\d+\)'
     try:
-        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1])
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1].replace(",",""))
     except Exception:
         num_reviews = None
 
@@ -516,7 +548,7 @@ def opentable_parser_all(response):
         NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
         NUM_REVIEWS_RX = r'\(\d+\)'
         try:
-            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1])
+            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1].replace(",",""))
         except Exception:
             num_reviews = None
 

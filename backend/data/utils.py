@@ -171,7 +171,7 @@ def today_formatted():
 
 def get_one_int_from_str(text: str):
     try:
-        return int(re.search(r'\d+', text).group())
+        return int(re.search(r'[\d,]+', text).group().replace(',', ''))
     except Exception:
         return None
 
