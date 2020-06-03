@@ -14,6 +14,8 @@ let permissions = shield({
   },
   Mutation: {
     search: isUserAuthenticated,
+    createTerminal: isUserAuthenticated,
+    deleteTerminal: isUserAuthenticated,
   },
 });
 
