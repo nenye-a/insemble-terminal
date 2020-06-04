@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useQuery } from '@apollo/react-hooks';
 
-import { View, Text, TextInput, Button } from '../../core-ui';
-import { PageTitle } from '../../components';
-import { THEME_COLOR } from '../../constants/colors';
-import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
+import { View, Text, TextInput, Button, LoadingIndicator } from '../../core-ui';
+import { PageTitle, ErrorComponent } from '../../components';
+import { THEME_COLOR, GRAY } from '../../constants/colors';
+import {
+  FONT_SIZE_LARGE,
+  FONT_WEIGHT_BOLD,
+  FONT_SIZE_XLARGE,
+} from '../../constants/theme';
+import { GetTerminalList } from '../../generated/GetTerminalList';
+import { GET_TERMINAL_LIST } from '../../graphql/queries/server/terminals';
 
 import TerminalCard from './TerminalCard';
 import AddNewTerminalModal from './AddNewTerminalModal';
 
 export default function TerminalHomeScene() {
   let [addModalVisible, setAddModalVisible] = useState(false);
+  let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
+
   return (
     <View>
       <AddNewTerminalModal
@@ -22,7 +31,6 @@ export default function TerminalHomeScene() {
         <TitleContainer>
           <Title>All Terminals</Title>
           <Row>
-            {/* TODO: dropdown */}
             <TextInput
               placeholder="Find Terminal"
               style={{ height: 28 }}
@@ -37,14 +45,29 @@ export default function TerminalHomeScene() {
             />
           </Row>
         </TitleContainer>
-        <CardContainer>
-          <TerminalCard
-            name="Terminal 1"
-            numOfFeed={2}
-            description="Optional/custom terminal description"
-            lastUpdate="May 6, 2020 5:54pm EDT  "
-          />
-        </CardContainer>
+        {loading ? (
+          <LoadingIndicator />
+        ) : error ? (
+          <ErrorComponent />
+        ) : data?.userTerminals.length === 0 ? (
+          <NoDataText>
+            Add a terminal to begin using customizable data feeds.
+          </NoDataText>
+        ) : (
+          <CardContainer>
+            {data?.userTerminals.map(
+              ({ id, name, pinnedFeeds, description, updatedAt }) => (
+                <TerminalCard
+                  id={id}
+                  name={name}
+                  numOfFeed={pinnedFeeds.length}
+                  description={description || ''}
+                  lastUpdate={updatedAt}
+                />
+              ),
+            )}
+          </CardContainer>
+        )}
       </ContentContainer>
     </View>
   );
@@ -67,4 +90,9 @@ const CardContainer = styled(View)`
 `;
 const Row = styled(View)`
   flex-direction: row;
+`;
+const NoDataText = styled(Text)`
+  font-size: ${FONT_SIZE_XLARGE};
+  color: ${GRAY};
+  padding: 48px 0;
 `;

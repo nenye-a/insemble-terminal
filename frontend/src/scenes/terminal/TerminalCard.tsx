@@ -15,6 +15,7 @@ import {
 import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 
 type Props = ViewProps & {
+  id: string;
   name: string;
   numOfFeed: number;
   description?: string;
