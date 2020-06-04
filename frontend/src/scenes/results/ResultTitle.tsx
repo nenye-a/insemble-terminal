@@ -15,6 +15,7 @@ import {
   ReviewTag,
   LocationTagType,
   CompareActionType,
+  TableType,
 } from '../../generated/globalTypes';
 import { UPDATE_COMPARISON } from '../../graphql/queries/server/comparison';
 import {
@@ -30,6 +31,7 @@ type Props = {
   onTableIdChange?: (tableId: string) => void;
   comparisonTags?: Array<ComparationTag>;
   canCompare?: boolean;
+  tableType: TableType;
 };
 
 export default function ResultTitle(props: Props) {
@@ -41,6 +43,7 @@ export default function ResultTitle(props: Props) {
     onTableIdChange,
     comparisonTags,
     canCompare = true,
+    tableType,
   } = props;
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
@@ -51,7 +54,13 @@ export default function ResultTitle(props: Props) {
     onError: () => {},
   });
 
-  let pinPopover = <PinPopover onClickAway={() => setPinPopoverOpen(false)} />;
+  let pinPopover = (
+    <PinPopover
+      tableId={tableId}
+      tableType={tableType}
+      onClickAway={() => setPinPopoverOpen(false)}
+    />
+  );
   let comparisonPopover = (
     <ComparisonPopover
       reviewTag={reviewTag}
@@ -127,7 +136,6 @@ export default function ResultTitle(props: Props) {
             )}
           </Popover>
         )}
-
         <Popover
           isOpen={pinPopoverOpen}
           content={pinPopover}
