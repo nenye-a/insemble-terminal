@@ -13,6 +13,7 @@ let permissions = shield({
     terminal: isUserAuthenticated,
   },
   Mutation: {
+    editUserProfile: isUserAuthenticated,
     search: isUserAuthenticated,
     createTerminal: isUserAuthenticated,
     deleteTerminal: isUserAuthenticated,
