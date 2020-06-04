@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useMutation } from '@apollo/react-hooks';
 
 import {
   View,
@@ -7,12 +8,21 @@ import {
   Button,
   TouchableOpacity,
 } from '../../core-ui';
+import { Popup } from '../../components';
 import {
   SHADOW_COLOR,
   MUTED_TEXT_COLOR,
   DARK_TEXT_COLOR,
 } from '../../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import {
+  DeleteTerminal,
+  DeleteTerminalVariables,
+} from '../../generated/DeleteTerminal';
+import {
+  DELETE_TERMINAL,
+  GET_TERMINAL_LIST,
+} from '../../graphql/queries/server/terminals';
 
 type Props = ViewProps & {
   id: string;
@@ -23,24 +33,69 @@ type Props = ViewProps & {
 };
 
 export default function TerminalCard(props: Props) {
-  let { name, numOfFeed, description, lastUpdate } = props;
+  let { id, name, numOfFeed, description, lastUpdate } = props;
+  let [deletePopupVisible, setDeletePopupVisible] = useState(false);
+  let [deleteTerminal, { data, loading }] = useMutation<
+    DeleteTerminal,
+    DeleteTerminalVariables
+  >(DELETE_TERMINAL);
+
+  useEffect(() => {
+    if (data && deletePopupVisible) {
+      setDeletePopupVisible(false);
+    }
+  }, [data, deletePopupVisible]);
 
   return (
-    <Container>
-      <TitleContainer>
-        <Title>{name}</Title>
-        <Button text="Delete" mode="transparent" />
-      </TitleContainer>
-      <FeedNumber>{numOfFeed} connected</FeedNumber>
-      <Text>{description}</Text>
-      <LastUpdateContainer>
-        {lastUpdate && (
-          <Text style={{ color: DARK_TEXT_COLOR, textAlign: 'right' }}>
-            Last Updated: {new Date(lastUpdate).toString()}
-          </Text>
-        )}
-      </LastUpdateContainer>
-    </Container>
+    <>
+      <Popup
+        visible={deletePopupVisible}
+        title="Delete Terminal"
+        bodyText={`Are you sure you want to delete terminal ${name}?`}
+        buttons={[
+          {
+            text: 'Yes',
+            onPress: () => {
+              deleteTerminal({
+                variables: {
+                  terminalId: id,
+                },
+                refetchQueries: [{ query: GET_TERMINAL_LIST }],
+                awaitRefetchQueries: true,
+              });
+            },
+          },
+          {
+            text: 'No',
+            onPress: () => {
+              setDeletePopupVisible(false);
+            },
+          },
+        ]}
+        loading={loading}
+      />
+      <Container>
+        <TitleContainer>
+          <Title>{name}</Title>
+          <Button
+            text="Delete"
+            mode="transparent"
+            onPress={() => {
+              setDeletePopupVisible(true);
+            }}
+          />
+        </TitleContainer>
+        <FeedNumber>{numOfFeed} connected</FeedNumber>
+        <Text>{description}</Text>
+        <LastUpdateContainer>
+          {lastUpdate && (
+            <Text style={{ color: DARK_TEXT_COLOR, textAlign: 'right' }}>
+              Last Updated: {new Date(lastUpdate).toString()}
+            </Text>
+          )}
+        </LastUpdateContainer>
+      </Container>
+    </>
   );
 }
 

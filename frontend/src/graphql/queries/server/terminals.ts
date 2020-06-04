@@ -37,3 +37,11 @@ export const CREATE_TERMINAL = gql`
     }
   }
 `;
+
+export const DELETE_TERMINAL = gql`
+  mutation DeleteTerminal($terminalId: String!) {
+    deleteTerminal(terminalId: $terminalId) {
+      id
+    }
+  }
+`;
