@@ -9,7 +9,7 @@ import {
 import { View } from '../core-ui';
 import { AuthScene } from '../scenes';
 import HeaderNavigationBar from '../components/HeaderNavigationBar';
-import { localStorage } from '../helpers';
+import { useAuth } from '../context';
 
 import {
   authenticatedRoutes,
@@ -27,6 +27,7 @@ export default function MainRoute() {
 
 function Routes() {
   let history = useHistory();
+  let { isAuthenticated } = useAuth();
   let mapFn = (
     {
       component: Component,
@@ -58,8 +59,7 @@ function Routes() {
   };
   return (
     <Switch>
-      {/* TODO: enhance useAuth */}
-      {!!localStorage.getToken()
+      {isAuthenticated
         ? authenticatedRoutes.map(mapFn)
         : unAuthenticatedRoutes.map(mapFn)}
       <Route component={AuthScene} />

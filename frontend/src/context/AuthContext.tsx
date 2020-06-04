@@ -38,6 +38,7 @@ const AuthContext = createContext<Auth>({
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider(props: Props) {
+  // TODO: enhance context so it's loading true on first render
   let [getProfile, { loading, data }] = useLazyQuery<GetUserProfile>(
     GET_USER_PROFILE,
     {
