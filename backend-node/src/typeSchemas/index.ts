@@ -3,6 +3,7 @@ export * from './Auth';
 export * from './UserRegisterInput';
 export * from './UserRegisterVerification';
 export * from './UserRegisterResult';
+export * from './EditProfileInput';
 
 export * from './BusinessTag';
 export * from './LocationTag';
