@@ -29,3 +29,11 @@ export const GET_TERMINAL = gql`
     }
   }
 `;
+
+export const CREATE_TERMINAL = gql`
+  mutation CreateTerminal($name: String!, $description: String) {
+    createTerminal(name: $name, description: $description) {
+      id
+    }
+  }
+`;

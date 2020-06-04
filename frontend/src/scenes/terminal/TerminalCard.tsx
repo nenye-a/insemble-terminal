@@ -34,9 +34,11 @@ export default function TerminalCard(props: Props) {
       <FeedNumber>{numOfFeed} connected</FeedNumber>
       <Text>{description}</Text>
       <LastUpdateContainer>
-        <Text style={{ color: DARK_TEXT_COLOR }}>
-          Last Updated: {lastUpdate}
-        </Text>
+        {lastUpdate && (
+          <Text style={{ color: DARK_TEXT_COLOR, textAlign: 'right' }}>
+            Last Updated: {new Date(lastUpdate).toString()}
+          </Text>
+        )}
       </LastUpdateContainer>
     </Container>
   );
