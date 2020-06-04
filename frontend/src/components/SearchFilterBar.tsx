@@ -13,12 +13,12 @@ import {
 import { parsePlaceType, isSearchCombinationValid } from '../helpers';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { BACKGROUND_COLOR, MUTED_TEXT_COLOR } from '../constants/colors';
+import { SearchTag } from '../types/types';
 import {
   ReviewTag,
   LocationTagInput,
-  BusinessTagInput,
+  BusinessTagType,
 } from '../generated/globalTypes';
-import { SearchVariables } from '../generated/Search';
 import {
   GetBusinessTag,
   GetBusinessTag_businessTags as BusinessTag,
@@ -32,7 +32,7 @@ import SvgSearch from './icons/search';
 type SelectedBusiness = BusinessTag | string;
 
 type Props = {
-  onSearchPress?: (searchTags: SearchVariables) => void;
+  onSearchPress?: (searchTags: SearchTag) => void;
   defaultReviewTag?: string;
   defaultBusinessTag?: SelectedBusiness;
   defaultLocationTag?: LocationTagInput;
@@ -132,17 +132,19 @@ export default function SearchFilterBar(props: Props) {
                 if (isValid) {
                   onSearchPress &&
                     onSearchPress({
-                      reviewTag: selectedDataType
-                        ? (selectedDataType.toUpperCase() as ReviewTag)
-                        : undefined,
-                      businessTag: (typeof selectedBusiness === 'string'
-                        ? { type: 'BUSINESS', params: selectedBusiness }
-                        : undefined) as BusinessTagInput,
-                      businessTagId:
+                      reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                      businessTag:
+                        typeof selectedBusiness === 'string'
+                          ? {
+                              type: BusinessTagType.BUSINESS,
+                              params: selectedBusiness,
+                            }
+                          : undefined,
+                      businessTagWithId:
                         selectedBusiness &&
                         typeof selectedBusiness !== 'string' &&
                         selectedBusiness?.id
-                          ? selectedBusiness.id
+                          ? selectedBusiness
                           : undefined,
                       locationTag: selectedPlace ? selectedPlace : undefined,
                     });

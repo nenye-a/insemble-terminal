@@ -1,10 +1,15 @@
 import React from 'react';
-import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useHistory,
+} from 'react-router-dom';
 
 import { View } from '../core-ui';
 import { AuthScene } from '../scenes';
-import { useAuth } from '../context/AuthContext';
 import HeaderNavigationBar from '../components/HeaderNavigationBar';
+import { localStorage } from '../helpers';
 
 import {
   authenticatedRoutes,
@@ -13,9 +18,22 @@ import {
 } from './routes';
 
 export default function MainRoute() {
-  let { isAuthenticated } = useAuth();
+  return (
+    <Router>
+      <Routes />
+    </Router>
+  );
+}
+
+function Routes() {
+  let history = useHistory();
   let mapFn = (
-    { component: Component, showHeader = true, ...routeProps }: RouteType,
+    {
+      component: Component,
+      showHeader = true,
+      showSearchBar,
+      ...routeProps
+    }: RouteType,
     index: number,
   ) => {
     return (
@@ -23,7 +41,14 @@ export default function MainRoute() {
         key={index.toString() + routeProps.path}
         render={() => (
           <View>
-            {showHeader && <HeaderNavigationBar />}
+            {showHeader && (
+              <HeaderNavigationBar
+                showSearchBar={showSearchBar}
+                onSearchPress={(search) => {
+                  history.push('/results', { search });
+                }}
+              />
+            )}
             <Component />
           </View>
         )}
@@ -31,15 +56,13 @@ export default function MainRoute() {
       />
     );
   };
-
   return (
-    <Router>
-      <Switch>
-        {isAuthenticated
-          ? authenticatedRoutes.map(mapFn)
-          : unAuthenticatedRoutes.map(mapFn)}
-        <Route component={AuthScene} />
-      </Switch>
-    </Router>
+    <Switch>
+      {/* TODO: enhance useAuth */}
+      {!!localStorage.getToken()
+        ? authenticatedRoutes.map(mapFn)
+        : unAuthenticatedRoutes.map(mapFn)}
+      <Route component={AuthScene} />
+    </Switch>
   );
 }
