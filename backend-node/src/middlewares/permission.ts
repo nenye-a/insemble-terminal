@@ -16,6 +16,8 @@ let permissions = shield({
     search: isUserAuthenticated,
     createTerminal: isUserAuthenticated,
     deleteTerminal: isUserAuthenticated,
+    pinTable: isUserAuthenticated,
+    removePinnedTable: isUserAuthenticated,
   },
 });
 
