@@ -13,6 +13,7 @@ import {
   SHADOW_COLOR,
   MUTED_TEXT_COLOR,
   DARK_TEXT_COLOR,
+  WHITE,
 } from '../../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import {
@@ -101,6 +102,7 @@ export default function TerminalCard(props: Props) {
 
 const Container = styled(TouchableOpacity)`
   padding: 14px 20px;
+  background-color: ${WHITE};
   box-shadow: ${SHADOW_COLOR};
   height: 180px;
   margin: 20px 60px 20px 0;
