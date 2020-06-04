@@ -2,11 +2,14 @@ import {
   ReviewTag,
   LocationTagType,
   BusinessType,
+  BusinessTagInput,
+  LocationTagInput,
 } from '../generated/globalTypes';
 import {
   GetCoverage_coverageTable_data as CoverageTableData,
   GetCoverage_coverageTable_compareData as CoverageTableCompareData,
 } from '../generated/GetCoverage';
+import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 
 export type ResultQuery = {
   reviewTag: ReviewTag | null;
@@ -48,4 +51,11 @@ export type CoverageWithFill = (
 export type LocationLatLng = {
   lat: number;
   lng: number;
+};
+
+export type SearchTag = {
+  reviewTag?: ReviewTag | null;
+  businessTag?: BusinessTagInput | null;
+  businessTagWithId?: BusinessTag | null;
+  locationTag?: LocationTagInput | null;
 };

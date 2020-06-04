@@ -9,30 +9,50 @@ import {
   DARK_TEXT_COLOR,
 } from '../constants/colors';
 import { useAuth } from '../context';
-import { SearchVariables } from '../generated/Search';
+import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
+import { LocationTagInput } from '../generated/globalTypes';
+import { SearchTag } from '../types/types';
 
 import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 
 type Props = {
-  onSearchPress?: (searchTags: SearchVariables) => void;
+  onSearchPress?: (searchTags: SearchTag) => void;
   showSearchBar?: boolean;
+  defaultReviewTag?: string;
+  defaultBusinessTag?: BusinessTag | string;
+  defaultLocationTag?: LocationTagInput;
 };
 
 export default function HeaderNavigationBar(props: Props) {
-  let { onSearchPress, showSearchBar = false } = props;
+  let {
+    onSearchPress,
+    showSearchBar = true,
+    defaultReviewTag,
+    defaultBusinessTag,
+    defaultLocationTag,
+  } = props;
   let history = useHistory();
   let { isAuthenticated } = useAuth();
 
   return (
     <Container>
-      <TouchableOpacity onPress={() => {}}>
+      <TouchableOpacity
+        onPress={() => {
+          history.push('/');
+        }}
+      >
         <InsembleLogo color="purple" />
       </TouchableOpacity>
       {showSearchBar && (
         <SearchContainer>
-          <SearchFilterBar onSearchPress={onSearchPress} />
+          <SearchFilterBar
+            onSearchPress={onSearchPress}
+            defaultReviewTag={defaultReviewTag}
+            defaultBusinessTag={defaultBusinessTag}
+            defaultLocationTag={defaultLocationTag}
+          />
         </SearchContainer>
       )}
       {isAuthenticated ? (

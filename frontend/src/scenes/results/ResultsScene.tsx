@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
+import { useHistory } from 'react-router-dom';
 
 import { View, Text, Divider, LoadingIndicator } from '../../core-ui';
 import { HeaderNavigationBar, PageTitle } from '../../components';
@@ -13,8 +14,8 @@ import { FONT_SIZE_XLARGE } from '../../constants/theme';
 import { SEARCH } from '../../graphql/queries/server/search';
 import { Search, SearchVariables } from '../../generated/Search';
 import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
-import { ResultQuery, OwnershipType } from '../../types/types';
-import { getResultQueries } from '../../helpers';
+import { ResultQuery, OwnershipType, SearchTag } from '../../types/types';
+import { getResultQueries, capitalize } from '../../helpers';
 import SvgArrowUp from '../../components/icons/arrow-up';
 
 import PerformanceByLocationResult from './PerformanceByLocationResult';
@@ -29,7 +30,12 @@ import PropertyContactsResult from './PropertyContactsResult';
 import CompanyContactsResult from './CompanyContactsResult';
 import CoverageResult from './CoverageResult';
 
+type SearchState = {
+  search: SearchTag;
+};
+
 export default function ResultsScene() {
+  let history = useHistory<SearchState>();
   let [
     submitSearch,
     { data: submitSearchData, loading: submitSearchLoading },
@@ -38,9 +44,17 @@ export default function ResultsScene() {
   });
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
 
-  let onSubmit = (searchVariables: SearchVariables) => {
+  let onSubmit = ({
+    reviewTag,
+    businessTagWithId,
+    ...searchVariables
+  }: SearchTag) => {
     submitSearch({
-      variables: searchVariables,
+      variables: {
+        ...searchVariables,
+        reviewTag: reviewTag || undefined,
+        businessTagId: businessTagWithId?.id,
+      },
     });
   };
 
@@ -56,10 +70,33 @@ export default function ResultsScene() {
     }
   }, [submitSearchData]);
 
+  useEffect(() => {
+    if (history?.location?.state?.search) {
+      onSubmit(history.location.state.search);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <View>
       {/* TODO: disable search bar on loading */}
-      <HeaderNavigationBar showSearchBar={true} onSearchPress={onSubmit} />
+      <HeaderNavigationBar
+        showSearchBar={true}
+        onSearchPress={onSubmit}
+        defaultReviewTag={
+          history?.location.state?.search.reviewTag
+            ? capitalize(history.location.state.search.reviewTag)
+            : undefined
+        }
+        defaultBusinessTag={
+          history?.location?.state?.search?.businessTagWithId
+            ? history.location.state.search.businessTagWithId
+            : history?.location?.state?.search?.businessTag?.params || undefined
+        }
+        defaultLocationTag={
+          history?.location?.state?.search.locationTag || undefined
+        }
+      />
       {submitSearchData?.search ? (
         <>
           <PageTitle

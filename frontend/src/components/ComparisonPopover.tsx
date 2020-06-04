@@ -162,12 +162,12 @@ export default function ComparisonPopover(props: Props) {
             disableReviewTag={true}
             defaultReviewTag={capitalize(reviewTag)}
             onSearchPress={(searchTags) => {
-              let { businessTag, businessTagId, locationTag } = searchTags;
+              let { businessTag, businessTagWithId, locationTag } = searchTags;
               updateComparison({
                 variables: {
                   reviewTag,
                   businessTag,
-                  businessTagId,
+                  businessTagId: businessTagWithId?.id,
                   locationTag,
                   tableId,
                   actionType: CompareActionType.ADD,

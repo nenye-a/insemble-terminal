@@ -14,6 +14,7 @@ export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.ComponentType<any>;
   showHeader?: boolean;
+  showSearchBar?: boolean;
 };
 
 export const unAuthenticatedRoutes = [
@@ -23,15 +24,17 @@ export const unAuthenticatedRoutes = [
     component: AuthScene,
     showHeader: false,
   }, // TODO: change component
-  { path: '/signup', component: SignUpScene },
-  { path: '/login', component: LoginScene },
+  { path: '/signup', component: SignUpScene, showSearchBar: false },
+  { path: '/login', component: LoginScene, showSearchBar: false },
   {
     path: '/email-verification/:verificationId',
     component: EmailVerificationScene,
+    showSearchBar: false,
   },
   {
     path: '/verification-successful',
     component: VerificationSuccessfulScene,
+    showSearchBar: false,
   },
 ];
 

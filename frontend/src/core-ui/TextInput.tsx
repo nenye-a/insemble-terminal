@@ -102,6 +102,7 @@ export default forwardRef(
 
 const LabelWrapper = styled(Label)`
   padding-bottom: 8px;
+  font-size: ${FONT_SIZE_NORMAL};
 `;
 
 const InputBox = styled.input<InputProps>`

@@ -36,7 +36,7 @@ export default function PageTitle(props: Props) {
   return (
     <TitleContainer>
       <Title>{text ? text : formattedText}</Title>
-      {locationTag?.type === LocationTagType.NATION && (
+      {(locationTag?.type === LocationTagType.NATION || !locationTag) && (
         <USText>All United States</USText>
       )}
     </TitleContainer>
