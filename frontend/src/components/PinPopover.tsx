@@ -1,7 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useQuery } from '@apollo/react-hooks';
 
-import { Card, View, Text, Button, TouchableOpacity } from '../core-ui';
+import { Card, Text, TouchableOpacity, LoadingIndicator } from '../core-ui';
 import {
   DARK_TEXT_COLOR,
   LIGHTER_GRAY,
@@ -9,6 +10,10 @@ import {
 } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import AddNewTerminalForm from '../scenes/terminal/AddNewTerminalForm';
+import { GetTerminalList } from '../generated/GetTerminalList';
+import { GET_TERMINAL_LIST } from '../graphql/queries/server/terminals';
+
+import ErrorComponent from './ErrorComponent';
 
 type Props = {
   onClickAway: () => void;
@@ -16,53 +21,37 @@ type Props = {
 
 export default function PinPopover(props: Props) {
   let { onClickAway } = props;
-
-  let terminalList = [
-    { name: 'Terminal 1', numFeeds: 3 },
-    { name: 'Terminal 2', numFeeds: 5 },
-    { name: 'Terminal 3', numFeeds: 10 },
-    { name: 'Terminal 4', numFeeds: 2 },
-    { name: 'Terminal 5', numFeeds: 1 },
-  ];
-  let noList = terminalList.length === 0;
-  // TODO: get terminal list
+  let {
+    loading: terminalsLoading,
+    data: terminalsData,
+    error: terminalsError,
+  } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
 
   return (
     <Container>
-      {noList ? (
+      {terminalsLoading ? (
+        <LoadingIndicator />
+      ) : terminalsError ? (
+        <ErrorComponent />
+      ) : terminalsData?.userTerminals.length === 0 ? (
         <AddNewTerminalForm onClose={onClickAway} />
       ) : (
         <>
           <Title>Select the terminal to add this data feed to.</Title>
           <ListContainer>
-            {terminalList.map(({ name, numFeeds }, index) => (
-              <Row key={index}>
-                <Text fontWeight={FONT_WEIGHT_MEDIUM}>{name}</Text>
-                <Text fontWeight={FONT_WEIGHT_MEDIUM}>
-                  {numFeeds} existing feeds
-                </Text>
-              </Row>
-            ))}
+            {terminalsData?.userTerminals.map(
+              ({ name, pinnedFeeds }, index) => (
+                <Row key={index}>
+                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>{name}</Text>
+                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>
+                    {pinnedFeeds.length} existing feeds
+                  </Text>
+                </Row>
+              ),
+            )}
           </ListContainer>
         </>
       )}
-
-      <ButtonContainer>
-        <Button
-          text="Cancel"
-          size="small"
-          mode="secondary"
-          onPress={onClickAway}
-        />
-        <Button
-          text="Confirm"
-          size="small"
-          onPress={() => {
-            // call BE
-          }}
-          style={{ marginLeft: 8 }}
-        />
-      </ButtonContainer>
     </Container>
   );
 }
@@ -98,11 +87,4 @@ const Row = styled(TouchableOpacity)`
   &:hover {
     box-shadow: ${SHADOW_COLOR};
   }
-`;
-
-const ButtonContainer = styled(View)`
-  padding-top: 12px;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-end;
 `;
