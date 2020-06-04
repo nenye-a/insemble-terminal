@@ -59,13 +59,7 @@ export default function isSearchCombinationValid(
       return true;
     }
   } else if (!hasReviewTag) {
-    if (
-      (((typeof businessTag !== 'string' &&
-        businessTag?.type === BusinessType.BUSINESS) ||
-        (hasBusinessTag && typeof businessTag === 'string')) &&
-        !hasLocationTag) ||
-      (!hasBusinessTag && hasLocationTag)
-    ) {
+    if (hasLocationTag || hasBusinessTag) {
       return true;
     }
   }
