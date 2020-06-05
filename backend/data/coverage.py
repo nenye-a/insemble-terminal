@@ -11,8 +11,8 @@ def coverage(name, location, scope):
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
@@ -23,7 +23,7 @@ def coverage(name, location, scope):
             return None
         matching_places = utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
         })
     else:
@@ -52,7 +52,7 @@ def category_coverage(category, location, scope):
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
