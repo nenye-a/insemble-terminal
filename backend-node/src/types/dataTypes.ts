@@ -140,3 +140,8 @@ export type BusinessData = {
   numLocations?: number;
   locations: Array<LocationPin>;
 };
+
+export type LicenseToken = {
+  token: string;
+  linkedEmail: string;
+};

@@ -1,4 +1,5 @@
 import { objectType } from 'nexus';
+import { prisma } from '../prisma';
 
 export let Tenant = objectType({
   name: 'User',
@@ -13,5 +14,19 @@ export let Tenant = objectType({
     t.model.title();
     t.model.address();
     t.model.pendingEmail();
+    t.model.role();
+    t.field('license', {
+      type: 'Boolean',
+      resolve: async ({ id }) => {
+        let user = await prisma.user.findOne({
+          where: { id },
+          include: { license: true },
+        });
+        if (user?.license || user?.role === 'ADMIN') {
+          return true;
+        }
+        return false;
+      },
+    });
   },
 });
