@@ -56,8 +56,9 @@ export default function TerminalHomeScene() {
         ) : (
           <CardContainer>
             {data?.userTerminals.map(
-              ({ id, name, pinnedFeeds, description, updatedAt }) => (
+              ({ id, name, pinnedFeeds, description, updatedAt }, index) => (
                 <TerminalCard
+                  key={`${name}-${index}`}
                   id={id}
                   name={name}
                   numOfFeed={pinnedFeeds.length}

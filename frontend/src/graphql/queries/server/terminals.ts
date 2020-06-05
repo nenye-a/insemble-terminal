@@ -15,7 +15,7 @@ export const GET_TERMINAL_LIST = gql`
 `;
 
 export const GET_TERMINAL = gql`
-  query GetTerminal($terminalId: String) {
+  query GetTerminal($terminalId: String!) {
     terminal(terminalId: $terminalId) {
       name
       description

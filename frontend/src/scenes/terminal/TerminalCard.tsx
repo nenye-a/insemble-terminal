@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
+import { useHistory } from 'react-router-dom';
 
 import {
   View,
@@ -34,6 +35,7 @@ type Props = ViewProps & {
 };
 
 export default function TerminalCard(props: Props) {
+  let history = useHistory();
   let { id, name, numOfFeed, description, lastUpdate } = props;
   let [deletePopupVisible, setDeletePopupVisible] = useState(false);
   let [deleteTerminal, { data, loading }] = useMutation<
@@ -75,7 +77,13 @@ export default function TerminalCard(props: Props) {
         ]}
         loading={loading}
       />
-      <Container>
+      <Container
+        onPress={() => {
+          history.push(`/terminals/${id}`, {
+            name,
+          });
+        }}
+      >
         <TitleContainer>
           <Title>{name}</Title>
           <Button

@@ -8,6 +8,7 @@ import {
   AuthScene,
   EmailVerificationScene,
   VerificationSuccessfulScene,
+  TerminalDetailScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -53,5 +54,10 @@ export const authenticatedRoutes: Array<RouteType> = [
   {
     path: '/terminals',
     component: TerminalHomeScene,
+    exact: true,
+  },
+  {
+    path: '/terminals/:terminalId',
+    component: TerminalDetailScene,
   },
 ];

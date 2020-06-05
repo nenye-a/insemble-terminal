@@ -26,6 +26,7 @@ export const MUTED_TEXT_COLOR = LIGHT_GRAY;
 export const DARK_TEXT_COLOR = DARK_GRAY;
 export const DISABLED_TEXT_COLOR = SLIGHT_GRAY;
 export const LINK_COLOR = BLUE;
+export const GRAY_TEXT = GRAY;
 
 // DataTable colors
 export const TABLE_BORDER_COLOR = LIGHTER_GRAY;
