@@ -8,7 +8,11 @@ import {
   GetPerformanceTable,
   GetPerformanceTableVariables,
 } from '../../generated/GetPerformanceTable';
-import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
+import {
+  PerformanceTableType,
+  ReviewTag,
+  TableType,
+} from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 
 import ResultTitle from './ResultTitle';
@@ -51,6 +55,7 @@ export default function PerformanceByLocationResult(props: Props) {
           });
         }}
         comparisonTags={data?.performanceTable.comparationTags}
+        tableType={TableType.PERFORMANCE}
       />
       {loading ? (
         <LoadingIndicator />

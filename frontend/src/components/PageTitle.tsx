@@ -16,10 +16,17 @@ type Props = {
   businessTag?: BusinessTag | null;
   locationTag?: LocationTag | null;
   text?: string;
+  showLocation?: boolean;
 };
 
 export default function PageTitle(props: Props) {
-  let { reviewTag, businessTag, locationTag, text } = props;
+  let {
+    reviewTag,
+    businessTag,
+    locationTag,
+    text,
+    showLocation = true,
+  } = props;
 
   let formattedReview = reviewTag ? capitalize(reviewTag) : '';
   let formattedBusiness = businessTag?.params ? businessTag?.params : '';
@@ -36,9 +43,10 @@ export default function PageTitle(props: Props) {
   return (
     <TitleContainer>
       <Title>{text ? text : formattedText}</Title>
-      {(locationTag?.type === LocationTagType.NATION || !locationTag) && (
-        <USText>All United States</USText>
-      )}
+      {showLocation &&
+        (locationTag?.type === LocationTagType.NATION || !locationTag) && (
+          <USText>All United States</USText>
+        )}
     </TitleContainer>
   );
 }

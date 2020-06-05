@@ -6,7 +6,7 @@ import { View, LoadingIndicator } from '../../core-ui';
 import { ErrorComponent, EmptyDataComponent } from '../../components';
 import { useGoogleMaps, generateRandomColor } from '../../helpers';
 import { CoverageWithFill } from '../../types/types';
-import { ReviewTag } from '../../generated/globalTypes';
+import { ReviewTag, TableType } from '../../generated/globalTypes';
 import { GetCoverage, GetCoverageVariables } from '../../generated/GetCoverage';
 import { GET_COVERAGE_DATA } from '../../graphql/queries/server/results';
 
@@ -55,6 +55,7 @@ export default function CoverageResult(props: Props) {
           refetch({ tableId: newTableId });
         }}
         comparisonTags={data?.coverageTable.comparationTags}
+        tableType={TableType.COVERAGE}
       />
       {loading ? (
         <LoadingIndicator />

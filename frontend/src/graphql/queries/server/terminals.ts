@@ -45,3 +45,19 @@ export const DELETE_TERMINAL = gql`
     }
   }
 `;
+
+export const PIN_TABLE = gql`
+  mutation PinTable(
+    $terminalId: String!
+    $tableId: String!
+    $tableType: TableType!
+  ) {
+    pinTable(
+      terminalId: $terminalId
+      tableId: $tableId
+      tableType: $tableType
+    ) {
+      id
+    }
+  }
+`;

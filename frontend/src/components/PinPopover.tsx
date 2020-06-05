@@ -1,8 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useQuery } from '@apollo/react-hooks';
+import { useQuery, useMutation } from '@apollo/react-hooks';
 
-import { Card, Text, TouchableOpacity, LoadingIndicator } from '../core-ui';
+import {
+  Card,
+  Text,
+  TouchableOpacity,
+  LoadingIndicator,
+  Alert,
+} from '../core-ui';
 import {
   DARK_TEXT_COLOR,
   LIGHTER_GRAY,
@@ -10,26 +16,37 @@ import {
 } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import AddNewTerminalForm from '../scenes/terminal/AddNewTerminalForm';
+import { TableType } from '../generated/globalTypes';
 import { GetTerminalList } from '../generated/GetTerminalList';
-import { GET_TERMINAL_LIST } from '../graphql/queries/server/terminals';
+import { PinTable, PinTableVariables } from '../generated/PinTable';
+import {
+  GET_TERMINAL_LIST,
+  PIN_TABLE,
+} from '../graphql/queries/server/terminals';
 
 import ErrorComponent from './ErrorComponent';
 
 type Props = {
   onClickAway: () => void;
+  tableId: string;
+  tableType: TableType;
 };
 
 export default function PinPopover(props: Props) {
-  let { onClickAway } = props;
+  let { onClickAway, tableId, tableType } = props;
   let {
     loading: terminalsLoading,
     data: terminalsData,
     error: terminalsError,
   } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
+  let [
+    pinTable,
+    { loading: pinTableLoading, data: pinTableData, error: pinTableError },
+  ] = useMutation<PinTable, PinTableVariables>(PIN_TABLE);
 
   return (
     <Container>
-      {terminalsLoading ? (
+      {terminalsLoading || pinTableLoading ? (
         <LoadingIndicator />
       ) : terminalsError ? (
         <ErrorComponent />
@@ -38,10 +55,29 @@ export default function PinPopover(props: Props) {
       ) : (
         <>
           <Title>Select the terminal to add this data feed to.</Title>
+          <MessageAlert
+            visible={!!pinTableData}
+            text="Data succesfully pinned to terminal"
+          />
+          <MessageAlert visible={!!pinTableError} text="Fail to pin data" />
           <ListContainer>
             {terminalsData?.userTerminals.map(
-              ({ name, pinnedFeeds }, index) => (
-                <Row key={index}>
+              ({ id, name, pinnedFeeds }, index) => (
+                <Row
+                  key={index}
+                  onPress={() => {
+                    pinTable({
+                      variables: {
+                        terminalId: id,
+                        tableId,
+                        tableType,
+                      },
+                      awaitRefetchQueries: true,
+                      refetchQueries: [{ query: GET_TERMINAL_LIST }],
+                    });
+                  }}
+                  stopPropagation={true}
+                >
                   <Text fontWeight={FONT_WEIGHT_MEDIUM}>{name}</Text>
                   <Text fontWeight={FONT_WEIGHT_MEDIUM}>
                     {pinnedFeeds.length} existing feeds
@@ -87,4 +123,8 @@ const Row = styled(TouchableOpacity)`
   &:hover {
     box-shadow: ${SHADOW_COLOR};
   }
+`;
+
+const MessageAlert = styled(Alert)`
+  margin-bottom: 8px;
 `;

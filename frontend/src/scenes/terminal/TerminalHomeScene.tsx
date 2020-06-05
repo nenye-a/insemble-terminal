@@ -26,7 +26,7 @@ export default function TerminalHomeScene() {
         visible={addModalVisible}
         onClose={() => setAddModalVisible(false)}
       />
-      <PageTitle text="Personal Terminals" />
+      <PageTitle text="Personal Terminals" showLocation={false} />
       <ContentContainer>
         <TitleContainer>
           <Title>All Terminals</Title>

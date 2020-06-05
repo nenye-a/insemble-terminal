@@ -9,7 +9,11 @@ import {
   GetPerformanceTableVariables,
 } from '../../generated/GetPerformanceTable';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
+import {
+  PerformanceTableType,
+  ReviewTag,
+  TableType,
+} from '../../generated/globalTypes';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -50,6 +54,7 @@ export default function OverallPerformanceResult(props: Props) {
           });
         }}
         comparisonTags={data?.performanceTable.comparationTags}
+        tableType={TableType.PERFORMANCE}
       />
       {loading ? (
         <LoadingIndicator />

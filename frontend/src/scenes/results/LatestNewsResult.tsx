@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
-import { ReviewTag } from '../../generated/globalTypes';
+import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
   GetNewsTable,
   GetNewsTableVariables,
@@ -46,6 +46,7 @@ export default function LatestNewsResult(props: Props) {
           });
         }}
         comparisonTags={data?.newsTable.comparationTags}
+        tableType={TableType.NEWS}
       />
       {loading ? (
         <LoadingIndicator />

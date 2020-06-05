@@ -4,7 +4,11 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
-import { ReviewTag, OwnershipType } from '../../generated/globalTypes';
+import {
+  ReviewTag,
+  OwnershipType,
+  TableType,
+} from '../../generated/globalTypes';
 import {
   GetOwnershipInfoData,
   GetOwnershipInfoDataVariables,
@@ -49,6 +53,7 @@ export default function PropertyOwnerInformationResult(props: Props) {
           });
         }}
         canCompare={false}
+        tableType={TableType.OWNERSHIP_INFO}
       />
       {loading ? (
         <LoadingIndicator />

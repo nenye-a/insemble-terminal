@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
-import { ReviewTag } from '../../generated/globalTypes';
+import { ReviewTag, TableType } from '../../generated/globalTypes';
 import { GetActivity, GetActivityVariables } from '../../generated/GetActivity';
 import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
 
@@ -42,6 +42,7 @@ export default function CustomerActivityResult(props: Props) {
           });
         }}
         comparisonTags={data?.activityTable.comparationTags}
+        tableType={TableType.ACTIVITY}
       />
       {loading ? (
         <LoadingIndicator />
