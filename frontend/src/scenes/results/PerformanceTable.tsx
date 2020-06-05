@@ -16,16 +16,27 @@ type Props = {
   headerTitle?: string;
 };
 
+type MergedPerformanceTableData = (
+  | PerformanceTableData
+  | PerformanceTableCompareData
+) & {
+  isComparison: boolean;
+};
+
 export default function PerformanceTable(props: Props) {
   let {
     data,
-    compareData,
+    compareData = [],
     showNumLocation = true,
     headerTitle = 'Company',
   } = props;
+  let mergedData = [
+    ...data.map((item) => ({ ...item, isComparison: false })),
+    ...compareData?.map((item) => ({ ...item, isComparison: true })),
+  ];
   let { sortedData, requestSort, sortConfig } = useSortableData<
-    PerformanceTableData
-  >(data, {
+    MergedPerformanceTableData
+  >(mergedData, {
     key: 'totalSales',
     direction: Direction.DESCENDING,
   });
@@ -73,38 +84,6 @@ export default function PerformanceTable(props: Props) {
           </DataTable.HeaderCell>
         )}
       </DataTable.HeaderRow>
-      {compareData &&
-        compareData.map((row, index) => {
-          let {
-            name = '',
-            avgRating = '',
-            numLocation = 'N/A',
-            numReview = '',
-            totalSales = '',
-          } = row;
-          return (
-            <DataTable.Row
-              key={'compare' + index}
-              style={{ backgroundColor: TABLE_PURPLE_BACKGROUND }}
-            >
-              <DataTable.Cell>{name}</DataTable.Cell>
-              <DataTable.Cell width={200} align="right">
-                {totalSales}
-              </DataTable.Cell>
-              <DataTable.Cell width={120} align="right">
-                {avgRating}
-              </DataTable.Cell>
-              <DataTable.Cell width={150} align="right">
-                {numReview}
-              </DataTable.Cell>
-              {showNumLocation && (
-                <DataTable.Cell width={120} align="right">
-                  {numLocation}
-                </DataTable.Cell>
-              )}
-            </DataTable.Row>
-          );
-        })}
       {sortedData.map((row, index) => {
         let {
           name = '',
@@ -112,9 +91,15 @@ export default function PerformanceTable(props: Props) {
           numLocation = 'N/A',
           numReview = '',
           totalSales = '',
+          isComparison,
         } = row;
         return (
-          <DataTable.Row key={index}>
+          <DataTable.Row
+            key={index}
+            {...(isComparison && {
+              style: { backgroundColor: TABLE_PURPLE_BACKGROUND },
+            })}
+          >
             <DataTable.Cell>{name}</DataTable.Cell>
             <DataTable.Cell width={200} align="right">
               {totalSales}

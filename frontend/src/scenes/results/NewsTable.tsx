@@ -14,11 +14,19 @@ type Props = {
   compareData?: Array<NewsCompareData>;
 };
 
-export default function NewsTable(props: Props) {
-  let { data, compareData } = props;
+type MergedNewsData = (NewsData | NewsCompareData) & {
+  isComparison: boolean;
+};
 
-  let { sortedData, requestSort, sortConfig } = useSortableData<NewsData>(
-    data,
+export default function NewsTable(props: Props) {
+  let { data, compareData = [] } = props;
+  let mergedData = [
+    ...data.map((item) => ({ ...item, isComparison: false })),
+    ...compareData?.map((item) => ({ ...item, isComparison: true })),
+  ];
+
+  let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
+    mergedData,
     {
       key: 'published',
       direction: Direction.DESCENDING,
@@ -42,33 +50,23 @@ export default function NewsTable(props: Props) {
           Post Date
         </DataTable.HeaderCell>
       </DataTable.HeaderRow>
-      {compareData &&
-        compareData.map((row, index) => {
-          let { title = '', link = '', source = '', published } = row;
-          return (
-            <DataTable.Row
-              key={'compare-news' + index}
-              style={{ backgroundColor: TABLE_PURPLE_BACKGROUND }}
-              onPress={() => {
-                window.open(link, '_blank');
-              }}
-            >
-              <DataTable.Cell width={500}>{title}</DataTable.Cell>
-              <DataTable.Cell>{source}</DataTable.Cell>
-              <DataTable.Cell align="right">
-                {getPublishedDate(published)}
-              </DataTable.Cell>
-            </DataTable.Row>
-          );
-        })}
       {sortedData.map((row, index) => {
-        let { title = '', link = '', source = '', published } = row;
+        let {
+          title = '',
+          link = '',
+          source = '',
+          published,
+          isComparison,
+        } = row;
         return (
           <DataTable.Row
             key={index}
             onPress={() => {
               window.open(link, '_blank');
             }}
+            {...(isComparison && {
+              style: { backgroundColor: TABLE_PURPLE_BACKGROUND },
+            })}
           >
             <DataTable.Cell width={500}>{title}</DataTable.Cell>
             <DataTable.Cell>{source}</DataTable.Cell>
