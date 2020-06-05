@@ -54,12 +54,12 @@ def aggregate_performance(name, location, scope):
         })
         if not region:
             return None
-        matching_places = utils.DB_TERMINAL_PLACES.find({
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
-        })
+        }))
     else:
         return None
 
@@ -287,7 +287,6 @@ if __name__ == "__main__":
         pprint.pprint(performance)
 
     def test_category_performance_higher_scope():
-        import pprint
         performance = category_performance("Mexican Restaurant", "Los Angeles", "city")
         performance = category_performance("Mexican Restaurant", "Los Angeles County", "county")
         # performance = category_performance(None, "Los Angeles", "County")

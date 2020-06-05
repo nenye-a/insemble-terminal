@@ -59,12 +59,12 @@ def aggregate_activity(name, location, scope):
         })
         if not region:
             return None
-        matching_places = utils.DB_TERMINAL_PLACES.find({
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details.activity': {'$ne': None}
-        })
+        }))
     else:
         return None
 

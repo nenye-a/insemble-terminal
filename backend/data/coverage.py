@@ -21,11 +21,11 @@ def coverage(name, location, scope):
         })
         if not region:
             return None
-        matching_places = utils.DB_TERMINAL_PLACES.find({
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
-        })
+        }))
     else:
         return None
 
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     def test_category_coverage():
         # print(category_coverage("Mexican Restaurant", "Los Angeles", "City"))
-        print(category_coverage("Mexican Restaurant", "Los Angeles County", "County"))
+        print(category_coverage("Mexican Restaurant", "Harris County", "County"))
 
     # test_coverage()
     test_category_coverage()
