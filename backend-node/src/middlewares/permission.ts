@@ -11,6 +11,8 @@ let permissions = shield({
     userProfile: isUserAuthenticated,
     userTerminals: isUserAuthenticated,
     terminal: isUserAuthenticated,
+    licenseList: isUserAuthenticated,
+    masterLicenseList: isUserAuthenticated,
   },
   Mutation: {
     editUserProfile: isUserAuthenticated,
@@ -19,6 +21,11 @@ let permissions = shield({
     deleteTerminal: isUserAuthenticated,
     pinTable: isUserAuthenticated,
     removePinnedTable: isUserAuthenticated,
+    createLicense: isUserAuthenticated,
+    removeLicenses: isUserAuthenticated,
+    removeMasterLicenses: isUserAuthenticated,
+    incrementMaxLicense: isUserAuthenticated,
+    activateAccount: isUserAuthenticated,
   },
 });
 
