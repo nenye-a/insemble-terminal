@@ -17,10 +17,11 @@ import NewsTable from './NewsTable';
 type Props = {
   businessTagId?: string;
   locationTagId?: string;
+  tableId?: string;
 };
 
 export default function LatestNewsResult(props: Props) {
-  let { businessTagId, locationTagId } = props;
+  let { businessTagId, locationTagId, tableId } = props;
   let { data, loading, error, refetch } = useQuery<
     GetNewsTable,
     GetNewsTableVariables
@@ -28,6 +29,7 @@ export default function LatestNewsResult(props: Props) {
     variables: {
       businessTagId,
       locationTagId,
+      tableId,
     },
   });
 
@@ -47,6 +49,18 @@ export default function LatestNewsResult(props: Props) {
         }}
         comparisonTags={data?.newsTable.comparationTags}
         tableType={TableType.NEWS}
+        {...(data?.newsTable.businessTag && {
+          businessTag: {
+            params: data.newsTable.businessTag.params,
+            type: data.newsTable.businessTag.type,
+          },
+        })}
+        {...(data?.newsTable.locationTag && {
+          locationTag: {
+            params: data.newsTable.locationTag.params,
+            type: data.newsTable.locationTag.type,
+          },
+        })}
       />
       {loading ? (
         <LoadingIndicator />

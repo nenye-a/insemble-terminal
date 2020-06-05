@@ -21,10 +21,11 @@ import PerformanceTable from './PerformanceTable';
 type Props = {
   businessTagId?: string;
   locationTagId?: string;
+  tableId?: string;
 };
 
 export default function PerformanceByBrand(props: Props) {
-  let { businessTagId, locationTagId } = props;
+  let { businessTagId, locationTagId, tableId } = props;
 
   let { data, loading, error, refetch } = useQuery<
     GetPerformanceTable,
@@ -34,6 +35,7 @@ export default function PerformanceByBrand(props: Props) {
       performanceType: PerformanceTableType.BRAND,
       businessTagId,
       locationTagId,
+      tableId,
     },
   });
   let noData =
@@ -56,6 +58,18 @@ export default function PerformanceByBrand(props: Props) {
         }}
         comparisonTags={data?.performanceTable.comparationTags}
         tableType={TableType.PERFORMANCE}
+        {...(data?.performanceTable.businessTag && {
+          businessTag: {
+            params: data.performanceTable.businessTag.params,
+            type: data.performanceTable.businessTag.type,
+          },
+        })}
+        {...(data?.performanceTable.locationTag && {
+          locationTag: {
+            params: data.performanceTable.locationTag.params,
+            type: data.performanceTable.locationTag.type,
+          },
+        })}
       />
       {loading ? (
         <LoadingIndicator />

@@ -14,10 +14,14 @@ import CoverageTable from './CoverageTable';
 import CoverageMap from './CoverageMap';
 import ResultTitle from './ResultTitle';
 
-type Props = { businessTagId?: string; locationTagId?: string };
+type Props = {
+  businessTagId?: string;
+  locationTagId?: string;
+  tableId?: string;
+};
 
 export default function CoverageResult(props: Props) {
-  let { businessTagId, locationTagId } = props;
+  let { businessTagId, locationTagId, tableId } = props;
   let { isLoading } = useGoogleMaps();
   let { loading, data, error, refetch } = useQuery<
     GetCoverage,
@@ -26,6 +30,7 @@ export default function CoverageResult(props: Props) {
     variables: {
       businessTagId,
       locationTagId,
+      tableId,
     },
   });
   let noData = data?.coverageTable.data.length === 0;
@@ -56,6 +61,18 @@ export default function CoverageResult(props: Props) {
         }}
         comparisonTags={data?.coverageTable.comparationTags}
         tableType={TableType.COVERAGE}
+        {...(data?.coverageTable.businessTag && {
+          businessTag: {
+            params: data.coverageTable.businessTag.params,
+            type: data.coverageTable.businessTag.type,
+          },
+        })}
+        {...(data?.coverageTable.locationTag && {
+          locationTag: {
+            params: data.coverageTable.locationTag.params,
+            type: data.coverageTable.locationTag.type,
+          },
+        })}
       />
       {loading ? (
         <LoadingIndicator />
