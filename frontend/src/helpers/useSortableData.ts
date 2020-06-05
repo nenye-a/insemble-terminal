@@ -5,6 +5,7 @@ import { Direction } from '../types/types';
 export type SortConfig = {
   key: string;
   direction: Direction;
+  type?: 'number' | 'date';
 } | null;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,9 +23,15 @@ export default function useSortableData<T extends Obj>(
       sortableData.sort((a, b) => {
         if (sortConfig) {
           let { key } = sortConfig;
-          return sortConfig.direction === Direction.ASCENDING
-            ? a[key] - b[key]
-            : b[key] - a[key];
+          if (sortConfig.type === 'date') {
+            return sortConfig.direction === Direction.ASCENDING
+              ? a[key].localeCompare(b[key])
+              : -a[key].localeCompare(b[key]);
+          } else {
+            return sortConfig.direction === Direction.ASCENDING
+              ? a[key] - b[key]
+              : b[key] - a[key];
+          }
         }
         return 0;
       });
@@ -32,7 +39,7 @@ export default function useSortableData<T extends Obj>(
     return sortableData;
   }, [items, sortConfig]);
 
-  let requestSort = (key: string) => {
+  let requestSort = (key: string, type: 'number' | 'date' = 'number') => {
     let direction: Direction = Direction.ASCENDING;
     if (
       sortConfig &&
@@ -41,7 +48,7 @@ export default function useSortableData<T extends Obj>(
     ) {
       direction = Direction.DESCENDING;
     }
-    setSortConfig({ key, direction });
+    setSortConfig({ key, direction, type });
   };
 
   return { sortedData, requestSort, sortConfig };
