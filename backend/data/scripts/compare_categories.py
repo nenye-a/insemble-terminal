@@ -94,7 +94,7 @@ def update_categories():
 
         count = 0
         for location in locations:
-            my_type = utils.modify_word(location['google_details']['type'].split(" in ")[0])
+            my_type = utils.adjust_case(location['google_details']['type'].split(" in ")[0])
             location['type'] = my_type
             utils.DB_TERMINAL_PLACES.update_one({'_id': location['_id']}, {'$set': {
                 'type': my_type

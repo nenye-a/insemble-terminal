@@ -16,8 +16,8 @@ def activity(name, address):
     # Adhoc, if the latest is required.
     place = utils.DB_TERMINAL_PLACES.find_one({
         '$text': {'$search': name},
-        'name': {"$regex": r"^" + utils.modify_word(name), "$options": "i"},
-        'address': {"$regex": r'^' + utils.modify_word(address[:10]), "$options": "i"},
+        'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
+        'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
         'google_details.activity': {'$ne': None}
     })
 
@@ -44,24 +44,26 @@ def activity(name, address):
 
 
 def aggregate_activity(name, location, scope):
-
+    location_list = [word.strip() for word in location.split(',')]
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'google_details.activity': {'$ne': None}
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'type': 'county'
         })
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details.activity': {'$ne': None}
         }))
@@ -126,8 +128,8 @@ if __name__ == "__main__":
         print(activity("Starbucks", "3900 Cross Creek Rd"))
 
     def test_aggregate_activity():
-        print(aggregate_activity("Starbucks", "Los Angeles", "City"), "\n")
-        print(aggregate_activity("Starbucks", "Los Angeles Count", "County"))
+        print(aggregate_activity("Starbucks", "Los Angeles, CA, USA", "City"), "\n")
+        print(aggregate_activity("Starbucks", "Los Angeles Count, CA, USA", "County"))
 
     # test_activity()
     test_aggregate_activity()

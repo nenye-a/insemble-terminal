@@ -120,6 +120,45 @@ def add_city_fast():
     ]).modified_count)
 
 
+def add_state_fast():
+
+    print(utils.DB_TERMINAL_PLACES.update_many({
+        'state': {'$exists': False}
+    }, [
+        {'$set': {
+            'state': {'$regexFind': {
+                'input': '$address',
+                'regex': r'([^,]+), ([A-Z]{2}) (\d{5})'
+            }}
+        }},
+        {'$set': {
+            'state': {
+                '$arrayElemAt': ["$state.captures", 1]
+            }
+        }}
+    ]).modified_count)
+
+
+def add_state_to_county():
+
+    print(utils.DB_REGIONS.update_many({
+        'type': 'county',
+        'state': {'$exists': False}
+    }, [
+        {'$set': {
+            'state': {
+                '$arrayElemAt': [
+                    {
+                        '$split': [
+                            '$name', ' - '
+                        ]
+                    }, 1
+                ]
+            }
+        }}
+    ]).modified_count)
+
+
 def test_db():
     h = list(utils.DB_TERMINAL_PLACES.find({'city': {'$exists': False}, 'type': {'$exists': False}}).limit(10000))
     TEST_DB.insert_many(h)
@@ -130,4 +169,6 @@ if __name__ == "__main__":
     # add_city()
     # import_LA()
     # add_city_fast()
+    # add_state_fast()
+    add_state_to_county()
     pass

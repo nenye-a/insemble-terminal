@@ -47,7 +47,7 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
             update_details = {'google_details': details['data']}
             if 'type' not in details['meta']:
                 if 'type' in details['data'] and details['data']['type']:
-                    place_type = utils.modify_word(details['data']['type'].split(" in ")[0])
+                    place_type = utils.adjust_case(details['data']['type'].split(" in ")[0])
                     update_details['type'] = place_type
             if 'city' not in details['meta']:
                 city = utils.extract_city(details['meta']['address'])

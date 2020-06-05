@@ -8,22 +8,25 @@ Coverage related functions.
 
 def coverage(name, location, scope):
 
+    location_list = [word.strip() for word in location.split(',')]
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'type': 'county'
         })
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
         }))
     else:
@@ -49,20 +52,23 @@ def coverage(name, location, scope):
 
 def category_coverage(category, location, scope):
 
+    location_list = [word.strip() for word in location.split(',')]
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
+            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"},
+            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'type': 'county'
         })
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"},
+            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
         }))
     else:
@@ -74,7 +80,7 @@ def category_coverage(category, location, scope):
     coverage_data = categorical_data(matching_places)
 
     return {
-        'name': utils.modify_word(category),
+        'name': utils.adjust_case(category),
         'num_locations': coverage_data['num_locations'],
         'coverage': coverage_data['coverage']
     }
@@ -118,12 +124,12 @@ def extract_coverage(list_places):
 
 if __name__ == "__main__":
     def test_coverage():
-        print(coverage("Starbucks", "Los Angeles", "City"))
-        print(coverage("Starbucks", "Los Angeles", "County"))
+        print(coverage("Starbucks", "Los Angeles, CA, USA", "City"))
+        print(coverage("Starbucks", "Los Angeles, CA, USA", "County"))
 
     def test_category_coverage():
         # print(category_coverage("Mexican Restaurant", "Los Angeles", "City"))
-        print(category_coverage("Mexican Restaurant", "Harris County", "County"))
+        print(category_coverage("Mexican Restaurant", "Harris County, TX, USA", "County"))
 
     # test_coverage()
     test_category_coverage()
