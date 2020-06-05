@@ -22,3 +22,11 @@ export * from './terminal/createTerminalMutation';
 export * from './terminal/deleteTerminalMutation';
 export * from './terminal/pinTableMutation';
 export * from './terminal/removePinnedTableMutation';
+
+export * from './license/createLicenseMutation';
+export * from './license/activateAccountMutation';
+export * from './license/removeLicensesMutation';
+export * from './license/removeMasterLicensesMutation';
+export * from './license/incrementMaxLicenseMutation';
+export * from './license/masterLicenseListQuery';
+export * from './license/licenseListQuery';
