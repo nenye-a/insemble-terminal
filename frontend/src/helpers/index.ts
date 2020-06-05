@@ -8,4 +8,5 @@ export { default as localStorage } from './localStorage';
 export { default as parsePlaceType } from './parsePlaceType';
 export { default as useID } from './useID';
 export { default as useGoogleMaps } from './useGoogleMaps';
+export { default as useSortableData } from './useSortableData';
 export * from './validation';

@@ -1,4 +1,4 @@
-import React, { ReactNode, ComponentProps } from 'react';
+import React, { ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 
 import { View, Text, TouchableOpacity } from '../core-ui';
@@ -9,7 +9,13 @@ import {
   DEFAULT_TEXT_COLOR,
   SHADOW_COLOR,
 } from '../constants/colors';
-import { FONT_SIZE_NORMAL, FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import {
+  FONT_SIZE_NORMAL,
+  FONT_WEIGHT_MEDIUM,
+  FONT_SIZE_SMALL,
+} from '../constants/theme';
+import { Direction } from '../types/types';
+import { SortConfig } from '../helpers/useSortableData';
 
 type Props = {
   children?: ReactNode;
@@ -19,23 +25,39 @@ type RowProps = ViewProps & {
   onPress?: () => void;
 };
 
-type CellProps = ComponentProps<typeof View> & {
+type CellProps = ViewProps & {
   width?: number;
   align?: 'left' | 'right' | 'center';
 };
 
 type HeaderCellProps = CellProps & {
-  children?: string;
+  children?: string | Array<string>;
+  sortConfig?: SortConfig;
 };
 
 function DataTable(props: Props) {
   return <Container>{props.children}</Container>;
 }
 
-function HeaderCell({ children, ...otherProps }: HeaderCellProps) {
+function HeaderCell({
+  children,
+  sortConfig,
+  name,
+  ...otherProps
+}: HeaderCellProps) {
+  let triangle =
+    sortConfig && name === sortConfig.key
+      ? sortConfig.direction === Direction.ASCENDING
+        ? ' ▲'
+        : ' ▼'
+      : '';
+
   return (
     <Cell {...otherProps}>
-      <HeaderCellText>{children}</HeaderCellText>
+      <HeaderCellText>
+        {children}
+        {triangle}
+      </HeaderCellText>
     </Cell>
   );
 }
@@ -83,6 +105,11 @@ const Cell = styled(View)<CellProps>`
   font-weight: ${FONT_WEIGHT_MEDIUM};
   font-size: ${FONT_SIZE_NORMAL};
   font-family: 'Avenir';
+  ${({ onClick }) =>
+    onClick &&
+    css`
+      cursor: pointer;
+    `}
 `;
 
 let rowStyle = css`
@@ -116,6 +143,7 @@ const HeaderRow = styled(DefaultRow)`
 
 const HeaderCellText = styled(Text)`
   color: ${WHITE};
+  font-size: ${FONT_SIZE_SMALL};
 `;
 
 const Body = styled(View)`
