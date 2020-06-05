@@ -8,6 +8,7 @@ import datetime as dt
 import performance
 import news
 import activity
+import contact
 import data.coverage as coverage
 
 
@@ -483,14 +484,20 @@ class InfoAPI(BasicAPI):
         elif dataType == 'COMPANY':
             # INFO + BUSINESS
             if business:
-                row = {
-                    'parent_company': '*********** Concealed',
-                    'headquarters': '*********** Concealed',
-                    'phone': '(***) *** - **** Concealed',
-                    'website': '**************.com Concealed',
-                    'last_update': dt.datetime.now()
-                }
-                data = row
+                raw_data = contact.retail_contact(
+                    business['params'],
+                    location['params'] if location else None
+                )
+                if raw_data:
+                    info = {
+                        # TODO: add business_name as an offical field
+                        'parent_company': raw_data['business_name'],
+                        'headquarters': raw_data['headquarters'],
+                        'phone': raw_data['phone'],
+                        'website': raw_data['website'],
+                        'last_update': raw_data['last_updated']
+                    }
+                    data = info
 
         now = dt.datetime.utcnow()
         return Response({
@@ -570,13 +577,12 @@ class ContactAPI(BasicAPI):
         elif dataType == 'COMPANY':
             # BRAND + ADDRESS
             if business:
-                row = {
-                    'name': '***** ***** Concealed',
-                    'title': '************',
-                    'phone': '(***) *** - ****',
-                    'email': '********@*********.com'
-                }
-                data.append(row)
+                raw_data = contact.retail_contact(
+                    business['params'],
+                    location['params'] if location else None
+                )
+                if raw_data and raw_data['contacts']:
+                    data.extend(raw_data['contacts'])
 
         now = dt.datetime.utcnow()
         return Response({

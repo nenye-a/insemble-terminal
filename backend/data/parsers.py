@@ -183,13 +183,13 @@ def google_detail_parser(response):
 
     try:
         platform_ratings_preprocessed = [[item[1:] for item in re.findall(OTHER_RATINGS_RX, egg.group())] for egg in
-                                  re.finditer(OTHER_RATINGS_NARROW_RX, re.search(OTHER_RATINGS_LOCATOR_RX, stew).group())]
+                                         re.finditer(OTHER_RATINGS_NARROW_RX, re.search(OTHER_RATINGS_LOCATOR_RX, stew).group())]
 
         other_platform_ratings = []
         for platform in platform_ratings_preprocessed:
             if len(platform) == 3:
                 other_platform_ratings.append({"source": platform[0], "rating": ast.literal_eval(platform[1][:-2])
-                if platform[1][-2:]=='/5' else '', "num_reviews": utils.get_one_int_from_str(platform[2])})
+                                               if platform[1][-2:] == '/5' else '', "num_reviews": utils.get_one_int_from_str(platform[2])})
 
     except Exception:
         other_platform_ratings = None
@@ -233,10 +233,11 @@ def google_detail_parser(response):
         "other_platform_ratings": other_platform_ratings,
         "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
         "self_description": self_description,
-        "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        "time_of_scrape": dt.datetime.now()
     }
 
     return store
+
 
 def google_company_parser(response):
     """
@@ -266,7 +267,8 @@ def google_company_parser(response):
     NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
 
     try:
-        name = utils.format_punct(re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1])
+        name = utils.format_punct(re.search(NAME_RX, re.search(
+            NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1])
     except Exception:
         name = None
 
@@ -290,8 +292,8 @@ def google_company_parser(response):
     DESCRIPTION_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+'
     try:
         description = utils.format_punct(re.search(DESCRIPTION_RX, re.search(DESCRIPTION_NARROW_RX,
-                                                           re.search(DESCRIPTION_LOCATOR_RX,
-                                                                     stew).group()).group()).group()[1:])
+                                                                             re.search(DESCRIPTION_LOCATOR_RX,
+                                                                                       stew).group()).group()).group()[1:])
     except Exception:
         description = None
 
@@ -324,8 +326,8 @@ def google_company_parser(response):
 
     try:
         parents = [item[1:] for item in
-                        re.findall(PARENTS_NARROW_RX, re.search(PARENTS_LOCATOR_RX, stew).group()) if
-                        len(item[1:]) > 2]
+                   re.findall(PARENTS_NARROW_RX, re.search(PARENTS_LOCATOR_RX, stew).group()) if
+                   len(item[1:]) > 2]
     except Exception:
         parents = None
 
@@ -334,7 +336,7 @@ def google_company_parser(response):
 
     try:
         subsidiaries = [item[1:] for item in
-                        re.findall(SUBSIDIARIES_NARROW_RX, re.search(SUBSIDIARIES_LOCATOR_RX, stew).group()) if len(item[1:])>2]
+                        re.findall(SUBSIDIARIES_NARROW_RX, re.search(SUBSIDIARIES_LOCATOR_RX, stew).group()) if len(item[1:]) > 2]
     except Exception:
         subsidiaries = None
 
@@ -342,7 +344,8 @@ def google_company_parser(response):
     STOCK_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\:\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
-        stock = [item[1:].replace("Disclaimer", "") for item in re.findall(STOCK_NARROW_RX, re.search(STOCK_LOCATOR_RX, stew).group()) if len(item[1:])>2]
+        stock = [item[1:].replace("Disclaimer", "") for item in re.findall(
+            STOCK_NARROW_RX, re.search(STOCK_LOCATOR_RX, stew).group()) if len(item[1:]) > 2]
     except Exception:
         stock = None
 
@@ -358,7 +361,7 @@ def google_company_parser(response):
         "num_employees": num_employees,
         "parents": parents,
         "subsidiaries": subsidiaries,
-        "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        "time_of_scrape": dt.datetime.now()
     }
 
     return company
@@ -425,7 +428,7 @@ def opentable_parser(response):
     NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
     NUM_REVIEWS_RX = r'\(\d+\)'
     try:
-        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1].replace(",",""))
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1].replace(",", ""))
     except Exception:
         num_reviews = None
 
@@ -476,7 +479,7 @@ def opentable_parser(response):
         "neighborhood": neighborhood,
         "dist_from_query": dist_from_query,
         "bookings": bookings,
-        "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        "time_of_scrape": dt.datetime.now()
     }
 
     return store
@@ -548,7 +551,7 @@ def opentable_parser_all(response):
         NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
         NUM_REVIEWS_RX = r'\(\d+\)'
         try:
-            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1].replace(",",""))
+            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1].replace(",", ""))
         except Exception:
             num_reviews = None
 
@@ -599,10 +602,11 @@ def opentable_parser_all(response):
             "neighborhood": neighborhood,
             "dist_from_query": dist_from_query,
             "bookings": bookings,
-            "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+            "time_of_scrape": dt.datetime.now()
         })
 
     return stores
+
 
 def google_news_parser(response):
 
@@ -662,6 +666,7 @@ def google_news_parser(response):
         results.append(item)
     return remove_old_news(results)
 
+
 def california_entity_parser(response):
     """
         Parse California business search site for search of a business entity,
@@ -686,12 +691,11 @@ def california_entity_parser(response):
     businesses = []
     stew = response.text
 
-    #ENTITY_LOCATOR_RX = r'class="EntityHead"(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\s\>)+|(\>)+|(\>\w)+|(\w\>)+|(<tr)+|(<\/tr)+|(<th)+|(<\/th)+|(<tbody)+|(<td)+|(<\/td)+|(<label)+|(<\/label)+|(<button)+|(<\/button)+)+'
+    # ENTITY_LOCATOR_RX = r'class="EntityHead"(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\s\>)+|(\>)+|(\>\w)+|(\w\>)+|(<tr)+|(<\/tr)+|(<th)+|(<\/th)+|(<tbody)+|(<td)+|(<\/td)+|(<label)+|(<\/label)+|(<button)+|(<\/button)+)+'
     ENTITY_LOCATOR_RX = r'<td(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\>)|(<td)|(<\/td)|(<label)|(<\/label)|(<button)|(<\/button))+'
     TABLE_CONTENT_RX = r'<td(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(\>)|(<td)|(<label)|(<\/label)|(<button)|(<\/button))+'
     ENTITY_NAME_LOCATOR_RX = r'class="btn-link EntityLink">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
     ENTITY_NAME_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
-
 
     for beef in re.finditer(ENTITY_LOCATOR_RX, stew):
         entry = {}
@@ -708,6 +712,7 @@ def california_entity_parser(response):
         businesses.append(entry)
 
     return businesses
+
 
 def remove_old_news(news_list, date=None):
     cleaned_list = []

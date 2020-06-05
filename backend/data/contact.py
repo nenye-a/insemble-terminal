@@ -13,6 +13,7 @@ sodaclient = Socrata("data.lacity.org", SODA_KEY)
 # Hunter.io endpoint. Refer to https://hunter.io/api-documentation/v2 for details.
 HUNT_EMAIL_ENDPOINT = 'https://api.hunter.io/v2/email-finder?'
 
+
 def retail_contact(name, address=None):
     '''
 
@@ -40,15 +41,22 @@ def retail_contact(name, address=None):
     except Exception:
         business = None
     return {
-        "business_name": business['business_name'] if business else company['name'],
-        "headquarters": business['mailing_address']+', '+business['mailing_city']+', '+business['mailing_zip_code'] if business else company['headquarters'],
-        "phone": company['phone'] if company else None, # TODO: no general company phone, this is just from retail location
-        "website": company['website'] if company else None,
-        "last_updated": company['time_of_scrape'] if company else None,
-        "contacts":[
+        "business_name": business['business_name'] if business else company['name'] if company else None,
+        "headquarters": "{address}, {city}, {zip}".format(
+            address=business['mailing_address'],
+            city=business['mailing_city'],
+            zip=business['mailing_zip_code']
+        ) if business else company['headquarters'] if company else None,
+        # TODO: no general company phone, this is just from retail location
+        "phone": company['phone'] if company and 'phone' in company else None,
+        "website": company['website'] if company and 'website' in company else None,
+        "last_updated": company['time_of_scrape'] if company and 'time_of_scrape' in company else None,
+        "contacts": [
             {
-                "name": person['first_name']+" "+person['last_name'] if person['first_name'] and person['last_name'] else None, # TODO: someone may have first name, and not last name documented
-                "title": person['position'],
+                # TODO: someone may have first name, and not last name documented
+                "name": person['first_name'] + " " + person['last_name'] if person['first_name'] and person['last_name'] else None,
+                # NOTE: Title is made none for now until improved. Previously: person['position'],
+                "title": None,
                 "phone": person['phone'],
                 "email": person['email'],
             } for person in contacts if contacts
@@ -56,6 +64,8 @@ def retail_contact(name, address=None):
     }
 
 # property contact lookup
+
+
 def find_property_contacts(address):
     # find the company who owns the property (using local city DB like data.lacity.org)
     businesses = find_business(address)
@@ -71,14 +81,15 @@ def find_property_contacts(address):
         # find the name of the agent and mailing address of the business
         business['agent'] = None
 
-
     # check crittenden/icsc for contacts
     # TODO: check crittenden/icsc for contacts
 
     return company, contacts
 
+
 def find_business(address, business_name=None):
-    if address is None: return None
+    if address is None:
+        return None
     # preprocess address to be of searchable format
     formatted_address = convert_street_address(address)
 
@@ -95,6 +106,7 @@ def find_business(address, business_name=None):
         return [{'business_name': result['business_name'], 'mailing_address': result['mailing_address'],
                  'mailing_city': result['mailing_city'], 'mailing_zip_code': result['mailing_zip_code']}
                 for result in results]
+
 
 def find_agent_name(legal_business_name):
     return [item['agent'] for item in entity.get_california_entity(legal_business_name)]
@@ -127,40 +139,46 @@ def convert_street_address(address):
     return address
 
 # retail contact lookup
+
+
 def find_retail_contacts(name, address=None):
     # find the general company information
     company = google.get_company(name)
     # TODO: check crittenden/ICSC for company info, maybe wrap into general company lookup function with google_company()
 
-    if address is None:
-        # if just the name, get the general contact list
-        domain = company['website']
-        contacts = get_emails(domain)
-        # TODO: check crittenden/icsc for contacts
+    if company:
+        if address is None:
+            # if just the name, get the general contact list
+            domain = company['website']
+            contacts = get_emails(domain)
+            # TODO: check crittenden/icsc for contacts
 
-    else:
-        # if name and address, get the location specific contact
+        else:
+            # if name and address, get the location specific contact
 
-        # TODO: check crittenden/icsc for contacts, location specific
+            # TODO: check crittenden/icsc for contacts, location specific
 
-        # return json of crittenden/icsc contacts and hunter contacts
-        details = google.get_google_details(name, address, 'website,phone')
-        contacts = get_emails(details['website']) if details is not None else []
-        if company is None and details:
-            company = {"name": None, "category": None, "website": details['website'], "phone": details['phone'],
-                       "description": None, "stock": None, "headquarters": None, "revenue": None, "num_employees": None,
-                       "parents": None, "subsidiaries": None, "time_of_scrape": None}
-        elif company and details:
-            try:
-                company["phone"] = details['phone']
-                company["website"]
-            except Exception:
-                company["website"] = details['website']
+            # return json of crittenden/icsc contacts and hunter contacts
+            details = google.get_google_details(name, address, 'website,phone')
+            contacts = get_emails(details['website']) if details is not None else []
+            if company is None and details:
+                company = {"name": None, "category": None, "website": details['website'], "phone": details['phone'],
+                           "description": None, "stock": None, "headquarters": None, "revenue": None, "num_employees": None,
+                           "parents": None, "subsidiaries": None, "time_of_scrape": None}
+            elif company and details:
+                try:
+                    company["phone"] = details['phone']
+                    company["website"]
+                except Exception:
+                    company["website"] = details['website']
 
-    return company, contacts
+        return company, contacts
+    return (None, None)
+
 
 def get_emails(domain):
-    if domain is None: return None
+    if domain is None:
+        return None
     url = 'https://api.hunter.io/v2/domain-search?domain={}&api_key={}'.format(domain, HUNT_KEY)
     response = requests.get(url).json()
 
@@ -175,6 +193,7 @@ def get_emails(domain):
 # TODO: may need to parse through google responses to find company contact (if not present in side panel)
 # parse first few responses
 # evaluate name to see if it matches
+
 
 if __name__ == "__main__":
     def get_emails_test():
@@ -211,7 +230,6 @@ if __name__ == "__main__":
         name = 'Daikokuya'
         address = '327 E 1st St, Los Angeles, CA 90012'
         pprint(retail_contact(name, address))
-
 
     # get_emails_test()
     # find_retail_contacts_test()
