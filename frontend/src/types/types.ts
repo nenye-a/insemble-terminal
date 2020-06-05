@@ -59,3 +59,8 @@ export type SearchTag = {
   businessTagWithId?: BusinessTag | null;
   locationTag?: LocationTagInput | null;
 };
+
+export enum Direction {
+  ASCENDING = 'ASCENDING',
+  DESCENDING = 'DESCENDING',
+}
