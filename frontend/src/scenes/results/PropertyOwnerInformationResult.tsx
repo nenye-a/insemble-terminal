@@ -21,10 +21,11 @@ import OwnershipInformationCard from './OwnershipInformationCard';
 type Props = {
   businessTagId?: string;
   locationTagId?: string;
+  tableId?: string;
 };
 
 export default function PropertyOwnerInformationResult(props: Props) {
-  let { businessTagId, locationTagId } = props;
+  let { businessTagId, locationTagId, tableId } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipInfoData,
     GetOwnershipInfoDataVariables
@@ -33,6 +34,7 @@ export default function PropertyOwnerInformationResult(props: Props) {
       businessTagId,
       locationTagId,
       ownershipType: OwnershipType.PROPERTY,
+      tableId,
     },
   });
   let noData = data
@@ -54,6 +56,18 @@ export default function PropertyOwnerInformationResult(props: Props) {
         }}
         canCompare={false}
         tableType={TableType.OWNERSHIP_INFO}
+        {...(data?.ownershipInfoTable.businessTag && {
+          businessTag: {
+            params: data.ownershipInfoTable.businessTag.params,
+            type: data.ownershipInfoTable.businessTag.type,
+          },
+        })}
+        {...(data?.ownershipInfoTable.locationTag && {
+          locationTag: {
+            params: data.ownershipInfoTable.locationTag.params,
+            type: data.ownershipInfoTable.locationTag.type,
+          },
+        })}
       />
       {loading ? (
         <LoadingIndicator />

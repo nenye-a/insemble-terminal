@@ -9,7 +9,7 @@ import {
 } from '../generated/Search';
 import { THEME_COLOR, WHITE } from '../constants/colors';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../constants/theme';
-import { capitalize } from '../helpers';
+import { getResultTitle } from '../helpers';
 
 type Props = {
   reviewTag?: ReviewTag | null;
@@ -28,21 +28,22 @@ export default function PageTitle(props: Props) {
     showLocation = true,
   } = props;
 
-  let formattedReview = reviewTag ? capitalize(reviewTag) : '';
-  let formattedBusiness = businessTag?.params ? businessTag?.params : '';
-  let formattedLocation =
-    locationTag?.type === LocationTagType.ADDRESS
-      ? `near ${locationTag.params}`
-      : locationTag?.type === LocationTagType.CITY ||
-        locationTag?.type === LocationTagType.COUNTY ||
-        locationTag?.type === LocationTagType.STATE
-      ? `in ${locationTag?.params}`
-      : '';
-  let formattedText = `${formattedBusiness} ${formattedReview} ${formattedLocation}`.trim();
+  let resultTitle = getResultTitle({
+    reviewTag,
+    businessTag: businessTag
+      ? {
+          params: businessTag.params,
+          type: businessTag.type,
+        }
+      : undefined,
+    locationTag: locationTag
+      ? { params: locationTag.params, type: locationTag.type }
+      : undefined,
+  });
 
   return (
     <TitleContainer>
-      <Title>{text ? text : formattedText}</Title>
+      <Title>{text ? text : resultTitle}</Title>
       {showLocation &&
         (locationTag?.type === LocationTagType.NATION || !locationTag) && (
           <USText>All United States</USText>

@@ -2,6 +2,7 @@ export { default as capitalize } from './capitalize';
 export { default as generateRandomColor } from './generateRandomColor';
 export { default as getPublishedDate } from './getPublishedDate';
 export { default as getResultQueries } from './getResultQueries';
+export { default as getResultTitle } from './getResultTitle';
 export { default as isLocalUrl } from './isLocalUrl';
 export { default as isSearchCombinationValid } from './isSearchCombinationValid';
 export { default as localStorage } from './localStorage';

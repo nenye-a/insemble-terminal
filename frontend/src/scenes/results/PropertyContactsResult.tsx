@@ -21,10 +21,11 @@ import ContactsTable from './ContactsTable';
 type Props = {
   businessTagId?: string;
   locationTagId?: string;
+  tableId?: string;
 };
 
 export default function PropertyContactsResult(props: Props) {
-  let { businessTagId, locationTagId } = props;
+  let { businessTagId, locationTagId, tableId } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipContactData,
     GetOwnershipContactDataVariables
@@ -33,6 +34,7 @@ export default function PropertyContactsResult(props: Props) {
       businessTagId,
       locationTagId,
       ownershipType: OwnershipType.PROPERTY,
+      tableId,
     },
   });
 
@@ -53,6 +55,18 @@ export default function PropertyContactsResult(props: Props) {
         }}
         canCompare={false}
         tableType={TableType.OWNERSHIP_CONTACT}
+        {...(data?.ownershipContactTable.businessTag && {
+          businessTag: {
+            params: data.ownershipContactTable.businessTag.params,
+            type: data.ownershipContactTable.businessTag.type,
+          },
+        })}
+        {...(data?.ownershipContactTable.locationTag && {
+          locationTag: {
+            params: data.ownershipContactTable.locationTag.params,
+            type: data.ownershipContactTable.locationTag.type,
+          },
+        })}
       />
       {loading ? (
         <LoadingIndicator />

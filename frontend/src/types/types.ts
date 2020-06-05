@@ -64,3 +64,12 @@ export enum Direction {
   ASCENDING = 'ASCENDING',
   DESCENDING = 'DESCENDING',
 }
+
+export type SearchParams = {
+  reviewTag?: ReviewTag | null;
+  businessTag?: {
+    type: BusinessType;
+    params: string;
+  } | null;
+  locationTag?: { type: LocationTagType; params: string } | null;
+};

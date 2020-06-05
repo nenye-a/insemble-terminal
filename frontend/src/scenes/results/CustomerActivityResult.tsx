@@ -14,10 +14,11 @@ import ActivityChart from './ActivityChart';
 type Props = {
   businessTagId?: string;
   locationTagId?: string;
+  tableId?: string;
 };
 
 export default function CustomerActivityResult(props: Props) {
-  let { businessTagId, locationTagId } = props;
+  let { businessTagId, locationTagId, tableId } = props;
   let { data, loading, error, refetch } = useQuery<
     GetActivity,
     GetActivityVariables
@@ -25,6 +26,7 @@ export default function CustomerActivityResult(props: Props) {
     variables: {
       businessTagId,
       locationTagId,
+      tableId,
     },
   });
   let noData = data?.activityTable.data.length === 0;
@@ -43,6 +45,18 @@ export default function CustomerActivityResult(props: Props) {
         }}
         comparisonTags={data?.activityTable.comparationTags}
         tableType={TableType.ACTIVITY}
+        {...(data?.activityTable.businessTag && {
+          businessTag: {
+            params: data.activityTable.businessTag.params,
+            type: data.activityTable.businessTag.type,
+          },
+        })}
+        {...(data?.activityTable.locationTag && {
+          locationTag: {
+            params: data.activityTable.locationTag.params,
+            type: data.activityTable.locationTag.type,
+          },
+        })}
       />
       {loading ? (
         <LoadingIndicator />

@@ -2,11 +2,20 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
+import { useLocation } from 'react-router-dom';
 
 import { View, Text, TouchableOpacity, LoadingIndicator } from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
-import { THEME_COLOR, DISABLED_TEXT_COLOR } from '../../constants/colors';
-import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
+import {
+  THEME_COLOR,
+  DISABLED_TEXT_COLOR,
+  GRAY_TEXT,
+} from '../../constants/colors';
+import {
+  FONT_SIZE_LARGE,
+  FONT_WEIGHT_BOLD,
+  FONT_SIZE_SMALL,
+} from '../../constants/theme';
 import { ComparationTag } from '../../types/types';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
@@ -16,12 +25,14 @@ import {
   LocationTagType,
   CompareActionType,
   TableType,
+  BusinessType,
 } from '../../generated/globalTypes';
 import { UPDATE_COMPARISON } from '../../graphql/queries/server/comparison';
 import {
   UpdateComparison,
   UpdateComparisonVariables,
 } from '../../generated/UpdateComparison';
+import { getResultTitle } from '../../helpers';
 
 type Props = {
   title: string;
@@ -32,9 +43,15 @@ type Props = {
   comparisonTags?: Array<ComparationTag>;
   canCompare?: boolean;
   tableType: TableType;
+  businessTag?: {
+    type: BusinessType;
+    params: string;
+  };
+  locationTag?: { type: LocationTagType; params: string };
 };
 
 export default function ResultTitle(props: Props) {
+  let location = useLocation();
   let {
     title,
     noData = false,
@@ -44,7 +61,10 @@ export default function ResultTitle(props: Props) {
     comparisonTags,
     canCompare = true,
     tableType,
+    businessTag,
+    locationTag,
   } = props;
+  let showSubtitle = location.pathname.includes('terminal');
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [updateComparison, { loading, data }] = useMutation<
@@ -94,7 +114,17 @@ export default function ResultTitle(props: Props) {
 
   return (
     <Container>
-      <Title noData={noData}>{title}</Title>
+      <Row>
+        <Title noData={noData}>{title}</Title>
+        {showSubtitle && (
+          <>
+            <Title> | </Title>
+            <SubTitle>
+              {getResultTitle({ reviewTag, businessTag, locationTag })}
+            </SubTitle>
+          </>
+        )}
+      </Row>
       <Row>
         {formattedCompareText ? (
           loading ? (
@@ -189,4 +219,14 @@ const Touchable = styled(TouchableOpacity)`
 
 const CompareText = styled(Text)`
   color: ${THEME_COLOR};
+`;
+
+const SubTitle = styled(Text)`
+  font-size: ${FONT_SIZE_SMALL};
+  color: ${GRAY_TEXT};
+  font-weight: ${FONT_WEIGHT_BOLD};
+  max-width: 280px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 `;
