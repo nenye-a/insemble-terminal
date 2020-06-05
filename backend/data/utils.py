@@ -62,6 +62,7 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1)])
     if collection.lower() == 'places_history':
         DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
@@ -82,6 +83,7 @@ def create_index(collection):
         DB_REGIONS.create_index([('viewport', 1)], sparse=True)
         DB_REGIONS.create_index([('center', 1)])
         DB_REGIONS.create_index([('type', 1)])
+        DB_REGIONS.create_index([('state', 1)])
         DB_REGIONS.create_index(
             [('rank', 1), ('type', 1)],
             unique=True,
@@ -132,11 +134,22 @@ def to_snake_case(word):
 
 
 def snake_case_to_word(snake_case_word, caps='all'):
-    return modify_word(snake_case_word, caps, '_')
+    return adjust_case(snake_case_word, caps, '_')
 
 
-def modify_word(word, caps='all', splitter=" "):
-    words = word.split(splitter)
+def adjust_case(word, caps='all', splitter=" ", joiner=None):
+    """
+    Adjust case of word provided.
+
+    caps - "all" | "first" | "upper" | "lower" - determines the case
+            of all the words in the word string. all (all words
+            capitalized), first (only first word capitalized), upper
+            (entire word made uppercase), lower (entire word made
+            lower case). Defailt is All.
+    splitter - the string term to split the word on. Defailt " "
+    joiner - the string term to join the word if different from splitter
+    """
+    words = [w.strip() for w in word.split(splitter)]
     if caps == "first":
         words[0].capitalize()
     elif caps == "all":
@@ -145,7 +158,9 @@ def modify_word(word, caps='all', splitter=" "):
         words = [word.upper() for word in words]
     elif caps == "lower":
         words = [word.lower() for word in words]
-    return " ".join(words)
+    if not joiner:
+        joiner = splitter
+    return joiner.join(words)
 
 
 def round_object(obj, num=0):
@@ -442,7 +457,7 @@ if __name__ == "__main__":
 
     # RUN
 
-    create_index("terminal")
+    # create_index("regions")
 
     # TESTS
 

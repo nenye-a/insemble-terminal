@@ -39,24 +39,27 @@ def performance(name, address):
 
 def aggregate_performance(name, location, scope):
 
+    location_list = [word.strip() for word in location.split(',')]
     if scope.lower() == 'city':
         # look for places in our database using regexes + search to match to items.
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'google_details': {'$exists': True}
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'type': 'county'
         })
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
         }))
@@ -92,24 +95,28 @@ def category_performance(category, location, scope):
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             'location': {'$near': {'$geometry': coordinates,
                                    '$maxDistance': utils.miles_to_meters(0.5)}},
-            'type': utils.modify_word(category) if category else exists_dict,
+            'type': utils.adjust_case(category) if category else exists_dict,
             'google_details': {'$exists': True}
         }))
     elif scope.lower() == 'city':
+        location_list = [word.strip() for word in location.split(',')]
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"} if category else exists_dict,
-            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
+            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
+            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'google_details': {'$exists': True}
         }))
     elif scope.lower() == 'county':
+        location_list = [word.strip() for word in location.split(',')]
         region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.modify_word(location)},
+            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
             'type': 'county'
         })
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.modify_word(category), "$options": "i"} if category else exists_dict,
+            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
         }))
@@ -170,7 +177,7 @@ def categorical_data(matching_places, data_name):
     category_details = [combine_parse_details(location_list, forced_name=category)['overall']
                         for category, location_list in category_dict.items()]
 
-    overall_details['overall']['name'] = utils.modify_word(data_name)
+    overall_details['overall']['name'] = utils.adjust_case(data_name)
 
     return {
         'overall': overall_details['overall'],
@@ -276,7 +283,7 @@ if __name__ == "__main__":
         print(performance(name, address))
 
     def test_aggregate_performance():
-        performance_data = aggregate_performance("Starbucks", "Los Angeles Co", "county")
+        performance_data = aggregate_performance("Starbucks", "Los Angeles, CA, USA", "county")
         print(performance_data)
         print(len(performance_data['data']))
 
@@ -287,12 +294,12 @@ if __name__ == "__main__":
         pprint.pprint(performance)
 
     def test_category_performance_higher_scope():
-        performance = category_performance("Mexican Restaurant", "Los Angeles", "city")
-        performance = category_performance("Mexican Restaurant", "Los Angeles County", "county")
+        performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
+        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county")
         # performance = category_performance(None, "Los Angeles", "County")
         print(performance['by_category'])
 
     # test_performance()
     # test_aggregate_performance()
     # test_category_performance()
-    # test_category_performance_higher_scope()
+    test_category_performance_higher_scope()
