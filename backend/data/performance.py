@@ -46,13 +46,13 @@ def aggregate_performance(name, location, scope):
             '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
             'google_details': {'$exists': True}
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
             'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
             'type': 'county'
         })
         if not region:
@@ -103,14 +103,14 @@ def category_performance(category, location, scope):
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
             'google_details': {'$exists': True}
         }))
     elif scope.lower() == 'county':
         location_list = [word.strip() for word in location.split(',')]
         region = utils.DB_REGIONS.find_one({
             'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(), "$options": "i",
             'type': 'county'
         })
         if not region:
