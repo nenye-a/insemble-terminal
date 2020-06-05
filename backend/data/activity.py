@@ -17,7 +17,7 @@ def activity(name, address):
     place = utils.DB_TERMINAL_PLACES.find_one({
         '$text': {'$search': name},
         'name': {"$regex": r"^" + utils.modify_word(name), "$options": "i"},
-        'address': {"$regex": r'^' + utils.modify_word(address[:8]), "$options": "i"},
+        'address': {"$regex": r'^' + utils.modify_word(address[:10]), "$options": "i"},
         'google_details.activity': {'$ne': None}
     })
 
@@ -48,8 +48,8 @@ def aggregate_activity(name, location, scope):
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
-            'city': {"$regex": r"^" + utils.modify_word(location[:5]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
+            'city': {"$regex": r"^" + utils.modify_word(location[:10]), "$options": "i"},
             'google_details.activity': {'$ne': None}
         }))
     elif scope.lower() == 'county':
@@ -59,12 +59,12 @@ def aggregate_activity(name, location, scope):
         })
         if not region:
             return None
-        matching_places = utils.DB_TERMINAL_PLACES.find({
+        matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.modify_word(name[:5]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.modify_word(name[:10]), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details.activity': {'$ne': None}
-        })
+        }))
     else:
         return None
 

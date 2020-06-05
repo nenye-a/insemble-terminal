@@ -129,5 +129,5 @@ if __name__ == "__main__":
     # migrate_terminal()
     # add_city()
     # import_LA()
-    add_city_fast()
+    # add_city_fast()
     pass
