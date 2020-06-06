@@ -12,11 +12,11 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
     """
 
     query = {
-        '$or': [
-            {'last_update': {'$exists': False}},
-            {'last_update': {'$lt': dt.datetime.now() - dt.timedelta(weeks=2)}}
-        ],
-        'address': {'$exists': True}
+        # '$or': [
+        #     {'last_update': {'$eq': -1}},
+        #     {'last_update': {'$lt': dt.datetime.now() - dt.timedelta(weeks=2)}}
+        # ],
+        'last_update': {'$eq': -1},
     }
     additional_query and query.update(additional_query)
 
@@ -124,10 +124,18 @@ def check_recency():
         {'last_update': {'$gt': twoweeks}}
     ))
     print("No update timestamp:", utils.DB_TERMINAL_PLACES.count_documents(
-        {'last_update': {'$eq': None}}
+        {'last_update': {'$eq': -1}}
     ))
+
+
+def update_last_update():
+
+    utils.DB_TERMINAL_PLACES.update_many({'last_update': {'$exists': False}}, {
+        '$set': {'last_update': -1}
+    })
 
 
 if __name__ == "__main__":
     google_detailer(wait=True)
     # check_recency()
+    # update_last_update()
