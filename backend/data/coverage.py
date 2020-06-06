@@ -57,12 +57,12 @@ def category_coverage(category, location, scope):
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
             'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
             'type': 'county'
         })
         if not region:
@@ -125,11 +125,11 @@ def extract_coverage(list_places):
 if __name__ == "__main__":
     def test_coverage():
         print(coverage("Starbucks", "Los Angeles, CA, USA", "City"))
-        print(coverage("Starbucks", "Los Angeles, CA, USA", "County"))
+        # print(coverage("Starbucks", "Los Angeles, CA, USA", "County"))
 
     def test_category_coverage():
-        # print(category_coverage("Mexican Restaurant", "Los Angeles", "City"))
-        print(category_coverage("Mexican Restaurant", "Harris County, TX, USA", "County"))
+        print(category_coverage("Mexican Restaurant", "Los Angeles, CA, USA", "City"))
+        # print(category_coverage("Mexican Restaurant", "Harris County, TX, USA", "County"))
 
     # test_coverage()
     test_category_coverage()

@@ -21,6 +21,8 @@ def activity(name, address):
         'google_details.activity': {'$ne': None}
     })
 
+    print(place)
+
     if place:
         activity = place['google_details']['activity']
     elif not place:
@@ -50,13 +52,13 @@ def aggregate_activity(name, location, scope):
             '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
             'google_details.activity': {'$ne': None}
         }))
     elif scope.lower() == 'county':
         region = utils.DB_REGIONS.find_one({
             'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
+            'state': location_list[1].upper(),
             'type': 'county'
         })
         if not region:
@@ -126,10 +128,11 @@ def package_activity(avg_activity_per_hour):
 if __name__ == "__main__":
     def test_activity():
         print(activity("Starbucks", "3900 Cross Creek Rd"))
+        # print(activity("Starbucks", "3900 Cross Creek Rd"))
 
     def test_aggregate_activity():
         print(aggregate_activity("Starbucks", "Los Angeles, CA, USA", "City"), "\n")
-        print(aggregate_activity("Starbucks", "Los Angeles Count, CA, USA", "County"))
+        # print(aggregate_activity("Starbucks", "Los Angeles Count, CA, USA", "County"))
 
     # test_activity()
     test_aggregate_activity()

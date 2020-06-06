@@ -63,6 +63,9 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
+        DB_TERMINAL_PLACES.create_index([('google_details', 1)])
     if collection.lower() == 'places_history':
         DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
@@ -457,7 +460,7 @@ if __name__ == "__main__":
 
     # RUN
 
-    # create_index("regions")
+    # create_index("terminal")
 
     # TESTS
 
