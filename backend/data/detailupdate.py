@@ -4,6 +4,8 @@ import utils
 import time
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
+TEMP_DB = utils.SYSTEM_MONGO.get_collection("terminal.temp_places")
+# TEMP_DB.create_index([("last_update", 1)])
 
 
 def google_detailer(batch_size=100, wait=True, additional_query=None):
@@ -26,10 +28,13 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
 
     while collecting:
 
-        places = list(utils.DB_TERMINAL_PLACES.aggregate([
+        # Using temp DB temporarily to reduce disk utilization.
+        places = list(TEMP_DB.aggregate([
             {'$match': query},
             {'$sample': size}
         ]))
+
+        id_list = [place['_id'] for place in places]
 
         if len(places) == 0:
             if wait:
@@ -69,6 +74,10 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
                   count=len(google_details),
                   update_time=dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
               ))
+
+        TEMP_DB.delete_many({
+            '_id': {"$in": id_list}
+        })
 
 
 def saved_update(query, update):
@@ -135,7 +144,14 @@ def update_last_update():
     })
 
 
+def migrate_db():
+
+    places = list(utils.DB_TERMINAL_PLACES.find({"last_update": -1}))
+    TEMP_DB.insert_many(places)
+
+
 if __name__ == "__main__":
     google_detailer(wait=True)
+    # migrate_db()
     # check_recency()
     # update_last_update()
