@@ -24,6 +24,7 @@ export const unAuthenticatedRoutes = [
     path: '/',
     exact: true,
     component: LandingScene,
+    showSearchBar: false,
   }, // TODO: change component
   { path: '/signup', component: SignUpScene, showSearchBar: false },
   { path: '/login', component: LoginScene, showSearchBar: false },
@@ -43,7 +44,7 @@ export const authenticatedRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: LandingScene,
+    component: AuthScene,
   }, // TODO: change component
   {
     path: '/results',

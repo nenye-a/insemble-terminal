@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TextLoop from 'react-text-loop';
+import { useTransition, animated } from 'react-spring';
 
 import { View, Text as BaseText, Divider } from '../../core-ui';
+import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { THEME_COLOR, GREY_DIVIDER } from '../../constants/colors';
 import activitySearchBox from '../../assets/images/activity-searchbox.svg';
 import coverageSearchBox from '../../assets/images/coverage-searchbox.svg';
 import newsSearchbox from '../../assets/images/news-searchbox.svg';
@@ -10,9 +13,7 @@ import performanceSearchbox from '../../assets/images/performance-searchbox.svg'
 import newsExample from '../../assets/images/news-example.svg';
 import activityExample from '../../assets/images/activity-example.svg';
 import coverageExample from '../../assets/images/coverage-example.svg';
-import performanceExample from '../../assets/images/performance-example.svg';
-import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
-import { THEME_COLOR, GREY_DIVIDER } from '../../constants/colors';
+import performanceExample from '../../assets/images/performance-example.png';
 import SvgDotArrow from '../../components/icons/dot-arrow';
 
 import TerminalSection from './TerminalSection';
@@ -42,8 +43,33 @@ const TAGS = [
   },
 ];
 
+const INTERVAL = 10000;
+
 export default function LandingScene() {
   let [selectedTagIndex, setSelectedTagIndex] = useState(0);
+  let transitions = useTransition([selectedTagIndex], (item) => item, {
+    from: {
+      opacity: 0,
+      marginTop: -10,
+      position: 'absolute',
+      maxWidth: 750,
+      objectFit: 'contain',
+    },
+    enter: { opacity: 1, marginTop: 0 },
+    leave: { opacity: 0, marginTop: 30 },
+    config: {
+      duration: 1000,
+    },
+  });
+
+  let opacityTransition = useTransition([selectedTagIndex], (item) => item, {
+    from: {
+      opacity: 0,
+      position: 'absolute',
+    },
+    enter: { opacity: 1 },
+    leave: { opacity: 0 },
+  });
 
   useEffect(() => {
     let interval = setInterval(() => {
@@ -52,14 +78,14 @@ export default function LandingScene() {
       } else {
         setSelectedTagIndex(selectedTagIndex + 1);
       }
-    }, 10000);
+    }, INTERVAL);
     return () => clearInterval(interval);
   }, [selectedTagIndex]);
 
   return (
     <View>
       <Container>
-        <TextLoop interval={10000}>
+        <TextLoop interval={INTERVAL}>
           {TAGS.map((tag, idx) => (
             <TrackRetailText
               key={`${tag.label}-${idx}`}
@@ -69,7 +95,7 @@ export default function LandingScene() {
         </TextLoop>
         <Text fontSize={FONT_SIZE_XLARGE} style={{ marginTop: 32 }}>
           See and compare the{' '}
-          <TextLoop interval={10000}>
+          <TextLoop interval={INTERVAL}>
             {TAGS.map((tag, idx) => (
               <PurpleText key={`subtitle-${tag.label}-${idx}`}>
                 {tag.label}
@@ -84,35 +110,27 @@ export default function LandingScene() {
           <Description>In any scope.</Description>
         </Row>
         <SearchBarContainer>
-          {TAGS.map((tag, idx) => {
-            return (
-              <img
-                key={idx}
-                src={tag.searchBarImage}
-                style={{
-                  position: 'absolute',
-                  alignSelf: 'center',
-                  visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
-                }}
-              />
-            );
-          })}
+          {opacityTransition.map(({ item, props, key }) => (
+            <animated.div key={key} style={props}>
+              <img src={TAGS[item].searchBarImage} alt="searchbar-img" />
+            </animated.div>
+          ))}
         </SearchBarContainer>
         <SvgDotArrow />
-        <View style={{ height: 600 }}>
-          {TAGS.map((tag, idx) => {
-            return (
-              <img
-                key={idx}
-                src={tag.image}
-                style={{
-                  position: 'absolute',
-                  alignSelf: 'center',
-                  visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
-                }}
-              />
-            );
-          })}
+        <View
+          style={{
+            alignItems: 'center',
+            height: 490,
+          }}
+        >
+          {transitions.map(({ item, props, key }) => (
+            <animated.img
+              key={key}
+              src={TAGS[item].image}
+              alt="example-img"
+              style={props}
+            />
+          ))}
         </View>
       </Container>
       <TerminalSection />
@@ -129,7 +147,6 @@ function TrackRetailText({ reviewTag }: { reviewTag: string }) {
       <Title>
         Track retail <PurpleTitle>{reviewTag}</PurpleTitle>
       </Title>
-      <span> </span>
     </Row>
   );
 }
@@ -155,7 +172,9 @@ const PurpleText = styled(Text)`
 `;
 const Row = styled(View)`
   flex-direction: row;
+  align-items: center;
   justify-content: center;
+  width: 500px;
 `;
 const Description = styled(Text)`
   font-size: ${FONT_SIZE_XLARGE};
@@ -165,13 +184,5 @@ const Description = styled(Text)`
 const SearchBarContainer = styled(View)`
   margin: 32px 0;
   height: 140px;
-`;
-const Img = styled.img`
-  transition-property: all;
-  transform: translateY(-100%);
-  transition: 0.4s ease-in-out;
-`;
-
-const ImgContainer = styled(View)`
-  overflow: hidden;
+  align-items: center;
 `;
