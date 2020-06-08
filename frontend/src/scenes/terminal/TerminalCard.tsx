@@ -32,11 +32,20 @@ type Props = ViewProps & {
   numOfFeed: number;
   description?: string;
   lastUpdate?: string;
+  isLandingPage?: boolean;
 };
 
 export default function TerminalCard(props: Props) {
   let history = useHistory();
-  let { id, name, numOfFeed, description, lastUpdate } = props;
+  let {
+    id,
+    name,
+    numOfFeed,
+    description,
+    lastUpdate,
+    isLandingPage = false,
+    ...otherProps
+  } = props;
   let [deletePopupVisible, setDeletePopupVisible] = useState(false);
   let [deleteTerminal, { data, loading }] = useMutation<
     DeleteTerminal,
@@ -83,6 +92,8 @@ export default function TerminalCard(props: Props) {
             name,
           });
         }}
+        disabled={isLandingPage}
+        {...otherProps}
       >
         <TitleContainer>
           <Title>{name}</Title>
@@ -90,7 +101,9 @@ export default function TerminalCard(props: Props) {
             text="Delete"
             mode="transparent"
             onPress={() => {
-              setDeletePopupVisible(true);
+              if (!isLandingPage) {
+                setDeletePopupVisible(true);
+              }
             }}
           />
         </TitleContainer>
@@ -99,7 +112,8 @@ export default function TerminalCard(props: Props) {
         <LastUpdateContainer>
           {lastUpdate && (
             <Text style={{ color: DARK_TEXT_COLOR, textAlign: 'right' }}>
-              Last Updated: {new Date(lastUpdate).toString()}
+              Last Updated:{' '}
+              {isLandingPage ? lastUpdate : new Date(lastUpdate).toString()}
             </Text>
           )}
         </LastUpdateContainer>
@@ -123,7 +137,7 @@ const Container = styled(TouchableOpacity)`
 const TitleContainer = styled(View)`
   flex-direction: row;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
 `;
 
 const Text = styled(BaseText)`

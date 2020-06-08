@@ -14,6 +14,7 @@ import performanceExample from '../../assets/images/performance-example.svg';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
 import SvgDotArrow from '../../components/icons/dot-arrow';
+import TerminalSection from './TerminalSection';
 
 const TAGS = [
   {
@@ -51,60 +52,66 @@ export default function LandingScene() {
   }, [selectedTagIndex]);
 
   return (
-    <Container>
-      <TextLoop interval={2000}>
-        {TAGS.map((tag, idx) => (
-          <TrackRetailText key={`${tag.label}-${idx}`} reviewTag={tag.label} />
-        ))}
-      </TextLoop>
-      <Text fontSize={FONT_SIZE_XLARGE} style={{ marginTop: 32 }}>
-        See and compare the{' '}
+    <View>
+      <Container>
         <TextLoop interval={2000}>
           {TAGS.map((tag, idx) => (
-            <PurpleText key={`subtitle-${tag.label}-${idx}`}>
-              {tag.label}
-            </PurpleText>
+            <TrackRetailText
+              key={`${tag.label}-${idx}`}
+              reviewTag={tag.label}
+            />
           ))}
-        </TextLoop>{' '}
-        of any restaurant or retailer.
-      </Text>
-      <Row>
-        <Description>In any market.</Description>
-        <Description>In any location.</Description>
-        <Description>In any scope.</Description>
-      </Row>
-      <SearchBarContainer>
-        {TAGS.map((tag, idx) => {
-          return (
-            <img
-              key={idx}
-              src={tag.searchBarImage}
-              style={{
-                position: 'absolute',
-                alignSelf: 'center',
-                visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
-              }}
-            />
-          );
-        })}
-      </SearchBarContainer>
-      <SvgDotArrow />
-      <View>
-        {TAGS.map((tag, idx) => {
-          return (
-            <img
-              key={idx}
-              src={tag.image}
-              style={{
-                position: 'absolute',
-                alignSelf: 'center',
-                visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
-              }}
-            />
-          );
-        })}
-      </View>
-    </Container>
+        </TextLoop>
+        <Text fontSize={FONT_SIZE_XLARGE} style={{ marginTop: 32 }}>
+          See and compare the{' '}
+          <TextLoop interval={2000}>
+            {TAGS.map((tag, idx) => (
+              <PurpleText key={`subtitle-${tag.label}-${idx}`}>
+                {tag.label}
+              </PurpleText>
+            ))}
+          </TextLoop>{' '}
+          of any restaurant or retailer.
+        </Text>
+        <Row>
+          <Description>In any market.</Description>
+          <Description>In any location.</Description>
+          <Description>In any scope.</Description>
+        </Row>
+        <SearchBarContainer>
+          {TAGS.map((tag, idx) => {
+            return (
+              <img
+                key={idx}
+                src={tag.searchBarImage}
+                style={{
+                  position: 'absolute',
+                  alignSelf: 'center',
+                  visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
+                }}
+              />
+            );
+          })}
+        </SearchBarContainer>
+        <SvgDotArrow />
+        <View style={{ height: 600 }}>
+          {TAGS.map((tag, idx) => {
+            return (
+              <img
+                key={idx}
+                src={tag.image}
+                style={{
+                  position: 'absolute',
+                  alignSelf: 'center',
+                  visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
+                }}
+              />
+            );
+          })}
+        </View>
+      </Container>
+      <TerminalSection />
+    </View>
   );
 }
 
