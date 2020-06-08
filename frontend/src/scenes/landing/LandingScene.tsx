@@ -58,7 +58,7 @@ export default function LandingScene() {
     enter: { opacity: 1, marginTop: 0 },
     leave: { opacity: 0, marginTop: 30 },
     config: {
-      duration: 1000,
+      duration: 500,
     },
   });
 
@@ -69,6 +69,9 @@ export default function LandingScene() {
     },
     enter: { opacity: 1 },
     leave: { opacity: 0 },
+    config: {
+      duration: 500,
+    },
   });
 
   useEffect(() => {
