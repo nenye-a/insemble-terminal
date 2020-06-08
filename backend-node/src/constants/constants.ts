@@ -6,5 +6,13 @@ let NODE_ENV = process.env.NODE_ENV || 'development';
 let HOST = process.env.HOST || 'http://localhost:4000'; // NOTES: make sure to set HOST on the env for production
 let FRONTEND_HOST = process.env.FRONTEND_HOST || 'http://localhost:8000'; // NOTES: make sure to set FRONTEND_HOST on the env for production
 let API_URI = 'http://localhost:8000';
+let CONTACT_PERSON = process.env.CONTACT_PERSON || 'sales@insemblegroup.com';
 
-export { HOST, NODE_ENV, FRONTEND_HOST, SENDGRID_API_KEY, API_URI };
+export {
+  HOST,
+  NODE_ENV,
+  FRONTEND_HOST,
+  SENDGRID_API_KEY,
+  API_URI,
+  CONTACT_PERSON,
+};

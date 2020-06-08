@@ -2,13 +2,14 @@ import sgMail from '@sendgrid/mail';
 import fs from 'fs';
 import ejs from 'ejs';
 
-import { SENDGRID_API_KEY } from '../constants/constants';
+import { SENDGRID_API_KEY, CONTACT_PERSON } from '../constants/constants';
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
 let emailVerificationTemplate = fs
   .readFileSync('src/emailTemplates/emailVerification.html')
   .toString();
+let contactUs = fs.readFileSync('src/emailTemplates/contactUs.html').toString();
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
@@ -46,4 +47,24 @@ async function sendForgotPasswordEmail(
   await sgMail.send(msg);
 }
 
-export { sendVerificationEmail, sendForgotPasswordEmail };
+async function sendContactUsEmail(
+  sender: { email: string; name: string; company: string },
+  message: string,
+) {
+  let htmlContent = ejs.render(contactUs, {
+    name: sender.name,
+    email: sender.email,
+    company: sender.company,
+    message,
+  });
+  let msg = {
+    to: CONTACT_PERSON,
+    from: 'Insemble Terminal <no-reply@insemble.co>',
+    subject: `[Sales Lead] ${sender.name}`,
+    text: `${sender.email} made a contact with us.`,
+    html: htmlContent,
+  };
+  await sgMail.send(msg);
+}
+
+export { sendVerificationEmail, sendForgotPasswordEmail, sendContactUsEmail };
