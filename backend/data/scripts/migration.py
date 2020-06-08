@@ -160,7 +160,7 @@ def add_state_to_county():
 
 
 def test_db():
-    h = list(utils.DB_TERMINAL_PLACES.find({'city': {'$exists': False}, 'type': {'$exists': False}}).limit(10000))
+    h = list(utils.DB_TERMINAL_PLACES.find({}).limit(10000))
     TEST_DB.insert_many(h)
 
 
@@ -170,5 +170,7 @@ if __name__ == "__main__":
     # import_LA()
     # add_city_fast()
     # add_state_fast()
-    add_state_to_county()
+    # add_state_to_county()
+    # test_db()
+    # TEST_DB.delete_many({})
     pass

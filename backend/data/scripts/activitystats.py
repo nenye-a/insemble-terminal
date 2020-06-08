@@ -6,9 +6,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 import utils
-import urllib
-import FindRestaurantDetails as details
-from scrape.scraper import GenericScraper
+import pandas as pd
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 GENERATED_PATH = THIS_DIR + '/files/activity_generated/'
@@ -17,10 +15,13 @@ if not os.path.exists(GENERATED_PATH):
     os.mkdir(GENERATED_PATH)
     # shutil.rmtree(GENERATED_PATH)
 
+TEST = "terminal.test"
+TEST_DB = utils.SYSTEM_MONGO.get_collection(TEST)
+
 
 def activity_statistics(num_results=50):
 
-    sample = utils.DB_PLACES.aggregate([
+    sample = utils.DB_TERMINAL_PLACES.aggregate([
         {'$sample': {
             'size': num_results
         }},
@@ -35,28 +36,35 @@ def activity_statistics(num_results=50):
         }}
     ])
 
-    places = list(sample)
-    query_urls = [
-        details.build_google_activity_request(
-            encode_word(place['name']),
-            encode_word(place['address'])
-        ) for place in places]
 
-    scraper = GenericScraper('ActivityScraper')
-    results = scraper.async_request(
-        query_urls,
-        quality_proxy=True,
-        res_parser=parse_track
-    )
-    # results = [scraper.request(
-    #     query_urls[0],
-    #     quality_proxy=True,
-    #     res_parser=parse_track
-    # )]
+def num_activity_by_city():
 
-    for result in results:
-        week_data = calculate_volumes(result['week_activity'])
-        result.update(week_data)
+    sorted_total = list(utils.DB_TERMINAL_PLACES.aggregate([
+        {'$group': {'_id': '$city', 'count': {'$sum': 1}}},
+        {'$sort': {'count': -1}}
+    ]))
+
+    total_df = pd.DataFrame(sorted_total)
+    total_df.to_csv(GENERATED_PATH + 'num_per_city.csv')
+
+    sorted_with_activity = list(utils.DB_TERMINAL_PLACES.aggregate([
+        {'$match': {'$and': [{'google_details.activity': {'$ne': None}}, {'google_details.activity': {'$ne': []}}]}},
+        {'$group': {'_id': '$city', 'count': {'$sum': 1}}},
+        {'$sort': {'count': -1}}
+    ]))
+
+    total_with_activity_df = pd.DataFrame(sorted_with_activity)
+    total_with_activity_df.rename(columns={'count': 'count_with_activity'}, inplace=True)
+    total_with_activity_df.to_csv(GENERATED_PATH + 'with_activity.csv')
+
+    merged_df = total_df.merge(total_with_activity_df, how='left', on='_id')
+    merged_df['ratio'] = 100 * merged_df['count_with_activity'] / merged_df['count']
+    merged_df['ratio'] = merged_df['ratio'].round(2)
+    merged_df.to_csv(GENERATED_PATH + 'merged_with_ratio.csv')
+    merged_df.describe().to_csv(GENERATED_PATH + 'merged_stats.csv')
+
+
+def generate_dataframe(results):
 
     time = dt.datetime.now().replace(microsecond=0).isoformat()
 
@@ -70,51 +78,62 @@ def activity_statistics(num_results=50):
     stats_dataframe.to_csv(GENERATED_PATH + 'stats_df_' + time + '.csv')
 
 
-def encode_word(word):
-    return urllib.parse.quote(word.strip().replace(' ', '+').lower().encode('utf-8'))
+def update_activity():
+    pipeline = [
+        {'$unwind': {'path': '$google_details.activity',
+                     'preserveNullAndEmptyArrays': True}},
+        {'$unwind': {'path': '$google_details.activity',
+                     'preserveNullAndEmptyArrays': True}},
+        {'$group': {
+            '_id': '$_id',
+            'activity': {'$addToSet': '$google_details.activity'},
+            'activity_volume': {'$sum': '$google_details.activity'}}},
+        {'$set': {
+            'avg_activity': {
+                '$filter': {
+                    'input': '$activity',
+                    'as': 'num',
+                    'cond': {'$gt': ['$$num', 0]}
+                }
+            }
+        }},
+        {'$set': {
+            'activity_volume': {
+                '$cond': [{'$eq': ['$activity_volume', 0]}, -1, '$activity_volume']
+            },
+            'avg_activity': {
+                '$round': [
+                    {
+                        '$cond': [
+                            {'$gt': [{'$size': '$avg_activity'}, 0]},
+                            {'$divide': [
+                                {'$sum': '$avg_activity'},
+                                {'$size': '$avg_activity'}
+                            ]}, -1
+                        ]
+                    }, 2
+                ]
+            }
+        }},
+        {"$merge": "activity-levels"}
+    ]
+
+    # TEST_DB.aggregate(pipeline)
+    utils.DB_TERMINAL_PLACES.aggregate(pipeline, allowDiskUse=True)
 
 
-def parse_track(response):
-    if response.status_code != 200:
-        return None
-    data = details.parse_google_activity(response)
-    url = response.url
-    return {
-        'url': url,
-        'week_activity': data
-    }
+def merge_activity():
 
+    temp_db = utils.SYSTEM_MONGO.get_collection("terminal.activity-levels")
 
-def calculate_volumes(week_activity):
-
-    def has_activity(my_list):
-        for item in my_list:
-            if item != 0:
-                return True
-
-    fill_week(week_activity)
-    active_weeks = len([day for day in week_activity if day])
-
-    week_volume = sum([sum(day_activity) for day_activity in week_activity])
-    avg_day_volume = float(sum([
-        float(sum(day_activity)) / len([
-            hour for hour in day_activity if hour != 0
-        ]) if has_activity(day_activity) else 0 for day_activity in week_activity
-    ])) / active_weeks if active_weeks != 0 else 0
-
-    return {
-        'week_volume': week_volume,
-        'avg_day_volume': avg_day_volume
-    }
-
-
-def fill_week(week):
-    while len(week) < 7:
-        if len(week) % 2 == 0:
-            week.append([])
-        else:
-            week.insert(0, [])
+    temp_db.aggregate([
+        {"$merge": {"into": "places"}}
+    ])
 
 
 if __name__ == "__main__":
-    activity_statistics(150)
+    # activity_statistics(150)
+    # num_activity_by_city()
+    # update_activity()
+    # merge_activity()
+    pass
