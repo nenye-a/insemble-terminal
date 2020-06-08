@@ -13,6 +13,16 @@ export const GET_USER_PROFILE = gql`
       title
       address
       pendingEmail
+      role
+      license
+    }
+  }
+`;
+
+export const EDIT_USER_PROFILE = gql`
+  mutation EditUserProfile($profile: EditProfileInput!) {
+    editUserProfile(profile: $profile) {
+      id
     }
   }
 `;
