@@ -8,7 +8,8 @@ import React, {
 import { useLazyQuery } from '@apollo/react-hooks';
 import styled from 'styled-components';
 
-import { LoadingIndicator, View } from '../core-ui';
+import View from '../core-ui/View';
+import LoadingIndicator from '../core-ui/LoadingIndicator';
 import { localStorage } from '../helpers';
 import { GET_USER_PROFILE } from '../graphql/queries/server/profile';
 import { GetUserProfile } from '../generated/GetUserProfile';

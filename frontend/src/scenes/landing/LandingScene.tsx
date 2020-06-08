@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TextLoop from 'react-text-loop';
 
-import { View, Text as BaseText, Card } from '../../core-ui';
+import { View, Text as BaseText, Divider } from '../../core-ui';
 import activitySearchBox from '../../assets/images/activity-searchbox.svg';
 import coverageSearchBox from '../../assets/images/coverage-searchbox.svg';
 import newsSearchbox from '../../assets/images/news-searchbox.svg';
@@ -12,9 +12,12 @@ import activityExample from '../../assets/images/activity-example.svg';
 import coverageExample from '../../assets/images/coverage-example.svg';
 import performanceExample from '../../assets/images/performance-example.svg';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
-import { THEME_COLOR } from '../../constants/colors';
+import { THEME_COLOR, GREY_DIVIDER } from '../../constants/colors';
 import SvgDotArrow from '../../components/icons/dot-arrow';
+
 import TerminalSection from './TerminalSection';
+import ContactUsSection from './ContactUsSection';
+import Footer from './Footer';
 
 const TAGS = [
   {
@@ -38,8 +41,10 @@ const TAGS = [
     image: performanceExample,
   },
 ];
+
 export default function LandingScene() {
   let [selectedTagIndex, setSelectedTagIndex] = useState(0);
+
   useEffect(() => {
     let interval = setInterval(() => {
       if (selectedTagIndex === 3) {
@@ -47,14 +52,14 @@ export default function LandingScene() {
       } else {
         setSelectedTagIndex(selectedTagIndex + 1);
       }
-    }, 3000);
+    }, 10000);
     return () => clearInterval(interval);
   }, [selectedTagIndex]);
 
   return (
     <View>
       <Container>
-        <TextLoop interval={2000}>
+        <TextLoop interval={10000}>
           {TAGS.map((tag, idx) => (
             <TrackRetailText
               key={`${tag.label}-${idx}`}
@@ -64,7 +69,7 @@ export default function LandingScene() {
         </TextLoop>
         <Text fontSize={FONT_SIZE_XLARGE} style={{ marginTop: 32 }}>
           See and compare the{' '}
-          <TextLoop interval={2000}>
+          <TextLoop interval={10000}>
             {TAGS.map((tag, idx) => (
               <PurpleText key={`subtitle-${tag.label}-${idx}`}>
                 {tag.label}
@@ -111,6 +116,9 @@ export default function LandingScene() {
         </View>
       </Container>
       <TerminalSection />
+      <Divider color={GREY_DIVIDER} />
+      <ContactUsSection />
+      <Footer />
     </View>
   );
 }
