@@ -30,3 +30,5 @@ export * from './license/removeMasterLicensesMutation';
 export * from './license/incrementMaxLicenseMutation';
 export * from './license/masterLicenseListQuery';
 export * from './license/licenseListQuery';
+
+export * from './contactUs/contactUsMutation';
