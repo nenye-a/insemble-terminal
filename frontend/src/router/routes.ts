@@ -1,16 +1,17 @@
 import { RouteProps } from 'react-router-dom';
 
 import {
+  AuthScene,
+  ContactUsScene,
+  EditProfileScene,
+  EmailVerificationScene,
+  LandingScene,
+  LoginScene,
   ResultsScene,
   SignUpScene,
-  LoginScene,
-  TerminalHomeScene,
-  AuthScene,
-  EmailVerificationScene,
-  VerificationSuccessfulScene,
   TerminalDetailScene,
-  LandingScene,
-  ContactUsScene,
+  TerminalHomeScene,
+  VerificationSuccessfulScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -63,4 +64,5 @@ export const authenticatedRoutes: Array<RouteType> = [
     component: TerminalDetailScene,
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
+  { path: '/edit-profile', component: EditProfileScene },
 ];
