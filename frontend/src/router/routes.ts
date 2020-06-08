@@ -10,6 +10,7 @@ import {
   VerificationSuccessfulScene,
   TerminalDetailScene,
   LandingScene,
+  ContactUsScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -38,6 +39,7 @@ export const unAuthenticatedRoutes = [
     component: VerificationSuccessfulScene,
     showSearchBar: false,
   },
+  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
 ];
 
 export const authenticatedRoutes: Array<RouteType> = [
@@ -60,4 +62,5 @@ export const authenticatedRoutes: Array<RouteType> = [
     path: '/terminals/:terminalId',
     component: TerminalDetailScene,
   },
+  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
 ];
