@@ -50,90 +50,88 @@
       <stop offset="1" stop-color="#f7f7f7"/>
     </linearGradient>
   </defs>
-  <g id="Group_1342" data-name="Group 1342" transform="translate(-296 -555)">
-    <g id="Group_1330" data-name="Group 1330" transform="translate(-1)">
-      <g id="Group_1140" data-name="Group 1140" transform="translate(0 -26)">
-        <g id="Group_1020" data-name="Group 1020" transform="translate(-8.543 472)">
-          <g transform="matrix(1, 0, 0, 1, 305.54, 109)" filter="url(#Rectangle_1499)">
-            <rect id="Rectangle_1499-3" data-name="Rectangle 1499" width="713" height="112" rx="2" transform="translate(30 30)" fill="#fff"/>
-          </g>
-          <path id="Rectangle_1500" data-name="Rectangle 1500" d="M2,0H711a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(335.543 139)" fill="#674ea7"/>
-          <text id="Company" transform="translate(367.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Company</tspan></text>
-          <line id="Line_5" data-name="Line 5" x2="712.012" transform="translate(336.037 166.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-          <text id="_87" data-name="87" transform="translate(831.543 193)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-15.568" y="0">87</tspan></text>
-          <text id="_Locations" data-name="# Locations" transform="translate(940.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0"># Locations</tspan></text>
-          <g id="Group_1005" data-name="Group 1005" transform="translate(682.654 144)">
-            <text id="Performance" transform="translate(139.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-75.153" y="0">Performance</tspan></text>
-            <path id="Polygon_5" data-name="Polygon 5" d="M5,0l5,8H0Z" transform="translate(153.889 13) rotate(180)" fill="#f7f7f7"/>
-          </g>
-          <text id="Starbucks" transform="translate(367.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks</tspan></text>
-          <text id="_128" data-name="128" transform="translate(1001.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">128</tspan></text>
-          <path id="Rectangle_1572" data-name="Rectangle 1572" d="M0,0H713a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(335.543 209)" fill="#edebf5"/>
-          <text id="_72" data-name="72" transform="translate(831.543 235)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-15.568" y="0">72</tspan></text>
-          <text id="Dunkin_" data-name="Dunkin’" transform="translate(367.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Dunkin’</tspan></text>
-          <text id="_16" data-name="16" transform="translate(1001.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-15.568" y="0">16</tspan></text>
-          <g id="Mask_Group_1" data-name="Mask Group 1" transform="translate(-66.457 -635)" clip-path="url(#clip-path)">
-            <rect id="Blured_Starbucks_Image" data-name="Blured Starbucks Image" width="251" height="34" transform="translate(842 806)" fill="url(#pattern)"/>
-          </g>
-          <g id="Mask_Group_2" data-name="Mask Group 2" transform="translate(-54.457 -592)" clip-path="url(#clip-path-2)">
-            <rect id="Blured_Starbucks_Image-2" data-name="Blured Starbucks Image" width="251" height="34" transform="translate(842 763)" fill="url(#pattern)"/>
-          </g>
-          <g id="Mask_Group_3" data-name="Mask Group 3" transform="translate(180.543 -613)" clip-path="url(#clip-path-3)">
-            <rect id="Dunkin_Blurred" data-name="Dunkin Blurred" width="256" height="38" transform="translate(608 824)" fill="url(#pattern-3)"/>
-          </g>
-          <g id="Mask_Group_4" data-name="Mask Group 4" transform="translate(176.543 -667)" clip-path="url(#clip-path-4)">
-            <rect id="Dunkin_Blurred-2" data-name="Dunkin Blurred" width="256" height="38" transform="translate(608 878)" fill="url(#pattern-3)"/>
-          </g>
+  <g id="Group_1330" data-name="Group 1330" transform="translate(-297 -555)">
+    <g id="Group_1140" data-name="Group 1140" transform="translate(0 -26)">
+      <g id="Group_1020" data-name="Group 1020" transform="translate(-8.543 472)">
+        <g transform="matrix(1, 0, 0, 1, 305.54, 109)" filter="url(#Rectangle_1499)">
+          <rect id="Rectangle_1499-3" data-name="Rectangle 1499" width="713" height="112" rx="2" transform="translate(30 30)" fill="#fff"/>
         </g>
-        <text id="Overall" transform="translate(327 603)" fill="#674ca7" font-size="18" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">Overall</tspan></text>
-        <text id="Comparing_with_Dunkin_In_Los_Angeles_CA_" data-name="Comparing with Dunkin’ In Los Angeles, CA " transform="translate(1040 604)" fill="#707070" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-266.708" y="0">Comparing with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Dunkin’ In Los Angeles, CA </tspan></text>
-      </g>
-      <g id="Group_1141" data-name="Group 1141" transform="translate(0 137)">
-        <g id="Group_1020-2" data-name="Group 1020" transform="translate(-8.543 472)">
-          <g transform="matrix(1, 0, 0, 1, 305.54, -54)" filter="url(#Rectangle_1499-2)">
-            <rect id="Rectangle_1499-4" data-name="Rectangle 1499" width="713" height="241" rx="2" transform="translate(30 193)" fill="#fff"/>
-          </g>
-          <path id="Rectangle_1599" data-name="Rectangle 1599" d="M0,0H713a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(335.543 338)" fill="#edebf5"/>
-          <rect id="Rectangle_1598" data-name="Rectangle 1598" width="713" height="42" transform="translate(335.543 252)" fill="#edebf5"/>
-          <path id="Rectangle_1500-2" data-name="Rectangle 1500" d="M2,0H711a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(335.543 139)" fill="#674ea7"/>
-          <text id="Address" transform="translate(367.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Address</tspan></text>
-          <line id="Line_5-2" data-name="Line 5" x2="712.012" transform="translate(336.037 166.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-          <text id="_122" data-name="122" transform="translate(1006.543 193)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">122</tspan></text>
-          <g id="Group_1005-2" data-name="Group 1005" transform="translate(851.654 144)">
-            <text id="Performance-2" data-name="Performance" transform="translate(154.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-75.153" y="0">Performance</tspan></text>
-          </g>
-          <text id="_603_S_Spring_St_Los_Angeles_CA_90014_" data-name="603 S Spring St, Los Angeles, CA 90014
-" transform="translate(367.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">603 S Spring St, Los Angeles, CA 90014</tspan><tspan x="0" y="19"></tspan></text>
-          <text id="_359_South_La_Brea_Ave_Los_Angeles_CA_90036" data-name="359 South La Brea Ave, Los Angeles, CA 90036" transform="translate(367.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">359 South La Brea Ave, Los Angeles, CA 90036</tspan></text>
-          <line id="Line_64" data-name="Line 64" x2="712.506" transform="translate(335.543 209.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-          <text id="_1742_S_La_Cienega_Blvd_Los_Angeles_CA_90035" data-name="1742 S La Cienega Blvd, Los Angeles, CA 90035" transform="translate(367.543 278)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">1742 S La Cienega Blvd, Los Angeles, CA 90035</tspan></text>
-          <text id="_12313_Jefferson_Blvd_Los_Angeles_CA_90230" data-name="12313 Jefferson Blvd, Los Angeles, CA  90230" transform="translate(367.543 322)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0" xml:space="preserve">12313 Jefferson Blvd, Los Angeles, CA  90230</tspan></text>
-          <text id="_1111_S_Grand_Ave_Los_Angeles_CA_90015" data-name="1111 S Grand Ave, Los Angeles, CA 90015" transform="translate(367.543 364)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">1111 S Grand Ave, Los Angeles, CA 90015</tspan></text>
-          <text id="_112" data-name="112" transform="translate(1006.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">112</tspan></text>
-          <text id="_113" data-name="113" transform="translate(1006.543 279)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">113</tspan></text>
-          <text id="_110" data-name="110" transform="translate(1006.543 321)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">110</tspan></text>
-          <text id="_106" data-name="106" transform="translate(1006.543 363)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">106</tspan></text>
-          <g id="Mask_Group_10" data-name="Mask Group 10" transform="translate(4.543 -650)" clip-path="url(#clip-path-5)">
-            <rect id="Many_Words" data-name="Many Words" width="86" height="209" transform="translate(949 818)" fill="url(#pattern-5)"/>
-          </g>
-          <g id="Mask_Group_11" data-name="Mask Group 11" transform="translate(8.543 -650)" clip-path="url(#clip-path-6)">
-            <rect id="Many_Words-2" data-name="Many Words" width="86" height="209" transform="translate(945 818)" fill="url(#pattern-5)"/>
-          </g>
-          <g id="Mask_Group_13" data-name="Mask Group 13" transform="translate(8.543 -650)" clip-path="url(#clip-path-7)">
-            <rect id="Many_Words-3" data-name="Many Words" width="86" height="209" transform="translate(945 818)" fill="url(#pattern-5)"/>
-          </g>
-          <rect id="Rectangle_1601" data-name="Rectangle 1601" width="73" height="27" transform="translate(955.543 262)" fill="#edebf5"/>
+        <path id="Rectangle_1500" data-name="Rectangle 1500" d="M2,0H711a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(335.543 139)" fill="#674ea7"/>
+        <text id="Company" transform="translate(367.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Company</tspan></text>
+        <line id="Line_5" data-name="Line 5" x2="712.012" transform="translate(336.037 166.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <text id="_87" data-name="87" transform="translate(831.543 193)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-15.568" y="0">87</tspan></text>
+        <text id="_Locations" data-name="# Locations" transform="translate(940.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0"># Locations</tspan></text>
+        <g id="Group_1005" data-name="Group 1005" transform="translate(682.654 144)">
+          <text id="Performance" transform="translate(139.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-75.153" y="0">Performance</tspan></text>
+          <path id="Polygon_5" data-name="Polygon 5" d="M5,0l5,8H0Z" transform="translate(153.889 13) rotate(180)" fill="#f7f7f7"/>
         </g>
-        <text id="By_Location" data-name="By Location" transform="translate(327 603)" fill="#674ca7" font-size="18" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">By Location</tspan></text>
-        <text id="Comparing_with_Dunkin_In_Los_Angeles_CA_2" data-name="Comparing with Dunkin’ In Los Angeles, CA " transform="translate(1040 603)" fill="#707070" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-266.708" y="0">Comparing with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Dunkin’ In Los Angeles, CA </tspan></text>
+        <text id="Starbucks" transform="translate(367.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks</tspan></text>
+        <text id="_128" data-name="128" transform="translate(1001.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">128</tspan></text>
+        <path id="Rectangle_1572" data-name="Rectangle 1572" d="M0,0H713a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(335.543 209)" fill="#edebf5"/>
+        <text id="_72" data-name="72" transform="translate(831.543 235)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-15.568" y="0">72</tspan></text>
+        <text id="Dunkin_" data-name="Dunkin’" transform="translate(367.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Dunkin’</tspan></text>
+        <text id="_16" data-name="16" transform="translate(1001.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-15.568" y="0">16</tspan></text>
+        <g id="Mask_Group_1" data-name="Mask Group 1" transform="translate(-66.457 -635)" clip-path="url(#clip-path)">
+          <rect id="Blured_Starbucks_Image" data-name="Blured Starbucks Image" width="251" height="34" transform="translate(842 806)" fill="url(#pattern)"/>
+        </g>
+        <g id="Mask_Group_2" data-name="Mask Group 2" transform="translate(-54.457 -592)" clip-path="url(#clip-path-2)">
+          <rect id="Blured_Starbucks_Image-2" data-name="Blured Starbucks Image" width="251" height="34" transform="translate(842 763)" fill="url(#pattern)"/>
+        </g>
+        <g id="Mask_Group_3" data-name="Mask Group 3" transform="translate(180.543 -613)" clip-path="url(#clip-path-3)">
+          <rect id="Dunkin_Blurred" data-name="Dunkin Blurred" width="256" height="38" transform="translate(608 824)" fill="url(#pattern-3)"/>
+        </g>
+        <g id="Mask_Group_4" data-name="Mask Group 4" transform="translate(176.543 -667)" clip-path="url(#clip-path-4)">
+          <rect id="Dunkin_Blurred-2" data-name="Dunkin Blurred" width="256" height="38" transform="translate(608 878)" fill="url(#pattern-3)"/>
+        </g>
       </g>
-      <rect id="Rectangle_1597" data-name="Rectangle 1597" width="326" height="27" transform="translate(352 955)" fill="#fff"/>
-      <rect id="Rectangle_1587" data-name="Rectangle 1587" width="713" height="150" transform="translate(327 898)" fill="url(#linear-gradient)"/>
-      <rect id="Rectangle_1593" data-name="Rectangle 1593" width="290" height="27" transform="translate(352 784)" fill="#fff"/>
-      <rect id="Rectangle_1594" data-name="Rectangle 1594" width="326" height="27" transform="translate(352 824)" fill="#fff"/>
-      <rect id="Rectangle_1595" data-name="Rectangle 1595" width="355" height="35" transform="translate(347 864)" fill="#edebf5"/>
-      <rect id="Rectangle_1596" data-name="Rectangle 1596" width="326" height="27" transform="translate(352 911)" fill="#fff"/>
-      <rect id="Rectangle_1600" data-name="Rectangle 1600" width="73" height="27" transform="translate(947 956)" fill="#edebf5"/>
+      <text id="Overall" transform="translate(327 603)" fill="#674ca7" font-size="18" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">Overall</tspan></text>
+      <text id="Comparing_with_Dunkin_In_Los_Angeles_CA_" data-name="Comparing with Dunkin’ In Los Angeles, CA " transform="translate(1040 604)" fill="#707070" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-266.708" y="0">Comparing with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Dunkin’ In Los Angeles, CA </tspan></text>
     </g>
+    <g id="Group_1141" data-name="Group 1141" transform="translate(0 137)">
+      <g id="Group_1020-2" data-name="Group 1020" transform="translate(-8.543 472)">
+        <g transform="matrix(1, 0, 0, 1, 305.54, -54)" filter="url(#Rectangle_1499-2)">
+          <rect id="Rectangle_1499-4" data-name="Rectangle 1499" width="713" height="241" rx="2" transform="translate(30 193)" fill="#fff"/>
+        </g>
+        <path id="Rectangle_1599" data-name="Rectangle 1599" d="M0,0H713a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(335.543 338)" fill="#edebf5"/>
+        <rect id="Rectangle_1598" data-name="Rectangle 1598" width="713" height="42" transform="translate(335.543 252)" fill="#edebf5"/>
+        <path id="Rectangle_1500-2" data-name="Rectangle 1500" d="M2,0H711a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(335.543 139)" fill="#674ea7"/>
+        <text id="Address" transform="translate(367.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Address</tspan></text>
+        <line id="Line_5-2" data-name="Line 5" x2="712.012" transform="translate(336.037 166.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <text id="_122" data-name="122" transform="translate(1006.543 193)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">122</tspan></text>
+        <g id="Group_1005-2" data-name="Group 1005" transform="translate(851.654 144)">
+          <text id="Performance-2" data-name="Performance" transform="translate(154.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-75.153" y="0">Performance</tspan></text>
+        </g>
+        <text id="_603_S_Spring_St_Los_Angeles_CA_90014_" data-name="603 S Spring St, Los Angeles, CA 90014
+" transform="translate(367.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">603 S Spring St, Los Angeles, CA 90014</tspan><tspan x="0" y="19"></tspan></text>
+        <text id="_359_South_La_Brea_Ave_Los_Angeles_CA_90036" data-name="359 South La Brea Ave, Los Angeles, CA 90036" transform="translate(367.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">359 South La Brea Ave, Los Angeles, CA 90036</tspan></text>
+        <line id="Line_64" data-name="Line 64" x2="712.506" transform="translate(335.543 209.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <text id="_1742_S_La_Cienega_Blvd_Los_Angeles_CA_90035" data-name="1742 S La Cienega Blvd, Los Angeles, CA 90035" transform="translate(367.543 278)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">1742 S La Cienega Blvd, Los Angeles, CA 90035</tspan></text>
+        <text id="_12313_Jefferson_Blvd_Los_Angeles_CA_90230" data-name="12313 Jefferson Blvd, Los Angeles, CA  90230" transform="translate(367.543 322)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0" xml:space="preserve">12313 Jefferson Blvd, Los Angeles, CA  90230</tspan></text>
+        <text id="_1111_S_Grand_Ave_Los_Angeles_CA_90015" data-name="1111 S Grand Ave, Los Angeles, CA 90015" transform="translate(367.543 364)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">1111 S Grand Ave, Los Angeles, CA 90015</tspan></text>
+        <text id="_112" data-name="112" transform="translate(1006.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">112</tspan></text>
+        <text id="_113" data-name="113" transform="translate(1006.543 279)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">113</tspan></text>
+        <text id="_110" data-name="110" transform="translate(1006.543 321)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">110</tspan></text>
+        <text id="_106" data-name="106" transform="translate(1006.543 363)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.352" y="0">106</tspan></text>
+        <g id="Mask_Group_10" data-name="Mask Group 10" transform="translate(4.543 -650)" clip-path="url(#clip-path-5)">
+          <rect id="Many_Words" data-name="Many Words" width="86" height="209" transform="translate(949 818)" fill="url(#pattern-5)"/>
+        </g>
+        <g id="Mask_Group_11" data-name="Mask Group 11" transform="translate(8.543 -650)" clip-path="url(#clip-path-6)">
+          <rect id="Many_Words-2" data-name="Many Words" width="86" height="209" transform="translate(945 818)" fill="url(#pattern-5)"/>
+        </g>
+        <g id="Mask_Group_13" data-name="Mask Group 13" transform="translate(8.543 -650)" clip-path="url(#clip-path-7)">
+          <rect id="Many_Words-3" data-name="Many Words" width="86" height="209" transform="translate(945 818)" fill="url(#pattern-5)"/>
+        </g>
+        <rect id="Rectangle_1601" data-name="Rectangle 1601" width="73" height="27" transform="translate(955.543 262)" fill="#edebf5"/>
+      </g>
+      <text id="By_Location" data-name="By Location" transform="translate(327 603)" fill="#674ca7" font-size="18" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">By Location</tspan></text>
+      <text id="Comparing_with_Dunkin_In_Los_Angeles_CA_2" data-name="Comparing with Dunkin’ In Los Angeles, CA " transform="translate(1040 603)" fill="#707070" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-266.708" y="0">Comparing with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Dunkin’ In Los Angeles, CA </tspan></text>
+    </g>
+    <rect id="Rectangle_1597" data-name="Rectangle 1597" width="326" height="27" transform="translate(352 955)" fill="#fff"/>
+    <rect id="Rectangle_1587" data-name="Rectangle 1587" width="713" height="150" transform="translate(327 898)" fill="url(#linear-gradient)"/>
+    <rect id="Rectangle_1593" data-name="Rectangle 1593" width="290" height="27" transform="translate(352 784)" fill="#fff"/>
+    <rect id="Rectangle_1594" data-name="Rectangle 1594" width="326" height="27" transform="translate(352 824)" fill="#fff"/>
+    <rect id="Rectangle_1595" data-name="Rectangle 1595" width="355" height="35" transform="translate(347 864)" fill="#edebf5"/>
+    <rect id="Rectangle_1596" data-name="Rectangle 1596" width="326" height="27" transform="translate(352 911)" fill="#fff"/>
+    <rect id="Rectangle_1600" data-name="Rectangle 1600" width="73" height="27" transform="translate(947 956)" fill="#edebf5"/>
   </g>
 </svg>

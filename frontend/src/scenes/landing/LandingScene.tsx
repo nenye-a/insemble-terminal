@@ -15,6 +15,7 @@ import activityExample from '../../assets/images/activity-example.svg';
 import coverageExample from '../../assets/images/coverage-example.svg';
 import performanceExample from '../../assets/images/performance-example.png';
 import SvgDotArrow from '../../components/icons/dot-arrow';
+import TerminalSection from './TerminalSection';
 
 import TerminalSection from './TerminalSection';
 import ContactUsSection from './ContactUsSection';
