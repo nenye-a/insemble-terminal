@@ -2,38 +2,53 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import TextLoop from 'react-text-loop';
 
-import { View, Text as BaseText } from '../../core-ui';
-import newsExample from '../../assets/images/news-example.png';
+import { View, Text as BaseText, Card } from '../../core-ui';
+import activitySearchBox from '../../assets/images/activity-searchbox.svg';
+import coverageSearchBox from '../../assets/images/coverage-searchbox.svg';
+import newsSearchbox from '../../assets/images/news-searchbox.svg';
+import performanceSearchbox from '../../assets/images/performance-searchbox.svg';
+import newsExample from '../../assets/images/news-example.svg';
+import activityExample from '../../assets/images/activity-example.svg';
+import coverageExample from '../../assets/images/coverage-example.svg';
+import performanceExample from '../../assets/images/performance-example.svg';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
+import SvgDotArrow from '../../components/icons/dot-arrow';
 
 const TAGS = [
   {
     label: 'activity',
-    image: newsExample,
+    searchBarImage: activitySearchBox,
+    image: activityExample,
   },
   {
     label: 'news',
+    searchBarImage: newsSearchbox,
     image: newsExample,
   },
   {
     label: 'coverage',
-    image: newsExample,
+    searchBarImage: coverageSearchBox,
+    image: coverageExample,
   },
   {
     label: 'performance',
-    image: newsExample,
+    searchBarImage: performanceSearchbox,
+    image: performanceExample,
   },
 ];
 export default function LandingScene() {
   let [selectedTagIndex, setSelectedTagIndex] = useState(0);
-  let description = 'In any market.     In any location.     At any scope.';
-  // useEffect(() => {
-  //   let interval = setInterval(() => {
-  //     setSelectedTagIndex((idx) => idx + 1);
-  //   }, 3000);
-  //   return () => clearInterval(interval);
-  // }, []);
+  useEffect(() => {
+    let interval = setInterval(() => {
+      if (selectedTagIndex === 3) {
+        setSelectedTagIndex(0);
+      } else {
+        setSelectedTagIndex(selectedTagIndex + 1);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [selectedTagIndex]);
 
   return (
     <Container>
@@ -53,7 +68,42 @@ export default function LandingScene() {
         </TextLoop>{' '}
         of any restaurant or retailer.
       </Text>
-      <Description>{description}</Description>
+      <Row>
+        <Description>In any market.</Description>
+        <Description>In any location.</Description>
+        <Description>In any scope.</Description>
+      </Row>
+      <SearchBarContainer>
+        {TAGS.map((tag, idx) => {
+          return (
+            <img
+              key={idx}
+              src={tag.searchBarImage}
+              style={{
+                position: 'absolute',
+                alignSelf: 'center',
+                visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
+              }}
+            />
+          );
+        })}
+      </SearchBarContainer>
+      <SvgDotArrow />
+      <View>
+        {TAGS.map((tag, idx) => {
+          return (
+            <img
+              key={idx}
+              src={tag.image}
+              style={{
+                position: 'absolute',
+                alignSelf: 'center',
+                visibility: idx === selectedTagIndex ? 'visible' : 'hidden',
+              }}
+            />
+          );
+        })}
+      </View>
     </Container>
   );
 }
@@ -96,6 +146,10 @@ const Description = styled(Text)`
   font-size: ${FONT_SIZE_XLARGE};
   font-weight: ${FONT_WEIGHT_MEDIUM};
   padding: 8px;
+`;
+const SearchBarContainer = styled(View)`
+  margin: 32px 0;
+  height: 140px;
 `;
 const Img = styled.img`
   transition-property: all;
