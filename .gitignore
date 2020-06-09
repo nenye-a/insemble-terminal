@@ -52,3 +52,4 @@ tmp_email/
 
 # Generated Files
 */build
+.buildpacks
