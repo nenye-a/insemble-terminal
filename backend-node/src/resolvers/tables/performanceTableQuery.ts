@@ -101,10 +101,10 @@ let performanceTableResolver: FieldResolver<
           ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
             return {
               name: name || '-',
-              avgRating: avgRating ? `${avgRating}` : '0',
-              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
+              avgRating: avgRating ? `${avgRating}` : null,
+              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
               numLocation: numLocations,
-              numReview: avgReviews || 0,
+              numReview: avgReviews,
             };
           },
         );
@@ -136,10 +136,10 @@ let performanceTableResolver: FieldResolver<
           ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
             return {
               name: name || '-',
-              avgRating: avgRating ? `${avgRating}` : '0',
-              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
+              avgRating: avgRating ? `${avgRating}` : null,
+              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
               numLocation: numLocations,
-              numReview: avgReviews || 0,
+              numReview: avgReviews,
             };
           },
         );
@@ -189,10 +189,10 @@ let performanceTableResolver: FieldResolver<
         ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
           return {
             name: name || '-',
-            avgRating: avgRating ? `${avgRating}` : '0',
-            totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : '0',
+            avgRating: avgRating ? `${avgRating}` : null,
+            totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
             numLocation: numLocations,
-            numReview: avgReviews || 0,
+            numReview: avgReviews,
           };
         },
       );
