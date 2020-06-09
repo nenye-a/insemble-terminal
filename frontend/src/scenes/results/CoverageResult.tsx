@@ -37,7 +37,8 @@ export default function CoverageResult(props: Props) {
       tableId,
     },
   });
-  let noData = data?.coverageTable.data.length === 0;
+  let noData =
+    !data?.coverageTable.data || data?.coverageTable.data.length === 0;
   let dataWithFill: Array<CoverageWithFill> = data
     ? [...data?.coverageTable.data, ...data?.coverageTable.compareData].map(
         (item) => {

@@ -39,7 +39,9 @@ export default function CompanyContactsResult(props: Props) {
     },
   });
 
-  let noData = data?.ownershipContactTable.data.length === 0;
+  let noData =
+    !data?.ownershipContactTable.data ||
+    data?.ownershipContactTable.data.length === 0;
 
   return (
     <Container>

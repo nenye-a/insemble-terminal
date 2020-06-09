@@ -38,9 +38,7 @@ export default function PropertyOwnerInformationResult(props: Props) {
       tableId,
     },
   });
-  let noData = data
-    ? Object.keys(data?.ownershipInfoTable.data).length === 0
-    : true;
+  let noData = !data || Object.keys(data?.ownershipInfoTable.data).length === 0;
 
   return (
     <Container>

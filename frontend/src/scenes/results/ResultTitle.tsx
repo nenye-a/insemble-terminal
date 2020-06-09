@@ -160,8 +160,9 @@ export default function ResultTitle(props: Props) {
               <Touchable
                 ref={ref}
                 onPress={() => setComparisonPopoverOpen(true)}
+                disabled={noData}
               >
-                <SvgRoundAdd />
+                <SvgRoundAdd {...(noData && { fill: DISABLED_TEXT_COLOR })} />
               </Touchable>
             )}
           </Popover>
@@ -175,8 +176,12 @@ export default function ResultTitle(props: Props) {
           containerStyle={{ overflow: 'visible' }}
         >
           {(ref) => (
-            <Touchable ref={ref} onPress={() => setPinPopoverOpen(true)}>
-              <SvgPin />
+            <Touchable
+              ref={ref}
+              onPress={() => setPinPopoverOpen(true)}
+              disabled={noData}
+            >
+              <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
             </Touchable>
           )}
         </Popover>

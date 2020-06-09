@@ -38,9 +38,9 @@ export default function CompanyInformationResult(props: Props) {
       tableId,
     },
   });
-  let noData = data
-    ? Object.keys(data?.ownershipInfoTable.data).length === 0
-    : true;
+  let noData =
+    !data?.ownershipInfoTable.data ||
+    Object.keys(data?.ownershipInfoTable.data).length === 0;
 
   return (
     <Container>

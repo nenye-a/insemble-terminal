@@ -30,7 +30,8 @@ export default function CustomerActivityResult(props: Props) {
       tableId,
     },
   });
-  let noData = data?.activityTable.data.length === 0;
+  let noData =
+    !data?.activityTable.data || data?.activityTable.data.length === 0;
 
   return (
     <Container>
