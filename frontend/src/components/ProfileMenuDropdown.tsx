@@ -25,7 +25,9 @@ export default function ProfileMenuDropdown() {
   const MENUS = [
     {
       label: 'Manage Account',
-      onPress: () => {},
+      onPress: () => {
+        history.push('/edit-profile');
+      },
     },
     {
       label: 'Give Feedback',
