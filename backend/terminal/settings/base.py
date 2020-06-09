@@ -94,7 +94,7 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATICFILES_DIRS = (base_dir_join("../frontend/build/static"),)
+STATICFILES_DIRS = []  # (base_dir_join("../frontend/build/static"),)
 
 # Celery
 CELERY_ACCEPT_CONTENT = ["json"]

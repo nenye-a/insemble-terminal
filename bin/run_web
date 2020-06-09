@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ "$SITE_ENV" == "node" ]; then
+  yarn --cwd backend-node start 
+else
+  gunicorn terminal.wsgi --chdir backend --limit-request-line 8188 --log-file - -b localhost:$PORT
+fi
