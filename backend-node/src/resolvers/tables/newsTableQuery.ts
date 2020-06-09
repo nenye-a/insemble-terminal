@@ -1,5 +1,5 @@
 import { queryField, FieldResolver, stringArg } from 'nexus';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyNewsResponse, PyNewsData } from 'dataTypes';
@@ -68,28 +68,202 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
   let selectedNewsTable;
   if (news.length) {
     selectedNewsTable = news[0];
+    let selectedTable = news[0];
+    if (selectedNewsTable.error) {
+      let table = await context.prisma.news.update({
+        where: {
+          id: selectedTable.id,
+        },
+        data: {
+          error: null,
+        },
+      });
+      return {
+        table,
+        error: selectedNewsTable.error,
+        polling: selectedNewsTable.polling,
+      };
+    }
     let updateData = timeCheck(selectedNewsTable.updatedAt);
     if (updateData) {
-      try {
-        let newsUpdate: PyNewsResponse = (
-          await axios.get(`${API_URI}/api/news`, {
+      if (!selectedNewsTable.polling) {
+        selectedNewsTable = await context.prisma.news.update({
+          where: { id: selectedTable.id },
+          data: {
+            polling: true,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        let mainDataPromise = axios.get(`${API_URI}/api/news`, {
+          params: {
+            location: selectedNewsTable.locationTag
+              ? {
+                  locationType: selectedNewsTable.locationTag.type,
+                  params: selectedNewsTable.locationTag.params,
+                }
+              : undefined,
+            business: selectedNewsTable.businessTag
+              ? {
+                  businessType: selectedNewsTable.businessTag.type,
+                  params: selectedNewsTable.businessTag.params,
+                }
+              : undefined,
+          },
+          paramsSerializer: axiosParamsSerializer,
+        });
+        let compareDataPromises: Array<Promise<AxiosResponse>> = [];
+        let compareIds: Array<string> = [];
+        for (let comparationTag of selectedNewsTable.comparationTags) {
+          let compareDataPromise = axios.get(`${API_URI}/api/news`, {
             params: {
-              location: selectedNewsTable.locationTag
+              location: comparationTag.locationTag
                 ? {
-                    locationType: selectedNewsTable.locationTag.type,
-                    params: selectedNewsTable.locationTag.params,
+                    locationType: comparationTag.locationTag.type,
+                    params: comparationTag.locationTag.params,
                   }
                 : undefined,
-              business: selectedNewsTable.businessTag
+              business: comparationTag.businessTag
                 ? {
-                    businessType: selectedNewsTable.businessTag.type,
-                    params: selectedNewsTable.businessTag.params,
+                    businessType: comparationTag.businessTag.type,
+                    params: comparationTag.businessTag.params,
                   }
                 : undefined,
             },
             paramsSerializer: axiosParamsSerializer,
+          });
+          compareDataPromises.push(compareDataPromise);
+          compareIds.push(comparationTag.id);
+        }
+        Promise.all([mainDataPromise, ...compareDataPromises])
+          .then(async (value) => {
+            let [mainResponse, ...compareResponses] = value;
+            let mainData: PyNewsResponse = mainResponse.data;
+            let newsData = mainData.data.map(
+              ({ title, description, link, published, source, relevance }) => {
+                return {
+                  title: title || '-',
+                  description: description || '-',
+                  link: link || '-',
+                  published: published || '-',
+                  source: source || '-',
+                  relevance: relevance || 0,
+                };
+              },
+            );
+            let rawCompareData: Array<PyNewsData & {
+              compareId: string;
+            }> = [];
+            for (let [index, compareResponse] of compareResponses.entries()) {
+              let compareData: PyNewsResponse = compareResponse.data;
+              rawCompareData = rawCompareData.concat(
+                compareData.data.map((data) => ({
+                  ...data,
+                  compareId: compareIds[index],
+                })),
+              );
+            }
+            let compareData = rawCompareData.map(
+              ({
+                title,
+                description,
+                link,
+                published,
+                source,
+                relevance,
+                compareId,
+              }) => {
+                return {
+                  title: title || '-',
+                  description: description || '-',
+                  link: link || '-',
+                  published: published || '-',
+                  source: source || '-',
+                  relevance: relevance || 0,
+                  compareId,
+                };
+              },
+            );
+            await context.prisma.newsData.deleteMany({
+              where: {
+                news: {
+                  id: selectedTable.id,
+                },
+              },
+            });
+            await context.prisma.compareNewsData.deleteMany({
+              where: {
+                news: {
+                  id: selectedTable.id,
+                },
+              },
+            });
+            await context.prisma.news.update({
+              where: { id: selectedTable.id },
+              data: {
+                data: { create: newsData },
+                compareData: { create: compareData },
+                polling: false,
+                updatedAt: new Date(),
+              },
+            });
           })
-        ).data;
+          .catch(async () => {
+            await context.prisma.news.update({
+              where: { id: selectedTable.id },
+              data: {
+                error: 'Failed to update News. Please try again.',
+                polling: false,
+              },
+            });
+          });
+      }
+    }
+  } else {
+    let newSelectedNewsTable = await context.prisma.news.create({
+      data: {
+        polling: true,
+        businessTag: businessTag
+          ? { connect: { id: businessTag.id } }
+          : undefined,
+        locationTag: locationTag
+          ? { connect: { id: locationTag.id } }
+          : undefined,
+      },
+      include: {
+        locationTag: true,
+        businessTag: true,
+        comparationTags: {
+          include: {
+            locationTag: true,
+            businessTag: true,
+          },
+        },
+      },
+    });
+    selectedNewsTable = newSelectedNewsTable;
+    axios
+      .get(`${API_URI}/api/news`, {
+        params: {
+          location: locationTag
+            ? { locationType: locationTag.type, params: locationTag.params }
+            : undefined,
+          business: businessTag
+            ? { businessType: businessTag.type, params: businessTag.params }
+            : undefined,
+        },
+        paramsSerializer: axiosParamsSerializer,
+      })
+      .then(async (response) => {
+        let newsUpdate: PyNewsResponse = response.data;
         let newsData = newsUpdate.data.map(
           ({ title, description, link, published, source, relevance }) => {
             return {
@@ -102,128 +276,41 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
             };
           },
         );
-        let rawCompareData: Array<PyNewsData & { compareId: string }> = [];
-        for (let comparationTag of selectedNewsTable.comparationTags) {
-          let compareDataUpdate: PyNewsResponse = (
-            await axios.get(`${API_URI}/api/news`, {
-              params: {
-                location: comparationTag.locationTag
-                  ? {
-                      locationType: comparationTag.locationTag.type,
-                      params: comparationTag.locationTag.params,
-                    }
-                  : undefined,
-                business: comparationTag.businessTag
-                  ? {
-                      businessType: comparationTag.businessTag.type,
-                      params: comparationTag.businessTag.params,
-                    }
-                  : undefined,
-              },
-              paramsSerializer: axiosParamsSerializer,
-            })
-          ).data;
-          rawCompareData = rawCompareData.concat(
-            compareDataUpdate.data.map((data) => ({
-              ...data,
-              compareId: comparationTag.id,
-            })),
-          );
-        }
-        let compareData = rawCompareData.map(
-          ({
-            title,
-            description,
-            link,
-            published,
-            source,
-            relevance,
-            compareId,
-          }) => {
-            return {
-              title: title || '-',
-              description: description || '-',
-              link: link || '-',
-              published: published || '-',
-              source: source || '-',
-              relevance: relevance || 0,
-              compareId,
-            };
-          },
-        );
-        await context.prisma.newsData.deleteMany({
+        await context.prisma.news.update({
           where: {
-            news: {
-              id: selectedNewsTable.id,
-            },
+            id: newSelectedNewsTable.id,
           },
-        });
-        await context.prisma.compareNewsData.deleteMany({
-          where: {
-            news: {
-              id: selectedNewsTable.id,
-            },
-          },
-        });
-        selectedNewsTable = await context.prisma.news.update({
-          where: { id: selectedNewsTable.id },
           data: {
             data: { create: newsData },
-            compareData: { create: compareData },
-            updatedAt: new Date(),
+            businessTag: businessTag
+              ? { connect: { id: businessTag.id } }
+              : undefined,
+            locationTag: locationTag
+              ? { connect: { id: locationTag.id } }
+              : undefined,
+            polling: false,
           },
         });
-      } catch {
-        throw new Error('Fail to update data.');
-      }
-    }
-  } else {
-    try {
-      let newsUpdate: PyNewsResponse = (
-        await axios.get(`${API_URI}/api/news`, {
-          params: {
-            location: locationTag
-              ? { locationType: locationTag.type, params: locationTag.params }
-              : undefined,
-            business: businessTag
-              ? { businessType: businessTag.type, params: businessTag.params }
-              : undefined,
+      })
+      .catch(async () => {
+        await context.prisma.news.update({
+          where: { id: newSelectedNewsTable.id },
+          data: {
+            error: 'Failed to update News. Please try again.',
+            polling: false,
           },
-          paramsSerializer: axiosParamsSerializer,
-        })
-      ).data;
-      let newsData = newsUpdate.data.map(
-        ({ title, description, link, published, source, relevance }) => {
-          return {
-            title: title || '-',
-            description: description || '-',
-            link: link || '-',
-            published: published || '-',
-            source: source || '-',
-            relevance: relevance || 0,
-          };
-        },
-      );
-      selectedNewsTable = await context.prisma.news.create({
-        data: {
-          data: { create: newsData },
-          businessTag: businessTag
-            ? { connect: { id: businessTag.id } }
-            : undefined,
-          locationTag: locationTag
-            ? { connect: { id: locationTag.id } }
-            : undefined,
-        },
+        });
       });
-    } catch (e) {
-      throw new Error('Fail to create data.');
-    }
   }
-  return selectedNewsTable;
+  return {
+    table: selectedNewsTable,
+    polling: selectedNewsTable.polling,
+    error: selectedNewsTable.error,
+  };
 };
 
 let newsTable = queryField('newsTable', {
-  type: 'News',
+  type: 'NewsPolling',
   args: {
     businessTagId: stringArg(),
     locationTagId: stringArg(),

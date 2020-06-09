@@ -186,7 +186,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
               );
             }
             let compareData = rawCompareData.map(
-              ({ name, location, activity }) => {
+              ({ name, location, activity, compareId }) => {
                 let arrayActiviy = objectToActivityGraph(
                   activity,
                   name,
@@ -199,6 +199,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
                     arrayActiviy.length > 0
                       ? JSON.stringify(arrayActiviy)
                       : '[]',
+                  compareId,
                 };
               },
             );
