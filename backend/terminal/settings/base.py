@@ -3,7 +3,7 @@
 import os
 import sys
 
-from decouple import config  # noqa
+from decouple import Csv, config  # noqa
 
 # Path to include data when in insemble folder
 
@@ -27,7 +27,7 @@ DEBUG = True
 ADMINS = (("Admin", "nenye@insemblegroup.com"),
           ("Admin", "colin@insemblegroup.com"))
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -60,7 +60,7 @@ ROOT_URLCONF = "terminal.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [base_dir_join("templates")],
+        "DIRS": [base_dir_join("templates"), base_dir_join("../frontend/build")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -94,17 +94,17 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATICFILES_DIRS = (base_dir_join("../frontend"),)
+STATICFILES_DIRS = (base_dir_join("../frontend/build/static"),)
 
-# Webpack
-WEBPACK_LOADER = {
-    "DEFAULT": {
-        "CACHE": False,  # on DEBUG should be False
-        "STATS_FILE": base_dir_join("../webpack-stats.json"),
-        "POLL_INTERVAL": 0.1,
-        "IGNORE": [".+\.hot-update.js", ".+\.map"],
-    }
-}
+# # Webpack
+# WEBPACK_LOADER = {
+#     "DEFAULT": {
+#         "CACHE": False,  # on DEBUG should be False
+#         "STATS_FILE": base_dir_join("../webpack-stats.json"),
+#         "POLL_INTERVAL": 0.1,
+#         "IGNORE": [".+\.hot-update.js", ".+\.map"],
+#     }
+# }
 
 # Celery
 CELERY_ACCEPT_CONTENT = ["json"]
