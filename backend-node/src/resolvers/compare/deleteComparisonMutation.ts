@@ -1,6 +1,7 @@
 import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
 
 import { Context } from 'serverTypes';
+import { todayMinOneH } from '../../helpers/todayMinOneH';
 
 export let deleteComparisonResolver: FieldResolver<
   'Mutation',
@@ -16,9 +17,14 @@ export let deleteComparisonResolver: FieldResolver<
   if (!comparationTag) {
     throw new Error('Comparation tag not found');
   }
+  let table;
+  let selectedComparationId = comparationTag.id;
+  let selectedComparationIds;
+  let newComparationIds: Array<string> = [];
+  let tables;
   switch (reviewTag) {
     case 'PERFORMANCE':
-      let table = await context.prisma.performance.findOne({
+      table = await context.prisma.performance.findOne({
         where: { id: tableId },
         select: {
           id: true,
@@ -35,15 +41,15 @@ export let deleteComparisonResolver: FieldResolver<
           },
         },
       });
-      let selectedComparationId = comparationTag.id;
+      selectedComparationId = comparationTag.id;
       if (!table) {
         throw new Error('Selected table not found.');
       }
-      let selectedComparationIds = table.comparationTags.map(({ id }) => id);
-      let newComparationIds = selectedComparationIds.filter(
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = selectedComparationIds.filter(
         (id) => id !== selectedComparationId,
       );
-      let tables = await context.prisma.performance.findMany({
+      tables = await context.prisma.performance.findMany({
         where: {
           comparationTags: {
             every: { id: { not: selectedComparationId } },
@@ -97,12 +103,415 @@ export let deleteComparisonResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
-            updatedAt: new Date(new Date().getTime() - 60 * 60000),
+            updatedAt: todayMinOneH(),
           },
           select: {
             id: true,
             data: true,
             type: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+
+    case 'ACTIVITY':
+      table = await context.prisma.activity.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      selectedComparationId = comparationTag.id;
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = selectedComparationIds.filter(
+        (id) => id !== selectedComparationId,
+      );
+      tables = await context.prisma.activity.findMany({
+        where: {
+          comparationTags: {
+            every: { id: { not: selectedComparationId } },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.activity.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+
+    case 'NEWS':
+      table = await context.prisma.news.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      selectedComparationId = comparationTag.id;
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = selectedComparationIds.filter(
+        (id) => id !== selectedComparationId,
+      );
+      tables = await context.prisma.news.findMany({
+        where: {
+          comparationTags: {
+            every: { id: { not: selectedComparationId } },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.news.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+    case 'ACTIVITY':
+      table = await context.prisma.activity.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      selectedComparationId = comparationTag.id;
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = selectedComparationIds.filter(
+        (id) => id !== selectedComparationId,
+      );
+      tables = await context.prisma.activity.findMany({
+        where: {
+          comparationTags: {
+            every: { id: { not: selectedComparationId } },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.activity.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
+            businessTag: true,
+            locationTag: true,
+            comparationTags: {
+              select: {
+                id: true,
+                businessTag: true,
+                locationTag: true,
+              },
+            },
+          },
+        });
+      } else {
+        table = tables[0];
+      }
+      return {
+        reviewTag,
+        tableId: table.id,
+        comparationTags: table.comparationTags,
+      };
+
+    case 'COVERAGE':
+      table = await context.prisma.coverage.findOne({
+        where: { id: tableId },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      selectedComparationId = comparationTag.id;
+      if (!table) {
+        throw new Error('Selected table not found.');
+      }
+      selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      newComparationIds = selectedComparationIds.filter(
+        (id) => id !== selectedComparationId,
+      );
+      tables = await context.prisma.coverage.findMany({
+        where: {
+          comparationTags: {
+            every: { id: { not: selectedComparationId } },
+          },
+          businessTag: table.businessTag ? { id: table.businessTag.id } : null,
+          locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+        },
+        select: {
+          id: true,
+          data: true,
+          businessTag: true,
+          locationTag: true,
+          comparationTags: {
+            select: {
+              id: true,
+              businessTag: true,
+              locationTag: true,
+            },
+          },
+        },
+      });
+      tables = tables.filter(({ comparationTags }) => {
+        return (
+          comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
+          comparationTags.length === newComparationIds.length
+        );
+      });
+      if (!tables.length) {
+        let connectNewCompIds = newComparationIds.map((compId) => {
+          return { id: compId };
+        });
+        table = await context.prisma.coverage.create({
+          data: {
+            businessTag: table.businessTag
+              ? {
+                  connect: {
+                    id: table.businessTag.id,
+                  },
+                }
+              : undefined,
+            locationTag: table.locationTag
+              ? {
+                  connect: {
+                    id: table.locationTag.id,
+                  },
+                }
+              : undefined,
+            comparationTags: {
+              connect: connectNewCompIds,
+            },
+            updatedAt: todayMinOneH(),
+          },
+          select: {
+            id: true,
+            data: true,
             businessTag: true,
             locationTag: true,
             comparationTags: {
