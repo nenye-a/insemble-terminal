@@ -16,7 +16,7 @@ import {
   THEME_COLOR,
   GREY_DIVIDER,
 } from '../constants/colors';
-import { capitalize } from '../helpers';
+import { capitalize, formatErrorMessage } from '../helpers';
 import { ReviewTag, CompareActionType } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import { LocationTag, BusinessTagResult, ComparationTag } from '../types/types';
@@ -44,6 +44,7 @@ export default function ComparisonPopover(props: Props) {
     activeComparison: activeComparisonProp = [],
   } = props;
   let [tableId, setTableId] = useState('');
+  let [errorAlertVisible, setErrorAlertVisible] = useState(false);
   let [activeComparison, setActiveComparison] = useState<Array<ComparationTag>>(
     activeComparisonProp || [],
   );
@@ -57,8 +58,9 @@ export default function ComparisonPopover(props: Props) {
   ] = useMutation<UpdateComparison, UpdateComparisonVariables>(
     UPDATE_COMPARISON,
     {
-      // temp solution to handle https://github.com/apollographql/apollo-client/issues/6070
-      onError: () => {},
+      onError: () => {
+        setErrorAlertVisible(true);
+      },
     },
   );
 
@@ -110,9 +112,12 @@ export default function ComparisonPopover(props: Props) {
 
   return (
     <Container>
-      <Alert
-        visible={!!updateComparisonError}
-        text={updateComparisonError?.message || ''}
+      <ErrorAlert
+        visible={errorAlertVisible}
+        text={formatErrorMessage(updateComparisonError?.message || '')}
+        onClose={() => {
+          setErrorAlertVisible(false);
+        }}
       />
       {activeComparison && activeComparison.length > 0 ? (
         <View>
@@ -144,6 +149,9 @@ export default function ComparisonPopover(props: Props) {
                       actionType: CompareActionType.DELETE,
                     },
                   });
+                  if (errorAlertVisible) {
+                    setErrorAlertVisible(false);
+                  }
                 }}
               >
                 <SvgRoundClose />
@@ -173,6 +181,9 @@ export default function ComparisonPopover(props: Props) {
                   actionType: CompareActionType.ADD,
                 },
               });
+              if (errorAlertVisible) {
+                setErrorAlertVisible(false);
+              }
             }}
           />
         </View>
@@ -213,4 +224,8 @@ const ComparisonDivider = styled(Divider)`
   background-color: ${GREY_DIVIDER};
   height: 2px;
   margin: 28px 22px 28px 0;
+`;
+
+const ErrorAlert = styled(Alert)`
+  padding-bottom: 8px;
 `;
