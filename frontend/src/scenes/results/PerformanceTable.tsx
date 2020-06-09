@@ -122,11 +122,11 @@ export default function PerformanceTable(props: Props) {
       </DataTable.HeaderRow>
       {sortedData.map((row, index) => {
         let {
-          name = '',
-          avgRating = '',
-          numLocation = 'N/A',
-          numReview = '',
-          totalSales = '',
+          name = '-',
+          avgRating = '-',
+          numLocation = '-',
+          numReview = '-',
+          totalSales = '-',
           isComparison,
         } = row;
         return (
