@@ -79,7 +79,10 @@ export default function PerformanceByBrand(props: Props) {
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
-        <PerformanceTable data={data?.performanceTable.data || []} />
+        <PerformanceTable
+          data={data?.performanceTable.data || []}
+          compareData={data?.performanceTable.compareData}
+        />
       )}
     </Container>
   );
