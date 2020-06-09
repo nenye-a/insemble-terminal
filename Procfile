@@ -1,1 +1,1 @@
-web: eval "$COMMAND"
+web: $COMMAND
