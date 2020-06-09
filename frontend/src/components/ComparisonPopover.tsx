@@ -50,21 +50,20 @@ export default function ComparisonPopover(props: Props) {
   );
   let [
     updateComparison,
-    {
-      data: updateComparisonData,
-      loading: updateComparisonLoading,
-      error: updateComparisonError,
-    },
+    { loading: updateComparisonLoading, error: updateComparisonError },
   ] = useMutation<UpdateComparison, UpdateComparisonVariables>(
     UPDATE_COMPARISON,
     {
       onError: () => {
         setErrorAlertVisible(true);
       },
+      onCompleted: (data) => {
+        onUpdateComparisonCompleted(data);
+      },
     },
   );
 
-  useEffect(() => {
+  let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let mapFn = ({
       id,
       locationTag,
@@ -90,18 +89,13 @@ export default function ComparisonPopover(props: Props) {
           }
         : null,
     });
-
-    if (updateComparisonData) {
-      onTableIdChange &&
-        onTableIdChange(updateComparisonData.updateComparison.tableId);
-      let activeComparisonList = updateComparisonData.updateComparison.comparationTags.map(
-        mapFn,
-      );
-      setTableId(updateComparisonData.updateComparison.tableId);
-      setActiveComparison(activeComparisonList);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateComparisonData]);
+    onTableIdChange && onTableIdChange(updateData.updateComparison.tableId);
+    let activeComparisonList = updateData.updateComparison.comparationTags.map(
+      mapFn,
+    );
+    setTableId(updateData.updateComparison.tableId);
+    setActiveComparison(activeComparisonList);
+  };
 
   useEffect(() => {
     if (!tableId) {

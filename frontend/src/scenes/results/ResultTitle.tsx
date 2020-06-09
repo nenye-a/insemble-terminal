@@ -67,11 +67,14 @@ export default function ResultTitle(props: Props) {
   let showSubtitle = location.pathname.includes('terminal');
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
-  let [updateComparison, { loading, data }] = useMutation<
+  let [updateComparison, { loading }] = useMutation<
     UpdateComparison,
     UpdateComparisonVariables
   >(UPDATE_COMPARISON, {
     onError: () => {},
+    onCompleted: (data) => {
+      onTableIdChange && onTableIdChange(data.updateComparison.tableId);
+    },
   });
 
   let pinPopover = (
@@ -105,12 +108,6 @@ export default function ResultTitle(props: Props) {
       : comparisonTags && comparisonTags?.length > 0
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
-
-  useEffect(() => {
-    if (data?.updateComparison.tableId) {
-      onTableIdChange && onTableIdChange(data.updateComparison.tableId);
-    }
-  }, [data, onTableIdChange]);
 
   return (
     <Container>
