@@ -9,6 +9,7 @@ import {
   EmailVerificationScene,
   VerificationSuccessfulScene,
   TerminalDetailScene,
+  LandingScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -22,8 +23,8 @@ export const unAuthenticatedRoutes = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
-    showHeader: false,
+    component: LandingScene,
+    showSearchBar: false,
   }, // TODO: change component
   { path: '/signup', component: SignUpScene, showSearchBar: false },
   { path: '/login', component: LoginScene, showSearchBar: false },
@@ -44,7 +45,6 @@ export const authenticatedRoutes: Array<RouteType> = [
     path: '/',
     exact: true,
     component: AuthScene,
-    showHeader: false,
   }, // TODO: change component
   {
     path: '/results',

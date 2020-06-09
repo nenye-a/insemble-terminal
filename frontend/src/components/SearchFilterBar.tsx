@@ -153,6 +153,7 @@ export default function SearchFilterBar(props: Props) {
                 }
               }}
               stopPropagation={true}
+              disabled={disableAll}
             >
               <SvgSearch />
             </TouchableOpacity>

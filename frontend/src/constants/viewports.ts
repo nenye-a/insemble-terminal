@@ -1,0 +1,5 @@
+export enum VIEWPORT_TYPE {
+  MOBILE,
+  TABLET,
+  DESKTOP,
+}

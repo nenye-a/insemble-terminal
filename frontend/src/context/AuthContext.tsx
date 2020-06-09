@@ -8,7 +8,8 @@ import React, {
 import { useLazyQuery } from '@apollo/react-hooks';
 import styled from 'styled-components';
 
-import { LoadingIndicator, View } from '../core-ui';
+import View from '../core-ui/View';
+import LoadingIndicator from '../core-ui/LoadingIndicator';
 import { localStorage } from '../helpers';
 import { GET_USER_PROFILE } from '../graphql/queries/server/profile';
 import { GetUserProfile } from '../generated/GetUserProfile';
@@ -38,13 +39,18 @@ const AuthContext = createContext<Auth>({
 export const useAuth = () => useContext(AuthContext);
 
 export default function AuthProvider(props: Props) {
-  // TODO: enhance context so it's loading true on first render
-  let [getProfile, { loading, data }] = useLazyQuery<GetUserProfile>(
-    GET_USER_PROFILE,
-    {
-      fetchPolicy: 'network-only',
+  let [loading, setLoading] = useState(true);
+  let [getProfile, { loading: getProfileLoading, data }] = useLazyQuery<
+    GetUserProfile
+  >(GET_USER_PROFILE, {
+    fetchPolicy: 'network-only',
+    onCompleted: () => {
+      setLoading(false);
     },
-  );
+    onError: () => {
+      setLoading(false);
+    },
+  });
   let [user, setUser] = useState<User | null>(null);
 
   let login = (token: string) => {
@@ -68,7 +74,7 @@ export default function AuthProvider(props: Props) {
     }
   }, [data]);
 
-  if (loading) {
+  if (loading || getProfileLoading) {
     return (
       <Container>
         <LoadingIndicator />

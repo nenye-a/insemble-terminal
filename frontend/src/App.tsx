@@ -4,6 +4,7 @@ import { ApolloProvider } from '@apollo/react-hooks';
 import MainRoute from './router/MainRoute';
 import apolloClient from './graphql/apolloClient';
 import AuthProvider from './context/AuthContext';
+import ViewportListener from './context/ViewportContext';
 import './App.css';
 
 function App() {
@@ -30,9 +31,11 @@ function App() {
 
   return (
     <ApolloProvider client={apolloClient}>
-      <AuthProvider>
-        <MainRoute />
-      </AuthProvider>
+      <ViewportListener>
+        <AuthProvider>
+          <MainRoute />
+        </AuthProvider>
+      </ViewportListener>
     </ApolloProvider>
   );
 }
