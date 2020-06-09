@@ -45,8 +45,8 @@ export default function HeaderNavigationBar(props: Props) {
       >
         <InsembleLogo color="purple" />
       </TouchableOpacity>
-      {showSearchBar && (
-        <SearchContainer>
+      {showSearchBar ? (
+        <SearchContainer flex>
           <SearchFilterBar
             onSearchPress={onSearchPress}
             defaultReviewTag={defaultReviewTag}
@@ -54,9 +54,11 @@ export default function HeaderNavigationBar(props: Props) {
             defaultLocationTag={defaultLocationTag}
           />
         </SearchContainer>
+      ) : (
+        <View flex />
       )}
       {isAuthenticated ? (
-        <RowEnd flex>
+        <RowEnd>
           <TerminalButton
             mode="transparent"
             text="Terminals"
@@ -68,7 +70,7 @@ export default function HeaderNavigationBar(props: Props) {
           <ProfileMenuDropdown />
         </RowEnd>
       ) : (
-        <RowEnd flex>
+        <RowEnd>
           <Button
             shape="round"
             mode="secondary"
@@ -117,5 +119,5 @@ const TerminalButton = styled(Button)`
 `;
 
 const SearchContainer = styled(View)`
-  margin-left: 64px;
+  margin: 0 64px;
 `;

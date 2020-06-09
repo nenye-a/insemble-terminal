@@ -189,7 +189,7 @@ export default function ComparisonPopover(props: Props) {
 const Container = styled(Card)`
   margin-top: 12px;
   padding: 20px 30px;
-  width: 721px;
+  width: 850px;
   overflow: visible;
 `;
 
