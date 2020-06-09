@@ -43,3 +43,7 @@ export * from './Terminal';
 export * from './CreateLicense';
 export * from './MasterToken';
 export * from './Token';
+
+export * from './NewsPolling';
+export * from './ActivityPolling';
+export * from './PerformancePolling';
