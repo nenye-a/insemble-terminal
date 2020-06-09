@@ -10,7 +10,9 @@ type Props = {
 };
 
 export default function EmptyDataComponent(props: Props) {
-  let { text = 'No Data Available for this search' } = props;
+  let {
+    text = 'No data available. Please check your search, or try again',
+  } = props;
   return (
     <Container>
       <ErrorMessage>{text}</ErrorMessage>
