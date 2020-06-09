@@ -1,3 +1,3 @@
-web: gunicorn terminal.wsgi --chdir backend --limit-request-line 8188 --log-file -
-worker: celery worker --workdir backend --app=terminal -B --loglevel=info
-nodeapi: cd backend-node && yarn start
+web: cd backend-node && yarn start
+pyapi: gunicorn terminal.wsgi --chdir backend --limit-request-line 8188 --log-file - -b 0.0.0.0:8000
+worker: celery worker --workdir backend --app=terminal -B --loglevel=info 
