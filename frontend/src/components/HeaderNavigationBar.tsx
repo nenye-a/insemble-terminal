@@ -77,7 +77,13 @@ export default function HeaderNavigationBar(props: Props) {
               history.push('/login');
             }}
           />
-          <SignUpButton shape="round" text="Contact us" onPress={() => {}} />
+          <SignUpButton
+            shape="round"
+            text="Contact us"
+            onPress={() => {
+              history.push('/contact-us');
+            }}
+          />
         </RowEnd>
       )}
     </Container>

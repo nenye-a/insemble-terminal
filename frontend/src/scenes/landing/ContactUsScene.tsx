@@ -141,6 +141,8 @@ export default function ContactUsScene() {
 const Container = styled(View)`
   padding: 40px;
   align-items: center;
+  justify-content: center;
+  min-height: 90vh;
 `;
 
 const CardContainer = styled(Card)`

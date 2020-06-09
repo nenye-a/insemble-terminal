@@ -29,7 +29,9 @@ export default function ProfileMenuDropdown() {
     },
     {
       label: 'Give Feedback',
-      onPress: () => {},
+      onPress: () => {
+        history.push('/contact-us');
+      },
     },
     {
       label: 'Help',
