@@ -81,6 +81,7 @@ export default function PerformanceByLocationResult(props: Props) {
       ) : (
         <PerformanceTable
           data={data?.performanceTable.data || []}
+          compareData={data?.performanceTable.compareData}
           showNumLocation={false}
           headerTitle="Address"
         />
