@@ -32,7 +32,7 @@ export default function ContactUsScene() {
       let { firstName, lastName, company, email, message } = fieldValues;
       let contactvariables = isAuthenticated
         ? {
-            msg: fieldValues.message,
+            msg: message,
           }
         : {
             firstName,
