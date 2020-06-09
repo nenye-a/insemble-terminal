@@ -1,0 +1,41 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "UpdateField",
+      "model": "PerformanceData",
+      "field": "avgRating",
+      "arity": "Optional"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "PerformanceData",
+      "field": "totalSales",
+      "arity": "Optional"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "PerformanceData",
+      "field": "numReview",
+      "arity": "Optional"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "ComparePerformanceData",
+      "field": "avgRating",
+      "arity": "Optional"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "ComparePerformanceData",
+      "field": "totalSales",
+      "arity": "Optional"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "ComparePerformanceData",
+      "field": "numReview",
+      "arity": "Optional"
+    }
+  ]
+}
