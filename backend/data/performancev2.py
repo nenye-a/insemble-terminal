@@ -10,6 +10,10 @@ Performance related queries.
 
 '''
 
+LOCAL_RETAIL_RADIUS = 1 # miles
+LOCAL_CATEGORY_RADIUS = 3 # miles
+BASELINE = 100 # baseline for index
+
 
 def performanceV2(name, address):
     """
@@ -24,7 +28,10 @@ def performanceV2(name, address):
     Response: {
         name: string,
         address: string,
-        salesVolumeIndex?: number,
+        customerVolumeIndex?: number,
+        localRetailIndex?: number,
+        localCategoryIndex?: number,
+        nationalIndex?: number,
         avgRating?: number,
         avgReviews?: number,
         numLocations?: number,
@@ -32,23 +39,41 @@ def performanceV2(name, address):
 
     """
 
-    place_details = performance.get_details(name, address)
+    place_details = get_details(name, address)
     if place_details:
-        return performance.parse_details(place_details)
+        place_details["location"] = utils.to_geojson(google.get_lat_lng(address))
+        return parse_details(place_details)
     else:
         return None
 
 
-def get_local_retail_performance(lat, lng, radius, category=None, performance_fn=None):
-    # gets the raw performance of retail for a certain radius for a certain category (if specified)
-    # query for activity array
-    activities = None  # mongo query for retail of radius within (lat, lng) in particular category
+def get_local_retail_volume(locations, radius, retail_type=None):
+    """
+    Gets the avg volume of retail for a certain radius for a certain retail type (if specified)
 
-    # calculate performance for each
-    local_performance = np.mean([performance_fn(week_activity) for week_activity in activities])
+    Parameters
+    -----------
+    location - dict:
+        contains "_id" (string) ,"location" (point geoJson)
+    radius - int:
+        distance from point in miles.
+    retail_type - string:
+        type of retail locations to be evaluated (all retail types included by default)
+    return - dict:
+        dictionary of locations to volume of specified retail in the vicinity
+    """
 
-    return local_performance
-
+    print("building pipelines")
+    location_pipelines = {location['_id']: build_proximity_query(location, radius, retail_type) for location in locations}
+    print("running mongo queries")
+    results = {}
+    for obj in location_pipelines:
+        performance = list(utils.DB_TERMINAL_PLACES.aggregate(location_pipelines[obj]))
+        if len(performance) != 0:
+            results[obj] = list(utils.DB_TERMINAL_PLACES.aggregate(location_pipelines[obj]))[0]["avg_total_volume"]
+        else:
+            results[obj] = None
+    return results
 
 def build_proximity_query(location, radius, retail_type=None):
     """
@@ -58,7 +83,7 @@ def build_proximity_query(location, radius, retail_type=None):
     Parameters
     -----------
     location - dict:
-        contains "_id" (string) ,"location" (point geoJson)
+        contains "location" (point geoJson)
     radius - int:
         distance from point in miles.
     retail_type - string:
@@ -127,6 +152,121 @@ def build_proximity_query(location, radius, retail_type=None):
 
     return pipeline
 
+def build_brand_query(brand):
+    """
+    Builds aggregation pipeline to get locations from database that are of the specified brand.
+
+    """
+
+    pipeline = []
+
+    # get items for this brand
+    # TODO: improve the way we search brands so we can pick up "The Home Depot"
+    pipeline.append({
+        '$match': {
+            'name': {"$regex": r"^" + utils.adjust_case(brand[:10]), "$options": "i"},
+        }
+    })
+
+    # reduce space needed by disk by projecting
+    pipeline.append({'$project': {'activity_volume': 1, 'avg_activity': 1}})
+
+    # pipeline to seperate items by those that have activity and those that don't.
+    pipeline.extend([
+        {
+            '$set': {
+                'has_activity': {'$cond': [{'$eq': ['$avg_activity', -1]}, -1, 1]}
+            }
+        },
+        {
+            '$bucket': {
+                'groupBy': '$has_activity',
+                'boundaries': [
+                    -1, 0, 2
+                ],
+                'default': 'other',
+                'output': {
+                    'cum_total_volume': {'$sum': '$activity_volume'},
+                    'cum_avg_activity': {'$sum': '$avg_activity'},
+                    'count': {'$sum': 1}
+                }
+            }
+        }
+    ])
+
+    # finally average and return
+    pipeline.extend([
+        {
+            '$set': {
+                'avg_total_volume': {'$divide': ['$cum_total_volume', '$count']},
+                'avg_activity': {'$divide': ['$cum_avg_activity', '$count']}
+            }
+        },
+        {
+            '$group': {
+                '_id': '',
+                'avg_total_volume': {'$max': '$avg_total_volume'},
+                'avg_activity': {'$max': '$avg_activity'},
+                'count': {'$sum': '$count'}
+            }
+        }
+    ])
+
+    return pipeline
+
+def build_all_query():
+    """
+    Builds aggregation pipeline to get locations from database that are of the specified brand.
+
+    """
+
+    pipeline = []
+
+    # reduce space needed by disk by projecting
+    pipeline.append({'$project': {'activity_volume': 1, 'avg_activity': 1}})
+
+    # pipeline to seperate items by those that have activity and those that don't.
+    pipeline.extend([
+        {
+            '$set': {
+                'has_activity': {'$cond': [{'$eq': ['$avg_activity', -1]}, -1, 1]}
+            }
+        },
+        {
+            '$bucket': {
+                'groupBy': '$has_activity',
+                'boundaries': [
+                    -1, 0, 2
+                ],
+                'default': 'other',
+                'output': {
+                    'cum_total_volume': {'$sum': '$activity_volume'},
+                    'cum_avg_activity': {'$sum': '$avg_activity'},
+                    'count': {'$sum': 1}
+                }
+            }
+        }
+    ])
+
+    # finally average and return
+    pipeline.extend([
+        {
+            '$set': {
+                'avg_total_volume': {'$divide': ['$cum_total_volume', '$count']},
+                'avg_activity': {'$divide': ['$cum_avg_activity', '$count']}
+            }
+        },
+        {
+            '$group': {
+                '_id': '',
+                'avg_total_volume': {'$max': '$avg_total_volume'},
+                'avg_activity': {'$max': '$avg_activity'},
+                'count': {'$sum': '$count'}
+            }
+        }
+    ])
+
+    return pipeline
 
 def aggregate_performance(name, location, scope):
 
@@ -160,7 +300,11 @@ def aggregate_performance(name, location, scope):
     if not matching_places:
         return None
 
-    return
+    data = combine_parse_details(matching_places)
+    if data['overall']['name'] is None:
+        data['overall']['name'] = name
+
+    return data
 
 
 def category_performance(category, location, scope):
@@ -207,16 +351,143 @@ def category_performance(category, location, scope):
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
         }))
+    else:
+        return None
 
     if not matching_places:
         return None
 
-    # TODO
-    return
+    return categorical_data(matching_places, data_name)
 
 
-def activity_score(week_activity):
-    pass
+def parse_details(details):
+
+    volume = total_volume(details['activity'])
+
+    # TODO: take from preprocessed run after detailer, rather than aggregate on demand
+    # TODO: should we filter results to exclude itself? should always have something of the same category in search
+    brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_brand_query(details['name'])))[0]['avg_total_volume']
+    all_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
+    local_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(details, LOCAL_RETAIL_RADIUS)))[0]['avg_total_volume']
+    local_category_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(details,
+                                  LOCAL_CATEGORY_RADIUS, utils.adjust_case(details['type']))))[0]['avg_total_volume']
+
+    # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
+    return {
+        'name': details['name'],
+        'address': details['address'],
+        'customerVolumeIndex': round(BASELINE*volume/all_retail_volume),
+        'localRetailIndex': round(BASELINE*volume/local_retail_volume) if volume != 0 else None,
+        'localCategoryIndex': round(BASELINE*volume/local_category_volume) if volume != 0 else None,
+        'nationalIndex': round(BASELINE*volume/brand_volume) if volume != 0 else None,
+        'avgRating': details['rating'],
+        'avgReviews': details['num_reviews'],
+        'numLocations': None
+    }
+
+def combine_parse_details(list_places, forced_name=None, default_name=None):
+    """
+    Provided un-parsed places details, will generate combined report.
+    """
+
+    location_data = []
+    customer_volume_index_sum, customer_volume_index_count = 0, 0
+    local_retail_index_sum, local_retail_index_count = 0, 0
+    local_category_index_sum, local_category_index_count = 0, 0
+    national_index_sum, national_index_count = 0, 0
+    rating_sum, rating_count = 0, 0
+    num_rating_sum, num_rating_count = 0, 0
+    corrected_name = None
+    brand = list_places[0]['name'] # FIXME: Here they shouldn't each have the same name, how to fix name? just pass into fn?
+    type = list_places[0]['type'] # FIXME: categories might be different for each document
+
+    # TODO: preprocess these and store in DB (not here)
+    all_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
+    local_retail_volumes = get_local_retail_volume(list_places, LOCAL_RETAIL_RADIUS)
+    local_category_volumes = get_local_retail_volume(list_places, LOCAL_CATEGORY_RADIUS, type) if type is not None else None
+    brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_brand_query(brand)))[0]['avg_total_volume']
+
+    for place in list_places:
+        volume = total_volume(place['google_details']['activity'])
+        details = \
+            {'name': place['google_details']['name'],
+            'address': place['google_details']['address'],
+            'customerVolumeIndex': BASELINE*volume/all_retail_volume,
+            'localRetailIndex': BASELINE*volume/local_retail_volumes[place['_id']] if volume != 0 else None,
+            'localCategoryIndex': BASELINE*volume/local_category_volumes[place['_id']] if volume != 0 else None,
+            'nationalIndex': BASELINE*volume/brand_volume if volume != 0 else None,
+            'avgRating': place['google_details']['rating'],
+            'avgReviews': place['google_details']['num_reviews'],
+            'numLocations': None}
+        corrected_name = details['name'] if not corrected_name else None
+        details['name'] = details.pop('address')
+        location_data.append(details)
+
+        if details['customerVolumeIndex']:
+            customer_volume_index_count += 1
+            customer_volume_index_sum += details['customerVolumeIndex']
+        if details['localRetailIndex']:
+            local_retail_index_count += 1
+            local_retail_index_sum += details['localRetailIndex']
+        if details['localCategoryIndex']:
+            local_category_index_count += 1
+            local_category_index_sum += details['localCategoryIndex']
+        if details['nationalIndex']:
+            national_index_count += 1
+            national_index_sum += details['nationalIndex']
+        if details['avgRating']:
+            rating_count += 1
+            rating_sum += details['avgRating']
+        if details['avgReviews']:
+            num_rating_count += 1
+            num_rating_sum += details['avgReviews']
+
+    if default_name and corrected_name is None:
+        corrected_name = default_name
+
+    return {
+        'overall': {
+            'name': corrected_name if not forced_name else forced_name,
+            'customerVolumeIndex': round(customer_volume_index_sum/customer_volume_index_count) if customer_volume_index_count != 0 else None,
+            'localRetailIndex': round(local_retail_index_sum/local_retail_index_count) if local_retail_index_count != 0 else None,
+            'localCategoryIndex': round(local_category_index_sum/local_category_index_count) if local_category_index_count != 0 else None,
+            'nationalIndex': round(national_index_sum/national_index_count) if national_index_count != 0 else None,
+            'avgRating': round(rating_sum / rating_count, 1) if rating_count != 0 else None,
+            'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
+            'numLocations': len(location_data)
+        },
+        'data': location_data
+    }
+
+def categorical_data(matching_places, data_name):
+
+    overall_details = combine_parse_details(matching_places)
+    brand_dict = performance.section_by_key(matching_places, 'name')
+    brand_details = [combine_parse_details(location_list, default_name=brand)['overall']
+                     for brand, location_list in brand_dict.items()]
+    category_dict = performance.section_by_key(matching_places, 'type')
+    category_details = [combine_parse_details(location_list, forced_name=category)['overall']
+                        for category, location_list in category_dict.items()]
+
+    overall_details['overall']['name'] = utils.adjust_case(data_name)
+
+    return {
+        'overall': overall_details['overall'],
+        'by_location': overall_details['data'],
+        'by_brand': brand_details,
+        'by_category': category_details
+    }
+
+def get_details(name, address):
+    projection = 'name,address,rating,num_reviews,activity,type'
+    try:
+        google_details = google.get_google_details(
+            name, address, projection
+        ) or {}
+
+        return google_details
+    except Exception:
+        return None
 
 
 def scale(value, volume_type):
@@ -245,28 +516,75 @@ def avg_hourly_volume(week_activity):
 if __name__ == "__main__":
 
     def test_build_proximity_query():
-        random_place = utils.DB_TERMINAL_PLACES.find_one({})
-        pipeline = build_proximity_query(random_place, 1)
-        # print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-        print(list(utils.DB_TERMINAL_PLACES.aggregate(
-            [
-                {'$facet': {
-                    'output1': pipeline,
-                    'output2': pipeline
-                }}
-            ]
-        )))
+        place = utils.DB_TERMINAL_PLACES.find_one({})
+        pipeline = build_proximity_query(place, 10, "Convenience Store")
+        print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
+        # print(list(utils.DB_TERMINAL_PLACES.aggregate(
+        #     [
+        #         {'$facet': {
+        #             'output1': pipeline,
+        #             'output2': pipeline
+        #         }}
+        #     ]
+        # )))
+
+    def test_build_brand_query():
+        place = utils.DB_TERMINAL_PLACES.find_one({})
+        pipeline = build_brand_query(place['name'])
+        print(place['name'], list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
+        pipeline = build_brand_query("Chipotle")
+        print("Chipotle", list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
+
+    def test_build_all_query():
+        start = time.time()
+        pipeline = build_all_query()
+        print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
+        print(time.time()-start)
+
+    def test_get_local_retail_volume():
+        size = 10
+        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate([{ "$sample": { "size": size } }]) if 'location' in location]
+        start = time.time()
+        print(get_local_retail_volume(random_locations, 1))
+        print("size: {}, time: {}".format(size, time.time()-start))
+        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate([{ "$sample": { "size": size } }]) if 'location' in location]
+        start = time.time()
+        query = "Convenience Store"
+        print(get_local_retail_volume(random_locations, 3, query))
+        print("query: {}, size: {}, time: {}".format(query, size, time.time()-start))
+        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate([{ "$sample": { "size": size } }]) if 'location' in location]
+        start = time.time()
+        query = "Japanese Restaurant"
+        print(get_local_retail_volume(random_locations, 3, query))
+        print("query: {}, size: {}, time: {}".format(query, size, time.time()-start))
 
     def test_performance():
-        pass
+        name = "Atlanta Breakfast Club"
+        address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
+        print(performanceV2(name, address))
 
     def test_aggregate_performance():
-        pass
+        performance_data = aggregate_performance("Starbucks", "Los Angeles, CA, USA", "county")
+        print(performance_data)
+        print(len(performance_data['data']))
 
     def test_category_performance():
-        pass
+        import pprint
+        performance = category_performance("Mexican Restaurant", "371 E 2nd Street, LA", "address")
+        # performance = category_performance(None, "371 E 2nd Street, LA", "address")
+        pprint.pprint(performance)
 
     def test_category_performance_higher_scope():
-        pass
+        # performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
+        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county")
+        # performance = category_performance(None, "Los Angeles", "County")
+        print(performance['by_category'])
 
-    test_build_proximity_query()
+    # test_build_proximity_query()
+    # test_get_local_retail_volume()
+    # test_build_brand_query()
+    # test_build_all_query()
+    # test_performance()
+    # test_aggregate_performance()
+    test_category_performance()
+    # test_category_performance_higher_scope()

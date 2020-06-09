@@ -170,7 +170,7 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
             'salesVolumeIndex': round(index_sum / index_count) if index_count != 0 else None,
-            'avgRating': round(rating_sum / rating_count) if rating_count != 0 else None,
+            'avgRating': round(rating_sum / rating_count, 1) if rating_count != 0 else None,
             'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
             'numLocations': len(location_data)
         },
