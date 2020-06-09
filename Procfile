@@ -1,1 +1,1 @@
-web: bin/run_web
+web: eval "$COMMAND"
