@@ -14,6 +14,7 @@ import {
   TableType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -74,9 +75,9 @@ export default function PerformanceByCategoryResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Category data is not available at this scope. Please widen area of search to see." />
+        <EmptyDataComponent />
       ) : (
         <PerformanceTable data={data?.performanceTable.data || []} />
       )}

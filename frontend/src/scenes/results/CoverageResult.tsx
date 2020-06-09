@@ -4,7 +4,11 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { ErrorComponent, EmptyDataComponent } from '../../components';
-import { useGoogleMaps, generateRandomColor } from '../../helpers';
+import {
+  useGoogleMaps,
+  generateRandomColor,
+  formatErrorMessage,
+} from '../../helpers';
 import { CoverageWithFill } from '../../types/types';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 import { GetCoverage, GetCoverageVariables } from '../../generated/GetCoverage';
@@ -77,9 +81,9 @@ export default function CoverageResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Coverage data is not available at this scope. Please widen area of search to see." />
+        <EmptyDataComponent />
       ) : (
         <ContentContainer>
           <CoverageTable data={dataWithFill} />

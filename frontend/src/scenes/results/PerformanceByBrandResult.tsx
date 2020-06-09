@@ -17,6 +17,7 @@ import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
+import { formatErrorMessage } from '../../helpers';
 
 type Props = {
   businessTagId?: string;
@@ -74,9 +75,9 @@ export default function PerformanceByBrand(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Brand data is not available at this scope. Please widen area of search to see." />
+        <EmptyDataComponent />
       ) : (
         <PerformanceTable data={data?.performanceTable.data || []} />
       )}

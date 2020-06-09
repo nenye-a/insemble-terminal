@@ -14,6 +14,7 @@ import {
   GetOwnershipContactDataVariables,
 } from '../../generated/GetOwnershipContactData';
 import { GET_OWNERSHIP_CONTACT_DATA } from '../../graphql/queries/server/results';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ContactsTable from './ContactsTable';
@@ -71,9 +72,9 @@ export default function CompanyContactsResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Company contacts not available at this scope. Widen scope of search to see latest news." />
+        <EmptyDataComponent />
       ) : (
         <ContactsTable data={data?.ownershipContactTable.data} />
       )}
