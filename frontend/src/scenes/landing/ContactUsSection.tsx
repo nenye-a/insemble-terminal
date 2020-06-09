@@ -1,11 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useHistory } from 'react-router-dom';
 
 import { View, Text, Button } from '../../core-ui';
 import { WHITE } from '../../constants/colors';
 import { FONT_WEIGHT_MEDIUM, FONT_SIZE_XLARGE } from '../../constants/theme';
 
 export default function ContactUsSection() {
+  let history = useHistory();
+
   return (
     <Container>
       <Title>Want to learn more? Please contact Us.</Title>
@@ -14,6 +17,9 @@ export default function ContactUsSection() {
         textProps={{
           fontWeight: FONT_WEIGHT_MEDIUM,
           fontSize: FONT_SIZE_XLARGE,
+        }}
+        onPress={() => {
+          history.push('/contact-us');
         }}
       />
     </Container>

@@ -1,13 +1,10 @@
 import React from 'react';
 import styled, { css } from 'styled-components';
+import { useHistory } from 'react-router-dom';
 
 import { View, Text, TouchableOpacity, Link } from '../../core-ui';
 import { BLACK, WHITE } from '../../constants/colors';
-import {
-  SUPPORT_EMAIL,
-  PRIVACY_POLICY_PDF,
-  TERMS_OF_SERVICE_PDF,
-} from '../../constants/uri';
+import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../../constants/uri';
 import { VIEWPORT_TYPE } from '../../constants/viewports';
 import { useViewport } from '../../helpers';
 
@@ -16,12 +13,17 @@ type ViewWithViewportType = ViewProps & {
 };
 
 export default function Footer() {
+  let history = useHistory();
   let { viewportType } = useViewport();
   let isDesktop = viewportType === VIEWPORT_TYPE.DESKTOP;
 
   return (
     <Container isDesktop={isDesktop}>
-      <TouchableOpacity href={`mailto:${SUPPORT_EMAIL}`}>
+      <TouchableOpacity
+        onPress={() => {
+          history.push('/contact-us');
+        }}
+      >
         <WhiteText>Contact us!</WhiteText>
       </TouchableOpacity>
       <Row isDesktop={isDesktop}>

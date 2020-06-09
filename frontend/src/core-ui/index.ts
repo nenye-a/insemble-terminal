@@ -12,6 +12,7 @@ export { default as LoadingIndicator } from './LoadingIndicator';
 export { default as Modal } from './Modal';
 export { default as Pill } from './Pill';
 export { default as Text } from './Text';
+export { default as TextArea } from './TextArea';
 export { default as TextInput } from './TextInput';
 export { default as TouchableOpacity } from './TouchableOpacity';
 export { default as View } from './View';
