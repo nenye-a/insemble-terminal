@@ -74,7 +74,7 @@ export default function SearchFilterBar(props: Props) {
   >(GET_BUSINESS_TAG);
 
   return (
-    <View>
+    <View flex>
       {businessTagLoading ? (
         <LoadingIndicator />
       ) : businessTagData ? (
@@ -180,7 +180,7 @@ export default function SearchFilterBar(props: Props) {
 const SearchContainer = styled(View)`
   flex-direction: row;
   align-items: center;
-  width: 640px;
+  width: 100%;
   height: 42px;
   padding: 0 8px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
@@ -189,7 +189,7 @@ const SearchContainer = styled(View)`
 
 const DataFilterContainer = styled(TouchableOpacity)`
   height: 36px;
-  width: 200px;
+  flex: 0.5;
   align-items: center;
   justify-content: center;
 `;
@@ -197,6 +197,9 @@ const DataFilterContainer = styled(TouchableOpacity)`
 const SearchLocationInput = styled(LocationInput)`
   border: none;
   background-color: transparent;
+  &::placeholder {
+    text-align: center;
+  }
 `;
 
 const SpacedText = styled(Text)`

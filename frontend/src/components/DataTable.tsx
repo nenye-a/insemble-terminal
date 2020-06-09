@@ -1,7 +1,8 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import styled, { css } from 'styled-components';
+import Popover from 'react-tiny-popover';
 
-import { View, Text, TouchableOpacity } from '../core-ui';
+import { View, Text, TouchableOpacity, Card } from '../core-ui';
 import {
   WHITE,
   TABLE_HEADER_BACKGROUND,
@@ -16,6 +17,8 @@ import {
 } from '../constants/theme';
 import { Direction } from '../types/types';
 import { SortConfig } from '../helpers/useSortableData';
+
+import SvgQuestionMark from './icons/question-mark';
 
 type Props = {
   children?: ReactNode;
@@ -33,6 +36,7 @@ type CellProps = ViewProps & {
 type HeaderCellProps = CellProps & {
   children?: string | Array<string>;
   sortConfig?: SortConfig;
+  infoboxContent?: ReactNode;
 };
 
 function DataTable(props: Props) {
@@ -43,21 +47,49 @@ function HeaderCell({
   children,
   sortConfig,
   name,
+  infoboxContent,
   ...otherProps
 }: HeaderCellProps) {
+  let [popoverVisible, setPopoverVisible] = useState(false);
   let triangle =
     sortConfig && name === sortConfig.key
       ? sortConfig.direction === Direction.ASCENDING
         ? ' ▲'
         : ' ▼'
       : '';
-
+  let infoboxPopover = <PopoverContainer>{infoboxContent}</PopoverContainer>;
   return (
     <Cell {...otherProps}>
-      <HeaderCellText>
-        {children}
-        {triangle}
-      </HeaderCellText>
+      <RowedView>
+        {infoboxContent && (
+          <Popover
+            isOpen={popoverVisible}
+            content={infoboxPopover}
+            position={['bottom']}
+            onClickOutside={() => setPopoverVisible(false)}
+            align="start"
+          >
+            {(ref) => (
+              <View
+                ref={ref}
+                onMouseEnter={() => {
+                  setPopoverVisible(true);
+                }}
+                onMouseLeave={() => {
+                  setPopoverVisible(false);
+                }}
+                style={{ marginRight: 4 }}
+              >
+                <SvgQuestionMark />
+              </View>
+            )}
+          </Popover>
+        )}
+        <HeaderCellText>
+          {children}
+          {triangle}
+        </HeaderCellText>
+      </RowedView>
     </Cell>
   );
 }
@@ -157,6 +189,16 @@ const HeaderCellText = styled(Text)`
 const Body = styled(View)`
   height: 350px;
   overflow-y: scroll;
+`;
+
+const PopoverContainer = styled(Card)`
+  padding: 14px;
+  max-width: 270px;
+`;
+
+const RowedView = styled(View)`
+  flex-direction: row;
+  align-items: center;
 `;
 
 DataTable.HeaderRow = HeaderRow;

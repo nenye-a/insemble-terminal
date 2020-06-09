@@ -77,6 +77,7 @@ export default function Dropdown<T>(props: Props<T>) {
 
   return (
     <TouchableOpacity
+      flex
       {...getComboboxProps()}
       onPress={openMenu}
       disabled={disabled}
@@ -94,11 +95,19 @@ export default function Dropdown<T>(props: Props<T>) {
           style: {
             caretColor: 'transparent',
             backgroundColor: disabled ? DISABLED_PILL_COLOR : THEME_COLOR,
+            minWidth: 40,
+            maxWidth: 200,
+            padding: 8,
             color: WHITE,
             textAlign: 'center',
             height: 28,
           },
         })}
+        containerStyle={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
       />
       <ListContainer {...getMenuProps()}>
         {isOpen
@@ -161,4 +170,7 @@ const InputContainer = styled(TextInput)<InputContainerProps>`
       text-align: center;
       height: 28px;
     `}
+  &::placeholder {
+    text-align: center;
+  }
 `;
