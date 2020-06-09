@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="773" height="330" viewBox="0 0 773 330">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="773" height="347" viewBox="0 0 773 347">
   <defs>
     <filter id="Rectangle_1499" x="0" y="0" width="773" height="301" filterUnits="userSpaceOnUse">
       <feOffset input="SourceAlpha"/>
@@ -13,33 +13,43 @@
       <stop offset="1" stop-color="#f7f7f7"/>
     </linearGradient>
   </defs>
-  <g id="Group_1342" data-name="Group 1342" transform="translate(-297 -2308)">
-    <g id="Group_1020" data-name="Group 1020" transform="translate(-8.543 2199)">
-      <g transform="matrix(1, 0, 0, 1, 305.54, 109)" filter="url(#Rectangle_1499)">
-        <rect id="Rectangle_1499-2" data-name="Rectangle 1499" width="713" height="241" rx="2" transform="translate(30 30)" fill="#fff"/>
-      </g>
-      <path id="Rectangle_1500" data-name="Rectangle 1500" d="M2,0H711a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(335.543 139)" fill="#674ea7"/>
-      <text id="Latest_News" data-name="Latest News" transform="translate(367.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Latest News</tspan></text>
-      <line id="Line_5" data-name="Line 5" x2="712.012" transform="translate(336.037 166.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-      <text id="Seeking_Alpha" data-name="Seeking Alpha" transform="translate(1006.543 193)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-91.028" y="0">Seeking Alpha</tspan></text>
-      <g id="Group_1005" data-name="Group 1005" transform="translate(851.654 144)">
-        <text id="Source" transform="translate(154.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-40.248" y="0">Source</tspan></text>
-      </g>
-      <text id="Starbucks:_Well_Positioned_For_Long-Term_Success" data-name="Starbucks: Well Positioned For Long-Term Success" transform="translate(367.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks: Well Positioned For Long-Term Success</tspan></text>
-      <text id="Local_Starbucks_Leaders_Can_Close_Stores_and_Reduce_Hours_if_Necessary" data-name="Local Starbucks Leaders Can Close Stores and Reduce Hours if Necessary" transform="translate(367.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Local Starbucks Leaders Can Close Stores and Reduce Hours if Necessary</tspan></text>
-      <line id="Line_64" data-name="Line 64" x2="712.506" transform="translate(335.543 209.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-      <line id="Line_65" data-name="Line 65" x2="712.506" transform="translate(335.543 251.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-      <line id="Line_66" data-name="Line 66" x2="712.506" transform="translate(335.543 295.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-      <line id="Line_67" data-name="Line 67" x2="712.506" transform="translate(335.543 337.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
-      <text id="Peet_s_Coffee_Parent_Shares_Surge_Expect_More_Competition_for_Starbucks" data-name="Peet’s Coffee Parent Shares Surge, Expect More Competition for Starbucks" transform="translate(367.543 278)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Peet’s Coffee Parent Shares Surge, Expect More Competition for Starbucks</tspan></text>
-      <text id="City_Council_to_Consider_Starbucks_Development_Agreement" data-name="City Council to Consider Starbucks Development Agreement" transform="translate(367.543 322)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">City Council to Consider Starbucks Development Agreement</tspan></text>
-      <text id="Starbucks_plans_to_reopen_90_of_US_locations_with_modifications" data-name="Starbucks plans to reopen 90% of US locations with modifications" transform="translate(367.543 364)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks plans to reopen 90% of US locations with modifications</tspan></text>
-      <text id="Fox_Business" data-name="Fox Business" transform="translate(1006.543 234)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-81.69" y="0">Fox Business</tspan></text>
-      <text id="Forbes" transform="translate(1006.543 279)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-44.086" y="0">Forbes</tspan></text>
-      <text id="Columbus_Telegram" data-name="Columbus Telegram" transform="translate(1006.543 321)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-126.028" y="0">Columbus Telegram</tspan></text>
-      <text id="KABC_-_TV" data-name="KABC - TV" transform="translate(1006.543 363)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-66.668" y="0">KABC - TV</tspan></text>
-    </g>
+  <g id="Group_1351" data-name="Group 1351" transform="translate(-297 -2308)">
     <text id="News" transform="translate(327 2330)" fill="#674ca7" font-size="18" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">News</tspan></text>
-    <path id="Path_4013" data-name="Path 4013" d="M0,0H713V150H0Z" transform="translate(327 2488)" fill="url(#linear-gradient)"/>
+    <g id="Group_1343" data-name="Group 1343" transform="translate(11573 12064)">
+      <text id="Comparing_with_Dunkin_and_Simon_Properties" data-name="Comparing with Dunkin’ and Simon Properties" transform="translate(-10533 -9734)" fill="#707070" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-279.5" y="0">Comparing with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Dunkin’ and Simon Properties</tspan></text>
+    </g>
+    <g id="Group_1350" data-name="Group 1350">
+      <g id="Group_1020" data-name="Group 1020" transform="translate(-8.543 2199)">
+        <g transform="matrix(1, 0, 0, 1, 305.54, 109)" filter="url(#Rectangle_1499)">
+          <rect id="Rectangle_1499-2" data-name="Rectangle 1499" width="713" height="241" rx="2" transform="translate(30 30)" fill="#fff"/>
+        </g>
+        <path id="Rectangle_1500" data-name="Rectangle 1500" d="M2,0H711a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(335.543 139)" fill="#674ea7"/>
+        <text id="Latest_News" data-name="Latest News" transform="translate(367.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Latest News</tspan></text>
+        <line id="Line_5" data-name="Line 5" x2="712.012" transform="translate(336.037 166.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <text id="_22_minutes_ago" data-name="22 minutes ago" transform="translate(1006.543 193)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-97.524" y="0">22 minutes ago</tspan></text>
+        <g id="Group_1005" data-name="Group 1005" transform="translate(851.654 144)">
+          <text id="Posted" transform="translate(154.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-41.184" y="0">Posted</tspan></text>
+        </g>
+        <text id="Starbucks_Reduces_Georgia_Staff_Hours_Amid_Lagging_Sales_Figures" data-name="Starbucks Reduces Georgia Staff Hours Amid Lagging Sales Figures" transform="translate(367.543 192)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks Reduces Georgia Staff Hours Amid Lagging Sales Figures</tspan></text>
+        <line id="Line_64" data-name="Line 64" x2="712.506" transform="translate(335.543 209.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <line id="Line_65" data-name="Line 65" x2="712.506" transform="translate(335.543 251.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <line id="Line_66" data-name="Line 66" x2="712.506" transform="translate(335.543 295.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <line id="Line_67" data-name="Line 67" x2="712.506" transform="translate(335.543 337.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+        <text id="Is_Starbucks_still_Starbucks_Navigating_COVID-19" data-name="Is Starbucks still Starbucks? Navigating COVID-19" transform="translate(367.543 278)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Is Starbucks still Starbucks? Navigating COVID-19</tspan></text>
+        <text id="Starbucks_plans_to_reopen_90_of_US_locations_with_modifications" data-name="Starbucks plans to reopen 90% of US locations with modifications" transform="translate(367.543 364)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks plans to reopen 90% of US locations with modifications</tspan></text>
+        <text id="_1_hour_ago" data-name="1 hour ago" transform="translate(1006.543 279)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-68.768" y="0">1 hour ago</tspan></text>
+        <text id="_3_hours_ago" data-name="3 hours ago" transform="translate(1006.543 363)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-74.984" y="0">3 hours ago</tspan></text>
+      </g>
+      <path id="Rectangle_1606" data-name="Rectangle 1606" d="M0,0H713a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(327 2495)" fill="#e8f8ff"/>
+      <path id="Rectangle_1605" data-name="Rectangle 1605" d="M0,0H713a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(327 2409)" fill="#edebf5"/>
+      <path id="Path_4013" data-name="Path 4013" d="M0,0H713V150H0Z" transform="translate(327 2505)" fill="url(#linear-gradient)"/>
+      <text id="Is_Starbucks_still_Starbucks_Navigating_COVID-19-2" data-name="Is Starbucks still Starbucks? Navigating COVID-19" transform="translate(359 2477)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Is Starbucks still Starbucks? Navigating COVID-19</tspan></text>
+      <text id="Dunkin_Donuts_plans_to_hire_25_000_employees_as_states_reopen" data-name="Dunkin’ Donuts plans to hire 25,000 employees as states reopen" transform="translate(359 2434)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Dunkin’ Donuts plans to hire 25,000 employees as states reopen</tspan></text>
+      <text id="_37_minutes_ago" data-name="37 minutes ago" transform="translate(998 2434)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-97.524" y="0">37 minutes ago</tspan></text>
+      <g id="Group_1345" data-name="Group 1345" transform="translate(11434 16559)">
+        <text id="Simon_Property_Group_Consensus_Indicates_Potential_72.6_Upside" data-name="Simon Property Group – Consensus Indicates Potential 72.6% Upside" transform="translate(-11075 -14038)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Simon Property Group – Consensus Indicates Potential 72.6% Upside</tspan></text>
+        <text id="_2_hours_ago" data-name="2 hours ago" transform="translate(-10436 -14039)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-74.984" y="0">2 hours ago</tspan></text>
+      </g>
+    </g>
   </g>
 </svg>

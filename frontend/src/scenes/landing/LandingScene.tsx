@@ -119,7 +119,7 @@ export default function LandingScene() {
             </animated.div>
           ))}
         </SearchBarContainer>
-        <SvgDotArrow />
+        <SvgDotArrow style={{ marginBottom: 20 }} />
         <View
           style={{
             alignItems: 'center',
