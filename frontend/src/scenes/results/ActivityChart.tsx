@@ -48,7 +48,6 @@ export default function ActivityChart(props: Props) {
     'amount',
     'business',
   );
-  console.log(data, compareData, mergedData, lineChartData);
 
   let lines = [];
 

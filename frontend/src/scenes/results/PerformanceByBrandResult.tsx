@@ -14,10 +14,10 @@ import {
   TableType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
-import { formatErrorMessage } from '../../helpers';
 
 type Props = {
   businessTagId?: string;
