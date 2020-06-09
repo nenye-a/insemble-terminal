@@ -10,6 +10,7 @@ import {
   GetNewsTableVariables,
 } from '../../generated/GetNewsTable';
 import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import NewsTable from './NewsTable';
@@ -65,9 +66,9 @@ export default function LatestNewsResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="News not available at this scope. Widen scope of search to see latest news." />
+        <EmptyDataComponent />
       ) : (
         <NewsTable
           data={data?.newsTable.data || []}

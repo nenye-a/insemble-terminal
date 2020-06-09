@@ -1,6 +1,6 @@
 import React, { SVGProps } from 'react';
 
-const SvgPin = (props: SVGProps<SVGSVGElement>) => (
+const SvgPin = ({ fill, ...props }: SVGProps<SVGSVGElement>) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="15.257"
@@ -13,7 +13,7 @@ const SvgPin = (props: SVGProps<SVGSVGElement>) => (
       data-name="Path 3924"
       d="M5.558,13.255,2.792,16.523a.594.594,0,0,0-.013.852.587.587,0,0,0,.839-.011l2.371-1.976,1.1-.914L5.707,13.085C5.65,13.15,5.6,13.2,5.558,13.255Zm6.485,4.269c.661-.741.63-2.019.038-3.446a.562.562,0,0,1,.043-.068q2.01-2.693,4.007-5.4l.183.184a.763.763,0,0,0,1.079,0l.1-.1a.764.764,0,0,0,0-1.079L12.554,2.682a.764.764,0,0,0-1.08,0l-.1.1a.764.764,0,0,0,0,1.08l.254.254q-2.736,2-5.475,4l-.007,0c-1.462-.62-2.8-.681-3.521.038a.41.41,0,0,0-.034.624l8.791,8.79A.417.417,0,0,0,12.043,17.524ZM8.645,9.66a11.764,11.764,0,0,0-1.129-.818l4.867-3.975.853.853Z"
       transform="translate(-2.459 -2.459)"
-      fill="currentColor"
+      fill={fill || 'currentColor'}
       fillRule="evenodd"
     />
   </svg>

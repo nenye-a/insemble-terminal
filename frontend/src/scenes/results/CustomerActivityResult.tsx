@@ -7,6 +7,7 @@ import { EmptyDataComponent, ErrorComponent } from '../../components';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 import { GetActivity, GetActivityVariables } from '../../generated/GetActivity';
 import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ActivityChart from './ActivityChart';
@@ -29,7 +30,8 @@ export default function CustomerActivityResult(props: Props) {
       tableId,
     },
   });
-  let noData = data?.activityTable.data.length === 0;
+  let noData =
+    !data?.activityTable.data || data?.activityTable.data.length === 0;
 
   return (
     <Container>
@@ -61,9 +63,9 @@ export default function CustomerActivityResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Consumer activity details are not available at this scope. Please include a brand." />
+        <EmptyDataComponent />
       ) : (
         <ActivityChart
           data={data?.activityTable.data}

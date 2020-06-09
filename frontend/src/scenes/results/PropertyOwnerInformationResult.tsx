@@ -14,6 +14,7 @@ import {
   GetOwnershipInfoDataVariables,
 } from '../../generated/GetOwnershipInfoData';
 import { GET_OWNERSHIP_INFO_DATA } from '../../graphql/queries/server/results';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import OwnershipInformationCard from './OwnershipInformationCard';
@@ -37,9 +38,7 @@ export default function PropertyOwnerInformationResult(props: Props) {
       tableId,
     },
   });
-  let noData = data
-    ? Object.keys(data?.ownershipInfoTable.data).length === 0
-    : true;
+  let noData = !data || Object.keys(data?.ownershipInfoTable.data).length === 0;
 
   return (
     <Container>
@@ -72,9 +71,9 @@ export default function PropertyOwnerInformationResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Property ownership information is not available at this scope. Please widen area of search to see." />
+        <EmptyDataComponent />
       ) : (
         <OwnershipInformationCard
           name={data?.ownershipInfoTable.data.parentCompany}

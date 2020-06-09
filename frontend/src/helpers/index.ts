@@ -1,4 +1,5 @@
 export { default as capitalize } from './capitalize';
+export { default as formatErrorMessage } from './formatErrorMessage';
 export { default as generateRandomColor } from './generateRandomColor';
 export { default as getPublishedDate } from './getPublishedDate';
 export { default as getResultQueries } from './getResultQueries';

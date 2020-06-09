@@ -14,6 +14,7 @@ import {
   ReviewTag,
   TableType,
 } from '../../generated/globalTypes';
+import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -73,9 +74,9 @@ export default function OverallPerformanceResult(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
-        <EmptyDataComponent text="Overall data is not available at this scope. Please widen area of search to see." />
+        <EmptyDataComponent />
       ) : (
         <PerformanceTable
           data={data?.performanceTable.data || []}

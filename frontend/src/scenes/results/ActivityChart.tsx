@@ -48,6 +48,7 @@ export default function ActivityChart(props: Props) {
     'amount',
     'business',
   );
+
   let lines = [];
 
   for (let [i, dataKey] of tooltipData.entries()) {

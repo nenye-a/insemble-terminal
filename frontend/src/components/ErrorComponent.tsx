@@ -10,7 +10,9 @@ type Props = {
 };
 
 export default function ErrorComponent(props: Props) {
-  let { text = 'Something went wrong' } = props;
+  let {
+    text = 'Something went wrong. Please check your search, or try again.',
+  } = props;
   return (
     <Container>
       <ErrorMessage>{text}</ErrorMessage>
