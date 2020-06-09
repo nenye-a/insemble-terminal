@@ -68,7 +68,17 @@ export default function NewsTable(props: Props) {
               style: { backgroundColor: TABLE_PURPLE_BACKGROUND },
             })}
           >
-            <DataTable.Cell width={500}>{title}</DataTable.Cell>
+            <DataTable.Cell
+              width={500}
+              style={{
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                display: 'block',
+              }}
+            >
+              {title}
+            </DataTable.Cell>
             <DataTable.Cell>{source}</DataTable.Cell>
             <DataTable.Cell align="right">
               {getPublishedDate(published)}

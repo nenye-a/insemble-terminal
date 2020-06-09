@@ -100,7 +100,7 @@ const Cell = styled(View)<CellProps>`
   flex-direction: row;
   align-items: center;
   justify-content: ${({ align }) => CellAlign[align || 'left']};
-  padding: 0 18px;
+  padding: 11px 18px;
   color: ${DEFAULT_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
   font-size: ${FONT_SIZE_NORMAL};
@@ -125,12 +125,20 @@ let rowStyle = css`
 
 const DefaultRow = styled(View)<RowProps>`
   ${rowStyle};
-  height: ${(props) => (props.height ? props.height : '40px')};
+  ${(props) =>
+    props.height &&
+    css`
+      height: ${props.height};
+    `};
 `;
 
 const TouchableRow = styled(TouchableOpacity)<RowProps>`
   ${rowStyle};
-  height: ${(props) => (props.height ? props.height : '40px')};
+  ${(props) =>
+    props.height &&
+    css`
+      height: ${props.height};
+    `};
   &:hover {
     box-shadow: ${SHADOW_COLOR};
   }
