@@ -172,6 +172,9 @@ const PurpleTitle = styled(Title)`
 const PurpleText = styled(Text)`
   color: ${THEME_COLOR};
   font-size: ${FONT_SIZE_XLARGE};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
+  text-align: center;
+  width: 150px;
 `;
 const Row = styled(View)`
   flex-direction: row;
