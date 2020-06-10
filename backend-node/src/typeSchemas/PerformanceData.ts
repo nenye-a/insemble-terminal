@@ -8,6 +8,9 @@ export let PerformanceData = objectType({
     t.model.avgRating();
     t.model.numLocation();
     t.model.numReview();
-    t.model.totalSales();
+    t.model.customerVolumeIndex();
+    t.model.localCategoryIndex();
+    t.model.localRetailIndex();
+    t.model.nationalIndex();
   },
 });

@@ -98,11 +98,23 @@ let performanceTableResolver: FieldResolver<
           })
         ).data;
         let performanceData = performanceUpdate.data.map(
-          ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
+          ({
+            name,
+            avgRating,
+            avgReviews,
+            numLocations,
+            customerVolumeIndex,
+            localCategoryIndex,
+            localRetailIndex,
+            nationalIndex,
+          }) => {
             return {
               name: name || '-',
               avgRating: avgRating ? `${avgRating}` : null,
-              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
+              customerVolumeIndex,
+              localCategoryIndex,
+              localRetailIndex,
+              nationalIndex,
               numLocation: numLocations,
               numReview: avgReviews,
             };
@@ -145,13 +157,19 @@ let performanceTableResolver: FieldResolver<
             avgRating,
             avgReviews,
             numLocations,
-            salesVolumeIndex,
+            customerVolumeIndex,
+            localCategoryIndex,
+            localRetailIndex,
+            nationalIndex,
             compareId,
           }) => {
             return {
               name: name || '-',
               avgRating: avgRating ? `${avgRating}` : null,
-              totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
+              customerVolumeIndex,
+              localCategoryIndex,
+              localRetailIndex,
+              nationalIndex,
               numLocation: numLocations,
               numReview: avgReviews,
               compareId,
@@ -201,11 +219,23 @@ let performanceTableResolver: FieldResolver<
         })
       ).data;
       let performanceData = performanceUpdate.data.map(
-        ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
+        ({
+          name,
+          avgRating,
+          avgReviews,
+          numLocations,
+          customerVolumeIndex,
+          localCategoryIndex,
+          localRetailIndex,
+          nationalIndex,
+        }) => {
           return {
             name: name || '-',
             avgRating: avgRating ? `${avgRating}` : null,
-            totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
+            customerVolumeIndex,
+            localCategoryIndex,
+            localRetailIndex,
+            nationalIndex,
             numLocation: numLocations,
             numReview: avgReviews,
           };
