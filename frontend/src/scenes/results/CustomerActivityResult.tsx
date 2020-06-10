@@ -81,10 +81,7 @@ export default function CustomerActivityResult(props: Props) {
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
-        <ActivityChart
-          data={coloredData}
-          // compareData={data?.activityTable.compareData}
-        />
+        <ActivityChart data={coloredData} />
       )}
     </Container>
   );
