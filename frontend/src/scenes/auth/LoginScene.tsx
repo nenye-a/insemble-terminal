@@ -18,7 +18,8 @@ export default function LoginScene() {
           <LoginForm />
         </FormContainer>
       </LoginCard>
-      <NoAccountContainer>
+      {/* Temporarily remove sign up page until token complete */}
+      {/* <NoAccountContainer>
         <Text>{noAccount} </Text>
         <Button
           mode="transparent"
@@ -27,7 +28,7 @@ export default function LoginScene() {
             history.push('/signup');
           }}
         />
-      </NoAccountContainer>
+      </NoAccountContainer> */}
       {/* TODO: Forgot password scene */}
     </Container>
   );
