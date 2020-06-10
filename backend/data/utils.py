@@ -23,6 +23,7 @@ TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
 ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
 AMPERSAND = '\\\\u0026'
+AMPERSAND2 = '&amp;'
 APOSTROPHE = '&#39;'
 SPACE = '\xa0'
 
@@ -283,7 +284,7 @@ def format_search(name, address):
 
 
 def format_punct(text):
-    return text.replace(AMPERSAND, "&").replace(APOSTROPHE, "'").replace(SPACE, " ")
+    return text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&").replace(APOSTROPHE, "'").replace(SPACE, " ")
 
 
 def get_alternative_source(key, preffered_dict, default_dict):
