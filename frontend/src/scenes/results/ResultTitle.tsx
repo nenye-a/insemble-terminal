@@ -147,7 +147,9 @@ export default function ResultTitle(props: Props) {
                 }}
                 style={{ marginLeft: 4, marginRight: 4 }}
               >
-                <SvgQuestionMark style={{ color: THEME_COLOR }} />
+                <SvgQuestionMark
+                  style={{ color: noData ? DISABLED_TEXT_COLOR : THEME_COLOR }}
+                />
               </View>
             )}
           </Popover>

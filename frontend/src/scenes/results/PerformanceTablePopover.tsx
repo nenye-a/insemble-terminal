@@ -67,7 +67,7 @@ export default function PerformanceTablePopover() {
         <ItemContainer key={idx}>
           <PopoverTitle>
             {title}
-            <Text>{subtitle}</Text>
+            <Text> {subtitle}</Text>
           </PopoverTitle>
           {description}
         </ItemContainer>
