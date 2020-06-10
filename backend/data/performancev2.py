@@ -15,7 +15,7 @@ LOCAL_CATEGORY_RADIUS = 3  # miles
 BASELINE = 100  # baseline for index
 
 
-def performanceV2(name, address):
+def performancev2(name, address):
     """
 
     Provided the name (business, category, or brand) and an address of a location,
@@ -596,7 +596,7 @@ if __name__ == "__main__":
     def test_performance():
         name = "Atlanta Breakfast Club"
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        print(performanceV2(name, address))
+        print(performancev2(name, address))
 
     def test_aggregate_performance():
         performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")

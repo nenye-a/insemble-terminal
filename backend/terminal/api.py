@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from .serializers import (SearchSerializer, OptionalSearchSerializer, PerformanceSerializer,
                           OwnershipSerializer)
 import datetime as dt
-import performance
+import performancev2
 import news
 import activity
 import contact
@@ -77,6 +77,10 @@ class PerformanceAPI(BasicAPI):
                         avgRating?: number,
                         avgReviews?: number,
                         numLocations?: number,
+                        customerVolumeIndex?: number,
+                        localRetailIndex?: number,
+                        localCategoryIndex?: number,
+                        nationalIndex?: number,
                     }
                 ]
             }
@@ -101,7 +105,7 @@ class PerformanceAPI(BasicAPI):
 
             # NO BUSINESS & LOCATION
             if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
-                raw_data = performance.category_performance(
+                raw_data = performancev2.category_performance(
                     None, location['params'], location['locationType'])
                 if raw_data:
                     if data_type == 'CATEGORY':
@@ -120,7 +124,7 @@ class PerformanceAPI(BasicAPI):
 
             # ADDRESS + BUSINESS
             if location['locationType'] == 'ADDRESS':
-                row = performance.performance(business['params'], location['params'])
+                row = performancev2.performancev2(business['params'], location['params'])
                 if not row:
                     pass
                 elif data_type == 'ADDRESS':
@@ -137,7 +141,7 @@ class PerformanceAPI(BasicAPI):
 
             # CITY & COUNTY + BUSINESS
             elif location['locationType'] in ['CITY', 'COUNTY']:
-                raw_data = performance.aggregate_performance(
+                raw_data = performancev2.aggregate_performance(
                     business['params'], location['params'], location['locationType'])
                 if data_type == 'OVERALL':
                     raw_data and data.append(raw_data['overall'])
@@ -151,7 +155,7 @@ class PerformanceAPI(BasicAPI):
 
             # ADDRESS & CITY & COUNTY + CATEGORY
             if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
-                raw_data = performance.category_performance(
+                raw_data = performancev2.category_performance(
                     business['params'], location['params'], location['locationType'])
                 if data_type == 'OVERALL':
                     raw_data and data.append(raw_data['overall'])
