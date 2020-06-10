@@ -47,7 +47,10 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
         avgRating
         numLocation
         numReview
-        totalSales
+        customerVolumeIndex
+        localCategoryIndex
+        localRetailIndex
+        nationalIndex
       }
       compareData {
         id
@@ -55,7 +58,10 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
         avgRating
         numLocation
         numReview
-        totalSales
+        customerVolumeIndex
+        localCategoryIndex
+        localRetailIndex
+        nationalIndex
       }
       comparationTags {
         ...ComparationTagFragment

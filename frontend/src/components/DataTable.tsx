@@ -178,7 +178,7 @@ const TouchableRow = styled(TouchableOpacity)<RowProps>`
 
 const HeaderRow = styled(DefaultRow)`
   background-color: ${TABLE_HEADER_BACKGROUND};
-  height: 28px;
+  height: 32px;
 `;
 
 const HeaderCellText = styled(Text)`

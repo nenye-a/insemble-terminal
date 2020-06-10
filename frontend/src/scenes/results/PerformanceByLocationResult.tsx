@@ -18,6 +18,7 @@ import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
+import PerformanceTablePopover from './PerformanceTablePopover';
 
 type Props = {
   businessTagId?: string;
@@ -71,6 +72,7 @@ export default function PerformanceByLocationResult(props: Props) {
             type: data.performanceTable.locationTag.type,
           },
         })}
+        infoboxContent={PerformanceTablePopover}
       />
       {loading ? (
         <LoadingIndicator />

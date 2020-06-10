@@ -4,7 +4,13 @@ import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
 import { useLocation } from 'react-router-dom';
 
-import { View, Text, TouchableOpacity, LoadingIndicator } from '../../core-ui';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  LoadingIndicator,
+  Card,
+} from '../../core-ui';
 import { ComparisonPopover, PinPopover } from '../../components';
 import {
   THEME_COLOR,
@@ -33,6 +39,7 @@ import {
   UpdateComparisonVariables,
 } from '../../generated/UpdateComparison';
 import { getResultTitle } from '../../helpers';
+import SvgQuestionMark from '../../components/icons/question-mark';
 
 type Props = {
   title: string;
@@ -48,6 +55,7 @@ type Props = {
     params: string;
   };
   locationTag?: { type: LocationTagType; params: string };
+  infoboxContent?: () => JSX.Element;
 };
 
 export default function ResultTitle(props: Props) {
@@ -63,10 +71,14 @@ export default function ResultTitle(props: Props) {
     tableType,
     businessTag,
     locationTag,
+    infoboxContent,
   } = props;
+
   let showSubtitle = location.pathname.includes('terminal');
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
+  let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
+
   let [updateComparison, { loading }] = useMutation<
     UpdateComparison,
     UpdateComparisonVariables
@@ -77,6 +89,9 @@ export default function ResultTitle(props: Props) {
     },
   });
 
+  let infoboxPopover = (
+    <PopoverContainer>{infoboxContent && infoboxContent()}</PopoverContainer>
+  );
   let pinPopover = (
     <PinPopover
       tableId={tableId}
@@ -113,6 +128,32 @@ export default function ResultTitle(props: Props) {
     <Container>
       <Row>
         <Title noData={noData}>{title}</Title>
+        {infoboxContent && (
+          <Popover
+            isOpen={infoPopoverOpen}
+            content={infoboxPopover}
+            position={['bottom']}
+            onClickOutside={() => setInfoPopoverOpen(false)}
+            align="start"
+          >
+            {(ref) => (
+              <View
+                ref={ref}
+                onMouseEnter={() => {
+                  setInfoPopoverOpen(true);
+                }}
+                onMouseLeave={() => {
+                  setInfoPopoverOpen(false);
+                }}
+                style={{ marginLeft: 4, marginRight: 4 }}
+              >
+                <SvgQuestionMark
+                  style={{ color: noData ? DISABLED_TEXT_COLOR : THEME_COLOR }}
+                />
+              </View>
+            )}
+          </Popover>
+        )}
         {showSubtitle && (
           <>
             <Title> | </Title>
@@ -231,4 +272,10 @@ const SubTitle = styled(Text)`
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+`;
+
+const PopoverContainer = styled(Card)`
+  flex: 1;
+  padding: 14px;
+  max-width: 600px;
 `;
