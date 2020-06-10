@@ -182,6 +182,8 @@ model Performance {
   comparationTags ComparationTag[]
   data            PerformanceData[]
   compareData     ComparePerformanceData[]
+  polling         Boolean                  @default(false)
+  error           String?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 }
@@ -214,6 +216,8 @@ model News {
   comparationTags ComparationTag[]
   data            NewsData[]
   compareData     CompareNewsData[]
+  polling         Boolean           @default(false)
+  error           String?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 }
@@ -248,6 +252,8 @@ model Activity {
   comparationTags ComparationTag[]
   data            ActivityData[]
   compareData     CompareActivityData[]
+  polling         Boolean               @default(false)
+  error           String?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 }
