@@ -49,6 +49,7 @@ export default function CoverageResult(props: Props) {
     data?.coverageTable.data,
     data?.coverageTable.compareData,
     data?.coverageTable.comparationTags,
+    true,
   );
 
   let noData =

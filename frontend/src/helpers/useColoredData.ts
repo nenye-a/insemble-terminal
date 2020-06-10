@@ -11,9 +11,14 @@ export default function useColoredData<T, U>(
   data: Array<T> = [],
   compareData: Array<U & HasCompareId> = [],
   comparationTags: Array<ComparationTag> = [],
+  skipFirstColor = false,
 ) {
   let comparationTagsWithFill = comparationTags.map((item, idx) => {
-    let fill = idx <= COLORS.length - 1 ? COLORS[idx] : generateRandomColor();
+    let usableColors = skipFirstColor ? COLORS.slice(1) : COLORS;
+    let fill =
+      idx <= usableColors.length - 1
+        ? usableColors[idx]
+        : generateRandomColor();
     return { ...item, fill };
   });
 

@@ -37,23 +37,14 @@ export default function NewsTable(props: Props) {
         </DataTable.HeaderCell>
       </DataTable.HeaderRow>
       {sortedData.map((row, index) => {
-        let {
-          title = '',
-          link = '',
-          source = '',
-          published,
-          isComparison,
-          fill,
-        } = row;
+        let { title = '', link = '', source = '', published, fill } = row;
         return (
           <DataTable.Row
             key={index}
             onPress={() => {
               window.open(link, '_blank');
             }}
-            {...(isComparison && {
-              style: { backgroundColor: fill },
-            })}
+            style={{ backgroundColor: fill || undefined }}
           >
             <DataTable.Cell
               width={500}
