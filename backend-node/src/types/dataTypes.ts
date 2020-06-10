@@ -1,6 +1,9 @@
 export type PyPerformanceData = {
   name?: string;
-  salesVolumeIndex?: number;
+  customerVolumeIndex?: number;
+  localRetailIndex?: number;
+  localCategoryIndex?: number;
+  nationalIndex?: number;
   avgRating?: number;
   avgReviews?: number;
   numLocations?: number;

@@ -1,0 +1,71 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateField",
+      "model": "PerformanceData",
+      "field": "customerVolumeIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "PerformanceData",
+      "field": "localRetailIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "PerformanceData",
+      "field": "localCategoryIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "PerformanceData",
+      "field": "nationalIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "PerformanceData",
+      "field": "totalSales"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "customerVolumeIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "localRetailIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "localCategoryIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "nationalIndex",
+      "type": "Int",
+      "arity": "Optional"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "ComparePerformanceData",
+      "field": "totalSales"
+    }
+  ]
+}
