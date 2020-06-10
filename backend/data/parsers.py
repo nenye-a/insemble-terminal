@@ -44,9 +44,9 @@ def google_detail_parser(response):
 
     stew = response.text
 
-    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
-    NAME_NARROW_RX = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
-    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    NAME_NARROW_RX = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
 
     try:
         name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
@@ -91,12 +91,12 @@ def google_detail_parser(response):
         type = None
 
     # using two ways to parse description based on html response
-    DESCRIPTION_LOCATOR_RX1 = r'class="Yy0acb">[\w\s\,\-\&\;\'\.]+<\/span>'
-    DESCRIPTION_NARROW_RX1 = r'>[\w\s\,\-\&\;\'\.]+<'
-    DESCRIPTION_RX1 = r'[\w\s\,\-\&\;\'\.]+'
-    DESCRIPTION_LOCATOR_RX2 = r'class="ggV7z"[\w\-\s\"\=]+><span>[\w\s\,\-\&\;\'\.]+<\/span>'
-    DESCRIPTION_NARROW_RX2 = r'<span>[\w\s\,\-\&\;\'\.]+<\/span>'
-    DESCRIPTION_RX2 = r'>[\w\s\,\-\&\;\'\.]+<'
+    DESCRIPTION_LOCATOR_RX1 = r'class="Yy0acb">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    DESCRIPTION_NARROW_RX1 = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
+    DESCRIPTION_RX1 = r'[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    DESCRIPTION_LOCATOR_RX2 = r'class="ggV7z"[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    DESCRIPTION_NARROW_RX2 = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    DESCRIPTION_RX2 = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
     try:
         description = re.search(DESCRIPTION_RX1, re.search(DESCRIPTION_NARROW_RX1,
                                                            re.search(DESCRIPTION_LOCATOR_RX1,
@@ -131,8 +131,8 @@ def google_detail_parser(response):
         except Exception:
             operations = None
 
-    ADDRESS_LOCATOR_RX = r'class="LrzXr">[\w\s\,\-\&\;\'\.]+<\/span>'
-    ADDRESS_RX = r'>[\w\s\,\-\&\;\'\.]+<'
+    ADDRESS_LOCATOR_RX = r'class="LrzXr">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    ADDRESS_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
     try:
         address = re.search(ADDRESS_RX, re.search(ADDRESS_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
@@ -194,9 +194,9 @@ def google_detail_parser(response):
     except Exception:
         other_platform_ratings = None
 
-    SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
-    SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
-    SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%]+'
+    SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
     try:
         self_description = re.search(SELF_DESC_RX, re.search(SELF_DESC_NARROW_RX,
                                                              re.search(SELF_DESC_LOCATOR_RX,
@@ -262,9 +262,9 @@ def google_company_parser(response):
 
     stew = response.text
 
-    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
-    NAME_NARROW_RX = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<\/span>'
-    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+    NAME_LOCATOR_RX = r'<div class="SPZz6b"><[\w\-\s\"\=]+><span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    NAME_NARROW_RX = r'<span>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<\/span>'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
 
     try:
         name = utils.format_punct(re.search(NAME_RX, re.search(
@@ -396,8 +396,8 @@ def opentable_parser(response):
 
     stew = response.text
 
-    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
-    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
     try:
         name = re.search(NAME_RX, re.findall(NAME_LOCATOR_RX, stew)[0]).group()[1:-1]
     except Exception:
@@ -515,8 +515,8 @@ def opentable_parser_all(response):
 
     stew = response.text
 
-    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
-    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+<'
+    NAME_LOCATOR_RX = r'<span class="rest-row-name-text">[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
+    NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
 
     num_results = len(re.findall(NAME_LOCATOR_RX, stew))
     stores = []
