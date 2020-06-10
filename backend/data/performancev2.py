@@ -379,7 +379,7 @@ def parse_details(details):
     })
 
     # TODO: input all retail volume
-    all_retail_volume = None #utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
+    all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     if place:
 
@@ -427,7 +427,7 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     corrected_name = None
 
     # TODO: input all retail volume
-    all_retail_volume = None #utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
+    all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     for place in list_places:
         volume = total_volume(place['google_details']['activity'])
@@ -619,7 +619,7 @@ if __name__ == "__main__":
     # test_get_local_retail_volume()
     # test_build_brand_query()
     # test_build_all_query()
-    test_performance()
-    # test_aggregate_performance()
+    # test_performance()
+    test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()
