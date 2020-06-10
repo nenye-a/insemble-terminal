@@ -371,27 +371,45 @@ def parse_details(details):
 
     volume = total_volume(details['activity'])
 
-    # TODO: take from preprocessed run after detailer, rather than aggregate on demand
-    # TODO: should we filter results to exclude itself? should always have something of the same category in search
-    brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_brand_query(details['name'])))[0]['avg_total_volume']
-    all_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
-    local_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
-        build_proximity_query(details, LOCAL_RETAIL_RADIUS)))[0]['avg_total_volume']
-    local_category_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(details,
-                                                                                          LOCAL_CATEGORY_RADIUS, utils.adjust_case(details['type']))))[0]['avg_total_volume']
+    place = utils.DB_TERMINAL_PLACES.find_one({
+        '$text': {'$search': details['name']},
+        'name': {"$regex": r"^" + utils.adjust_case(details['name']), "$options": "i"},
+        'address': {"$regex": r'^' + utils.adjust_case(details['address'][:10]), "$options": "i"},
+        'google_details.activity': {'$ne': None}
+    })
 
-    # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
-    return {
-        'name': details['name'],
-        'address': details['address'],
-        'customerVolumeIndex': round(BASELINE * volume / all_retail_volume),
-        'localRetailIndex': round(BASELINE * volume / local_retail_volume) if volume != 0 else None,
-        'localCategoryIndex': round(BASELINE * volume / local_category_volume) if volume != 0 else None,
-        'nationalIndex': round(BASELINE * volume / brand_volume) if volume != 0 else None,
-        'avgRating': details['rating'],
-        'avgReviews': details['num_reviews'],
-        'numLocations': None
-    }
+    # TODO: input all retail volume
+    all_retail_volume = None #utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
+
+    if place:
+
+        # TODO: should we filter results to exclude itself? should always have something of the same category in search
+
+        # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
+        return {
+            'name': details['name'],
+            'address': details['address'],
+            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
+            'localRetailIndex': round(BASELINE * volume / place['local_retail_volume']) if (volume != 0 and 'local_retail_volume' in place and place['local_retail_volume'] != -1) else None,
+            'localCategoryIndex': round(BASELINE * volume / place['local_category_volume']) if (volume != 0 and 'local_category_volume' in place and place['local_category_volume'] != -1) else None,
+            'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
+            'avgRating': details['rating'],
+            'avgReviews': details['num_reviews'],
+            'numLocations': None
+        }
+    else:
+        # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
+        return {
+            'name': details['name'],
+            'address': details['address'],
+            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
+            'localRetailIndex': None,
+            'localCategoryIndex': None,
+            'nationalIndex': None,
+            'avgRating': details['rating'],
+            'avgReviews': details['num_reviews'],
+            'numLocations': None
+        }
 
 
 def combine_parse_details(list_places, forced_name=None, default_name=None):
@@ -407,26 +425,21 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     rating_sum, rating_count = 0, 0
     num_rating_sum, num_rating_count = 0, 0
     corrected_name = None
-    brand = list_places[0]['name']  # FIXME: Here they shouldn't each have the same name, how to fix name? just pass into fn?
-    type = list_places[0]['type']  # FIXME: categories might be different for each document
 
-    # TODO: preprocess these and store in DB (not here)
-    all_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
-    local_retail_volumes = get_local_retail_volume(list_places, LOCAL_RETAIL_RADIUS)
-    local_category_volumes = get_local_retail_volume(list_places, LOCAL_CATEGORY_RADIUS, type) if type is not None else None
-    brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_brand_query(brand)))[0]['avg_total_volume']
+    # TODO: input all retail volume
+    all_retail_volume = None #utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     for place in list_places:
         volume = total_volume(place['google_details']['activity'])
         details = \
-            {'name': place['google_details']['name'],
-             'address': place['google_details']['address'],
-             'customerVolumeIndex': BASELINE * volume / all_retail_volume,
-             'localRetailIndex': BASELINE * volume / local_retail_volumes[place['_id']] if volume != 0 else None,
-             'localCategoryIndex': BASELINE * volume / local_category_volumes[place['_id']] if volume != 0 else None,
-             'nationalIndex': BASELINE * volume / brand_volume if volume != 0 else None,
-             'avgRating': place['google_details']['rating'],
-             'avgReviews': place['google_details']['num_reviews'],
+            {'name': place['name'],
+             'address': place['address'],
+             'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
+             'localRetailIndex': round(BASELINE * volume / place['local_retail_volume']) if (volume != 0 and 'local_retail_volume' in place and place['local_retail_volume'] != -1) else None,
+             'localCategoryIndex': round(BASELINE * volume / place['local_category_volume']) if (volume != 0 and 'local_category_volume' in place and place['local_category_volume'] != -1) else None,
+             'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
+             'avgRating': place['google_details']['rating'] if 'rating' in place['google_details'] else None,
+             'avgReviews': place['google_details']['num_reviews'] if 'num_reviews' in place['google_details'] else None,
              'numLocations': None}
         corrected_name = details['name'] if not corrected_name else None
         details['name'] = details.pop('address')
@@ -586,7 +599,7 @@ if __name__ == "__main__":
         print(performanceV2(name, address))
 
     def test_aggregate_performance():
-        performance_data = aggregate_performance("Starbucks", "Los Angeles, CA, USA", "county")
+        performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
         print(performance_data)
         print(len(performance_data['data']))
 
@@ -606,7 +619,7 @@ if __name__ == "__main__":
     # test_get_local_retail_volume()
     # test_build_brand_query()
     # test_build_all_query()
-    # test_performance()
+    test_performance()
     # test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()
