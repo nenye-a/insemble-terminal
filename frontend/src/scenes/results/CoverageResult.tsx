@@ -9,7 +9,6 @@ import {
   formatErrorMessage,
   useColoredData,
 } from '../../helpers';
-import { CoverageWithFill } from '../../types/types';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
   GetCoverage,

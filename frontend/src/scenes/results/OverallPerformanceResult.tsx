@@ -40,14 +40,15 @@ export default function OverallPerformanceResult(props: Props) {
       locationTagId,
       tableId,
     },
+    onError: () => {},
   });
   let { data: coloredData, comparisonTags } = useColoredData<
     PerformanceData,
     PerformanceCompareData
   >(
-    data?.performanceTable.data,
-    data?.performanceTable.compareData,
-    data?.performanceTable.comparationTags,
+    data?.performanceTable?.data || [],
+    data?.performanceTable?.compareData || [],
+    data?.performanceTable?.comparationTags || [],
   );
   let noData =
     !data?.performanceTable.data || data.performanceTable.data.length === 0;

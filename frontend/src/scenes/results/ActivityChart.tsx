@@ -23,15 +23,10 @@ import {
   FONT_SIZE_LARGE,
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
-import {
-  GetActivity_activityTable_data as ActivityTableData,
-  GetActivity_activityTable_compareData as ActivityTableCompareData,
-} from '../../generated/GetActivity';
 import { MergedActivityData } from '../../types/types';
 
 type Props = {
   data: Array<MergedActivityData>;
-  compareData?: Array<ActivityTableCompareData>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

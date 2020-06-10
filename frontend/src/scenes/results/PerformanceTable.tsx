@@ -5,7 +5,6 @@ import {
   GetPerformanceTable_performanceTable_data as PerformanceTableData,
   GetPerformanceTable_performanceTable_compareData as PerformanceTableCompareData,
 } from '../../generated/GetPerformanceTable';
-import { TABLE_PURPLE_BACKGROUND } from '../../constants/colors';
 import { useSortableData } from '../../helpers';
 import { Direction } from '../../types/types';
 
