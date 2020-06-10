@@ -15,6 +15,7 @@ import {
   DARK_TEXT_COLOR,
   THEME_COLOR,
   GREY_DIVIDER,
+  COLORS,
 } from '../constants/colors';
 import { capitalize } from '../helpers';
 import { ReviewTag, CompareActionType } from '../generated/globalTypes';
@@ -65,15 +66,18 @@ export default function ComparisonPopover(props: Props) {
   });
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
-    let mapFn = ({
-      id,
-      locationTag,
-      businessTag,
-    }: {
-      id: string;
-      locationTag: LocationTag;
-      businessTag: BusinessTagResult;
-    }) => ({
+    let mapFn = (
+      {
+        id,
+        locationTag,
+        businessTag,
+      }: {
+        id: string;
+        locationTag: LocationTag;
+        businessTag: BusinessTagResult;
+      },
+      index: number,
+    ) => ({
       id,
       locationTag: locationTag
         ? {
@@ -89,6 +93,7 @@ export default function ComparisonPopover(props: Props) {
             params: businessTag.params,
           }
         : null,
+      fill: COLORS[index],
     });
     onTableIdChange && onTableIdChange(updateData.updateComparison.tableId);
     let activeComparisonList = updateData.updateComparison.comparationTags.map(
@@ -112,6 +117,7 @@ export default function ComparisonPopover(props: Props) {
           <Title>Active Comparison</Title>
           {activeComparison.map((comparison) => (
             <Row key={'row_' + comparison.id}>
+              <Circle style={{ backgroundColor: comparison.fill }} />
               <SearchFilterBar
                 key={'search_' + comparison.id}
                 defaultReviewTag={capitalize(reviewTag)}
@@ -176,7 +182,7 @@ export default function ComparisonPopover(props: Props) {
 
 const Container = styled(Card)`
   margin-top: 12px;
-  padding: 20px 30px;
+  padding: 20px 50px;
   width: 850px;
   overflow: visible;
 `;
@@ -199,11 +205,20 @@ const Row = styled(View)`
 `;
 
 const CloseContainer = styled(TouchableOpacity)`
-  margin-left: 8px;
+  position: absolute;
+  right: -30px;
 `;
 
 const ComparisonDivider = styled(Divider)`
   background-color: ${GREY_DIVIDER};
   height: 2px;
-  margin: 28px 22px 28px 0;
+  margin: 28px 0;
+`;
+
+const Circle = styled(View)`
+  width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  position: absolute;
+  left: -30px;
 `;

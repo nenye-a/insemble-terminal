@@ -70,7 +70,7 @@ export const CHART_COLORS = [
 ];
 
 export const COLORS = [
-  THEME_COLOR,
+  LIGHT_PURPLE,
   '#EF5B5B',
   '#FFBA49',
   '#B3FFFC',
