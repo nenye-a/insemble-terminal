@@ -34,6 +34,10 @@ export type ComparationTag = {
   businessTag: BusinessTagResult;
 };
 
+export type ComparationTagWithFill = ComparationTag & {
+  fill?: string;
+};
+
 export enum OwnershipType {
   COMPANY_INFORMATION = 'COMPANY_INFORMATION',
   COMPANY_CONTACT = 'COMPANY_CONTACT',
