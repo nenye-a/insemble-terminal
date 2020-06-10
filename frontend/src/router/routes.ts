@@ -66,6 +66,7 @@ export const authenticatedRoutes: Array<RouteType> = [
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
+  { path: '/activation', component: ActivationScene, showSearchBar: false },
 ];
 
 export const authenticatedUnactiveRoutes: Array<RouteType> = [
