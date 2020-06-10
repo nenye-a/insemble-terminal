@@ -36,6 +36,7 @@ DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
+DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
 BWE = mongo.BulkWriteError
 
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
@@ -49,6 +50,7 @@ def create_index(collection):
             unique=True,
             partialFilterExpression={'name': {'$exists': True}, 'address': {'$exists': True}}
         )
+        DB_TERMINAL_PLACES.create_index([('name', 1)])
         DB_TERMINAL_PLACES.create_index([('last_update', -1)])
         DB_TERMINAL_PLACES.create_index([('version', 1)])
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
@@ -66,6 +68,11 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
         DB_TERMINAL_PLACES.create_index([('google_details', 1)])
+        DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
+        DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
+        DB_TERMINAL_PLACES.create_index([('brand_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
     if collection.lower() == 'places_history':
         DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
@@ -111,6 +118,8 @@ def create_index(collection):
         DB_MINESWEEPER_PLACES.create_index([('opentable_details.bookings', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.category', 1)])
+    if collection.lower() == 'stats':
+        DB_STATS.create_index([('stat_name', 1)], unique=True)
 
 
 def meters_to_miles(meters):
@@ -164,6 +173,14 @@ def adjust_case(word, caps='all', splitter=" ", joiner=None):
     if not joiner:
         joiner = splitter
     return joiner.join(words)
+
+
+def remove_duplicate_lists(list_of_lists):
+    """
+    Removes the duplicate within a list. All of the items in the sublist
+    should be hashable primary items.
+    """
+    return list(list(item) for item in set([tuple(sublist) for sublist in list_of_lists]))
 
 
 def round_object(obj, num=0):
@@ -459,8 +476,7 @@ if __name__ == "__main__":
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
     # RUN
-
-    # create_index("terminal")
+    create_index("stats")
 
     # TESTS
 

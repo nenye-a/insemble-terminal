@@ -308,16 +308,18 @@ def observe_activity():
 
     import pprint
 
-    places_with_activity = list(utils.DB_TERMINAL_PLACES.find({'google_details.activity': {'$ne': None}}))
+    places_with_activity = list(utils.DB_TERMINAL_PLACES.find({}))
     stat_dict = {}
     for place in places_with_activity:
-        activity = place['google_details']['activity']
-        activity_index = "{} days".format(len(activity))
-        stat_dict[activity_index] = stat_dict.get(activity_index, 0) + 1
+        if 'google_details' in place and place['google_details']['activity']:
 
-        for day in activity:
-            day_index = "{} hours".format(len(day))
-            stat_dict[day_index] = stat_dict.get(day_index, 0) + 1
+            activity = place['google_details']['activity']
+            activity_index = "{} days".format(len(activity))
+            stat_dict[activity_index] = stat_dict.get(activity_index, 0) + 1
+
+            for day in activity:
+                day_index = "{} hours".format(len(day))
+                stat_dict[day_index] = stat_dict.get(day_index, 0) + 1
 
     pprint.pprint(stat_dict)
 

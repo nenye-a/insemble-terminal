@@ -1,6 +1,7 @@
 import time
 import google
 import utils
+import numpy as np
 
 '''
 
@@ -35,6 +36,17 @@ def performance(name, address):
         return parse_details(place_details)
     else:
         return None
+
+
+def get_local_retail_performance(lat, lng, radius, category=None, performance_fn=None):
+    # gets the raw performance of retail for a certain radius for a certain category (if specified)
+    # query for activity array
+    activities = None  # mongo query for retail of radius within (lat, lng) in particular category
+
+    # calculate performance for each
+    local_performance = np.mean([performance_fn(week_activity) for week_activity in activities])
+
+    return local_performance
 
 
 def aggregate_performance(name, location, scope):
@@ -159,7 +171,7 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
             'salesVolumeIndex': round(index_sum / index_count) if index_count != 0 else None,
-            'avgRating': round(rating_sum / rating_count) if rating_count != 0 else None,
+            'avgRating': round(rating_sum / rating_count, 1) if rating_count != 0 else None,
             'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
             'numLocations': len(location_data)
         },
