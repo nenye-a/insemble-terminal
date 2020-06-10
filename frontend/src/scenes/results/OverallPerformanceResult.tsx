@@ -40,7 +40,6 @@ export default function OverallPerformanceResult(props: Props) {
       locationTagId,
       tableId,
     },
-    onError: () => {},
   });
   let { data: coloredData, comparisonTags } = useColoredData<
     PerformanceData,
