@@ -192,5 +192,6 @@ if __name__ == "__main__":
     # merge_activity()
     # test_activity()
     # remove_long_items()
-    refactor_activities()
+    # refactor_activities()
+    print(utils.DB_TERMINAL_PLACES.count_documents({'name': None}))
     pass
