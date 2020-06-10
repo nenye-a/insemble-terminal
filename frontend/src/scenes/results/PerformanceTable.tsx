@@ -46,7 +46,7 @@ export default function PerformanceTable(props: Props) {
       <DataTable.HeaderRow>
         <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
         <DataTable.HeaderCell
-          width={200}
+          width={90}
           align="right"
           onClick={() => {
             requestSort('totalSales');
@@ -54,10 +54,11 @@ export default function PerformanceTable(props: Props) {
           sortConfig={sortConfig}
           name="totalSales"
         >
-          Customer Volume Index
+          Volume IDX
         </DataTable.HeaderCell>
+        {/* TODO: change data */}
         <DataTable.HeaderCell
-          width={120}
+          width={90}
           align="right"
           onClick={() => {
             requestSort('avgRating');
@@ -65,10 +66,43 @@ export default function PerformanceTable(props: Props) {
           sortConfig={sortConfig}
           name="avgRating"
         >
-          Avg rating
+          Retail IDX
         </DataTable.HeaderCell>
         <DataTable.HeaderCell
-          width={150}
+          width={90}
+          align="right"
+          onClick={() => {
+            requestSort('avgRating');
+          }}
+          sortConfig={sortConfig}
+          name="avgRating"
+        >
+          Category IDX
+        </DataTable.HeaderCell>
+        <DataTable.HeaderCell
+          width={90}
+          align="right"
+          onClick={() => {
+            requestSort('avgRating');
+          }}
+          sortConfig={sortConfig}
+          name="avgRating"
+        >
+          Brand IDX
+        </DataTable.HeaderCell>
+        <DataTable.HeaderCell
+          width={90}
+          align="right"
+          onClick={() => {
+            requestSort('avgRating');
+          }}
+          sortConfig={sortConfig}
+          name="avgRating"
+        >
+          Rating
+        </DataTable.HeaderCell>
+        <DataTable.HeaderCell
+          width={90}
           align="right"
           onClick={() => {
             requestSort('numReview');
@@ -76,10 +110,10 @@ export default function PerformanceTable(props: Props) {
           sortConfig={sortConfig}
           name="numReview"
         >
-          Avg # of reviews
+          # Reviews
         </DataTable.HeaderCell>
         {showNumLocation && (
-          <DataTable.HeaderCell width={120} align="right">
+          <DataTable.HeaderCell width={90} align="right">
             # Locations
           </DataTable.HeaderCell>
         )}
@@ -101,17 +135,26 @@ export default function PerformanceTable(props: Props) {
             })}
           >
             <DataTable.Cell>{name}</DataTable.Cell>
-            <DataTable.Cell width={200} align="right">
+            <DataTable.Cell width={90} align="right">
               {totalSales}
             </DataTable.Cell>
-            <DataTable.Cell width={120} align="right">
+            <DataTable.Cell width={90} align="right">
               {avgRating}
             </DataTable.Cell>
-            <DataTable.Cell width={150} align="right">
+            <DataTable.Cell width={90} align="right">
+              {avgRating}
+            </DataTable.Cell>
+            <DataTable.Cell width={90} align="right">
+              {avgRating}
+            </DataTable.Cell>
+            <DataTable.Cell width={90} align="right">
+              {avgRating}
+            </DataTable.Cell>
+            <DataTable.Cell width={90} align="right">
               {numReview}
             </DataTable.Cell>
             {showNumLocation && (
-              <DataTable.Cell width={120} align="right">
+              <DataTable.Cell width={90} align="right">
                 {numLocation}
               </DataTable.Cell>
             )}
