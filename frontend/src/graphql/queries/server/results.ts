@@ -62,6 +62,7 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
         localCategoryIndex
         localRetailIndex
         nationalIndex
+        compareId
       }
       comparationTags {
         ...ComparationTagFragment
@@ -105,6 +106,7 @@ export const GET_NEWS_TABLE_DATA = gql`
         link
         source
         published
+        compareId
       }
     }
   }
@@ -150,6 +152,7 @@ export const GET_ACTIVITY_DATA = gql`
           business
           amount
         }
+        compareId
       }
       comparationTags {
         ...ComparationTagFragment
@@ -210,6 +213,7 @@ export const GET_COVERAGE_DATA = gql`
             address
           }
         }
+        compareId
       }
       comparationTags {
         ...ComparationTagFragment
