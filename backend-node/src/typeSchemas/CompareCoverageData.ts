@@ -22,5 +22,6 @@ export let CompareCoverageData = objectType({
       },
       list: true,
     });
+    t.model.compareId();
   },
 });

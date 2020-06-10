@@ -21,5 +21,6 @@ export let CompareActivityData = objectType({
       },
       list: true,
     });
+    t.model.compareId();
   },
 });

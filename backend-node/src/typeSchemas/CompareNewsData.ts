@@ -10,5 +10,6 @@ export let CompareNewsData = objectType({
     t.model.source();
     t.model.published();
     t.model.relevance();
+    t.model.compareId();
   },
 });
