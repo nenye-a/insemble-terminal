@@ -108,7 +108,9 @@ let performanceTableResolver: FieldResolver<
             };
           },
         );
-        let rawCompareData: Array<PyPerformanceData> = [];
+        let rawCompareData: Array<PyPerformanceData & {
+          compareId: string;
+        }> = [];
         for (let comparationTag of selectedPerformanceTable.comparationTags) {
           let compareDataUpdate: PyPerformanceResponse = (
             await axios.get(`${API_URI}/api/performance`, {
@@ -130,16 +132,29 @@ let performanceTableResolver: FieldResolver<
               paramsSerializer: axiosParamsSerializer,
             })
           ).data;
-          rawCompareData = rawCompareData.concat(compareDataUpdate.data);
+          rawCompareData = rawCompareData.concat(
+            compareDataUpdate.data.map((data) => ({
+              ...data,
+              compareId: comparationTag.id,
+            })),
+          );
         }
         let compareData = rawCompareData.map(
-          ({ name, avgRating, avgReviews, numLocations, salesVolumeIndex }) => {
+          ({
+            name,
+            avgRating,
+            avgReviews,
+            numLocations,
+            salesVolumeIndex,
+            compareId,
+          }) => {
             return {
               name: name || '-',
               avgRating: avgRating ? `${avgRating}` : null,
               totalSales: salesVolumeIndex ? `${salesVolumeIndex}` : null,
               numLocation: numLocations,
               numReview: avgReviews,
+              compareId,
             };
           },
         );

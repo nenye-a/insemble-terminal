@@ -102,7 +102,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
             };
           },
         );
-        let rawCompareData: Array<PyNewsData> = [];
+        let rawCompareData: Array<PyNewsData & { compareId: string }> = [];
         for (let comparationTag of selectedNewsTable.comparationTags) {
           let compareDataUpdate: PyNewsResponse = (
             await axios.get(`${API_URI}/api/news`, {
@@ -123,10 +123,23 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               paramsSerializer: axiosParamsSerializer,
             })
           ).data;
-          rawCompareData = rawCompareData.concat(compareDataUpdate.data);
+          rawCompareData = rawCompareData.concat(
+            compareDataUpdate.data.map((data) => ({
+              ...data,
+              compareId: comparationTag.id,
+            })),
+          );
         }
         let compareData = rawCompareData.map(
-          ({ title, description, link, published, source, relevance }) => {
+          ({
+            title,
+            description,
+            link,
+            published,
+            source,
+            relevance,
+            compareId,
+          }) => {
             return {
               title: title || '-',
               description: description || '-',
@@ -134,6 +147,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               published: published || '-',
               source: source || '-',
               relevance: relevance || 0,
+              compareId,
             };
           },
         );
