@@ -1,32 +1,18 @@
 import React from 'react';
 
 import { DataTable } from '../../components';
-import {
-  GetNewsTable_newsTable_data as NewsData,
-  GetNewsTable_newsTable_compareData as NewsCompareData,
-} from '../../generated/GetNewsTable';
-import { TABLE_PURPLE_BACKGROUND } from '../../constants/colors';
 import { getPublishedDate, useSortableData } from '../../helpers';
-import { Direction } from '../../types/types';
+import { Direction, MergedNewsData } from '../../types/types';
 
 type Props = {
-  data: Array<NewsData>;
-  compareData?: Array<NewsCompareData>;
-};
-
-type MergedNewsData = (NewsData | NewsCompareData) & {
-  isComparison: boolean;
+  data: Array<MergedNewsData>;
 };
 
 export default function NewsTable(props: Props) {
-  let { data, compareData = [] } = props;
-  let mergedData = [
-    ...data.map((item) => ({ ...item, isComparison: false })),
-    ...compareData?.map((item) => ({ ...item, isComparison: true })),
-  ];
+  let { data } = props;
 
   let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
-    mergedData,
+    data,
     {
       key: 'published',
       direction: Direction.DESCENDING,
@@ -57,6 +43,7 @@ export default function NewsTable(props: Props) {
           source = '',
           published,
           isComparison,
+          fill,
         } = row;
         return (
           <DataTable.Row
@@ -65,7 +52,7 @@ export default function NewsTable(props: Props) {
               window.open(link, '_blank');
             }}
             {...(isComparison && {
-              style: { backgroundColor: TABLE_PURPLE_BACKGROUND },
+              style: { backgroundColor: fill },
             })}
           >
             <DataTable.Cell
