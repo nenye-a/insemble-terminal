@@ -42,7 +42,7 @@ const TAGS = [
   },
 ];
 
-const INTERVAL = 10000;
+const INTERVAL = 7500;
 
 export default function LandingScene() {
   let [selectedTagIndex, setSelectedTagIndex] = useState(0);
