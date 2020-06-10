@@ -49,6 +49,7 @@ def create_index(collection):
             unique=True,
             partialFilterExpression={'name': {'$exists': True}, 'address': {'$exists': True}}
         )
+        DB_TERMINAL_PLACES.create_index([('name', 1)])
         DB_TERMINAL_PLACES.create_index([('last_update', -1)])
         DB_TERMINAL_PLACES.create_index([('version', 1)])
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
@@ -472,8 +473,8 @@ if __name__ == "__main__":
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
     # RUN
-
-    create_index("terminal")
+    DB_TERMINAL_PLACES.create_index([('name', 1)])
+    # create_index("terminal")
 
     # TESTS
 

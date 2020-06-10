@@ -174,11 +174,23 @@ def remove_long_items():
         print(places.modified_count)
 
 
+def refactor_activities():
+
+    utils.DB_TERMINAL_PLACES.update_many({
+        'google_details.activity': None
+    }, {
+        '$set': {
+            'google_details.activity': []
+        }
+    })
+
+
 if __name__ == "__main__":
     # activity_statistics(150)
     # num_activity_by_city()
     # update_activity()
     # merge_activity()
     # test_activity()
-    remove_long_items()
+    # remove_long_items()
+    refactor_activities()
     pass
