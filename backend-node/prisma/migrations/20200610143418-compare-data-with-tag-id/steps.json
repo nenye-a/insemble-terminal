@@ -1,0 +1,47 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateField",
+      "model": "ComparePerformanceData",
+      "field": "compareId",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparationTag",
+      "field": "activity",
+      "type": "Activity",
+      "arity": "List"
+    },
+    {
+      "tag": "CreateField",
+      "model": "ComparationTag",
+      "field": "coverage",
+      "type": "Coverage",
+      "arity": "List"
+    },
+    {
+      "tag": "CreateField",
+      "model": "CompareNewsData",
+      "field": "compareId",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "CompareActivityData",
+      "field": "compareId",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "CompareCoverageData",
+      "field": "compareId",
+      "type": "String",
+      "arity": "Required"
+    }
+  ]
+}

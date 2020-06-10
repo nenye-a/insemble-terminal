@@ -80,13 +80,18 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
           selectedCoverage.businessTag,
         );
         let coverageData = convertCoverage(coverageUpdate.data);
-        let rawCompareData: Array<PyCoverageData> = [];
+        let rawCompareData: Array<PyCoverageData & { compareId: string }> = [];
         for (let comparationTag of selectedCoverage.comparationTags) {
           let compareCoverageUpdate = await getCoverageData(
             comparationTag.locationTag,
             comparationTag.businessTag,
           );
-          rawCompareData = rawCompareData.concat(compareCoverageUpdate.data);
+          rawCompareData = rawCompareData.concat(
+            compareCoverageUpdate.data.map((data) => ({
+              ...data,
+              compareId: comparationTag.id,
+            })),
+          );
         }
         let compareData = convertCoverage(rawCompareData);
         await context.prisma.coverageData.deleteMany({
@@ -107,7 +112,7 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
           where: { id: selectedCoverage.id },
           data: {
             data: { create: coverageData },
-            compareData: { create: compareData },
+            compareData: { create: compareData as Array<CompareData> },
             updatedAt: new Date(),
           },
         });
@@ -166,9 +171,11 @@ const getCoverageData = async (
   return coverageUpdate;
 };
 
-const convertCoverage = (coverageDataList: Array<PyCoverageData>) => {
+const convertCoverage = (
+  coverageDataList: Array<PyCoverageData & { compareId?: string }>,
+) => {
   let coverageData = coverageDataList.map(
-    ({ name, location, num_locations, coverage }) => {
+    ({ name, location, num_locations, coverage, compareId }) => {
       let insertCoverage = coverage.map(
         ({ business_name, num_locations, locations }) => {
           let insertLocations = locations.map(
@@ -195,10 +202,18 @@ const convertCoverage = (coverageDataList: Array<PyCoverageData>) => {
         numLocations: num_locations || 0,
         coverageData:
           insertCoverage.length > 0 ? JSON.stringify(insertCoverage) : '[]',
+        compareId: compareId,
       };
     },
   );
   return coverageData;
+};
+type CompareData = {
+  name: string;
+  location: string;
+  numLocations: number;
+  coverageData: string;
+  compareId: string;
 };
 
 let coverageTable = queryField('coverageTable', {

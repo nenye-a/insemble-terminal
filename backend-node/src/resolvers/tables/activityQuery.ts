@@ -95,23 +95,31 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
             };
           },
         );
-        let rawCompareData: Array<PyActivityData> = [];
+        let rawCompareData: Array<PyActivityData & { compareId: string }> = [];
         for (let comparationTag of selectedActivity.comparationTags) {
           let compareDataUpdate = await getActivityData(
             comparationTag.locationTag,
             comparationTag.businessTag,
           );
-          rawCompareData = rawCompareData.concat(compareDataUpdate.data);
+          rawCompareData = rawCompareData.concat(
+            compareDataUpdate.data.map((data) => ({
+              ...data,
+              compareId: comparationTag.id,
+            })),
+          );
         }
-        let compareData = rawCompareData.map(({ name, location, activity }) => {
-          let arrayActiviy = objectToActivityGraph(activity, name, location);
-          return {
-            name: name || '-',
-            location: location || '-',
-            activityData:
-              arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
-          };
-        });
+        let compareData = rawCompareData.map(
+          ({ name, location, activity, compareId }) => {
+            let arrayActiviy = objectToActivityGraph(activity, name, location);
+            return {
+              name: name || '-',
+              location: location || '-',
+              activityData:
+                arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
+              compareId,
+            };
+          },
+        );
         await context.prisma.activityData.deleteMany({
           where: {
             activity: {

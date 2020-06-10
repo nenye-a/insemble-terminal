@@ -9,5 +9,6 @@ export let ComparePerformanceData = objectType({
     t.model.numLocation();
     t.model.numReview();
     t.model.totalSales();
+    t.model.compareId();
   },
 });
