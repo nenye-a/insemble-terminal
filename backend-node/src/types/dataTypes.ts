@@ -127,7 +127,7 @@ export type PyOwnershipInfoResponse = {
 export type ActivityGraphData = {
   name: string;
   business: string;
-  amount: number;
+  amount: number | null;
 };
 
 export type LocationPin = {

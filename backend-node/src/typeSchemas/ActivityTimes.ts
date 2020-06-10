@@ -5,6 +5,6 @@ export let ActivityTimes = objectType({
   definition(t) {
     t.string('name');
     t.string('business');
-    t.int('amount');
+    t.int('amount', { nullable: true });
   },
 });
