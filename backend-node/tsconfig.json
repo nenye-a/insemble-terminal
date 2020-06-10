@@ -11,12 +11,24 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*", "src/types/*"]
+      "*": [
+        "node_modules/*",
+        "src/types/*",
+      ]
     },
-    "lib": ["es2016", "esnext.asynciterable", "dom"],
+    "lib": [
+      "es2016",
+      "esnext.asynciterable",
+      "dom"
+    ],
     "skipLibCheck": true,
-    "strict": true,
-    "typeRoots": ["./node_modules/@types", "./custom_types"]
+    "strict": false,
+    "typeRoots": [
+      "node_modules/@types",
+      "custom_types"
+    ]
   },
-  "include": ["**/*.*"]
+  "include": [
+    "**/*.*"
+  ]
 }

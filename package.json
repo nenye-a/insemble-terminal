@@ -1,0 +1,17 @@
+{
+  "name": "insemble-terminal",
+  "scripts": {
+    "build": "yarn --cwd backend-node build && yarn --cwd frontend apollo:generate && yarn --cwd frontend build",
+    "test": "yarn --cwd backend-node test && yarn --cwd frontend test",
+    "postinstall": "yarn --cwd backend-node install --production=false && yarn --cwd frontend install --production=false"
+  },
+  "devDependencies": {
+    "concurrently": "^5.1.0"
+  },
+  "prettier": {
+    "singleQuote": true,
+    "trailingComma": "all",
+    "arrowParens": "always"
+  },
+  "private": true
+}
