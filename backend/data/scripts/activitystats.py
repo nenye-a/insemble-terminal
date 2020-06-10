@@ -7,6 +7,7 @@ sys.path.append(BASE_DIR)
 
 import utils
 import pandas as pd
+import pprint
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 GENERATED_PATH = THIS_DIR + '/files/activity_generated/'
@@ -131,9 +132,53 @@ def merge_activity():
     ])
 
 
+def test_activity():
+
+    places = list(utils.DB_TERMINAL_PLACES.aggregate([
+        {
+            '$match': {
+                'avg_activity': {'$ne': -1}
+            }},
+        {'$project': {
+            'name': 1,
+            '_id': 0,
+            'avg_activity': 1,
+            'activity_volume': 1,
+            'length': {
+                '$cond': [
+                    {'$ne': ["$google_details.activity", None]},
+                    {"$size": "$google_details.activity"},
+                    None
+                ]
+            }
+        }}
+    ]))
+
+    place_df = pd.DataFrame(places)
+    place_df.to_csv(GENERATED_PATH + 'places_activity.csv')
+    place_df.describe().to_csv(GENERATED_PATH + 'place_activity_stats.csv')
+
+
+def remove_long_items():
+
+    for item in [10, 15, 20, 25, 30, 35, 40, 50, 60, 70]:
+        places = utils.DB_TERMINAL_PLACES.update_many({
+            'google_details.activity': {'$size': item}
+        }, {'$set': {
+            'google_details.activity': None,
+            'activity': -1,
+            'avg_activity': -1,
+            'activity_volume': -1
+        }})
+
+        print(places.modified_count)
+
+
 if __name__ == "__main__":
     # activity_statistics(150)
     # num_activity_by_city()
     # update_activity()
     # merge_activity()
+    # test_activity()
+    remove_long_items()
     pass

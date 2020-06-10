@@ -95,10 +95,12 @@ def saved_update(query, update):
 
     update['$set'] = dict(update.get('$set', {}),
                           **{'last_update': update_time})
+    update['$inc'] = dict(update.get('$inc', {}),
+                          **{'version': 1})
 
     previous = table.find_one_and_update(
         query,
-        dict(update, **{'$inc': {'version': 1}})
+        update
     )
     new = table.find_one(query)
     diff = utils.dictionary_diff(previous, new)

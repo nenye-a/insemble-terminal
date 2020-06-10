@@ -66,6 +66,11 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
         DB_TERMINAL_PLACES.create_index([('google_details', 1)])
+        DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
+        DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
+        DB_TERMINAL_PLACES.create_index([('brand_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
     if collection.lower() == 'places_history':
         DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
@@ -164,6 +169,14 @@ def adjust_case(word, caps='all', splitter=" ", joiner=None):
     if not joiner:
         joiner = splitter
     return joiner.join(words)
+
+
+def remove_duplicate_lists(list_of_lists):
+    """
+    Removes the duplicate within a list. All of the items in the sublist
+    should be hashable primary items.
+    """
+    return list(list(item) for item in set([tuple(sublist) for sublist in list_of_lists]))
 
 
 def round_object(obj, num=0):
@@ -460,7 +473,7 @@ if __name__ == "__main__":
 
     # RUN
 
-    # create_index("terminal")
+    create_index("terminal")
 
     # TESTS
 

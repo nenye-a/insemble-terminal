@@ -10,9 +10,9 @@ Performance related queries.
 
 '''
 
-LOCAL_RETAIL_RADIUS = 1 # miles
-LOCAL_CATEGORY_RADIUS = 3 # miles
-BASELINE = 100 # baseline for index
+LOCAL_RETAIL_RADIUS = 1  # miles
+LOCAL_CATEGORY_RADIUS = 3  # miles
+BASELINE = 100  # baseline for index
 
 
 def performanceV2(name, address):
@@ -41,8 +41,11 @@ def performanceV2(name, address):
 
     place_details = get_details(name, address)
     if place_details:
-        place_details["location"] = utils.to_geojson(google.get_lat_lng(address))
-        return parse_details(place_details)
+        try:
+            place_details["location"] = utils.to_geojson(google.get_lat_lng(address))
+            return parse_details(place_details)
+        except:
+            return None
     else:
         return None
 
@@ -74,6 +77,7 @@ def get_local_retail_volume(locations, radius, retail_type=None):
         else:
             results[obj] = None
     return results
+
 
 def build_proximity_query(location, radius, retail_type=None):
     """
@@ -152,6 +156,7 @@ def build_proximity_query(location, radius, retail_type=None):
 
     return pipeline
 
+
 def build_brand_query(brand):
     """
     Builds aggregation pipeline to get locations from database that are of the specified brand.
@@ -214,6 +219,7 @@ def build_brand_query(brand):
 
     return pipeline
 
+
 def build_all_query():
     """
     Builds aggregation pipeline to get locations from database that are of the specified brand.
@@ -267,6 +273,7 @@ def build_all_query():
     ])
 
     return pipeline
+
 
 def aggregate_performance(name, location, scope):
 
@@ -368,22 +375,24 @@ def parse_details(details):
     # TODO: should we filter results to exclude itself? should always have something of the same category in search
     brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_brand_query(details['name'])))[0]['avg_total_volume']
     all_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
-    local_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(details, LOCAL_RETAIL_RADIUS)))[0]['avg_total_volume']
+    local_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
+        build_proximity_query(details, LOCAL_RETAIL_RADIUS)))[0]['avg_total_volume']
     local_category_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(details,
-                                  LOCAL_CATEGORY_RADIUS, utils.adjust_case(details['type']))))[0]['avg_total_volume']
+                                                                                          LOCAL_CATEGORY_RADIUS, utils.adjust_case(details['type']))))[0]['avg_total_volume']
 
     # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
     return {
         'name': details['name'],
         'address': details['address'],
-        'customerVolumeIndex': round(BASELINE*volume/all_retail_volume),
-        'localRetailIndex': round(BASELINE*volume/local_retail_volume) if volume != 0 else None,
-        'localCategoryIndex': round(BASELINE*volume/local_category_volume) if volume != 0 else None,
-        'nationalIndex': round(BASELINE*volume/brand_volume) if volume != 0 else None,
+        'customerVolumeIndex': round(BASELINE * volume / all_retail_volume),
+        'localRetailIndex': round(BASELINE * volume / local_retail_volume) if volume != 0 else None,
+        'localCategoryIndex': round(BASELINE * volume / local_category_volume) if volume != 0 else None,
+        'nationalIndex': round(BASELINE * volume / brand_volume) if volume != 0 else None,
         'avgRating': details['rating'],
         'avgReviews': details['num_reviews'],
         'numLocations': None
     }
+
 
 def combine_parse_details(list_places, forced_name=None, default_name=None):
     """
@@ -398,8 +407,8 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     rating_sum, rating_count = 0, 0
     num_rating_sum, num_rating_count = 0, 0
     corrected_name = None
-    brand = list_places[0]['name'] # FIXME: Here they shouldn't each have the same name, how to fix name? just pass into fn?
-    type = list_places[0]['type'] # FIXME: categories might be different for each document
+    brand = list_places[0]['name']  # FIXME: Here they shouldn't each have the same name, how to fix name? just pass into fn?
+    type = list_places[0]['type']  # FIXME: categories might be different for each document
 
     # TODO: preprocess these and store in DB (not here)
     all_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
@@ -411,14 +420,14 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
         volume = total_volume(place['google_details']['activity'])
         details = \
             {'name': place['google_details']['name'],
-            'address': place['google_details']['address'],
-            'customerVolumeIndex': BASELINE*volume/all_retail_volume,
-            'localRetailIndex': BASELINE*volume/local_retail_volumes[place['_id']] if volume != 0 else None,
-            'localCategoryIndex': BASELINE*volume/local_category_volumes[place['_id']] if volume != 0 else None,
-            'nationalIndex': BASELINE*volume/brand_volume if volume != 0 else None,
-            'avgRating': place['google_details']['rating'],
-            'avgReviews': place['google_details']['num_reviews'],
-            'numLocations': None}
+             'address': place['google_details']['address'],
+             'customerVolumeIndex': BASELINE * volume / all_retail_volume,
+             'localRetailIndex': BASELINE * volume / local_retail_volumes[place['_id']] if volume != 0 else None,
+             'localCategoryIndex': BASELINE * volume / local_category_volumes[place['_id']] if volume != 0 else None,
+             'nationalIndex': BASELINE * volume / brand_volume if volume != 0 else None,
+             'avgRating': place['google_details']['rating'],
+             'avgReviews': place['google_details']['num_reviews'],
+             'numLocations': None}
         corrected_name = details['name'] if not corrected_name else None
         details['name'] = details.pop('address')
         location_data.append(details)
@@ -448,16 +457,17 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     return {
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
-            'customerVolumeIndex': round(customer_volume_index_sum/customer_volume_index_count) if customer_volume_index_count != 0 else None,
-            'localRetailIndex': round(local_retail_index_sum/local_retail_index_count) if local_retail_index_count != 0 else None,
-            'localCategoryIndex': round(local_category_index_sum/local_category_index_count) if local_category_index_count != 0 else None,
-            'nationalIndex': round(national_index_sum/national_index_count) if national_index_count != 0 else None,
+            'customerVolumeIndex': round(customer_volume_index_sum / customer_volume_index_count) if customer_volume_index_count != 0 else None,
+            'localRetailIndex': round(local_retail_index_sum / local_retail_index_count) if local_retail_index_count != 0 else None,
+            'localCategoryIndex': round(local_category_index_sum / local_category_index_count) if local_category_index_count != 0 else None,
+            'nationalIndex': round(national_index_sum / national_index_count) if national_index_count != 0 else None,
             'avgRating': round(rating_sum / rating_count, 1) if rating_count != 0 else None,
             'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
             'numLocations': len(location_data)
         },
         'data': location_data
     }
+
 
 def categorical_data(matching_places, data_name):
 
@@ -477,6 +487,7 @@ def categorical_data(matching_places, data_name):
         'by_brand': brand_details,
         'by_category': category_details
     }
+
 
 def get_details(name, address):
     projection = 'name,address,rating,num_reviews,activity,type'
@@ -539,24 +550,27 @@ if __name__ == "__main__":
         start = time.time()
         pipeline = build_all_query()
         print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-        print(time.time()-start)
+        print(time.time() - start)
 
     def test_get_local_retail_volume():
         size = 10
-        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate([{ "$sample": { "size": size } }]) if 'location' in location]
+        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate(
+            [{"$sample": {"size": size}}]) if 'location' in location]
         start = time.time()
         print(get_local_retail_volume(random_locations, 1))
-        print("size: {}, time: {}".format(size, time.time()-start))
-        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate([{ "$sample": { "size": size } }]) if 'location' in location]
+        print("size: {}, time: {}".format(size, time.time() - start))
+        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate(
+            [{"$sample": {"size": size}}]) if 'location' in location]
         start = time.time()
         query = "Convenience Store"
         print(get_local_retail_volume(random_locations, 3, query))
-        print("query: {}, size: {}, time: {}".format(query, size, time.time()-start))
-        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate([{ "$sample": { "size": size } }]) if 'location' in location]
+        print("query: {}, size: {}, time: {}".format(query, size, time.time() - start))
+        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate(
+            [{"$sample": {"size": size}}]) if 'location' in location]
         start = time.time()
         query = "Japanese Restaurant"
         print(get_local_retail_volume(random_locations, 3, query))
-        print("query: {}, size: {}, time: {}".format(query, size, time.time()-start))
+        print("query: {}, size: {}, time: {}".format(query, size, time.time() - start))
 
     def test_performance():
         name = "Atlanta Breakfast Club"
