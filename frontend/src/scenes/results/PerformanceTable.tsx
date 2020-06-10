@@ -37,7 +37,7 @@ export default function PerformanceTable(props: Props) {
   let { sortedData, requestSort, sortConfig } = useSortableData<
     MergedPerformanceTableData
   >(mergedData, {
-    key: 'totalSales',
+    key: 'customerVolumeIndex',
     direction: Direction.DESCENDING,
   });
 
@@ -49,10 +49,10 @@ export default function PerformanceTable(props: Props) {
           width={90}
           align="right"
           onClick={() => {
-            requestSort('totalSales');
+            requestSort('customerVolumeIndex');
           }}
           sortConfig={sortConfig}
-          name="totalSales"
+          name="customerVolumeIndex"
         >
           Volume IDX
         </DataTable.HeaderCell>
@@ -61,21 +61,21 @@ export default function PerformanceTable(props: Props) {
           width={90}
           align="right"
           onClick={() => {
-            requestSort('avgRating');
+            requestSort('localRetailIndex');
           }}
           sortConfig={sortConfig}
-          name="avgRating"
+          name="localRetailIndex"
         >
           Retail IDX
         </DataTable.HeaderCell>
         <DataTable.HeaderCell
-          width={90}
+          width={100}
           align="right"
           onClick={() => {
-            requestSort('avgRating');
+            requestSort('localCategoryIndex');
           }}
           sortConfig={sortConfig}
-          name="avgRating"
+          name="localCategoryIndex"
         >
           Category IDX
         </DataTable.HeaderCell>
@@ -83,10 +83,10 @@ export default function PerformanceTable(props: Props) {
           width={90}
           align="right"
           onClick={() => {
-            requestSort('avgRating');
+            requestSort('nationalIndex');
           }}
           sortConfig={sortConfig}
-          name="avgRating"
+          name="nationalIndex"
         >
           Brand IDX
         </DataTable.HeaderCell>
@@ -124,9 +124,13 @@ export default function PerformanceTable(props: Props) {
           avgRating = '-',
           numLocation = '-',
           numReview = '-',
-          totalSales = '-',
+          customerVolumeIndex = '-',
+          localCategoryIndex = '-',
+          localRetailIndex = '-',
+          nationalIndex = '-',
           isComparison,
         } = row;
+
         return (
           <DataTable.Row
             key={index}
@@ -136,26 +140,26 @@ export default function PerformanceTable(props: Props) {
           >
             <DataTable.Cell>{name}</DataTable.Cell>
             <DataTable.Cell width={90} align="right">
-              {totalSales}
+              {formatNullData(customerVolumeIndex)}
             </DataTable.Cell>
             <DataTable.Cell width={90} align="right">
-              {avgRating}
+              {formatNullData(localRetailIndex)}
+            </DataTable.Cell>
+            <DataTable.Cell width={100} align="right">
+              {formatNullData(localCategoryIndex)}
             </DataTable.Cell>
             <DataTable.Cell width={90} align="right">
-              {avgRating}
+              {formatNullData(nationalIndex)}
             </DataTable.Cell>
             <DataTable.Cell width={90} align="right">
-              {avgRating}
+              {formatNullData(avgRating)}
             </DataTable.Cell>
             <DataTable.Cell width={90} align="right">
-              {avgRating}
-            </DataTable.Cell>
-            <DataTable.Cell width={90} align="right">
-              {numReview}
+              {formatNullData(numReview)}
             </DataTable.Cell>
             {showNumLocation && (
               <DataTable.Cell width={90} align="right">
-                {numLocation}
+                {formatNullData(numLocation)}
               </DataTable.Cell>
             )}
           </DataTable.Row>
@@ -163,4 +167,11 @@ export default function PerformanceTable(props: Props) {
       })}
     </DataTable>
   );
+}
+
+function formatNullData(value: string | number | null) {
+  if (value == null) {
+    return '-';
+  }
+  return value;
 }
