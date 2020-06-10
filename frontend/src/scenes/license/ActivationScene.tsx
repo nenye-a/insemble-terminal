@@ -36,7 +36,6 @@ export default function ActivationScene() {
 
   let onSubmit = (fieldValues: FieldValues) => {
     if (Object.keys(errors).length === 0) {
-      console.log(fieldValues);
       let { activationToken } = fieldValues;
       let activationVariables = { activationToken };
       activateAccount({
