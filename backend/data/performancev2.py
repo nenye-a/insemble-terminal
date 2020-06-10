@@ -524,6 +524,14 @@ def avg_hourly_volume(week_activity):
     return sum(volume) / len(volume) if len(volume) > 0 else None
 
 
+def add_stats():
+    avg_total_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
+    utils.DB_STATS.insert({
+        'stat_name': 'activity_stats',
+        'avg_total_volume': avg_total_volume,
+    })
+
+
 if __name__ == "__main__":
 
     def test_build_proximity_query():
@@ -600,5 +608,5 @@ if __name__ == "__main__":
     # test_build_all_query()
     # test_performance()
     # test_aggregate_performance()
-    test_category_performance()
+    # test_category_performance()
     # test_category_performance_higher_scope()

@@ -36,6 +36,7 @@ DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
+DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
 BWE = mongo.BulkWriteError
 
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
@@ -117,6 +118,8 @@ def create_index(collection):
         DB_MINESWEEPER_PLACES.create_index([('opentable_details.bookings', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.price_tier', -1)])
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.category', 1)])
+    if collection.lower() == 'stats':
+        DB_STATS.create_index([('stat_name', 1)], unique=True)
 
 
 def meters_to_miles(meters):
@@ -473,8 +476,7 @@ if __name__ == "__main__":
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
     # RUN
-    DB_TERMINAL_PLACES.create_index([('name', 1)])
-    # create_index("terminal")
+    create_index("stats")
 
     # TESTS
 
