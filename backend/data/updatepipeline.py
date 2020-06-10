@@ -66,17 +66,14 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
             if 'location' not in place:
                 continue
 
-            start = time.time()
-            brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
-                performancev2.build_brand_query(place['name'])
-            ))[0]['avg_total_volume'] if 'name' in place else -1
-            # brand_volume = None
-            brand = time.time()
+            # brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
+            #     performancev2.build_brand_query(place['name'])
+            # ))[0]['avg_total_volume'] if 'name' in place else -1
+            # brand_volume = -1
 
             local_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
                 performancev2.build_proximity_query(place, performancev2.LOCAL_RETAIL_RADIUS)
             ))[0]['avg_total_volume']
-            local_retail = time.time()
 
             local_category_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
                 performancev2.build_proximity_query(
@@ -84,16 +81,10 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
                     performancev2.LOCAL_CATEGORY_RADIUS,
                     utils.adjust_case(place['type']))
             ))[0]['avg_total_volume'] if 'type' in place else -1
-            finish = time.time()
-
-            print(f'brand time: {brand - start}'
-                  f'local_retail time: {local_retail - brand}'
-                  f'local_category time: {finish - local_retail}'
-                  f'total: {finish - start}')
 
             utils.DB_TERMINAL_PLACES.update_one({'_id': place['_id']}, {
                 '$set': {
-                    'brand_volume': brand_volume,
+                    # 'brand_volume': brand_volume,
                     'local_retail_volume': local_retail_volume,
                     'local_category_volume': local_category_volume
                 }
