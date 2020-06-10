@@ -66,6 +66,9 @@ export default function ComparisonPopover(props: Props) {
   });
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
+    let usableColors =
+      reviewTag === ReviewTag.ACTIVITY ? COLORS.slice(1) : COLORS;
+
     let mapFn = (
       {
         id,
@@ -93,7 +96,7 @@ export default function ComparisonPopover(props: Props) {
             params: businessTag.params,
           }
         : null,
-      fill: COLORS[index],
+      fill: usableColors[index],
     });
     onTableIdChange && onTableIdChange(updateData.updateComparison.tableId);
     let activeComparisonList = updateData.updateComparison.comparationTags.map(

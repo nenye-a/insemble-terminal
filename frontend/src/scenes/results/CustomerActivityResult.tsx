@@ -5,9 +5,14 @@ import { useQuery } from '@apollo/react-hooks';
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
-import { GetActivity, GetActivityVariables } from '../../generated/GetActivity';
+import {
+  GetActivity,
+  GetActivityVariables,
+  GetActivity_activityTable_data as ActivityData,
+  GetActivity_activityTable_compareData as ActivityCompareData,
+} from '../../generated/GetActivity';
 import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage } from '../../helpers';
+import { formatErrorMessage, useColoredData } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ActivityChart from './ActivityChart';
@@ -30,6 +35,15 @@ export default function CustomerActivityResult(props: Props) {
       tableId,
     },
   });
+
+  let { data: coloredData, comparisonTags } = useColoredData<
+    ActivityData,
+    ActivityCompareData
+  >(
+    data?.activityTable.data,
+    data?.activityTable.compareData,
+    data?.activityTable.comparationTags,
+  );
   let noData =
     !data?.activityTable.data || data?.activityTable.data.length === 0;
 
@@ -45,7 +59,7 @@ export default function CustomerActivityResult(props: Props) {
             tableId: newTableId,
           });
         }}
-        comparisonTags={data?.activityTable.comparationTags}
+        comparisonTags={comparisonTags}
         tableType={TableType.ACTIVITY}
         {...(data?.activityTable.businessTag && {
           businessTag: {
@@ -68,8 +82,8 @@ export default function CustomerActivityResult(props: Props) {
         <EmptyDataComponent />
       ) : (
         <ActivityChart
-          data={data?.activityTable.data}
-          compareData={data?.activityTable.compareData}
+          data={coloredData}
+          // compareData={data?.activityTable.compareData}
         />
       )}
     </Container>

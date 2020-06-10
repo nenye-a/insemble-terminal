@@ -70,7 +70,7 @@ export const CHART_COLORS = [
 ];
 
 export const COLORS = [
-  LIGHT_PURPLE,
+  'LIGHT_PURPLE',
   '#EF5B5B',
   '#FFBA49',
   '#B3FFFC',
