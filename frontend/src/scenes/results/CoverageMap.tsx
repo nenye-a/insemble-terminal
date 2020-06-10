@@ -2,11 +2,11 @@ import React, { useRef, useEffect } from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
-import { GRAY } from '../../constants/colors';
-import { CoverageWithFill, LocationLatLng } from '../../types/types';
+import { GRAY, THEME_COLOR } from '../../constants/colors';
+import { MergedCoverageData, LocationLatLng } from '../../types/types';
 
 type Props = {
-  data: Array<CoverageWithFill>;
+  data: Array<MergedCoverageData>;
 };
 
 function CoverageMap(props: Props) {
@@ -49,7 +49,7 @@ function CoverageMap(props: Props) {
             <Marker
               key={`marker-${item.name}-${index}`}
               position={{ lat, lng }}
-              icon={pinSymbol(item.fill)}
+              icon={pinSymbol(item.fill || THEME_COLOR)}
             />
           ));
         });
@@ -72,7 +72,7 @@ function pinSymbol(color: string) {
 }
 
 function getFlatLocations(
-  data: Array<CoverageWithFill>,
+  data: Array<MergedCoverageData>,
 ): Array<LocationLatLng> {
   let locations: Array<LocationLatLng> = [];
 

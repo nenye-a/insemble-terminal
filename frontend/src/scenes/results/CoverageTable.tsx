@@ -3,11 +3,11 @@ import styled from 'styled-components';
 
 import { View, Text } from '../../core-ui';
 import { DataTable } from '../../components';
-import { WHITE } from '../../constants/colors';
-import { CoverageWithFill } from '../../types/types';
+import { WHITE, THEME_COLOR } from '../../constants/colors';
+import { MergedCoverageData } from '../../types/types';
 
 type Props = {
-  data: Array<CoverageWithFill>;
+  data: Array<MergedCoverageData>;
 };
 
 export default function CoverageTable(props: Props) {
@@ -17,7 +17,7 @@ export default function CoverageTable(props: Props) {
       <LegendContainer>
         {data.map(({ fill, name }, index) => (
           <Row key={`legend-${index}`}>
-            <Circle style={{ backgroundColor: fill }} />
+            <Circle style={{ backgroundColor: fill || THEME_COLOR }} />
             <LegendText>{name}</LegendText>
           </Row>
         ))}
