@@ -13,6 +13,12 @@ let permissions = shield({
     terminal: isUserAuthenticated,
     licenseList: isUserAuthenticated,
     masterLicenseList: isUserAuthenticated,
+    activityTable: isUserAuthenticated,
+    coverageTable: isUserAuthenticated,
+    newsTable: isUserAuthenticated,
+    performanceTable: isUserAuthenticated,
+    ownershipContactTable: isUserAuthenticated,
+    ownershipInfoTable: isUserAuthenticated,
   },
   Mutation: {
     editUserProfile: isUserAuthenticated,
