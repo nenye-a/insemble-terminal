@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { ApolloProvider } from '@apollo/react-hooks';
+import { transitions, positions, Provider as AlertProvider } from 'react-alert';
 
+import { AlertTemplate } from './core-ui';
 import MainRoute from './router/MainRoute';
 import apolloClient from './graphql/apolloClient';
 import AuthProvider from './context/AuthContext';
@@ -20,6 +22,13 @@ function App() {
     }
   };
 
+  let options = {
+    position: positions.TOP_CENTER,
+    containerStyle: { marginTop: 60 },
+    transition: transitions.FADE,
+    timeout: 5000,
+  };
+
   useEffect(() => {
     window.addEventListener('keydown', handleFirstTab);
     window.addEventListener('mousedown', handleMouseClick);
@@ -32,9 +41,11 @@ function App() {
   return (
     <ApolloProvider client={apolloClient}>
       <ViewportListener>
-        <AuthProvider>
-          <MainRoute />
-        </AuthProvider>
+        <AlertProvider template={AlertTemplate} {...options}>
+          <AuthProvider>
+            <MainRoute />
+          </AuthProvider>
+        </AlertProvider>
       </ViewportListener>
     </ApolloProvider>
   );

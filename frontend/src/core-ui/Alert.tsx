@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { AlertComponentPropsWithStyle } from 'react-alert';
 
 import { THEME_COLOR, ALERT_BACKGROUND_COLOR } from '../constants/colors';
 import { FONT_SIZE_SMALL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
@@ -38,6 +39,24 @@ export default function Alert(props: Props) {
   return null;
 }
 
+export function AlertTemplate(props: AlertComponentPropsWithStyle) {
+  let { message, close, ...otherProps } = props;
+  return (
+    <Container {...otherProps}>
+      <Row>
+        <SvgInfo style={{ color: THEME_COLOR }} />
+        <Message color={THEME_COLOR} fontSize={FONT_SIZE_SMALL}>
+          {message}
+        </Message>
+      </Row>
+      {close ? (
+        <TouchableOpacity onPress={close} style={{ marginLeft: 5 }}>
+          <SvgClose style={{ height: 18, width: 18, color: THEME_COLOR }} />
+        </TouchableOpacity>
+      ) : null}
+    </Container>
+  );
+}
 const Container = styled(View)`
   border: 1px solid ${THEME_COLOR};
   flex-direction: row;
