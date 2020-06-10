@@ -12,7 +12,7 @@ type Props = {
 
 export default function CoverageTable(props: Props) {
   let { data } = props;
-  console.log(data);
+
   return (
     <Container>
       <LegendContainer>
