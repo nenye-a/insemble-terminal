@@ -5,38 +5,30 @@ import {
   GetPerformanceTable_performanceTable_data as PerformanceTableData,
   GetPerformanceTable_performanceTable_compareData as PerformanceTableCompareData,
 } from '../../generated/GetPerformanceTable';
-import { TABLE_PURPLE_BACKGROUND } from '../../constants/colors';
 import { useSortableData } from '../../helpers';
 import { Direction } from '../../types/types';
-
-type Props = {
-  data: Array<PerformanceTableData>;
-  compareData?: Array<PerformanceTableCompareData>;
-  showNumLocation?: boolean;
-  headerTitle?: string;
-};
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
   | PerformanceTableCompareData
 ) & {
   isComparison: boolean;
+  fill?: string;
+};
+
+type Props = {
+  data: Array<MergedPerformanceTableData>;
+  compareData?: Array<PerformanceTableCompareData>;
+  showNumLocation?: boolean;
+  headerTitle?: string;
 };
 
 export default function PerformanceTable(props: Props) {
-  let {
-    data,
-    compareData = [],
-    showNumLocation = true,
-    headerTitle = 'Company',
-  } = props;
-  let mergedData = [
-    ...data.map((item) => ({ ...item, isComparison: false })),
-    ...compareData?.map((item) => ({ ...item, isComparison: true })),
-  ];
+  let { data, showNumLocation = true, headerTitle = 'Company' } = props;
+
   let { sortedData, requestSort, sortConfig } = useSortableData<
     MergedPerformanceTableData
-  >(mergedData, {
+  >(data, {
     key: 'customerVolumeIndex',
     direction: Direction.DESCENDING,
   });
@@ -129,13 +121,14 @@ export default function PerformanceTable(props: Props) {
           localRetailIndex = '-',
           nationalIndex = '-',
           isComparison,
+          fill,
         } = row;
 
         return (
           <DataTable.Row
             key={index}
             {...(isComparison && {
-              style: { backgroundColor: TABLE_PURPLE_BACKGROUND },
+              style: { backgroundColor: fill },
             })}
           >
             <DataTable.Cell>{name}</DataTable.Cell>

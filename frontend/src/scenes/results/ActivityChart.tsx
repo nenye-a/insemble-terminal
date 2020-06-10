@@ -14,7 +14,8 @@ import {
   WHITE,
   SHADOW_COLOR,
   DARK_TEXT_COLOR,
-  CHART_COLORS,
+  COLORS,
+  THEME_COLOR,
 } from '../../constants/colors';
 import {
   FONT_SIZE_SMALL,
@@ -22,28 +23,22 @@ import {
   FONT_SIZE_LARGE,
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
-import {
-  GetActivity_activityTable_data as ActivityTableData,
-  GetActivity_activityTable_compareData as ActivityTableCompareData,
-} from '../../generated/GetActivity';
+import { MergedActivityData } from '../../types/types';
 
 type Props = {
-  data?: Array<ActivityTableData>;
-  compareData?: Array<ActivityTableCompareData>;
+  data: Array<MergedActivityData>;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ChartDatum = { [key: string]: any };
 
 export default function ActivityChart(props: Props) {
-  let { data, compareData } = props;
+  let { data } = props;
 
-  let mergedData = [...data, ...compareData].map((item) => [
-    ...item.activityData,
-  ]);
+  let formattedData = [...data].map((item) => [...item.activityData]);
 
   let { tooltipData, lineChartData } = prepareLineChartData(
-    mergedData,
+    formattedData,
     'name',
     'amount',
     'business',
@@ -52,7 +47,7 @@ export default function ActivityChart(props: Props) {
   let lines = [];
 
   for (let [i, dataKey] of tooltipData.entries()) {
-    let strokeColor = CHART_COLORS[i];
+    let strokeColor = i === 0 ? THEME_COLOR : COLORS[i];
 
     lines.push(
       <Line
@@ -88,7 +83,7 @@ export default function ActivityChart(props: Props) {
         <LegendContainer flex>
           {tooltipData.map((legend, idx) => (
             <Row style={{ alignItems: 'baseline' }} key={idx}>
-              <Circle style={{ borderColor: CHART_COLORS[idx] }} />
+              <Circle style={{ borderColor: COLORS[idx] }} />
               <Text>{legend.replace('(', '\n(')}</Text>
             </Row>
           ))}

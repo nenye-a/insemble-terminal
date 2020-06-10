@@ -68,3 +68,16 @@ export const CHART_COLORS = [
   LIGHT_PURPLE,
   GRAY,
 ];
+
+export const COLORS = [
+  LIGHT_PURPLE,
+  '#EF5B5B',
+  '#FFBA49',
+  '#B3FFFC',
+  '#20A39E',
+  '#A4A9AD',
+  '#F2FF49',
+  '#FB62F6',
+  '#44355B',
+  '#23001E',
+];

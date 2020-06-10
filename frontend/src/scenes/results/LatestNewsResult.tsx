@@ -8,9 +8,11 @@ import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
   GetNewsTable,
   GetNewsTableVariables,
+  GetNewsTable_newsTable_data as NewsData,
+  GetNewsTable_newsTable_compareData as NewsCompareData,
 } from '../../generated/GetNewsTable';
 import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage } from '../../helpers';
+import { formatErrorMessage, useColoredData } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import NewsTable from './NewsTable';
@@ -33,7 +35,14 @@ export default function LatestNewsResult(props: Props) {
       tableId,
     },
   });
-
+  let { data: coloredData, comparisonTags } = useColoredData<
+    NewsData,
+    NewsCompareData
+  >(
+    data?.newsTable.data,
+    data?.newsTable.compareData,
+    data?.newsTable.comparationTags,
+  );
   let noData = !data?.newsTable.data || data.newsTable.data.length === 0;
 
   return (
@@ -48,7 +57,7 @@ export default function LatestNewsResult(props: Props) {
             tableId: newTableId,
           });
         }}
-        comparisonTags={data?.newsTable.comparationTags}
+        comparisonTags={comparisonTags}
         tableType={TableType.NEWS}
         {...(data?.newsTable.businessTag && {
           businessTag: {
@@ -70,10 +79,7 @@ export default function LatestNewsResult(props: Props) {
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
-        <NewsTable
-          data={data?.newsTable.data || []}
-          compareData={data?.newsTable.compareData || []}
-        />
+        <NewsTable data={coloredData} />
       )}
     </Container>
   );

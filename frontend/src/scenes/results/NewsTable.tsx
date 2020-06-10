@@ -1,32 +1,18 @@
 import React from 'react';
 
 import { DataTable } from '../../components';
-import {
-  GetNewsTable_newsTable_data as NewsData,
-  GetNewsTable_newsTable_compareData as NewsCompareData,
-} from '../../generated/GetNewsTable';
-import { TABLE_PURPLE_BACKGROUND } from '../../constants/colors';
 import { getPublishedDate, useSortableData } from '../../helpers';
-import { Direction } from '../../types/types';
+import { Direction, MergedNewsData } from '../../types/types';
 
 type Props = {
-  data: Array<NewsData>;
-  compareData?: Array<NewsCompareData>;
-};
-
-type MergedNewsData = (NewsData | NewsCompareData) & {
-  isComparison: boolean;
+  data: Array<MergedNewsData>;
 };
 
 export default function NewsTable(props: Props) {
-  let { data, compareData = [] } = props;
-  let mergedData = [
-    ...data.map((item) => ({ ...item, isComparison: false })),
-    ...compareData?.map((item) => ({ ...item, isComparison: true })),
-  ];
+  let { data } = props;
 
   let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
-    mergedData,
+    data,
     {
       key: 'published',
       direction: Direction.DESCENDING,
@@ -51,22 +37,14 @@ export default function NewsTable(props: Props) {
         </DataTable.HeaderCell>
       </DataTable.HeaderRow>
       {sortedData.map((row, index) => {
-        let {
-          title = '',
-          link = '',
-          source = '',
-          published,
-          isComparison,
-        } = row;
+        let { title = '', link = '', source = '', published, fill } = row;
         return (
           <DataTable.Row
             key={index}
             onPress={() => {
               window.open(link, '_blank');
             }}
-            {...(isComparison && {
-              style: { backgroundColor: TABLE_PURPLE_BACKGROUND },
-            })}
+            style={{ backgroundColor: fill || undefined }}
           >
             <DataTable.Cell
               width={500}

@@ -6,12 +6,16 @@ import { View, LoadingIndicator } from '../../core-ui';
 import { ErrorComponent, EmptyDataComponent } from '../../components';
 import {
   useGoogleMaps,
-  generateRandomColor,
   formatErrorMessage,
+  useColoredData,
 } from '../../helpers';
-import { CoverageWithFill } from '../../types/types';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
-import { GetCoverage, GetCoverageVariables } from '../../generated/GetCoverage';
+import {
+  GetCoverage,
+  GetCoverageVariables,
+  GetCoverage_coverageTable_data as CoverageData,
+  GetCoverage_coverageTable_compareData as CoverageCompareData,
+} from '../../generated/GetCoverage';
 import { GET_COVERAGE_DATA } from '../../graphql/queries/server/results';
 
 import CoverageTable from './CoverageTable';
@@ -37,18 +41,19 @@ export default function CoverageResult(props: Props) {
       tableId,
     },
   });
+
+  let { data: coloredData, comparisonTags } = useColoredData<
+    CoverageData,
+    CoverageCompareData
+  >(
+    data?.coverageTable.data,
+    data?.coverageTable.compareData,
+    data?.coverageTable.comparationTags,
+    true,
+  );
+
   let noData =
     !data?.coverageTable.data || data?.coverageTable.data.length === 0;
-  let dataWithFill: Array<CoverageWithFill> = data
-    ? [...data?.coverageTable.data, ...data?.coverageTable.compareData].map(
-        (item) => {
-          return {
-            ...item,
-            fill: generateRandomColor(),
-          };
-        },
-      )
-    : [];
 
   if (isLoading) {
     return <LoadingIndicator />;
@@ -64,7 +69,7 @@ export default function CoverageResult(props: Props) {
         onTableIdChange={(newTableId: string) => {
           refetch({ tableId: newTableId });
         }}
-        comparisonTags={data?.coverageTable.comparationTags}
+        comparisonTags={comparisonTags}
         tableType={TableType.COVERAGE}
         {...(data?.coverageTable.businessTag && {
           businessTag: {
@@ -87,8 +92,8 @@ export default function CoverageResult(props: Props) {
         <EmptyDataComponent />
       ) : (
         <ContentContainer>
-          <CoverageTable data={dataWithFill} />
-          <CoverageMap data={dataWithFill} />
+          <CoverageTable data={coloredData} />
+          <CoverageMap data={coloredData} />
         </ContentContainer>
       )}
     </View>

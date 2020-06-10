@@ -7,6 +7,8 @@ import { EmptyDataComponent, ErrorComponent } from '../../components';
 import {
   GetPerformanceTable,
   GetPerformanceTableVariables,
+  GetPerformanceTable_performanceTable_data as PerformanceData,
+  GetPerformanceTable_performanceTable_compareData as PerformanceCompareData,
 } from '../../generated/GetPerformanceTable';
 import {
   PerformanceTableType,
@@ -14,7 +16,7 @@ import {
   TableType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage } from '../../helpers';
+import { formatErrorMessage, useColoredData } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -40,6 +42,15 @@ export default function PerformanceByBrand(props: Props) {
       tableId,
     },
   });
+  let { data: coloredData, comparisonTags } = useColoredData<
+    PerformanceData,
+    PerformanceCompareData
+  >(
+    data?.performanceTable.data,
+    data?.performanceTable.compareData,
+    data?.performanceTable.comparationTags,
+  );
+
   let noData =
     !data?.performanceTable.data || data.performanceTable.data.length === 0;
 
@@ -58,7 +69,7 @@ export default function PerformanceByBrand(props: Props) {
             tableId: newTableId,
           });
         }}
-        comparisonTags={data?.performanceTable.comparationTags}
+        comparisonTags={comparisonTags}
         tableType={TableType.PERFORMANCE}
         {...(data?.performanceTable.businessTag && {
           businessTag: {
@@ -81,10 +92,7 @@ export default function PerformanceByBrand(props: Props) {
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
-        <PerformanceTable
-          data={data?.performanceTable.data || []}
-          compareData={data?.performanceTable.compareData}
-        />
+        <PerformanceTable data={coloredData} />
       )}
     </Container>
   );

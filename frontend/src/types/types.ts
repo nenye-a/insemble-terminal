@@ -5,11 +5,23 @@ import {
   BusinessTagInput,
   LocationTagInput,
 } from '../generated/globalTypes';
-import {
-  GetCoverage_coverageTable_data as CoverageTableData,
-  GetCoverage_coverageTable_compareData as CoverageTableCompareData,
-} from '../generated/GetCoverage';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
+import {
+  GetPerformanceTable_performanceTable_data as PerformanceData,
+  GetPerformanceTable_performanceTable_compareData as PerformanceCompareData,
+} from '../generated/GetPerformanceTable';
+import {
+  GetNewsTable_newsTable_data as NewsData,
+  GetNewsTable_newsTable_compareData as NewsCompareData,
+} from '../generated/GetNewsTable';
+import {
+  GetActivity_activityTable_data as ActivityData,
+  GetActivity_activityTable_compareData as ActivityCompareData,
+} from '../generated/GetActivity';
+import {
+  GetCoverage_coverageTable_data as CoverageData,
+  GetCoverage_coverageTable_compareData as CoverageCompareData,
+} from '../generated/GetCoverage';
 
 export type ResultQuery = {
   reviewTag: ReviewTag | null;
@@ -34,6 +46,10 @@ export type ComparationTag = {
   businessTag: BusinessTagResult;
 };
 
+export type ComparationTagWithFill = ComparationTag & {
+  fill?: string;
+};
+
 export enum OwnershipType {
   COMPANY_INFORMATION = 'COMPANY_INFORMATION',
   COMPANY_CONTACT = 'COMPANY_CONTACT',
@@ -41,10 +57,7 @@ export enum OwnershipType {
   PROPERTY_INFORMATION = 'PROPERTY_INFORMATION',
 }
 
-export type CoverageWithFill = (
-  | CoverageTableData
-  | CoverageTableCompareData
-) & {
+export type CoverageWithFill = (CoverageData | CoverageCompareData) & {
   fill: string;
 };
 
@@ -73,3 +86,18 @@ export type SearchParams = {
   } | null;
   locationTag?: { type: LocationTagType; params: string } | null;
 };
+
+export type WithFillAndComparison = {
+  fill?: string;
+  isComparison: boolean;
+};
+export type MergedPerformanceData = (PerformanceData | PerformanceCompareData) &
+  WithFillAndComparison;
+
+export type MergedNewsData = (NewsData | NewsCompareData) &
+  WithFillAndComparison;
+
+export type MergedActivityData = (ActivityData | ActivityCompareData) &
+  WithFillAndComparison;
+export type MergedCoverageData = (CoverageData | CoverageCompareData) &
+  WithFillAndComparison;
