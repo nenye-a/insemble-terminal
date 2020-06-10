@@ -22,7 +22,7 @@ import {
   FONT_WEIGHT_BOLD,
   FONT_SIZE_SMALL,
 } from '../../constants/theme';
-import { ComparationTag } from '../../types/types';
+import { ComparationTagWithFill } from '../../types/types';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
 import SvgRoundClose from '../../components/icons/round-close';
@@ -47,7 +47,7 @@ type Props = {
   reviewTag: ReviewTag;
   tableId: string;
   onTableIdChange?: (tableId: string) => void;
-  comparisonTags?: Array<ComparationTag>;
+  comparisonTags?: Array<ComparationTagWithFill>;
   canCompare?: boolean;
   tableType: TableType;
   businessTag?: {

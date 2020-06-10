@@ -19,7 +19,11 @@ import {
 import { capitalize } from '../helpers';
 import { ReviewTag, CompareActionType } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
-import { LocationTag, BusinessTagResult, ComparationTag } from '../types/types';
+import {
+  LocationTag,
+  BusinessTagResult,
+  ComparationTagWithFill,
+} from '../types/types';
 import {
   UpdateComparison,
   UpdateComparisonVariables,
@@ -33,7 +37,7 @@ type Props = {
   reviewTag: ReviewTag;
   tableId: string;
   onTableIdChange?: (tableId: string) => void;
-  activeComparison?: Array<ComparationTag>;
+  activeComparison?: Array<ComparationTagWithFill>;
 };
 
 export default function ComparisonPopover(props: Props) {
@@ -45,9 +49,9 @@ export default function ComparisonPopover(props: Props) {
   } = props;
   let alert = useAlert();
   let [tableId, setTableId] = useState('');
-  let [activeComparison, setActiveComparison] = useState<Array<ComparationTag>>(
-    activeComparisonProp || [],
-  );
+  let [activeComparison, setActiveComparison] = useState<
+    Array<ComparationTagWithFill>
+  >(activeComparisonProp || []);
   let [updateComparison, { loading: updateComparisonLoading }] = useMutation<
     UpdateComparison,
     UpdateComparisonVariables
