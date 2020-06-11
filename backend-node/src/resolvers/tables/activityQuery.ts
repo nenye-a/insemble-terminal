@@ -1,5 +1,5 @@
 import { queryField, FieldResolver, stringArg } from 'nexus';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyActivityData, PyActivityResponse } from 'dataTypes';
@@ -76,14 +76,205 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
   if (activity.length) {
     // Return the table without any comparison tags.
     selectedActivity = activity[0];
+    let selectedTable = activity[0];
+    if (selectedActivity.error) {
+      let table = await context.prisma.activity.update({
+        where: {
+          id: selectedTable.id,
+        },
+        data: {
+          error: null,
+        },
+      });
+      return {
+        table,
+        error: selectedActivity.error,
+        polling: selectedActivity.polling,
+      };
+    }
     let updateData = timeCheck(selectedActivity.updatedAt);
     if (updateData) {
       // update data (should be likely combined with if no table exists)
-      try {
-        let activityUpdate = await getActivityData(
-          selectedActivity.locationTag,
-          selectedActivity.businessTag,
-        );
+      if (!selectedActivity.polling) {
+        selectedActivity = await context.prisma.activity.update({
+          where: { id: selectedTable.id },
+          data: {
+            polling: true,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        let mainDataPromise = axios.get(`${API_URI}/api/activity`, {
+          params: {
+            location: selectedActivity.locationTag
+              ? {
+                  locationType: selectedActivity.locationTag.type,
+                  params: selectedActivity.locationTag.params,
+                }
+              : undefined,
+            business: selectedActivity.businessTag
+              ? {
+                  businessType: selectedActivity.businessTag.type,
+                  params: selectedActivity.businessTag.params,
+                }
+              : undefined,
+          },
+          paramsSerializer: axiosParamsSerializer,
+        });
+        let compareDataPromises: Array<Promise<AxiosResponse>> = [];
+        let compareIds: Array<string> = [];
+        for (let comparationTag of selectedActivity.comparationTags) {
+          let compareDataPromise = axios.get(`${API_URI}/api/activity`, {
+            params: {
+              location: comparationTag.locationTag
+                ? {
+                    locationType: comparationTag.locationTag.type,
+                    params: comparationTag.locationTag.params,
+                  }
+                : undefined,
+              business: comparationTag.businessTag
+                ? {
+                    businessType: comparationTag.businessTag.type,
+                    params: comparationTag.businessTag.params,
+                  }
+                : undefined,
+            },
+            paramsSerializer: axiosParamsSerializer,
+          });
+          compareDataPromises.push(compareDataPromise);
+          compareIds.push(comparationTag.id);
+        }
+        Promise.all([mainDataPromise, ...compareDataPromises])
+          .then(async (value) => {
+            let [mainResponse, ...compareResponses] = value;
+            let mainData: PyActivityResponse = mainResponse.data;
+            let activityData = mainData.data.map(
+              ({ name, location, activity }) => {
+                let arrayActiviy = objectToActivityGraph(
+                  activity,
+                  name,
+                  location,
+                );
+                return {
+                  name: name || '-',
+                  location: location || '-',
+                  activityData:
+                    arrayActiviy.length > 0
+                      ? JSON.stringify(arrayActiviy)
+                      : '[]',
+                };
+              },
+            );
+            let rawCompareData: Array<PyActivityData & {
+              compareId: string;
+            }> = [];
+            for (let [index, compareResponse] of compareResponses.entries()) {
+              let compareData: PyActivityResponse = compareResponse.data;
+              rawCompareData = rawCompareData.concat(
+                compareData.data.map((data) => ({
+                  ...data,
+                  compareId: compareIds[index],
+                })),
+              );
+            }
+            let compareData = rawCompareData.map(
+              ({ name, location, activity, compareId }) => {
+                let arrayActiviy = objectToActivityGraph(
+                  activity,
+                  name,
+                  location,
+                );
+                return {
+                  name: name || '-',
+                  location: location || '-',
+                  activityData:
+                    arrayActiviy.length > 0
+                      ? JSON.stringify(arrayActiviy)
+                      : '[]',
+                  compareId,
+                };
+              },
+            );
+            await context.prisma.activityData.deleteMany({
+              where: {
+                activity: {
+                  id: selectedTable.id,
+                },
+              },
+            });
+            await context.prisma.compareActivityData.deleteMany({
+              where: {
+                activity: {
+                  id: selectedTable.id,
+                },
+              },
+            });
+            await context.prisma.activity.update({
+              where: { id: selectedTable.id },
+              data: {
+                data: { create: activityData },
+                compareData: { create: compareData },
+                polling: false,
+                updatedAt: new Date(),
+              },
+            });
+          })
+          .catch(async () => {
+            await context.prisma.activity.update({
+              where: { id: selectedTable.id },
+              data: {
+                error: 'Failed to update Activity. Please try again.',
+                polling: false,
+              },
+            });
+          });
+      }
+    }
+  } else {
+    let newSelectedActivityTable = await context.prisma.activity.create({
+      data: {
+        polling: true,
+        businessTag: businessTag
+          ? { connect: { id: businessTag.id } }
+          : undefined,
+        locationTag: locationTag
+          ? { connect: { id: locationTag.id } }
+          : undefined,
+      },
+      include: {
+        locationTag: true,
+        businessTag: true,
+        comparationTags: {
+          include: {
+            locationTag: true,
+            businessTag: true,
+          },
+        },
+      },
+    });
+    selectedActivity = newSelectedActivityTable;
+    axios
+      .get(`${API_URI}/api/activity`, {
+        params: {
+          location: locationTag
+            ? { locationType: locationTag.type, params: locationTag.params }
+            : undefined,
+          business: businessTag
+            ? { businessType: businessTag.type, params: businessTag.params }
+            : undefined,
+        },
+        paramsSerializer: axiosParamsSerializer,
+      })
+      .then(async (response) => {
+        let activityUpdate: PyActivityResponse = response.data;
         let activityData = activityUpdate.data.map(
           ({ name, location, activity }) => {
             let arrayActiviy = objectToActivityGraph(activity, name, location);
@@ -95,119 +286,41 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
             };
           },
         );
-        let rawCompareData: Array<PyActivityData & { compareId: string }> = [];
-        for (let comparationTag of selectedActivity.comparationTags) {
-          let compareDataUpdate = await getActivityData(
-            comparationTag.locationTag,
-            comparationTag.businessTag,
-          );
-          rawCompareData = rawCompareData.concat(
-            compareDataUpdate.data.map((data) => ({
-              ...data,
-              compareId: comparationTag.id,
-            })),
-          );
-        }
-        let compareData = rawCompareData.map(
-          ({ name, location, activity, compareId }) => {
-            let arrayActiviy = objectToActivityGraph(activity, name, location);
-            return {
-              name: name || '-',
-              location: location || '-',
-              activityData:
-                arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
-              compareId,
-            };
-          },
-        );
-        await context.prisma.activityData.deleteMany({
+        await context.prisma.activity.update({
           where: {
-            activity: {
-              id: selectedActivity.id,
-            },
+            id: newSelectedActivityTable.id,
           },
-        });
-        await context.prisma.compareActivityData.deleteMany({
-          where: {
-            activity: {
-              id: selectedActivity.id,
-            },
-          },
-        });
-        selectedActivity = await context.prisma.activity.update({
-          where: { id: selectedActivity.id },
           data: {
             data: { create: activityData },
-            compareData: { create: compareData },
-            updatedAt: new Date(),
+            businessTag: businessTag
+              ? { connect: { id: businessTag.id } }
+              : undefined,
+            locationTag: locationTag
+              ? { connect: { id: locationTag.id } }
+              : undefined,
+            polling: false,
           },
         });
-      } catch (e) {
-        console.log(e);
-        throw new Error('Fail to update date.');
-      }
-    }
-  } else {
-    try {
-      let activityUpdate = await getActivityData(locationTag, businessTag);
-      let activityData = activityUpdate.data.map(
-        ({ name, location, activity }) => {
-          let arrayActiviy = objectToActivityGraph(activity, name, location);
-          return {
-            name: name || '-',
-            location: location || '-',
-            activityData:
-              arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
-          };
-        },
-      );
-      selectedActivity = await context.prisma.activity.create({
-        data: {
-          data: { create: activityData },
-          businessTag: businessTag
-            ? { connect: { id: businessTag.id } }
-            : undefined,
-          locationTag: locationTag
-            ? { connect: { id: locationTag.id } }
-            : undefined,
-        },
+      })
+      .catch(async () => {
+        await context.prisma.activity.update({
+          where: { id: newSelectedActivityTable.id },
+          data: {
+            error: 'Failed to update Activity. Please try again.',
+            polling: false,
+          },
+        });
       });
-    } catch (e) {
-      console.log(e);
-      throw new Error('Fail to create data.');
-    }
   }
-  return selectedActivity;
-};
-
-const getActivityData = async (
-  locationTag: LocationTag | null | undefined,
-  businessTag: BusinessTag | null | undefined,
-) => {
-  let activityUpdate: PyActivityResponse = (
-    await axios.get(`${API_URI}/api/activity`, {
-      params: {
-        location: locationTag
-          ? {
-              locationType: locationTag.type,
-              params: locationTag.params,
-            }
-          : undefined,
-        business: businessTag
-          ? {
-              businessType: businessTag.type,
-              params: businessTag.params,
-            }
-          : undefined,
-      },
-      paramsSerializer: axiosParamsSerializer,
-    })
-  ).data;
-  return activityUpdate;
+  return {
+    polling: selectedActivity.polling,
+    error: selectedActivity.error,
+    table: selectedActivity,
+  };
 };
 
 let activityTable = queryField('activityTable', {
-  type: 'Activity',
+  type: 'ActivityPolling',
   args: {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
