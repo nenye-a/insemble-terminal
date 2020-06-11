@@ -2,12 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import {
-  Card,
-  Text,
-  View,
-  Button
-} from '../../core-ui';
+import { Card, Text, View, Button } from '../../core-ui';
 import { NAVBAR_HEIGHT } from '../../constants/theme';
 
 import LoginForm from './LoginForm';
