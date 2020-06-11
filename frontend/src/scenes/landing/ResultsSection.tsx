@@ -5,6 +5,7 @@ import { useTransition, animated } from 'react-spring';
 import { View, Text as BaseText } from '../../core-ui';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
+import { useViewport } from '../../helpers';
 import activitySearchBox from '../../assets/images/activity-searchbox.svg';
 import coverageSearchBox from '../../assets/images/coverage-searchbox.svg';
 import newsSearchbox from '../../assets/images/news-searchbox.svg';
@@ -21,9 +22,7 @@ import newsExampleSmall from '../../assets/images/news-example-small.svg';
 import activityExampleSmall from '../../assets/images/activity-example-small.svg';
 import coverageExampleSmall from '../../assets/images/coverage-example-small.svg';
 import performanceExampleSmall from '../../assets/images/performance-example-small.png';
-
 import SvgDotArrow from '../../components/icons/dot-arrow';
-import { useViewport } from '../../helpers';
 import SvgTripleDots from '../../components/icons/triple-dots';
 
 type WithViewport = { isDesktop: boolean };
@@ -86,6 +85,7 @@ export default function ResultsSection() {
     }, INTERVAL);
     return () => clearInterval(interval);
   }, [selectedTagIndex]);
+
   return (
     <Container>
       <TitleContainer isDesktop={isDesktop}>
@@ -125,7 +125,6 @@ export default function ResultsSection() {
       ) : (
         <SvgTripleDots />
       )}
-
       <ExampleImageContainer isDesktop={isDesktop}>
         {transitions.map(({ item, props, key }) => (
           <animated.img
