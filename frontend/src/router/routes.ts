@@ -2,9 +2,11 @@ import { RouteProps } from 'react-router-dom';
 
 import {
   AuthScene,
+  ActivationScene,
   ContactUsScene,
   EditProfileScene,
   EmailVerificationScene,
+  GenerateTokenScene,
   LandingScene,
   LoginScene,
   ResultsScene,
@@ -13,7 +15,6 @@ import {
   TerminalHomeScene,
   VerificationSuccessfulScene,
 } from '../scenes';
-import ActivationScene from '../scenes/license/ActivationScene';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -66,6 +67,35 @@ export const authenticatedRoutes: Array<RouteType> = [
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
+];
+
+export const authenticatedAdminRoutes: Array<RouteType> = [
+  {
+    path: '/',
+    exact: true,
+    component: AuthScene,
+  }, // TODO: change component
+  {
+    path: '/results',
+    component: ResultsScene,
+    showHeader: false,
+  },
+  {
+    path: '/terminals',
+    component: TerminalHomeScene,
+    exact: true,
+  },
+  {
+    path: '/terminals/:terminalId',
+    component: TerminalDetailScene,
+  },
+  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
+  { path: '/edit-profile', component: EditProfileScene },
+  {
+    path: '/generate-token',
+    component: GenerateTokenScene,
+    showSearchBar: false,
+  },
 ];
 
 export const authenticatedUnactiveRoutes: Array<RouteType> = [

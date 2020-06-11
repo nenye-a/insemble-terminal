@@ -16,6 +16,7 @@ import {
   unAuthenticatedRoutes,
   authenticatedUnactiveRoutes,
   RouteType,
+  authenticatedAdminRoutes,
 } from './routes';
 
 export default function MainRoute() {
@@ -62,7 +63,9 @@ function Routes() {
     <Switch>
       {isAuthenticated
         ? user?.license
-          ? authenticatedRoutes.map(mapFn)
+          ? user?.role === 'ADMIN'
+            ? authenticatedAdminRoutes.map(mapFn)
+            : authenticatedRoutes.map(mapFn)
           : authenticatedUnactiveRoutes.map(mapFn)
         : unAuthenticatedRoutes.map(mapFn)}
       <Route component={AuthScene} />

@@ -11,3 +11,12 @@ export const ACTIVATE_ACCOUNT = gql`
     }
   }
 `;
+
+export const CREATE_TOKEN = gql`
+  mutation CreateToken($masterName: String!, $numToken: Int!) {
+    createLicense(masterName: $masterName, numToken: $numToken) {
+      masterToken
+      tokens
+    }
+  }
+`;
