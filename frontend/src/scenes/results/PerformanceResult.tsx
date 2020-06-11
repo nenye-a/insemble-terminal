@@ -7,8 +7,8 @@ import { EmptyDataComponent, ErrorComponent } from '../../components';
 import {
   GetPerformanceTable,
   GetPerformanceTableVariables,
-  GetPerformanceTable_performanceTable_data as PerformanceData,
-  GetPerformanceTable_performanceTable_compareData as PerformanceCompareData,
+  GetPerformanceTable_performanceTable_table_data as PerformanceData,
+  GetPerformanceTable_performanceTable_table_compareData as PerformanceCompareData,
 } from '../../generated/GetPerformanceTable';
 import {
   PerformanceTableType,
@@ -26,17 +26,29 @@ type Props = {
   businessTagId?: string;
   locationTagId?: string;
   tableId?: string;
+  title: string;
+  performanceType: PerformanceTableType;
+  showNumLocation?: boolean;
+  headerTitle?: string;
 };
 
-export default function PerformanceByCategoryResult(props: Props) {
-  let { businessTagId, locationTagId, tableId } = props;
+export default function PerformanceResult(props: Props) {
+  let {
+    businessTagId,
+    locationTagId,
+    tableId,
+    title,
+    performanceType,
+    showNumLocation,
+    headerTitle,
+  } = props;
 
   let { data, loading, error, refetch } = useQuery<
     GetPerformanceTable,
     GetPerformanceTableVariables
   >(GET_PERFORMANCE_TABLE_DATA, {
     variables: {
-      performanceType: PerformanceTableType.CATEGORY,
+      performanceType,
       businessTagId,
       locationTagId,
       tableId,
@@ -46,23 +58,24 @@ export default function PerformanceByCategoryResult(props: Props) {
     PerformanceData,
     PerformanceCompareData
   >(
-    data?.performanceTable.data,
-    data?.performanceTable.compareData,
-    data?.performanceTable.comparationTags,
+    data?.performanceTable.table?.data,
+    data?.performanceTable.table?.compareData,
+    data?.performanceTable.table?.comparationTags,
   );
   let noData =
-    !data?.performanceTable.data || data.performanceTable.data.length === 0;
+    !data?.performanceTable.table?.data ||
+    data.performanceTable.table?.data.length === 0;
 
   return (
     <Container>
       <ResultTitle
-        title="By Category"
+        title={title}
         noData={noData}
         reviewTag={ReviewTag.PERFORMANCE}
-        tableId={data?.performanceTable.id || ''}
+        tableId={data?.performanceTable.table?.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
-            performanceType: PerformanceTableType.CATEGORY,
+            performanceType: PerformanceTableType.ADDRESS,
             businessTagId,
             locationTagId,
             tableId: newTableId,
@@ -70,28 +83,36 @@ export default function PerformanceByCategoryResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.PERFORMANCE}
-        {...(data?.performanceTable.businessTag && {
+        {...(data?.performanceTable.table?.businessTag && {
           businessTag: {
-            params: data.performanceTable.businessTag.params,
-            type: data.performanceTable.businessTag.type,
+            params: data.performanceTable.table.businessTag.params,
+            type: data.performanceTable.table.businessTag.type,
           },
         })}
-        {...(data?.performanceTable.locationTag && {
+        {...(data?.performanceTable.table?.locationTag && {
           locationTag: {
-            params: data.performanceTable.locationTag.params,
-            type: data.performanceTable.locationTag.type,
+            params: data.performanceTable.table.locationTag.params,
+            type: data.performanceTable.table.locationTag.type,
           },
         })}
         infoboxContent={PerformanceTablePopover}
       />
-      {loading ? (
+      {loading || data?.performanceTable.polling ? (
         <LoadingIndicator />
-      ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+      ) : error || data?.performanceTable.error ? (
+        <ErrorComponent
+          text={formatErrorMessage(
+            error?.message || data?.performanceTable.error || '',
+          )}
+        />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
-        <PerformanceTable data={coloredData} />
+        <PerformanceTable
+          data={coloredData}
+          showNumLocation={showNumLocation}
+          headerTitle={headerTitle}
+        />
       )}
     </Container>
   );
