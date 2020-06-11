@@ -22,31 +22,64 @@ export default function ProfileMenuDropdown() {
   let [menuOpen, setMenuOpen] = useState(false);
   let { user, logout } = useAuth();
   let history = useHistory();
-  const MENUS = [
-    {
-      label: 'Manage Account',
-      onPress: () => {
-        history.push('/edit-profile');
-      },
-    },
-    {
-      label: 'Give Feedback',
-      onPress: () => {
-        history.push('/contact-us');
-      },
-    },
-    {
-      label: 'Help',
-      onPress: () => {},
-    },
-    {
-      label: 'Sign Out',
-      onPress: () => {
-        logout();
-        history.push('/login');
-      },
-    },
-  ];
+  const MENUS =
+    user?.role === 'ADMIN'
+      ? [
+          {
+            label: 'Manage Account',
+            onPress: () => {
+              history.push('/edit-profile');
+            },
+          },
+          {
+            label: 'Give Feedback',
+            onPress: () => {
+              history.push('/contact-us');
+            },
+          },
+          {
+            label: 'Help',
+            onPress: () => {},
+          },
+          {
+            label: 'Generate Token',
+            onPress: () => {
+              history.push('/generate-token');
+            },
+          },
+          {
+            label: 'Sign Out',
+            onPress: () => {
+              logout();
+              history.push('/login');
+            },
+          },
+        ]
+      : [
+          {
+            label: 'Manage Account',
+            onPress: () => {
+              history.push('/edit-profile');
+            },
+          },
+          {
+            label: 'Give Feedback',
+            onPress: () => {
+              history.push('/contact-us');
+            },
+          },
+          {
+            label: 'Help',
+            onPress: () => {},
+          },
+          {
+            label: 'Sign Out',
+            onPress: () => {
+              logout();
+              history.push('/login');
+            },
+          },
+        ];
   return (
     <ClickAway
       onClickAway={() => {
