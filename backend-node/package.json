@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit -p .",
     "generate:schema": "env NODE_ENV=\"\" ts-node --transpile-only src/schema.ts",
     "generate": "prisma2 generate && yarn generate:schema",
+    "migrate": "prisma2 migrate up --experimental",
     "postinstall": "yarn generate",
     "jest": "jest --coverage --passWithNoTests",
     "test": "yarn lint && yarn typecheck && yarn format:check && yarn jest"
