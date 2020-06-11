@@ -8,8 +8,8 @@ import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
   GetNewsTable,
   GetNewsTableVariables,
-  GetNewsTable_newsTable_data as NewsData,
-  GetNewsTable_newsTable_compareData as NewsCompareData,
+  GetNewsTable_newsTable_table_data as NewsData,
+  GetNewsTable_newsTable_table_compareData as NewsCompareData,
 } from '../../generated/GetNewsTable';
 import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
 import { formatErrorMessage, useColoredData } from '../../helpers';
@@ -39,11 +39,12 @@ export default function LatestNewsResult(props: Props) {
     NewsData,
     NewsCompareData
   >(
-    data?.newsTable.data,
-    data?.newsTable.compareData,
-    data?.newsTable.comparationTags,
+    data?.newsTable.table?.data,
+    data?.newsTable.table?.compareData,
+    data?.newsTable.table?.comparationTags,
   );
-  let noData = !data?.newsTable.data || data.newsTable.data.length === 0;
+  let noData =
+    !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
 
   return (
     <Container>
@@ -51,7 +52,7 @@ export default function LatestNewsResult(props: Props) {
         title="Latest News"
         noData={noData}
         reviewTag={ReviewTag.NEWS}
-        tableId={data?.newsTable.id || ''}
+        tableId={data?.newsTable.table?.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
             tableId: newTableId,
@@ -59,23 +60,27 @@ export default function LatestNewsResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.NEWS}
-        {...(data?.newsTable.businessTag && {
+        {...(data?.newsTable.table?.businessTag && {
           businessTag: {
-            params: data.newsTable.businessTag.params,
-            type: data.newsTable.businessTag.type,
+            params: data.newsTable.table.businessTag.params,
+            type: data.newsTable.table.businessTag.type,
           },
         })}
-        {...(data?.newsTable.locationTag && {
+        {...(data?.newsTable.table?.locationTag && {
           locationTag: {
-            params: data.newsTable.locationTag.params,
-            type: data.newsTable.locationTag.type,
+            params: data.newsTable.table.locationTag.params,
+            type: data.newsTable.table.locationTag.type,
           },
         })}
       />
-      {loading ? (
+      {loading || data?.newsTable.polling ? (
         <LoadingIndicator />
-      ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+      ) : error || data?.newsTable.error ? (
+        <ErrorComponent
+          text={formatErrorMessage(
+            error?.message || data?.newsTable.error || '',
+          )}
+        />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (

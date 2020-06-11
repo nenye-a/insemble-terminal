@@ -8,8 +8,8 @@ import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
   GetActivity,
   GetActivityVariables,
-  GetActivity_activityTable_data as ActivityData,
-  GetActivity_activityTable_compareData as ActivityCompareData,
+  GetActivity_activityTable_table_data as ActivityData,
+  GetActivity_activityTable_table_compareData as ActivityCompareData,
 } from '../../generated/GetActivity';
 import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
 import { formatErrorMessage, useColoredData } from '../../helpers';
@@ -40,12 +40,13 @@ export default function CustomerActivityResult(props: Props) {
     ActivityData,
     ActivityCompareData
   >(
-    data?.activityTable.data,
-    data?.activityTable.compareData,
-    data?.activityTable.comparationTags,
+    data?.activityTable.table?.data,
+    data?.activityTable.table?.compareData,
+    data?.activityTable.table?.comparationTags,
   );
   let noData =
-    !data?.activityTable.data || data?.activityTable.data.length === 0;
+    !data?.activityTable.table?.data ||
+    data?.activityTable.table.data.length === 0;
 
   return (
     <Container>
@@ -53,7 +54,7 @@ export default function CustomerActivityResult(props: Props) {
         title="Customer Activity"
         noData={noData}
         reviewTag={ReviewTag.ACTIVITY}
-        tableId={data?.activityTable.id || ''}
+        tableId={data?.activityTable.table?.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
             tableId: newTableId,
@@ -61,23 +62,27 @@ export default function CustomerActivityResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.ACTIVITY}
-        {...(data?.activityTable.businessTag && {
+        {...(data?.activityTable.table?.businessTag && {
           businessTag: {
-            params: data.activityTable.businessTag.params,
-            type: data.activityTable.businessTag.type,
+            params: data.activityTable.table.businessTag.params,
+            type: data.activityTable.table.businessTag.type,
           },
         })}
-        {...(data?.activityTable.locationTag && {
+        {...(data?.activityTable.table?.locationTag && {
           locationTag: {
-            params: data.activityTable.locationTag.params,
-            type: data.activityTable.locationTag.type,
+            params: data.activityTable.table.locationTag.params,
+            type: data.activityTable.table.locationTag.type,
           },
         })}
       />
-      {loading ? (
+      {loading || data?.activityTable.polling ? (
         <LoadingIndicator />
-      ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+      ) : error || data?.activityTable.error ? (
+        <ErrorComponent
+          text={formatErrorMessage(
+            error?.message || data?.activityTable.error || '',
+          )}
+        />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (

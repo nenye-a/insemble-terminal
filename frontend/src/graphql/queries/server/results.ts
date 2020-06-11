@@ -29,43 +29,47 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
       locationTagId: $locationTagId
       tableId: $tableId
     ) {
-      id
-      type
-      businessTag {
+      polling
+      error
+      table {
         id
-        params
         type
-      }
-      locationTag {
-        id
-        params
-        type
-      }
-      data {
-        id
-        name
-        avgRating
-        numLocation
-        numReview
-        customerVolumeIndex
-        localCategoryIndex
-        localRetailIndex
-        nationalIndex
-      }
-      compareData {
-        id
-        name
-        avgRating
-        numLocation
-        numReview
-        customerVolumeIndex
-        localCategoryIndex
-        localRetailIndex
-        nationalIndex
-        compareId
-      }
-      comparationTags {
-        ...ComparationTagFragment
+        businessTag {
+          id
+          params
+          type
+        }
+        locationTag {
+          id
+          params
+          type
+        }
+        data {
+          id
+          name
+          avgRating
+          numLocation
+          numReview
+          customerVolumeIndex
+          localCategoryIndex
+          localRetailIndex
+          nationalIndex
+        }
+        compareData {
+          id
+          name
+          avgRating
+          numLocation
+          numReview
+          customerVolumeIndex
+          localCategoryIndex
+          localRetailIndex
+          nationalIndex
+          compareId
+        }
+        comparationTags {
+          ...ComparationTagFragment
+        }
       }
     }
   }
@@ -83,30 +87,34 @@ export const GET_NEWS_TABLE_DATA = gql`
       locationTagId: $locationTagId
       tableId: $tableId
     ) {
-      id
-      businessTag {
-        params
-        type
-      }
-      locationTag {
-        params
-        type
-      }
-      comparationTags {
-        ...ComparationTagFragment
-      }
-      data {
-        title
-        link
-        source
-        published
-      }
-      compareData {
-        title
-        link
-        source
-        published
-        compareId
+      polling
+      error
+      table {
+        id
+        businessTag {
+          params
+          type
+        }
+        locationTag {
+          params
+          type
+        }
+        comparationTags {
+          ...ComparationTagFragment
+        }
+        data {
+          title
+          link
+          source
+          published
+        }
+        compareData {
+          title
+          link
+          source
+          published
+          compareId
+        }
       }
     }
   }
@@ -124,38 +132,42 @@ export const GET_ACTIVITY_DATA = gql`
       locationTagId: $locationTagId
       tableId: $tableId
     ) {
-      id
-      businessTag {
+      polling
+      error
+      table {
         id
-        params
-        type
-      }
-      locationTag {
-        id
-        params
-        type
-      }
-      data {
-        name
-        location
-        activityData {
-          name
-          business
-          amount
+        businessTag {
+          id
+          params
+          type
         }
-      }
-      compareData {
-        name
-        location
-        activityData {
-          name
-          business
-          amount
+        locationTag {
+          id
+          params
+          type
         }
-        compareId
-      }
-      comparationTags {
-        ...ComparationTagFragment
+        data {
+          name
+          location
+          activityData {
+            name
+            business
+            amount
+          }
+        }
+        compareData {
+          name
+          location
+          activityData {
+            name
+            business
+            amount
+          }
+          compareId
+        }
+        comparationTags {
+          ...ComparationTagFragment
+        }
       }
     }
   }
