@@ -2,6 +2,7 @@
   "name": "insemble-terminal",
   "scripts": {
     "start": "yarn --cwd backend-node start",
+    "start:build": "yarn build && yarn start",
     "dev": "concurrently --kill-others  \"yarn dev:backend\" \"yarn dev:frontend\"",
     "dev:backend": "yarn --cwd backend-node start:watch",
     "dev:frontend": "yarn --cwd frontend start",
