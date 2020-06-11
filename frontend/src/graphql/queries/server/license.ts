@@ -20,3 +20,40 @@ export const CREATE_TOKEN = gql`
     }
   }
 `;
+
+export const GET_MASTER_TOKENS = gql`
+  query GetMasterTokens {
+    masterLicenseList {
+      masterToken
+      name
+      numToken
+    }
+  }
+`;
+
+export const GET_TOKENS = gql`
+  query GetTokens {
+    licenseList {
+      token
+      linkedEmail
+    }
+  }
+`;
+
+export const REMOVE_TOKENS = gql`
+  mutation RemoveTokens($tokens: [String!]!) {
+    removeLicenses(tokens: $tokens)
+  }
+`;
+
+export const REMOVE_MASTER_TOKENS = gql`
+  mutation RemoveMasterTokens($masterTokens: [String!]!) {
+    removeMasterLicenses(masterTokens: $masterTokens)
+  }
+`;
+
+export const INCREMENT_MAX_TOKEN = gql`
+  mutation IncrementMaxToken($masterTokens: [String!]!) {
+    incrementMaxLicense(masterTokens: $masterTokens)
+  }
+`;

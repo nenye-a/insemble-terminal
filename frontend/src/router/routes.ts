@@ -15,6 +15,7 @@ import {
   TerminalHomeScene,
   VerificationSuccessfulScene,
 } from '../scenes';
+import EditTokenScene from '../scenes/license/EditTokenScene';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -94,6 +95,11 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
   {
     path: '/generate-token',
     component: GenerateTokenScene,
+    showSearchBar: false,
+  },
+  {
+    path: '/edit-token',
+    component: EditTokenScene,
     showSearchBar: false,
   },
 ];
