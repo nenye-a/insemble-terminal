@@ -22,64 +22,43 @@ export default function ProfileMenuDropdown() {
   let [menuOpen, setMenuOpen] = useState(false);
   let { user, logout } = useAuth();
   let history = useHistory();
-  const MENUS =
-    user?.role === 'ADMIN'
-      ? [
-          {
-            label: 'Manage Account',
-            onPress: () => {
-              history.push('/edit-profile');
-            },
-          },
-          {
-            label: 'Give Feedback',
-            onPress: () => {
-              history.push('/contact-us');
-            },
-          },
-          {
-            label: 'Help',
-            onPress: () => {},
-          },
-          {
-            label: 'Generate Token',
-            onPress: () => {
-              history.push('/generate-token');
-            },
-          },
-          {
-            label: 'Sign Out',
-            onPress: () => {
-              logout();
-              history.push('/login');
-            },
-          },
-        ]
-      : [
-          {
-            label: 'Manage Account',
-            onPress: () => {
-              history.push('/edit-profile');
-            },
-          },
-          {
-            label: 'Give Feedback',
-            onPress: () => {
-              history.push('/contact-us');
-            },
-          },
-          {
-            label: 'Help',
-            onPress: () => {},
-          },
-          {
-            label: 'Sign Out',
-            onPress: () => {
-              logout();
-              history.push('/login');
-            },
-          },
-        ];
+  let logoutMenu = {
+    label: 'Sign Out',
+    onPress: () => {
+      logout();
+      history.push('/login');
+    },
+  };
+  const GENERAL_MENUS = [
+    {
+      label: 'Manage Account',
+      onPress: () => {
+        history.push('/edit-profile');
+      },
+    },
+    {
+      label: 'Give Feedback',
+      onPress: () => {
+        history.push('/contact-us');
+      },
+    },
+    {
+      label: 'Help',
+      onPress: () => {},
+    },
+  ];
+  const USER_MENUS = [...GENERAL_MENUS, logoutMenu];
+  const ADMIN_MENUS = [
+    ...GENERAL_MENUS,
+    {
+      label: 'Generate Token',
+      onPress: () => {
+        history.push('/generate-token');
+      },
+    },
+    logoutMenu,
+  ];
+  const MENUS = user?.role === 'ADMIN' ? ADMIN_MENUS : USER_MENUS;
   return (
     <ClickAway
       onClickAway={() => {
