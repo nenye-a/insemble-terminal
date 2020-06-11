@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="408" height="244" viewBox="0 0 408 244">
+  <defs>
+    <filter id="Rectangle_1505" x="0" y="0" width="408" height="244" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#525252" flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_1375" data-name="Group 1375" transform="translate(16 -262)">
+    <g id="Group_1148" data-name="Group 1148" transform="translate(-312 -199)">
+      <g id="Group_1147" data-name="Group 1147" transform="translate(326 491)">
+        <g id="Group_962" data-name="Group 962">
+          <g transform="matrix(1, 0, 0, 1, -30, -30)" filter="url(#Rectangle_1505)">
+            <rect id="Rectangle_1505-2" data-name="Rectangle 1505" width="348" height="184" rx="2" transform="translate(30 30)" fill="#fff"/>
+          </g>
+          <g id="Group_1081" data-name="Group 1081" transform="translate(8.705 25.243)">
+            <line id="Line_34" data-name="Line 34" x2="268.954" transform="translate(20.606 126.966)" fill="none" stroke="#707070" stroke-width="1"/>
+            <text id="_4a" data-name="4a" transform="translate(29.295 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-12.9" y="0">4a</tspan></text>
+            <text id="_8a" data-name="8a" transform="translate(75.296 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-12.9" y="0">8a</tspan></text>
+            <text id="_12p" data-name="12p" transform="translate(123.295 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-20.676" y="0">12p</tspan></text>
+            <text id="_4p" data-name="4p" transform="translate(164.296 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-14.004" y="0">4p</tspan></text>
+            <text id="_8p" data-name="8p" transform="translate(211.295 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-14.004" y="0">8p</tspan></text>
+            <text id="_12a" data-name="12a" transform="translate(259.296 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-19.572" y="0">12a</tspan></text>
+            <line id="Line_39" data-name="Line 39" y1="3.375" transform="translate(159.897 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_40" data-name="Line 40" y1="3.375" transform="translate(47.243 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_41" data-name="Line 41" y1="3.375" transform="translate(81.094 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_42" data-name="Line 42" y1="3.375" transform="translate(58.342 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_43" data-name="Line 43" y1="3.375" transform="translate(69.441 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_44" data-name="Line 44" y1="3.375" transform="translate(92.193 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_45" data-name="Line 45" y1="3.375" transform="translate(103.292 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_46" data-name="Line 46" y1="3.375" transform="translate(114.946 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_47" data-name="Line 47" y1="3.375" transform="translate(126.045 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_48" data-name="Line 48" y1="3.375" transform="translate(137.144 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_49" data-name="Line 49" y1="3.375" transform="translate(148.798 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_50" data-name="Line 50" y1="3.375" transform="translate(24.49 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_51" data-name="Line 51" y1="3.375" transform="translate(170.996 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_52" data-name="Line 52" y1="3.375" transform="translate(182.649 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_53" data-name="Line 53" y1="3.375" transform="translate(193.748 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_54" data-name="Line 54" y1="3.375" transform="translate(204.847 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_55" data-name="Line 55" y1="3.375" transform="translate(227.6 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_56" data-name="Line 56" y1="3.375" transform="translate(238.699 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_57" data-name="Line 57" y1="3.375" transform="translate(216.501 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_58" data-name="Line 58" y1="3.375" transform="translate(250.353 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_59" data-name="Line 59" y1="3.375" transform="translate(261.452 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_60" data-name="Line 60" y1="3.375" transform="translate(272.55 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_61" data-name="Line 61" y1="3.375" transform="translate(35.589 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <line id="Line_62" data-name="Line 62" y1="3.375" transform="translate(284.204 123.591)" fill="none" stroke="#707070" stroke-width="1"/>
+            <text id="_75" data-name="75" transform="translate(20.295 36.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-13.344" y="0">75</tspan></text>
+            <text id="_25" data-name="25" transform="translate(20.295 103.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-13.344" y="0">25</tspan></text>
+            <text id="_50" data-name="50" transform="translate(20.295 70.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-13.344" y="0">50</tspan></text>
+            <text id="_100" data-name="100" transform="translate(23.295 4.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-20.016" y="0">100</tspan></text>
+            <g id="Group_1144" data-name="Group 1144" transform="translate(47.243 60.05)">
+              <path id="Path_3948" data-name="Path 3948" d="M-19.3,55.048S1.826,20.684,13.184,3.8,54.047-12.75,59.741-11.155,94.516-2.481,114.3,9.5c9.238,5.593,11.414,11.092,13.776,15.272s4.554,6.945,10.8,11.983c11.709,9.453,22.264,10.557,45.241,18.3" transform="translate(19.305 11.866)" fill="none" stroke="#6749aa" stroke-linecap="round" stroke-width="1"/>
+            </g>
+            <g id="Group_1145" data-name="Group 1145" transform="translate(92.749 64.904)">
+              <path id="Path_3948-2" data-name="Path 3948" d="M-19.3,58.315S-14.517,40.492-8.926,27.38c1.8-4.222,19.135-18.533,20.879-20.2C13.513,5.679,22.23.99,28.311.208,33.062-.4,55.546-.7,69.14-3.128A44.914,44.914,0,0,1,95.065.208c9.521,4.532,17.807,13.631,20.864,18.093,5.823,8.5,28.475,31.742,34.194,34.915,4.558,2.529,22.215,5.05,22.215,5.05" transform="translate(19.305 3.748)" fill="none" stroke="#aa496e" stroke-linecap="round" stroke-width="1"/>
+            </g>
+            <g id="Group_1374" data-name="Group 1374" transform="translate(47.8 26.301)">
+              <path id="Path_3948-3" data-name="Path 3948" d="M-18.3,56.156A315.225,315.225,0,0,0-7.913,25.7C-2.927,8.282,6.126-8.859,17.386-26.481c4.054-6.344,12.184-13.89,22.88-15.625,18.113-2.94,28.225-4.556,42.773,4.054,13.864,8.2,17.728,64.26,18.674,78.069.6,8.83,8.423,15.661,14.881,15.963,21.548,1.008,71.523-.754,101.417.192" transform="translate(18.3 44.46)" fill="none" stroke="#5eb3e2" stroke-linecap="round" stroke-width="1"/>
+            </g>
+            <text id="_4a-2" data-name="4a" transform="translate(295.295 142.757)" fill="gray" font-size="12" font-family="Avenir-Book, Avenir"><tspan x="-12.9" y="0">4a</tspan></text>
+          </g>
+        </g>
+      </g>
+      <text id="Starbucks_Atlanta_" data-name="Starbucks (Atlanta)" transform="translate(568 513)" fill="#4b4b4b" font-size="10" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks (Atlanta)</tspan></text>
+      <g id="Ellipse_9" data-name="Ellipse 9" transform="translate(550 505)" fill="#ece9f6" stroke="#6749aa" stroke-width="1">
+        <circle cx="5" cy="5" r="5" stroke="none"/>
+        <circle cx="5" cy="5" r="4.5" fill="none"/>
+      </g>
+      <text id="Hodgepodge_Coffeehouse_720_Moreland_Ave_" data-name="Hodgepodge
+Coffeehouse
+(720 Moreland Ave)" transform="translate(568 554)" fill="#4b4b4b" font-size="10" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Hodgepodge</tspan><tspan x="0" y="14">Coffeehouse</tspan><tspan x="0" y="28">(720 Moreland Ave)</tspan></text>
+      <g id="Ellipse_74" data-name="Ellipse 74" transform="translate(550 546)" fill="#fff" stroke="#5eb3e2" stroke-width="1">
+        <circle cx="5" cy="5" r="5" stroke="none"/>
+        <circle cx="5" cy="5" r="4.5" fill="none"/>
+      </g>
+      <text id="Wingstop_Atlanta_" data-name="Wingstop (Atlanta)" transform="translate(568 533)" fill="#4b4b4b" font-size="10" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Wingstop (Atlanta)</tspan></text>
+      <g id="Ellipse_114" data-name="Ellipse 114" transform="translate(550 525)" fill="#fff" stroke="#ac4d72" stroke-width="1">
+        <circle cx="5" cy="5" r="5" stroke="none"/>
+        <circle cx="5" cy="5" r="4.5" fill="none"/>
+      </g>
+    </g>
+    <text id="Comparing_with_Hodgepodge_and_Wingstop" data-name="Comparing with Hodgepodge and Wingstop" transform="translate(362 282)" fill="#707070" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-247.992" y="0">Comparing with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Hodgepodge and Wingstop</tspan></text>
+    <text id="Activity" transform="translate(13 283)" fill="#674ca7" font-size="14" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">Activity</tspan></text>
+  </g>
+</svg>

@@ -7,6 +7,7 @@ import { BLACK, WHITE } from '../../constants/colors';
 import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../../constants/uri';
 import { VIEWPORT_TYPE } from '../../constants/viewports';
 import { useViewport } from '../../helpers';
+import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 
 type ViewWithViewportType = ViewProps & {
   isDesktop: boolean;
@@ -24,13 +25,15 @@ export default function Footer() {
           history.push('/contact-us');
         }}
       >
-        <WhiteText>Contact us!</WhiteText>
+        <WhiteText fontWeight={FONT_WEIGHT_MEDIUM}>Contact us!</WhiteText>
       </TouchableOpacity>
       <Row isDesktop={isDesktop}>
-        <CopyrightContainer isDesktop={isDesktop}>
-          <WhiteLink href={TERMS_OF_SERVICE_PDF}>Terms of Service</WhiteLink>
-          <WhiteLink href={PRIVACY_POLICY_PDF}>Privacy Policy</WhiteLink>
-        </CopyrightContainer>
+        {isDesktop && (
+          <CopyrightContainer isDesktop={isDesktop}>
+            <WhiteLink href={TERMS_OF_SERVICE_PDF}>Terms of Service</WhiteLink>
+            <WhiteLink href={PRIVACY_POLICY_PDF}>Privacy Policy</WhiteLink>
+          </CopyrightContainer>
+        )}
         <CopyrightContainer isDesktop={isDesktop}>
           <WhiteText>@2020 Insemble</WhiteText>
           <WhiteText>Insemble Inc. All Rights Reserved.</WhiteText>
