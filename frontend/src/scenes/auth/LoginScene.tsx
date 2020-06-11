@@ -1,15 +1,20 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 
-import { Card, Text, View, Button } from '../../core-ui';
+import {
+  Card,
+  //  Text,
+  View,
+  // Button
+} from '../../core-ui';
 import { NAVBAR_HEIGHT } from '../../constants/theme';
 
 import LoginForm from './LoginForm';
 
 export default function LoginScene() {
-  let history = useHistory();
-  let noAccount = "Don't have an account?";
+  // let history = useHistory();
+  // let noAccount = "Don't have an account?";
 
   return (
     <Container flex>
@@ -34,15 +39,15 @@ export default function LoginScene() {
   );
 }
 
-const RowView = styled(View)`
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-`;
+// const RowView = styled(View)`
+//   flex-direction: row;
+//   justify-content: center;
+//   align-items: center;
+// `;
 
-const NoAccountContainer = styled(RowView)`
-  margin: 16px 0 0 0;
-`;
+// const NoAccountContainer = styled(RowView)`
+//   margin: 16px 0 0 0;
+// `;
 
 const Container = styled(View)`
   justify-content: center;

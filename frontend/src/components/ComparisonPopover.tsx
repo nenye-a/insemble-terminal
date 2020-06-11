@@ -16,8 +16,13 @@ import {
   THEME_COLOR,
   GREY_DIVIDER,
   COLORS,
+  BLACK,
 } from '../constants/colors';
-import { capitalize } from '../helpers';
+import {
+  capitalize,
+  generateRandomColor,
+  lightenOrDarkenColor,
+} from '../helpers';
 import { ReviewTag, CompareActionType } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import {
@@ -82,24 +87,31 @@ export default function ComparisonPopover(props: Props) {
         businessTag: BusinessTagResult;
       },
       index: number,
-    ) => ({
-      id,
-      locationTag: locationTag
-        ? {
-            id: locationTag.id,
-            type: locationTag.type,
-            params: locationTag.params,
-          }
-        : null,
-      businessTag: businessTag
-        ? {
-            id: businessTag.id,
-            type: businessTag.type,
-            params: businessTag.params,
-          }
-        : null,
-      fill: usableColors[index],
-    });
+    ) => {
+      let circleColor = usableColors[index]
+        ? reviewTag === ReviewTag.PERFORMANCE || reviewTag === ReviewTag.NEWS
+          ? lightenOrDarkenColor(usableColors[index], 25)
+          : usableColors[index]
+        : generateRandomColor();
+      return {
+        id,
+        locationTag: locationTag
+          ? {
+              id: locationTag.id,
+              type: locationTag.type,
+              params: locationTag.params,
+            }
+          : null,
+        businessTag: businessTag
+          ? {
+              id: businessTag.id,
+              type: businessTag.type,
+              params: businessTag.params,
+            }
+          : null,
+        fill: circleColor,
+      };
+    };
     onTableIdChange && onTableIdChange(updateData.updateComparison.tableId);
     let activeComparisonList = updateData.updateComparison.comparationTags.map(
       mapFn,
@@ -120,40 +132,48 @@ export default function ComparisonPopover(props: Props) {
       {activeComparison && activeComparison.length > 0 ? (
         <View>
           <Title>Active Comparison</Title>
-          {activeComparison.map((comparison) => (
-            <Row key={'row_' + comparison.id}>
-              <Circle style={{ backgroundColor: comparison.fill }} />
-              <SearchFilterBar
-                key={'search_' + comparison.id}
-                defaultReviewTag={capitalize(reviewTag)}
-                defaultBusinessTag={comparison.businessTag as BusinessTag}
-                defaultLocationTag={
-                  comparison.locationTag
-                    ? {
-                        params: comparison.locationTag.params,
-                        type: comparison.locationTag.type,
-                      }
-                    : undefined
-                }
-                disableAll
-              />
-              <CloseContainer
-                key={'del_' + comparison.id}
-                onPress={() => {
-                  updateComparison({
-                    variables: {
-                      reviewTag,
-                      comparationTagId: comparison.id,
-                      tableId,
-                      actionType: CompareActionType.DELETE,
-                    },
-                  });
-                }}
-              >
-                <SvgRoundClose />
-              </CloseContainer>
-            </Row>
-          ))}
+          {activeComparison.map((comparison) => {
+            let bgColor =
+              reviewTag === ReviewTag.NEWS ||
+              reviewTag === ReviewTag.PERFORMANCE
+                ? comparison.fill
+                : lightenOrDarkenColor(comparison.fill || BLACK, 25);
+
+            return (
+              <Row key={'row_' + comparison.id}>
+                <Circle style={{ backgroundColor: bgColor }} />
+                <SearchFilterBar
+                  key={'search_' + comparison.id}
+                  defaultReviewTag={capitalize(reviewTag)}
+                  defaultBusinessTag={comparison.businessTag as BusinessTag}
+                  defaultLocationTag={
+                    comparison.locationTag
+                      ? {
+                          params: comparison.locationTag.params,
+                          type: comparison.locationTag.type,
+                        }
+                      : undefined
+                  }
+                  disableAll
+                />
+                <CloseContainer
+                  key={'del_' + comparison.id}
+                  onPress={() => {
+                    updateComparison({
+                      variables: {
+                        reviewTag,
+                        comparationTagId: comparison.id,
+                        tableId,
+                        actionType: CompareActionType.DELETE,
+                      },
+                    });
+                  }}
+                >
+                  <SvgRoundClose />
+                </CloseContainer>
+              </Row>
+            );
+          })}
           <ComparisonDivider />
         </View>
       ) : null}

@@ -1,8 +1,14 @@
 import React from 'react';
 
 import { DataTable } from '../../components';
-import { getPublishedDate, useSortableData } from '../../helpers';
+import {
+  getPublishedDate,
+  useSortableData,
+  lightenOrDarkenColor,
+  getTextColor,
+} from '../../helpers';
 import { Direction, MergedNewsData } from '../../types/types';
+import { WHITE } from '../../constants/colors';
 
 type Props = {
   data: Array<MergedNewsData>;
@@ -38,13 +44,17 @@ export default function NewsTable(props: Props) {
       </DataTable.HeaderRow>
       {sortedData.map((row, index) => {
         let { title = '', link = '', source = '', published, fill } = row;
+        let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
+        let textColor = getTextColor(bgColor);
         return (
           <DataTable.Row
             key={index}
             onPress={() => {
               window.open(link, '_blank');
             }}
-            style={{ backgroundColor: fill || undefined }}
+            style={{
+              backgroundColor: bgColor,
+            }}
           >
             <DataTable.Cell
               width={500}
@@ -53,12 +63,15 @@ export default function NewsTable(props: Props) {
                 overflow: 'hidden',
                 whiteSpace: 'nowrap',
                 display: 'block',
+                color: textColor,
               }}
             >
               {title}
             </DataTable.Cell>
-            <DataTable.Cell>{source}</DataTable.Cell>
-            <DataTable.Cell align="right">
+            <DataTable.Cell style={{ color: textColor }}>
+              {source}
+            </DataTable.Cell>
+            <DataTable.Cell style={{ color: textColor }} align="right">
               {getPublishedDate(published)}
             </DataTable.Cell>
           </DataTable.Row>
