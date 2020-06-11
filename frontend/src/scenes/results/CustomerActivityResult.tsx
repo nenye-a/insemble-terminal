@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -23,9 +23,11 @@ type Props = {
   tableId?: string;
 };
 
+const POLL_INTERVAL = 5000;
+
 export default function CustomerActivityResult(props: Props) {
   let { businessTagId, locationTagId, tableId } = props;
-  let { data, loading, error, refetch } = useQuery<
+  let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
     GetActivity,
     GetActivityVariables
   >(GET_ACTIVITY_DATA, {
@@ -34,6 +36,7 @@ export default function CustomerActivityResult(props: Props) {
       locationTagId,
       tableId,
     },
+    pollInterval: POLL_INTERVAL,
   });
 
   let { data: coloredData, comparisonTags } = useColoredData<
@@ -48,6 +51,16 @@ export default function CustomerActivityResult(props: Props) {
     !data?.activityTable.table?.data ||
     data?.activityTable.table.data.length === 0;
 
+  useEffect(() => {
+    if (
+      (data?.activityTable.table?.data || data?.activityTable.error || error) &&
+      data?.activityTable &&
+      !data.activityTable.polling
+    ) {
+      stopPolling();
+    }
+  }, [data, error, stopPolling]);
+
   return (
     <Container>
       <ResultTitle
@@ -59,6 +72,7 @@ export default function CustomerActivityResult(props: Props) {
           refetch({
             tableId: newTableId,
           });
+          startPolling(POLL_INTERVAL);
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.ACTIVITY}

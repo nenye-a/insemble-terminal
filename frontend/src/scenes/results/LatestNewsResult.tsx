@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -23,9 +23,11 @@ type Props = {
   tableId?: string;
 };
 
+const POLL_INTERVAL = 5000;
+
 export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId, tableId } = props;
-  let { data, loading, error, refetch } = useQuery<
+  let { data, loading, error, refetch, startPolling, stopPolling } = useQuery<
     GetNewsTable,
     GetNewsTableVariables
   >(GET_NEWS_TABLE_DATA, {
@@ -34,6 +36,7 @@ export default function LatestNewsResult(props: Props) {
       locationTagId,
       tableId,
     },
+    pollInterval: POLL_INTERVAL,
   });
   let { data: coloredData, comparisonTags } = useColoredData<
     NewsData,
@@ -46,6 +49,16 @@ export default function LatestNewsResult(props: Props) {
   let noData =
     !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
 
+  useEffect(() => {
+    if (
+      (data?.newsTable.table?.data || data?.newsTable.error || error) &&
+      data?.newsTable &&
+      !data.newsTable.polling
+    ) {
+      stopPolling();
+    }
+  }, [data, error, stopPolling]);
+
   return (
     <Container>
       <ResultTitle
@@ -57,6 +70,7 @@ export default function LatestNewsResult(props: Props) {
           refetch({
             tableId: newTableId,
           });
+          startPolling(POLL_INTERVAL);
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.NEWS}

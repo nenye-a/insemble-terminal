@@ -18,10 +18,7 @@ import { ResultQuery, OwnershipType, SearchTag } from '../../types/types';
 import { getResultQueries, capitalize } from '../../helpers';
 import SvgArrowUp from '../../components/icons/arrow-up';
 
-// import PerformanceByLocationResult from './PerformanceByLocationResult';
-// import OverallPerformanceResult from './OverallPerformanceResult';
-// import PerformanceByBrandResult from './PerformanceByBrandResult';
-// import PerformanceByCategoryResult from './PerformanceByCategoryResult';
+import PerformanceResult from './PerformanceResult';
 import LatestNewsResult from './LatestNewsResult';
 import CustomerActivityResult from './CustomerActivityResult';
 import PropertyOwnerInformationResult from './PropertyOwnerInformationResult';
@@ -29,7 +26,6 @@ import CompanyInformationResult from './CompanyInformationResult';
 import PropertyContactsResult from './PropertyContactsResult';
 import CompanyContactsResult from './CompanyContactsResult';
 import CoverageResult from './CoverageResult';
-import PerformanceResult from './PerformanceResult';
 
 type SearchState = {
   search: SearchTag;

@@ -7,12 +7,8 @@ import {
   PerformanceTableType,
   OwnershipType,
 } from '../../generated/globalTypes';
-// import OverallPerformanceResult from '../results/OverallPerformanceResult';
-import LatestNewsResult from '../results/LatestNewsResult';
-// import PerformanceByCategoryResult from '../results/PerformanceByCategoryResult';
-// import PerformanceByBrand from '../results/PerformanceByBrandResult';
-// import PerformanceByLocationResult from '../results/PerformanceByLocationResult';
 import PerformanceResult from '../results/PerformanceResult';
+import LatestNewsResult from '../results/LatestNewsResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
 import PropertyContactsResult from '../results/PropertyContactsResult';
 import CompanyContactsResult from '../results/CompanyContactsResult';

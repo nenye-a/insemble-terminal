@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -32,6 +32,8 @@ type Props = {
   headerTitle?: string;
 };
 
+const POLL_INTERVAL = 5000;
+
 export default function PerformanceResult(props: Props) {
   let {
     businessTagId,
@@ -43,7 +45,7 @@ export default function PerformanceResult(props: Props) {
     headerTitle,
   } = props;
 
-  let { data, loading, error, refetch } = useQuery<
+  let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
     GetPerformanceTable,
     GetPerformanceTableVariables
   >(GET_PERFORMANCE_TABLE_DATA, {
@@ -53,6 +55,7 @@ export default function PerformanceResult(props: Props) {
       locationTagId,
       tableId,
     },
+    pollInterval: POLL_INTERVAL,
   });
   let { data: coloredData, comparisonTags } = useColoredData<
     PerformanceData,
@@ -66,6 +69,18 @@ export default function PerformanceResult(props: Props) {
     !data?.performanceTable.table?.data ||
     data.performanceTable.table?.data.length === 0;
 
+  useEffect(() => {
+    if (
+      (data?.performanceTable.table?.data ||
+        data?.performanceTable.error ||
+        error) &&
+      data?.performanceTable &&
+      !data.performanceTable.polling
+    ) {
+      stopPolling();
+    }
+  }, [data, error, stopPolling]);
+
   return (
     <Container>
       <ResultTitle
@@ -75,11 +90,12 @@ export default function PerformanceResult(props: Props) {
         tableId={data?.performanceTable.table?.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
-            performanceType: PerformanceTableType.ADDRESS,
+            performanceType,
             businessTagId,
             locationTagId,
             tableId: newTableId,
           });
+          startPolling(POLL_INTERVAL);
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.PERFORMANCE}
