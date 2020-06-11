@@ -14,6 +14,7 @@ import { useAuth } from '../context';
 import {
   authenticatedRoutes,
   unAuthenticatedRoutes,
+  authenticatedUnactiveRoutes,
   RouteType,
 } from './routes';
 
@@ -27,7 +28,7 @@ export default function MainRoute() {
 
 function Routes() {
   let history = useHistory();
-  let { isAuthenticated } = useAuth();
+  let { isAuthenticated, user } = useAuth();
   let mapFn = (
     {
       component: Component,
@@ -60,7 +61,9 @@ function Routes() {
   return (
     <Switch>
       {isAuthenticated
-        ? authenticatedRoutes.map(mapFn)
+        ? user?.license
+          ? authenticatedRoutes.map(mapFn)
+          : authenticatedUnactiveRoutes.map(mapFn)
         : unAuthenticatedRoutes.map(mapFn)}
       <Route component={AuthScene} />
     </Switch>

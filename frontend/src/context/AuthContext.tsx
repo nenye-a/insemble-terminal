@@ -25,6 +25,7 @@ type User = {
   firstName: string;
   lastName: string;
   email: string;
+  license: boolean;
 };
 
 type Props = { children?: ReactNode };
@@ -69,8 +70,8 @@ export default function AuthProvider(props: Props) {
 
   useEffect(() => {
     if (data) {
-      let { firstName, lastName, email } = data.userProfile;
-      setUser({ firstName, lastName, email });
+      let { firstName, lastName, email, license } = data.userProfile;
+      setUser({ firstName, lastName, email, license });
     }
   }, [data]);
 
