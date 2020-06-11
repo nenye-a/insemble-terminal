@@ -1,7 +1,11 @@
 import React from 'react';
 
 import { DataTable } from '../../components';
-import { getPublishedDate, useSortableData } from '../../helpers';
+import {
+  getPublishedDate,
+  useSortableData,
+  lightenOrDarkenColor,
+} from '../../helpers';
 import { Direction, MergedNewsData } from '../../types/types';
 
 type Props = {
@@ -44,7 +48,11 @@ export default function NewsTable(props: Props) {
             onPress={() => {
               window.open(link, '_blank');
             }}
-            style={{ backgroundColor: fill || undefined }}
+            {...(fill && {
+              style: {
+                backgroundColor: lightenOrDarkenColor(fill, 25),
+              },
+            })}
           >
             <DataTable.Cell
               width={500}

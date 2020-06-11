@@ -1,12 +1,18 @@
 import React from 'react';
+import styled from 'styled-components';
 
 import { DataTable } from '../../components';
 import {
   GetPerformanceTable_performanceTable_data as PerformanceTableData,
   GetPerformanceTable_performanceTable_compareData as PerformanceTableCompareData,
 } from '../../generated/GetPerformanceTable';
-import { useSortableData } from '../../helpers';
+import {
+  useSortableData,
+  lightenOrDarkenColor,
+  getTextColor,
+} from '../../helpers';
 import { Direction } from '../../types/types';
+import { WHITE } from '../../constants/colors';
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
@@ -123,35 +129,64 @@ export default function PerformanceTable(props: Props) {
           isComparison,
           fill,
         } = row;
-
+        let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
+        let textColor = getTextColor(bgColor);
         return (
           <DataTable.Row
             key={index}
-            {...(isComparison && {
-              style: { backgroundColor: fill },
-            })}
+            style={{
+              backgroundColor: bgColor,
+            }}
           >
-            <DataTable.Cell>{name}</DataTable.Cell>
-            <DataTable.Cell width={90} align="right">
+            <DataTable.Cell style={{ color: textColor }}>{name}</DataTable.Cell>
+            <DataTable.Cell
+              width={90}
+              align="right"
+              style={{ color: textColor }}
+            >
               {formatNullData(customerVolumeIndex)}
             </DataTable.Cell>
-            <DataTable.Cell width={90} align="right">
+            <DataTable.Cell
+              width={90}
+              align="right"
+              style={{ color: textColor }}
+            >
               {formatNullData(localRetailIndex)}
             </DataTable.Cell>
-            <DataTable.Cell width={100} align="right">
+            <DataTable.Cell
+              width={100}
+              align="right"
+              style={{ color: textColor }}
+            >
               {formatNullData(localCategoryIndex)}
             </DataTable.Cell>
-            <DataTable.Cell width={90} align="right">
+            <DataTable.Cell
+              width={90}
+              align="right"
+              style={{ color: textColor }}
+            >
               {formatNullData(nationalIndex)}
             </DataTable.Cell>
-            <DataTable.Cell width={90} align="right">
+            <DataTable.Cell
+              width={90}
+              align="right"
+              style={{ color: textColor }}
+            >
               {formatNullData(avgRating)}
             </DataTable.Cell>
-            <DataTable.Cell width={90} align="right">
+            <DataTable.Cell
+              width={90}
+              align="right"
+              style={{ color: textColor }}
+            >
               {formatNullData(numReview)}
             </DataTable.Cell>
             {showNumLocation && (
-              <DataTable.Cell width={90} align="right">
+              <DataTable.Cell
+                width={90}
+                align="right"
+                style={{ color: textColor }}
+              >
                 {formatNullData(numLocation)}
               </DataTable.Cell>
             )}
