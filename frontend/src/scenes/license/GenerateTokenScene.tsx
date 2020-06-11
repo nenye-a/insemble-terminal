@@ -88,8 +88,8 @@ export default function GenerateTokenScene() {
           </TokenContainer>
           <TokenContainer>
             <Text color={DARKER_PURPLE}>Other Tokens</Text>
-            {data.createLicense.tokens.map((token) => (
-              <Text>{token}</Text>
+            {data.createLicense.tokens.map((token, idx) => (
+              <Text key={idx}>{token}</Text>
             ))}
           </TokenContainer>
         </CardContainer>
