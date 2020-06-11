@@ -4,7 +4,7 @@ import styled from 'styled-components';
 
 import {
   Card,
-  //  Text,
+  // Text,
   View,
   // Button
 } from '../../core-ui';

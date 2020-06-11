@@ -7,11 +7,8 @@ import {
   PerformanceTableType,
   OwnershipType,
 } from '../../generated/globalTypes';
-import OverallPerformanceResult from '../results/OverallPerformanceResult';
+import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
-import PerformanceByCategoryResult from '../results/PerformanceByCategoryResult';
-import PerformanceByBrand from '../results/PerformanceByBrandResult';
-import PerformanceByLocationResult from '../results/PerformanceByLocationResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
 import PropertyContactsResult from '../results/PropertyContactsResult';
 import CompanyContactsResult from '../results/CompanyContactsResult';
@@ -33,13 +30,39 @@ export default function TerminalDataResult(props: Props) {
           };
           if (tableType === TableType.PERFORMANCE) {
             if (performanceTableType === PerformanceTableType.OVERALL) {
-              return <OverallPerformanceResult {...props} />;
+              return (
+                <PerformanceResult
+                  {...props}
+                  title="Overall Performance"
+                  performanceType={performanceTableType}
+                />
+              );
             } else if (performanceTableType === PerformanceTableType.BRAND) {
-              return <PerformanceByBrand {...props} />;
+              return (
+                <PerformanceResult
+                  {...props}
+                  title="By Brand"
+                  performanceType={performanceTableType}
+                />
+              );
             } else if (performanceTableType === PerformanceTableType.CATEGORY) {
-              return <PerformanceByCategoryResult {...props} />;
+              return (
+                <PerformanceResult
+                  {...props}
+                  title="By Category"
+                  performanceType={performanceTableType}
+                />
+              );
             } else if (performanceTableType === PerformanceTableType.ADDRESS) {
-              return <PerformanceByLocationResult {...props} />;
+              return (
+                <PerformanceResult
+                  {...props}
+                  title="By Location"
+                  performanceType={performanceTableType}
+                  showNumLocation={false}
+                  headerTitle="By Address"
+                />
+              );
             }
           } else if (tableType === TableType.NEWS) {
             return <LatestNewsResult {...props} />;

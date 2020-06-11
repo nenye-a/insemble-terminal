@@ -7,16 +7,16 @@ import {
 } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import {
-  GetPerformanceTable_performanceTable_data as PerformanceData,
-  GetPerformanceTable_performanceTable_compareData as PerformanceCompareData,
+  GetPerformanceTable_performanceTable_table_data as PerformanceData,
+  GetPerformanceTable_performanceTable_table_compareData as PerformanceCompareData,
 } from '../generated/GetPerformanceTable';
 import {
-  GetNewsTable_newsTable_data as NewsData,
-  GetNewsTable_newsTable_compareData as NewsCompareData,
+  GetNewsTable_newsTable_table_data as NewsData,
+  GetNewsTable_newsTable_table_compareData as NewsCompareData,
 } from '../generated/GetNewsTable';
 import {
-  GetActivity_activityTable_data as ActivityData,
-  GetActivity_activityTable_compareData as ActivityCompareData,
+  GetActivity_activityTable_table_data as ActivityData,
+  GetActivity_activityTable_table_compareData as ActivityCompareData,
 } from '../generated/GetActivity';
 import {
   GetCoverage_coverageTable_data as CoverageData,

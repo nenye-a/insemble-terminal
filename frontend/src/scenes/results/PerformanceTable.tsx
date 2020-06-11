@@ -2,8 +2,8 @@ import React from 'react';
 
 import { DataTable } from '../../components';
 import {
-  GetPerformanceTable_performanceTable_data as PerformanceTableData,
-  GetPerformanceTable_performanceTable_compareData as PerformanceTableCompareData,
+  GetPerformanceTable_performanceTable_table_data as PerformanceTableData,
+  GetPerformanceTable_performanceTable_table_compareData as PerformanceTableCompareData,
 } from '../../generated/GetPerformanceTable';
 import {
   useSortableData,
