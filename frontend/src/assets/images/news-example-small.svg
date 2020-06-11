@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="408" height="296" viewBox="0 0 408 296">
+  <defs>
+    <filter id="Rectangle_1499" x="0" y="0" width="408" height="296" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#525252" flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <clipPath id="clip-path">
+      <rect id="Rectangle_1575" data-name="Rectangle 1575" width="69" height="34" transform="translate(614 826)" fill="#fff"/>
+    </clipPath>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.586" stop-color="#fafafa"/>
+      <stop offset="1" stop-color="#f7f7f7"/>
+    </linearGradient>
+  </defs>
+  <g id="Group_1373" data-name="Group 1373" transform="translate(16 -515)">
+    <g id="Group_1020" data-name="Group 1020" transform="translate(-504.543 406)">
+      <g transform="matrix(1, 0, 0, 1, 488.54, 109)" filter="url(#Rectangle_1499)">
+        <rect id="Rectangle_1499-2" data-name="Rectangle 1499" width="348" height="236" rx="2" transform="translate(30 30)" fill="#fff"/>
+      </g>
+      <path id="Rectangle_1631" data-name="Rectangle 1631" d="M0,0H349a0,0,0,0,1,0,0V40a2,2,0,0,1-2,2H2a2,2,0,0,1-2-2V0A0,0,0,0,1,0,0Z" transform="translate(517.543 294)" fill="#e8f8ff"/>
+      <path id="Rectangle_1500" data-name="Rectangle 1500" d="M2,0H347a2,2,0,0,1,2,2V28a0,0,0,0,1,0,0H0a0,0,0,0,1,0,0V2A2,2,0,0,1,2,0Z" transform="translate(517.543 139)" fill="#674ea7"/>
+      <text id="Company" transform="translate(537.543 157)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Company</tspan></text>
+      <text id="_22_mins" data-name="22 mins" transform="translate(846.543 193)" fill="#4b4b4b" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-45.266" y="0">22 mins</tspan></text>
+      <g id="Group_1005" data-name="Group 1005" transform="translate(696.654 144)">
+        <text id="Posted" transform="translate(151.889 13)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-41.184" y="0">Posted</tspan></text>
+      </g>
+      <text id="Starbucks_Reduces_Georgia_Staff_Hours_Amid_Lagging_Sales_Figures" data-name="Starbucks Reduces Georgia Staff 
+Hours Amid Lagging Sales Figures" transform="translate(537.543 184)" fill="#4b4b4b" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks Reduces Georgia Staff </tspan><tspan x="0" y="16">Hours Amid Lagging Sales Figures</tspan></text>
+      <rect id="Rectangle_1572" data-name="Rectangle 1572" width="349" height="42" transform="translate(517.543 211)" fill="#edebf5"/>
+      <text id="_37_mins" data-name="37 mins" transform="translate(846.543 235)" fill="#4b4b4b" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-45.266" y="0">37 mins</tspan></text>
+      <text id="Dunkin_Donuts_plans_to_hire_25_000_employees_as_states_reopen" data-name="Dunkin’ Donuts plans to hire 25,000
+employees as states reopen" transform="translate(537.543 228)" fill="#4b4b4b" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Dunkin’ Donuts plans to hire 25,000</tspan><tspan x="0" y="16">employees as states reopen</tspan></text>
+      <path id="Path_4023" data-name="Path 4023" d="M348,0" transform="translate(518.543 210.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+      <text id="Is_Starbucks_still_Starbucks_Navigating_COVID-19" data-name="Is Starbucks still Starbucks? Navigating
+COVID-19" transform="translate(537.543 271)" fill="#4b4b4b" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Is Starbucks still Starbucks? Navigating</tspan><tspan x="0" y="16">COVID-19</tspan></text>
+      <text id="Simon_Property_Group_Consensus_Indicates_Potential_72.6_Upside" data-name="Simon Property Group – Consensus 
+Indicates Potential 72.6% Upside" transform="translate(537.543 311)" fill="#4b4b4b" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Simon Property Group – Consensus </tspan><tspan x="0" y="16">Indicates Potential 72.6% Upside</tspan></text>
+      <path id="Path_4022" data-name="Path 4022" d="M348,0" transform="translate(518.543 334.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+      <text id="Starbucks_plans_to_reopen_90_of_US_locations_with_modifications" data-name="Starbucks plans to reopen 90% of US 
+locations with modifications" transform="translate(537.543 351)" fill="#4b4b4b" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Starbucks plans to reopen 90% of US </tspan><tspan x="0" y="16">locations with modifications</tspan></text>
+      <path id="Path_4021" data-name="Path 4021" d="M348,0" transform="translate(518.543 374.5)" fill="none" stroke="#707070" stroke-width="0.1"/>
+      <text id="_1_hour" data-name="1 hour" transform="translate(846.543 279)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-40.74" y="0">1 hour</tspan></text>
+      <text id="_2_hour" data-name="2 hour" transform="translate(846.543 319)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-40.74" y="0">2 hour</tspan></text>
+      <text id="_3_hour" data-name="3 hour" transform="translate(846.543 361)" fill="#4b4b4b" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-40.74" y="0">3 hour</tspan></text>
+      <rect id="Rectangle_1629" data-name="Rectangle 1629" width="349" height="89" transform="translate(517.543 314)" fill="url(#linear-gradient)"/>
+    </g>
+    <text id="News" transform="translate(13 537)" fill="#674ca7" font-size="14" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">News</tspan></text>
+    <text id="Feed_with_Starbucks_Dunkin_and_Simon_Properties" data-name="Feed with Starbucks, Dunkin’, and Simon Properties" transform="translate(365 537)" fill="#707070" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-290.208" y="0">Feed with</tspan><tspan y="0" xml:space="preserve" fill="#674ca7" font-family="Avenir-Heavy, Avenir" font-weight="800"> Starbucks, Dunkin’, and Simon Properties</tspan></text>
+  </g>
+</svg>

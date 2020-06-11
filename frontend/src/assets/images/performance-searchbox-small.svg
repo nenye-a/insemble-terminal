@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="408" height="141" viewBox="0 0 408 141">
+  <defs>
+    <filter id="Rectangle_1571" x="0" y="0" width="408" height="141" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#525252" flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440" x="43" y="49" width="104" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-2"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-2" x="157" y="49" width="94" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-3"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-3" x="260" y="49" width="104" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-4"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-4"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_1371" data-name="Group 1371" transform="translate(-235 -68)">
+    <g transform="matrix(1, 0, 0, 1, 235, 68)" filter="url(#Rectangle_1571)">
+      <rect id="Rectangle_1571-2" data-name="Rectangle 1571" width="348" height="81" rx="2" transform="translate(30 30)" fill="#fff"/>
+    </g>
+    <g id="Group_1138" data-name="Group 1138" transform="translate(290 118)">
+      <g id="Group_1026" data-name="Group 1026" transform="translate(-167.341)">
+        <g id="Group_286" data-name="Group 286">
+          <rect id="Rectangle_663" data-name="Rectangle 663" width="318" height="42" rx="5" transform="translate(157.341)" fill="#f7f7f7"/>
+          <text id="of" transform="translate(256.341 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">of</tspan></text>
+          <text id="in" transform="translate(361.341 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">in</tspan></text>
+          <g id="Group_989" data-name="Group 989" transform="translate(164 8)">
+            <g transform="matrix(1, 0, 0, 1, -51.66, -58)" filter="url(#Rectangle_1440)">
+              <rect id="Rectangle_1440-4" data-name="Rectangle 1440" width="86" height="28" rx="5" transform="translate(52 58)" fill="#6749aa"/>
+            </g>
+            <text id="Performance" transform="translate(43.341 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-37.576" y="0">Performance</tspan></text>
+          </g>
+          <g id="Group_994" data-name="Group 994" transform="translate(280.813 8)">
+            <g transform="matrix(1, 0, 0, 1, -168.47, -58)" filter="url(#Rectangle_1440-2)">
+              <rect id="Rectangle_1440-5" data-name="Rectangle 1440" width="76" height="28" rx="5" transform="translate(166 58)" fill="#6749aa"/>
+            </g>
+            <text id="Starbucks" transform="translate(35.528 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-28.775" y="0">Starbucks</tspan></text>
+          </g>
+          <g id="Group_995" data-name="Group 995" transform="translate(365 8)">
+            <g transform="matrix(1, 0, 0, 1, -252.66, -58)" filter="url(#Rectangle_1440-3)">
+              <rect id="Rectangle_1440-6" data-name="Rectangle 1440" width="86" height="28" rx="5" transform="translate(269 58)" fill="#6749aa"/>
+            </g>
+            <text id="Atlanta_GA" data-name="Atlanta, GA" transform="translate(59.341 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-34.554" y="0">Atlanta, GA</tspan></text>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
