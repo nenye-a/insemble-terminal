@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 
 import { DataTable } from '../../components';
 import {
@@ -126,7 +125,6 @@ export default function PerformanceTable(props: Props) {
           localCategoryIndex = '-',
           localRetailIndex = '-',
           nationalIndex = '-',
-          isComparison,
           fill,
         } = row;
         let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
