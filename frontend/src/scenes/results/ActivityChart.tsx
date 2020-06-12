@@ -15,7 +15,6 @@ import {
   SHADOW_COLOR,
   DARK_TEXT_COLOR,
   COLORS,
-  THEME_COLOR,
 } from '../../constants/colors';
 import {
   FONT_SIZE_SMALL,
@@ -46,7 +45,6 @@ export default function ActivityChart(props: Props) {
   );
 
   let lines = [];
-  console.log(tooltipData, lineChartData);
   for (let dataKey of tooltipData) {
     lines.push(
       <Line
