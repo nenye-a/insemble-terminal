@@ -27,6 +27,9 @@ def delete_categories():
     print(database.delete('BusinessTag', {}))
 
 
-insert_names()
-# insert_categories()
-# database.list_tables(True)
+if __name__ == "__main__":
+
+    # delete_categories()
+    insert_names()
+    insert_categories()
+    # database.list_tables(True)
