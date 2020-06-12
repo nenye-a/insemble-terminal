@@ -82,6 +82,7 @@ export default function TokensTable(props: Props) {
   useEffect(() => {
     let mappedData = data.map((item) => ({ ...item, isChecked: false }));
     setDataWithCheckbox(mappedData);
+    setAllSelected(false);
   }, [data]);
 
   return (

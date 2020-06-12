@@ -10,11 +10,16 @@ import {
   REMOVE_MASTER_TOKENS,
   GET_TOKENS,
   GET_MASTER_TOKENS,
+  INCREMENT_MAX_TOKEN,
 } from '../../graphql/queries/server/license';
 import {
   RemoveMasterTokens,
   RemoveMasterTokensVariables,
 } from '../../generated/RemoveMasterTokens';
+import {
+  IncrementMaxToken,
+  IncrementMaxTokenVariables,
+} from '../../generated/IncrementMaxToken';
 
 type Props = {
   data?: Array<MasterTokenData>;
@@ -36,6 +41,15 @@ export default function MasterTokensTable(props: Props) {
     RemoveMasterTokens,
     RemoveMasterTokensVariables
   >(REMOVE_MASTER_TOKENS, {
+    onError: (e) => {
+      alert.show(e.message);
+    },
+  });
+
+  let [incrementMaxToken, { loading: incrementMaxTokenLoading }] = useMutation<
+    IncrementMaxToken,
+    IncrementMaxTokenVariables
+  >(INCREMENT_MAX_TOKEN, {
     onError: (e) => {
       alert.show(e.message);
     },
@@ -80,9 +94,23 @@ export default function MasterTokensTable(props: Props) {
     });
   };
 
+  let onIncrementPress = () => {
+    let checkedLicense = dataWithCheckbox
+      .filter((item) => item.isChecked)
+      .map((item) => item.masterToken);
+    incrementMaxToken({
+      variables: {
+        masterTokens: checkedLicense,
+      },
+      awaitRefetchQueries: true,
+      refetchQueries: [{ query: GET_TOKENS }, { query: GET_MASTER_TOKENS }],
+    });
+  };
+
   useEffect(() => {
     let mappedData = data.map((item) => ({ ...item, isChecked: false }));
     setDataWithCheckbox(mappedData);
+    setAllSelected(false);
   }, [data]);
 
   return (
@@ -135,7 +163,11 @@ export default function MasterTokensTable(props: Props) {
           loading={deleteMasterTokenLoading}
         />
         <Spacing />
-        <Button text="Increment Token" />
+        <Button
+          text="Increment Token"
+          onPress={onIncrementPress}
+          loading={incrementMaxTokenLoading}
+        />
       </RowedView>
     </View>
   );
