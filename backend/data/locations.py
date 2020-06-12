@@ -753,6 +753,9 @@ def location_detailer(batch_size=300, wait=True, additional_query=None):
         locations = google.get_many_lat_lng(places, place_dict=True)
 
         for details in locations:
+            if not details:
+                continue
+
             utils.DB_TERMINAL_PLACES.update_one({
                 '_id': details['meta']['_id']
             }, {'$set': {
