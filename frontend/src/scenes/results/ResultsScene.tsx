@@ -144,6 +144,22 @@ export default function ResultsScene() {
                       performanceType={type}
                     />
                   );
+                } else if (type === PerformanceTableType.STATE) {
+                  return (
+                    <PerformanceResult
+                      {...props}
+                      title="By State"
+                      performanceType={type}
+                    />
+                  );
+                } else if (type === PerformanceTableType.CITY) {
+                  return (
+                    <PerformanceResult
+                      {...props}
+                      title="By City"
+                      performanceType={type}
+                    />
+                  );
                 }
               } else if (reviewTag === ReviewTag.NEWS) {
                 return <LatestNewsResult {...props} />;

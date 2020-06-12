@@ -36,25 +36,25 @@ export default function getResultQueries(
         type: PerformanceTableType.CATEGORY,
       });
     }
-    if (
-      businessTag &&
-      (!locationTag || locationTag?.type === LocationTagType.NATION)
-    ) {
-      queries.push({
-        reviewTag: ReviewTag.PERFORMANCE,
-        type: PerformanceTableType.STATE,
-      });
+    if (businessTag) {
+      if (!locationTag || locationTag.type === LocationTagType.NATION) {
+        queries.push({
+          reviewTag: ReviewTag.PERFORMANCE,
+          type: PerformanceTableType.STATE,
+        });
+      } else if (locationTag.type === LocationTagType.CITY) {
+        queries.push({
+          reviewTag: ReviewTag.PERFORMANCE,
+          type: PerformanceTableType.CITY,
+        });
+      } else {
+        queries.push({
+          reviewTag: ReviewTag.PERFORMANCE,
+          type: PerformanceTableType.ADDRESS,
+        });
+      }
     }
-    if (
-      businessTag &&
-      locationTag &&
-      locationTag.type !== LocationTagType.NATION
-    ) {
-      queries.push({
-        reviewTag: ReviewTag.PERFORMANCE,
-        type: PerformanceTableType.ADDRESS,
-      });
-    }
+
     // TODO: there will be by city, by county
   }
 
