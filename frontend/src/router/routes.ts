@@ -6,7 +6,6 @@ import {
   ContactUsScene,
   EditProfileScene,
   EmailVerificationScene,
-  GenerateTokenScene,
   LandingScene,
   LoginScene,
   ResultsScene,
@@ -14,8 +13,8 @@ import {
   TerminalDetailScene,
   TerminalHomeScene,
   VerificationSuccessfulScene,
+  ManageTokenScene,
 } from '../scenes';
-import EditTokenScene from '../scenes/license/EditTokenScene';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,14 +91,10 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
+
   {
-    path: '/generate-token',
-    component: GenerateTokenScene,
-    showSearchBar: false,
-  },
-  {
-    path: '/edit-token',
-    component: EditTokenScene,
+    path: '/manage-token/:param',
+    component: ManageTokenScene,
     showSearchBar: false,
   },
 ];
