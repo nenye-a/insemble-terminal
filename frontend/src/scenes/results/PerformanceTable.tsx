@@ -145,7 +145,7 @@ export default function PerformanceTable(props: Props) {
                 align="right"
                 style={{ color: textColor }}
               >
-                {formatNullData(customerVolumeIndex)}
+                {customerVolumeIndex || '-'}
               </DataTable.Cell>
               <DataTable.Cell
                 width={90}
