@@ -108,13 +108,21 @@ def extract_coverage(list_places):
     for place in list_places:
         num_locations += 1
         if 'location' in place:
+            rating = None
+            num_reviews = None
+            if 'google_details' in place:
+                if 'rating' in place['google_details']:
+                    rating = place['google_details']['rating']
+                if 'num_reviews' in place['google_details']:
+                    num_reviews = place['google_details']['num_reviews']
+
             locations.append({
                 'lat': place['location']['coordinates'][1],
                 'lng': place['location']['coordinates'][0],
                 'name': place['name'],
                 'address': place['address'],
-                'rating': place['google_details']['rating'] if 'google_details' in place else None,
-                'num_reviews': place['google_details']['rating'] if 'google_details' in place else None
+                'rating': rating,
+                'num_reviews': num_reviews
             })
     return {
         'num_locations': num_locations,
