@@ -20,6 +20,7 @@ export const GET_TERMINAL = gql`
       name
       description
       pinnedFeeds {
+        id
         tableId
         tableType
         performanceTableType
@@ -57,6 +58,14 @@ export const PIN_TABLE = gql`
       tableId: $tableId
       tableType: $tableType
     ) {
+      id
+    }
+  }
+`;
+
+export const REMOVE_PINNED_TABLE = gql`
+  mutation RemovePinnedTable($pinTableId: String!) {
+    removePinnedTable(pinTableId: $pinTableId) {
       id
     }
   }

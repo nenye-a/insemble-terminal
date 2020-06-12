@@ -22,12 +22,13 @@ type Props = {
   businessTagId?: string;
   locationTagId?: string;
   tableId?: string;
+  pinTableId?: string;
 };
 
 const POLL_INTERVAL = 5000;
 
 export default function CustomerActivityResult(props: Props) {
-  let { businessTagId, locationTagId, tableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let alert = useAlert();
   let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
     GetActivity,
@@ -38,7 +39,6 @@ export default function CustomerActivityResult(props: Props) {
       locationTagId,
       tableId,
     },
-    pollInterval: POLL_INTERVAL,
   });
 
   let { data: coloredData, comparisonTags } = useColoredData<
@@ -83,6 +83,12 @@ export default function CustomerActivityResult(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
+  useEffect(() => {
+    startPolling(POLL_INTERVAL);
+    return stopPolling;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Container>
       <ResultTitle
@@ -110,6 +116,7 @@ export default function CustomerActivityResult(props: Props) {
             type: data.activityTable.table.locationTag.type,
           },
         })}
+        pinTableId={pinTableId}
       />
       {loading || data?.activityTable.polling ? (
         <LoadingIndicator />

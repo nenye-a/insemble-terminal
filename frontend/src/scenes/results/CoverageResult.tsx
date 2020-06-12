@@ -26,10 +26,11 @@ type Props = {
   businessTagId?: string;
   locationTagId?: string;
   tableId?: string;
+  pinTableId?: string;
 };
 
 export default function CoverageResult(props: Props) {
-  let { businessTagId, locationTagId, tableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let { isLoading } = useGoogleMaps();
   let { loading, data, error, refetch } = useQuery<
     GetCoverage,
@@ -83,6 +84,7 @@ export default function CoverageResult(props: Props) {
             type: data.coverageTable.locationTag.type,
           },
         })}
+        pinTableId={pinTableId}
       />
       {loading ? (
         <LoadingIndicator />
