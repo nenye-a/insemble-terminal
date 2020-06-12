@@ -122,6 +122,6 @@ if __name__ == "__main__":
 
     for name in pd.read_csv('scripts/files/activity_generated/sorted_names.csv').set_index('_id').index[:1000]:
         print('Doing the following locations ' + name)
-        update_activity_averages(additional_query={
+        update_activity_averages(wait=False, additional_query={
             'name': name
         })
