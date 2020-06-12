@@ -187,7 +187,7 @@ const HeaderCellText = styled(Text)`
 `;
 
 const Body = styled(View)`
-  height: 350px;
+  max-height: 490px;
   overflow-y: scroll;
 `;
 
