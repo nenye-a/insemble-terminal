@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 
 import {
   View,
@@ -26,6 +26,7 @@ import { ComparationTagWithFill } from '../../types/types';
 import SvgPin from '../../components/icons/pin';
 import SvgRoundAdd from '../../components/icons/round-add';
 import SvgRoundClose from '../../components/icons/round-close';
+import SvgClose from '../../components/icons/close';
 import {
   ReviewTag,
   LocationTagType,
@@ -40,6 +41,14 @@ import {
 } from '../../generated/UpdateComparison';
 import { getResultTitle } from '../../helpers';
 import SvgQuestionMark from '../../components/icons/question-mark';
+import {
+  REMOVE_PINNED_TABLE,
+  GET_TERMINAL,
+} from '../../graphql/queries/server/terminals';
+import {
+  RemovePinnedTable,
+  RemovePinnedTableVariables,
+} from '../../generated/RemovePinnedTable';
 
 type Props = {
   title: string;
@@ -58,8 +67,13 @@ type Props = {
   infoboxContent?: () => JSX.Element;
 };
 
+type Params = {
+  terminalId?: string;
+};
+
 export default function ResultTitle(props: Props) {
   let location = useLocation();
+  let params = useParams<Params>();
   let {
     title,
     noData = false,
@@ -74,7 +88,7 @@ export default function ResultTitle(props: Props) {
     infoboxContent,
   } = props;
 
-  let showSubtitle = location.pathname.includes('terminal');
+  let isTerminalScene = location.pathname.includes('terminal');
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
@@ -86,6 +100,17 @@ export default function ResultTitle(props: Props) {
     onError: () => {},
     onCompleted: (data) => {
       onTableIdChange && onTableIdChange(data.updateComparison.tableId);
+    },
+  });
+  let [removePinnedTable, { loading: removePinnedTableLoading }] = useMutation<
+    RemovePinnedTable,
+    RemovePinnedTableVariables
+  >(REMOVE_PINNED_TABLE, {
+    onError: (e) => {
+      console.log(e);
+    },
+    onCompleted: (data) => {
+      console.log(data);
     },
   });
 
@@ -154,7 +179,7 @@ export default function ResultTitle(props: Props) {
             )}
           </Popover>
         )}
-        {showSubtitle && (
+        {isTerminalScene && (
           <>
             <Title> | </Title>
             <SubTitle>
@@ -205,24 +230,52 @@ export default function ResultTitle(props: Props) {
             )}
           </Popover>
         )}
-        <Popover
-          isOpen={pinPopoverOpen}
-          content={pinPopover}
-          position={['bottom']}
-          onClickOutside={() => setPinPopoverOpen(false)}
-          align="end"
-          containerStyle={{ overflow: 'visible' }}
-        >
-          {(ref) => (
+        {isTerminalScene ? (
+          removePinnedTableLoading ? (
+            <LoadingIndicator />
+          ) : (
             <Touchable
-              ref={ref}
-              onPress={() => setPinPopoverOpen(true)}
+              onPress={() => {
+                removePinnedTable({
+                  variables: {
+                    pinTableId: tableId,
+                  },
+                  awaitRefetchQueries: true,
+                  refetchQueries: [
+                    {
+                      query: GET_TERMINAL,
+                      variables: {
+                        terminalId: params?.terminalId || '',
+                      },
+                    },
+                  ],
+                });
+              }}
               disabled={noData}
             >
-              <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+              <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
             </Touchable>
-          )}
-        </Popover>
+          )
+        ) : (
+          <Popover
+            isOpen={pinPopoverOpen}
+            content={pinPopover}
+            position={['bottom']}
+            onClickOutside={() => setPinPopoverOpen(false)}
+            align="end"
+            containerStyle={{ overflow: 'visible' }}
+          >
+            {(ref) => (
+              <Touchable
+                ref={ref}
+                onPress={() => setPinPopoverOpen(true)}
+                disabled={noData}
+              >
+                <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+              </Touchable>
+            )}
+          </Popover>
+        )}
       </Row>
     </Container>
   );

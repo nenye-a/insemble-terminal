@@ -61,3 +61,11 @@ export const PIN_TABLE = gql`
     }
   }
 `;
+
+export const REMOVE_PINNED_TABLE = gql`
+  mutation RemovePinnedTable($pinTableId: String!) {
+    removePinnedTable(pinTableId: $pinTableId) {
+      id
+    }
+  }
+`;

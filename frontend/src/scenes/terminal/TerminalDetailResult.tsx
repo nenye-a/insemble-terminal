@@ -24,9 +24,13 @@ export default function TerminalDataResult(props: Props) {
   return (
     <View>
       {data.map(
-        ({ tableType, performanceTableType, ownershipTableType, tableId }) => {
+        (
+          { tableType, performanceTableType, ownershipTableType, tableId },
+          key,
+        ) => {
           let props = {
             tableId,
+            key,
           };
           if (tableType === TableType.PERFORMANCE) {
             if (performanceTableType === PerformanceTableType.OVERALL) {
