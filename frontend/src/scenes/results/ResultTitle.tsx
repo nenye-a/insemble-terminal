@@ -90,7 +90,6 @@ export default function ResultTitle(props: Props) {
     infoboxContent,
     pinTableId,
   } = props;
-  console.log(pinTableId);
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);

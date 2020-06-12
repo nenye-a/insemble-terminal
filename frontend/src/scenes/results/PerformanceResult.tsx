@@ -31,6 +31,7 @@ type Props = {
   performanceType: PerformanceTableType;
   showNumLocation?: boolean;
   headerTitle?: string;
+  pinTableId?: string;
 };
 
 const POLL_INTERVAL = 5000;
@@ -44,6 +45,7 @@ export default function PerformanceResult(props: Props) {
     performanceType,
     showNumLocation,
     headerTitle,
+    pinTableId,
   } = props;
   let alert = useAlert();
 
@@ -57,7 +59,6 @@ export default function PerformanceResult(props: Props) {
       locationTagId,
       tableId,
     },
-    pollInterval: POLL_INTERVAL,
   });
   let { data: coloredData, comparisonTags } = useColoredData<
     PerformanceData,
@@ -102,6 +103,12 @@ export default function PerformanceResult(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
 
+  useEffect(() => {
+    startPolling(POLL_INTERVAL);
+    return stopPolling;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Container>
       <ResultTitle
@@ -133,6 +140,7 @@ export default function PerformanceResult(props: Props) {
           },
         })}
         infoboxContent={PerformanceTablePopover}
+        pinTableId={pinTableId}
       />
       {loading || data?.performanceTable.polling ? (
         <LoadingIndicator />
