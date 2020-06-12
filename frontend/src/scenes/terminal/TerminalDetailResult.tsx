@@ -78,16 +78,16 @@ export default function TerminalDataResult(props: Props) {
               return (
                 <PerformanceResult
                   {...props}
-                  title="By State"
-                  performanceType={performanceTableType}
+                  title="By City"
+                  performanceType={PerformanceTableType.CITY}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.CITY) {
               return (
                 <PerformanceResult
                   {...props}
-                  title="By City"
-                  performanceType={performanceTableType}
+                  title="By Location"
+                  performanceType={PerformanceTableType.ADDRESS}
                 />
               );
             }
