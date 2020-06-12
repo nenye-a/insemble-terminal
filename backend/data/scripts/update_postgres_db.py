@@ -23,4 +23,10 @@ def insert_categories():
     database.insert_many('BusinessTag', categories)
 
 
-insert_categories()
+def delete_categories():
+    print(database.delete('BusinessTag', {}))
+
+
+insert_names()
+# insert_categories()
+# database.list_tables(True)
