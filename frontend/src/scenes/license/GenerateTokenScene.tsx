@@ -51,8 +51,8 @@ export default function GenerateTokenScene() {
   };
 
   return (
-    <View>
-      <CardContainer title="Generate New Token">
+    <Container>
+      <CardContainer title="Generate New Token" style={{ width: 360 }}>
         <Content onSubmit={handleSubmit(onSubmit)}>
           <Alert visible={!!error?.message} text={error?.message || ''} />
           <RowedView>
@@ -100,9 +100,14 @@ export default function GenerateTokenScene() {
           </TokenContainer>
         </CardContainer>
       )}
-    </View>
+    </Container>
   );
 }
+
+const Container = styled(View)`
+  align-items: center;
+  flex: 1;
+`;
 
 const TokenContainer = styled(View)`
   padding: 12px 24px;
@@ -111,7 +116,7 @@ const TokenContainer = styled(View)`
 `;
 
 const CardContainer = styled(Card)`
-  min-width: 360px;
+  width: 600px;
   min-height: 200px;
   margin: 20px 0;
 `;
