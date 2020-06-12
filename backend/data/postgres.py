@@ -27,15 +27,7 @@ class PostConnect(object):
 
     @staticmethod
     def get_connection():
-        if REMOTE_URL:
-            return psycopg2.connect(DB_URL)
-        else:
-            # Local database connection
-            return psycopg2.connect(
-                dbname=DB_NAME,
-                user=DB_USER,
-                password=DB_PASS
-            )
+        return psycopg2.connect(DB_URL)
 
     def get_cursor(self, *args, **kwargs):
         return self.connection.cursor(*args, **kwargs)
