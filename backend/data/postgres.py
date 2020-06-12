@@ -27,15 +27,7 @@ class PostConnect(object):
 
     @staticmethod
     def get_connection():
-        if REMOTE_URL:
-            return psycopg2.connect(DB_URL)
-        else:
-            # Local database connection
-            return psycopg2.connect(
-                dbname=DB_NAME,
-                user=DB_USER,
-                password=DB_PASS
-            )
+        return psycopg2.connect(DB_URL)
 
     def get_cursor(self, *args, **kwargs):
         return self.connection.cursor(*args, **kwargs)
@@ -120,6 +112,26 @@ class PostConnect(object):
                 ids.append(document['id'])
         self.commit()
         return ids
+
+    def delete(self, table, query):
+        self._check_table(table)
+        with self.get_cursor() as cursor:
+            if query:
+                query_string, values = self._query_params(query)
+            else:
+                query_string = ""
+
+            command_string = 'DELETE FROM "{table}" {query_string}'.format(
+                table=table,
+                query_string=query_string
+            )
+            command = cursor.mogrify(command_string, values) if query else command_string
+            try:
+                cursor.execute(command)
+                self.commit()
+                return cursor.rowcount
+            except (Exception, psycopg2.DatabaseError) as e:
+                print(e)
 
     def _convert_iter(self, iterable):
         string = ""
