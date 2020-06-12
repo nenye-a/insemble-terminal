@@ -34,7 +34,7 @@ def activity(name, address):
     name = place['name']
     location = place['address']
 
-    activity_arrays = [[0, 0, 0] + sublist + [0, 0, 0] if len(sublist) == 18 else sublist
+    activity_arrays = [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
                        for sublist in activity if len(sublist) == 18]
 
     avg_activity_per_hour = avg_hourly_activity(activity_arrays)
@@ -88,7 +88,7 @@ def aggregate_activity(name, location, scope):
 def combine_avg_activity(list_places):
 
     list_activity = [place['google_details']['activity'] for place in list_places]
-    activity_arrays = [[0, 0, 0] + sublist + [0, 0, 0] if len(sublist) == 18 else sublist
+    activity_arrays = [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
                        for sublist in utils.flatten(list_activity) if len(sublist) == 18]
 
     return package_activity(avg_hourly_activity(activity_arrays))
