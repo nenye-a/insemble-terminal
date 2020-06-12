@@ -115,82 +115,86 @@ export default function PerformanceTable(props: Props) {
           </DataTable.HeaderCell>
         )}
       </DataTable.HeaderRow>
-      {sortedData.map((row, index) => {
-        let {
-          name = '-',
-          avgRating = '-',
-          numLocation = '-',
-          numReview = '-',
-          customerVolumeIndex = '-',
-          localCategoryIndex = '-',
-          localRetailIndex = '-',
-          nationalIndex = '-',
-          fill,
-        } = row;
-        let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
-        let textColor = getTextColor(bgColor);
-        return (
-          <DataTable.Row
-            key={index}
-            style={{
-              backgroundColor: bgColor,
-            }}
-          >
-            <DataTable.Cell style={{ color: textColor }}>{name}</DataTable.Cell>
-            <DataTable.Cell
-              width={90}
-              align="right"
-              style={{ color: textColor }}
+      <DataTable.Body>
+        {sortedData.map((row, index) => {
+          let {
+            name = '-',
+            avgRating = '-',
+            numLocation = '-',
+            numReview = '-',
+            customerVolumeIndex = '-',
+            localCategoryIndex = '-',
+            localRetailIndex = '-',
+            nationalIndex = '-',
+            fill,
+          } = row;
+          let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
+          let textColor = getTextColor(bgColor);
+          return (
+            <DataTable.Row
+              key={index}
+              style={{
+                backgroundColor: bgColor,
+              }}
             >
-              {formatNullData(customerVolumeIndex)}
-            </DataTable.Cell>
-            <DataTable.Cell
-              width={90}
-              align="right"
-              style={{ color: textColor }}
-            >
-              {formatNullData(localRetailIndex)}
-            </DataTable.Cell>
-            <DataTable.Cell
-              width={100}
-              align="right"
-              style={{ color: textColor }}
-            >
-              {formatNullData(localCategoryIndex)}
-            </DataTable.Cell>
-            <DataTable.Cell
-              width={90}
-              align="right"
-              style={{ color: textColor }}
-            >
-              {formatNullData(nationalIndex)}
-            </DataTable.Cell>
-            <DataTable.Cell
-              width={90}
-              align="right"
-              style={{ color: textColor }}
-            >
-              {formatNullData(avgRating)}
-            </DataTable.Cell>
-            <DataTable.Cell
-              width={90}
-              align="right"
-              style={{ color: textColor }}
-            >
-              {formatNullData(numReview)}
-            </DataTable.Cell>
-            {showNumLocation && (
+              <DataTable.Cell style={{ color: textColor }}>
+                {name}
+              </DataTable.Cell>
               <DataTable.Cell
                 width={90}
                 align="right"
                 style={{ color: textColor }}
               >
-                {formatNullData(numLocation)}
+                {formatNullData(customerVolumeIndex)}
               </DataTable.Cell>
-            )}
-          </DataTable.Row>
-        );
-      })}
+              <DataTable.Cell
+                width={90}
+                align="right"
+                style={{ color: textColor }}
+              >
+                {formatNullData(localRetailIndex)}
+              </DataTable.Cell>
+              <DataTable.Cell
+                width={100}
+                align="right"
+                style={{ color: textColor }}
+              >
+                {formatNullData(localCategoryIndex)}
+              </DataTable.Cell>
+              <DataTable.Cell
+                width={90}
+                align="right"
+                style={{ color: textColor }}
+              >
+                {formatNullData(nationalIndex)}
+              </DataTable.Cell>
+              <DataTable.Cell
+                width={90}
+                align="right"
+                style={{ color: textColor }}
+              >
+                {formatNullData(avgRating)}
+              </DataTable.Cell>
+              <DataTable.Cell
+                width={90}
+                align="right"
+                style={{ color: textColor }}
+              >
+                {formatNullData(numReview)}
+              </DataTable.Cell>
+              {showNumLocation && (
+                <DataTable.Cell
+                  width={90}
+                  align="right"
+                  style={{ color: textColor }}
+                >
+                  {formatNullData(numLocation)}
+                </DataTable.Cell>
+              )}
+            </DataTable.Row>
+          );
+        })}
+      </DataTable.Body>
     </DataTable>
   );
 }

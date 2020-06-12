@@ -133,28 +133,30 @@ export default function MasterTokensTable(props: Props) {
             Number Tokens
           </DataTable.HeaderCell>
         </DataTable.HeaderRow>
-        {dataWithCheckbox.map((row, index) => {
-          let { masterToken, name, numToken, isChecked } = row;
-          return (
-            <DataTable.Row key={index}>
-              <DataTable.Cell width={40}>
-                <Checkbox
-                  isChecked={isChecked}
-                  onPress={() => {
-                    toggleCheck(masterToken);
-                  }}
-                />
-              </DataTable.Cell>
-              <DataTable.Cell>{masterToken}</DataTable.Cell>
-              <DataTable.Cell width={100} align="right">
-                {name}
-              </DataTable.Cell>
-              <DataTable.Cell width={150} align="right">
-                {numToken}
-              </DataTable.Cell>
-            </DataTable.Row>
-          );
-        })}
+        <DataTable.Body>
+          {dataWithCheckbox.map((row, index) => {
+            let { masterToken, name, numToken, isChecked } = row;
+            return (
+              <DataTable.Row key={index}>
+                <DataTable.Cell width={40}>
+                  <Checkbox
+                    isChecked={isChecked}
+                    onPress={() => {
+                      toggleCheck(masterToken);
+                    }}
+                  />
+                </DataTable.Cell>
+                <DataTable.Cell>{masterToken}</DataTable.Cell>
+                <DataTable.Cell width={100} align="right">
+                  {name}
+                </DataTable.Cell>
+                <DataTable.Cell width={150} align="right">
+                  {numToken}
+                </DataTable.Cell>
+              </DataTable.Row>
+            );
+          })}
+        </DataTable.Body>
       </DataTable>
       <RowedView>
         <Button
