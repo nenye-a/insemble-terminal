@@ -1,4 +1,4 @@
-export const acrivityTime = [
+export const activityTime = [
   '4AM',
   '5AM',
   '6AM',
