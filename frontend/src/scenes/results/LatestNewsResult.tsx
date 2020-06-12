@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
+import { useAlert } from 'react-alert';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
@@ -27,6 +28,8 @@ const POLL_INTERVAL = 5000;
 
 export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId, tableId } = props;
+  let alert = useAlert();
+
   let { data, loading, error, refetch, startPolling, stopPolling } = useQuery<
     GetNewsTable,
     GetNewsTableVariables
@@ -56,8 +59,27 @@ export default function LatestNewsResult(props: Props) {
       !data.newsTable.polling
     ) {
       stopPolling();
+      if (data.newsTable.table) {
+        let { compareData, comparationTags } = data.newsTable.table;
+        if (compareData.length !== comparationTags.length) {
+          let notIncluded = comparationTags
+            .filter(
+              (tag) =>
+                !compareData.map((item) => item.compareId).includes(tag.id),
+            )
+            .map((item) => item.businessTag?.params);
+          if (notIncluded.length > 0) {
+            alert.show(
+              `No data available for ${notIncluded.join(
+                ', ',
+              )}. Please check your search and try again`,
+            );
+          }
+        }
+      }
     }
-  }, [data, error, stopPolling]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   return (
     <Container>

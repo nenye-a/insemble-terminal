@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
+import { useAlert } from 'react-alert';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
@@ -44,6 +45,7 @@ export default function PerformanceResult(props: Props) {
     showNumLocation,
     headerTitle,
   } = props;
+  let alert = useAlert();
 
   let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
     GetPerformanceTable,
@@ -78,8 +80,27 @@ export default function PerformanceResult(props: Props) {
       !data.performanceTable.polling
     ) {
       stopPolling();
+      if (data.performanceTable.table) {
+        let { compareData, comparationTags } = data.performanceTable.table;
+        if (compareData.length !== comparationTags.length) {
+          let notIncluded = comparationTags
+            .filter(
+              (tag) =>
+                !compareData.map((item) => item.compareId).includes(tag.id),
+            )
+            .map((item) => item.businessTag?.params);
+          if (notIncluded.length > 0) {
+            alert.show(
+              `No data available for ${notIncluded.join(
+                ', ',
+              )}. Please check your search and try again`,
+            );
+          }
+        }
+      }
     }
-  }, [data, error, stopPolling]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   return (
     <Container>
