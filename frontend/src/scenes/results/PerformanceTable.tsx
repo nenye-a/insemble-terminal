@@ -110,7 +110,15 @@ export default function PerformanceTable(props: Props) {
           # Reviews
         </DataTable.HeaderCell>
         {showNumLocation && (
-          <DataTable.HeaderCell width={90} align="right">
+          <DataTable.HeaderCell
+            width={90}
+            align="right"
+            onClick={() => {
+              requestSort('numLocation');
+            }}
+            sortConfig={sortConfig}
+            name="numLocation"
+          >
             # Locations
           </DataTable.HeaderCell>
         )}
