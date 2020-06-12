@@ -79,7 +79,7 @@ def generate_dataframe(results):
     stats_dataframe.to_csv(GENERATED_PATH + 'stats_df_' + time + '.csv')
 
 
-def update_activity():
+def update_activity(query=None):
     pipeline = [
         {'$unwind': {'path': '$google_details.activity',
                      'preserveNullAndEmptyArrays': True}},
@@ -118,6 +118,11 @@ def update_activity():
         }},
         {"$merge": "activity-levels"}
     ]
+
+    if query:
+        pipeline.insert(0, {
+            '$match': query
+        })
 
     # TEST_DB.aggregate(pipeline)
     utils.DB_TERMINAL_PLACES.aggregate(pipeline, allowDiskUse=True)
@@ -186,13 +191,11 @@ def refactor_activities():
 
 
 if __name__ == "__main__":
-    # activity_statistics(150)
-    # num_activity_by_city()
-    # update_activity()
+
+    # update_activity({
+    #     'name': {"$regex": r"^Aroma Joe's"},
+    #     'activity_volume': {'$exists': False},
+    # })
     # merge_activity()
-    # test_activity()
-    # remove_long_items()
-    # refactor_activities()
-    # print(utils.DB_TERMINAL_PLACES.count_documents({'name': None}))
 
     pass

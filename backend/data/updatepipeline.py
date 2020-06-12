@@ -109,38 +109,43 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
 
 if __name__ == "__main__":
     # update_activity_averages()
-    setup({
-        'name': {"$regex": r'^' + "Starbucks"},
-        'city': {"$regex": "Los Angeles"}
-    })
-    update_activity_averages(additional_query={
-        # '$or': [
-        #     {
-        #         'name': {"$regex": r'^' + 'Starbucks'},
-        #         'city': {"$regex": r'^' + 'Los Angeles'},
-        #     },
-        #     {
-        #         'name': {"$regex": r'^' + 'Starbucks'},
-        #         'city': {"$regex": r'^' + 'Atlanta'},
-        #     },
-        #     {
-        #         'name': {"$regex": r'^' + 'Dunkin'},
-        #         'city': {"$regex": r'^' + 'Los Angeles'},
-        #     },
-        #     {
-        #         'name': {"$regex": r'^' + 'Dunkin'},
-        #         'city': {"$regex": r'^' + 'Atlanta'},
-        #     },
-        #     {
-        #         'name': {"$regex": r'^' + 'Wingstop'},
-        #         'city': {"$regex": r'^' + 'Los Angeles'},
-        #     },
-        #     {
-        #         'name': {"$regex": r'^' + 'Wingstop'},
-        #         'city': {"$regex": r'^' + 'Atlanta'},
-        #     },
-        # ],
-        'name': {"$regex": r'^' + "Starbucks"},
-        'city': {"$regex": "Los Angeles"}
-    })
+    # setup({
+    #     'name': {"$regex": r"^Aroma Joe's"}
+    # })
+    # update_activity_averages(additional_query={
+    #     # '$or': [
+    #     #     {
+    #     #         'name': {"$regex": r'^' + 'Starbucks'},
+    #     #         'city': {"$regex": r'^' + 'Los Angeles'},
+    #     #     },
+    #     #     {
+    #     #         'name': {"$regex": r'^' + 'Starbucks'},
+    #     #         'city': {"$regex": r'^' + 'Atlanta'},
+    #     #     },
+    #     #     {
+    #     #         'name': {"$regex": r'^' + 'Dunkin'},
+    #     #         'city': {"$regex": r'^' + 'Los Angeles'},
+    #     #     },
+    #     #     {
+    #     #         'name': {"$regex": r'^' + 'Dunkin'},
+    #     #         'city': {"$regex": r'^' + 'Atlanta'},
+    #     #     },
+    #     #     {
+    #     #         'name': {"$regex": r'^' + 'Wingstop'},
+    #     #         'city': {"$regex": r'^' + 'Los Angeles'},
+    #     #     },
+    #     #     {
+    #     #         'name': {"$regex": r'^' + 'Wingstop'},
+    #     #         'city': {"$regex": r'^' + 'Atlanta'},
+    #     #     },
+    #     # ],
+    #     'name': {"$regex": r"^Aroma Joe's"}
+    # })
     # print(utils.DB_TERMINAL_PLACES.count_documents({"type": {"$ne": None}}))
+    utils.DB_TERMINAL_PLACES.update_many({
+        'name': {'$regex': r"Aroma Joe's"},
+        'version': 0,
+    }, {'$set': {
+        'local_retail_volume': -1,
+        'local_category_volume': -1
+    }})
