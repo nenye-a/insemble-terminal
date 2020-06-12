@@ -1,7 +1,16 @@
 {
   "name": "insemble-terminal",
   "scripts": {
+    "start": "yarn --cwd backend-node start",
+    "start:build": "yarn build && yarn start",
+    "dev": "concurrently --kill-others  \"yarn dev:backend\" \"yarn dev:frontend\"",
+    "dev:backend": "yarn --cwd backend-node start:watch",
+    "dev:frontend": "yarn --cwd frontend start",
+    "migrate": "yarn --cwd backend-node migrate",
     "build": "yarn --cwd backend-node build && yarn --cwd frontend apollo:generate && yarn --cwd frontend build",
+    "clean": "yarn clean:frontend && yarn clean:backend",
+    "clean:backend": "if [ -d \"backend-node/dist\" ]; then rm -r backend-node/dist; fi",
+    "clean:frontend": "if [ -d \"frontend/build\" ]; then rm -r frontend/build; fi",
     "test": "yarn --cwd backend-node test && yarn --cwd frontend test",
     "postinstall": "yarn --cwd backend-node install --production=false && yarn --cwd frontend install --production=false"
   },
