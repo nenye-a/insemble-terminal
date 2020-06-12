@@ -24,6 +24,7 @@ import {
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
 import { MergedActivityData } from '../../types/types';
+import { generateRandomColor } from '../../helpers';
 
 type Props = {
   data: Array<MergedActivityData>;
@@ -45,16 +46,14 @@ export default function ActivityChart(props: Props) {
   );
 
   let lines = [];
-
-  for (let [i, dataKey] of tooltipData.entries()) {
-    let strokeColor = i === 0 ? THEME_COLOR : COLORS[i];
-
+  console.log(tooltipData, lineChartData);
+  for (let dataKey of tooltipData) {
     lines.push(
       <Line
         type="monotone"
         key={lines.length}
-        dataKey={dataKey}
-        stroke={strokeColor}
+        dataKey={dataKey.label}
+        stroke={dataKey.fill}
       />,
     );
   }
@@ -88,8 +87,8 @@ export default function ActivityChart(props: Props) {
         <LegendContainer flex>
           {tooltipData.map((legend, idx) => (
             <Row style={{ alignItems: 'baseline' }} key={idx}>
-              <Circle style={{ borderColor: COLORS[idx] }} />
-              <Text>{legend.replace('(', '\n(')}</Text>
+              <Circle style={{ borderColor: legend.fill }} />
+              <Text>{legend.label.replace('(', '\n(')}</Text>
             </Row>
           ))}
         </LegendContainer>
@@ -98,13 +97,17 @@ export default function ActivityChart(props: Props) {
   );
 }
 
+type TooltipWithFill = {
+  label: string;
+  fill: string;
+};
 function prepareLineChartData(
   rawData: Array<Array<ChartDatum>>,
   xAxis: string,
   yAxis: string,
   tooltipInfo: string,
 ): {
-  tooltipData: Array<string>;
+  tooltipData: Array<TooltipWithFill>;
   lineChartData: Array<ChartDatum>;
 } {
   let x = xAxis;
@@ -121,8 +124,12 @@ function prepareLineChartData(
       };
     }
   }
+  let tooltipWithFill = [...new Set(tooltipData)].map((tooltip, idx) => ({
+    label: tooltip,
+    fill: COLORS[idx] || generateRandomColor(),
+  }));
   return {
-    tooltipData: [...new Set(tooltipData)],
+    tooltipData: tooltipWithFill,
     lineChartData: Object.values(lineChartData),
   };
 }

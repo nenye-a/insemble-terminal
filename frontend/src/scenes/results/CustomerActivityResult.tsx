@@ -46,6 +46,7 @@ export default function CustomerActivityResult(props: Props) {
     data?.activityTable.table?.data,
     data?.activityTable.table?.compareData,
     data?.activityTable.table?.comparationTags,
+    true,
   );
   let noData =
     !data?.activityTable.table?.data ||
