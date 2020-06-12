@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery, useMutation } from '@apollo/react-hooks';
 
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   LoadingIndicator,
   Alert,
+  Button,
 } from '../core-ui';
 import {
   DARK_TEXT_COLOR,
@@ -43,14 +44,14 @@ export default function PinPopover(props: Props) {
     pinTable,
     { loading: pinTableLoading, data: pinTableData, error: pinTableError },
   ] = useMutation<PinTable, PinTableVariables>(PIN_TABLE);
-
+  let [addTerminalVisible, setAddTerminalVisible] = useState(false);
   return (
     <Container>
       {terminalsLoading || pinTableLoading ? (
         <LoadingIndicator />
       ) : terminalsError ? (
         <ErrorComponent />
-      ) : terminalsData?.userTerminals.length === 0 ? (
+      ) : terminalsData?.userTerminals.length === 0 || addTerminalVisible ? (
         <AddNewTerminalForm onClose={onClickAway} />
       ) : (
         <>
@@ -86,6 +87,13 @@ export default function PinPopover(props: Props) {
               ),
             )}
           </ListContainer>
+          <AddButton
+            text="Add a Terminal"
+            onPress={() => {
+              setAddTerminalVisible(true);
+            }}
+            stopPropagation={true}
+          />
         </>
       )}
     </Container>
@@ -123,6 +131,11 @@ const Row = styled(TouchableOpacity)`
   &:hover {
     box-shadow: ${SHADOW_COLOR};
   }
+`;
+
+const AddButton = styled(Button)`
+  margin: 12px 0px;
+  width: 150px;
 `;
 
 const MessageAlert = styled(Alert)`
