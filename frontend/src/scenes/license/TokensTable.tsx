@@ -97,25 +97,27 @@ export default function TokensTable(props: Props) {
             Linked Email
           </DataTable.HeaderCell>
         </DataTable.HeaderRow>
-        {dataWithCheckbox.map((row, index) => {
-          let { token, linkedEmail, isChecked } = row;
-          return (
-            <DataTable.Row key={index}>
-              <DataTable.Cell width={40}>
-                <Checkbox
-                  isChecked={isChecked}
-                  onPress={() => {
-                    toggleCheck(token);
-                  }}
-                />
-              </DataTable.Cell>
-              <DataTable.Cell>{token}</DataTable.Cell>
-              <DataTable.Cell width={250} align="right">
-                {linkedEmail}
-              </DataTable.Cell>
-            </DataTable.Row>
-          );
-        })}
+        <DataTable.Body>
+          {dataWithCheckbox.map((row, index) => {
+            let { token, linkedEmail, isChecked } = row;
+            return (
+              <DataTable.Row key={index}>
+                <DataTable.Cell width={40}>
+                  <Checkbox
+                    isChecked={isChecked}
+                    onPress={() => {
+                      toggleCheck(token);
+                    }}
+                  />
+                </DataTable.Cell>
+                <DataTable.Cell>{token}</DataTable.Cell>
+                <DataTable.Cell width={250} align="right">
+                  {linkedEmail}
+                </DataTable.Cell>
+              </DataTable.Row>
+            );
+          })}
+        </DataTable.Body>
       </DataTable>
       <DeleteButton
         text="Delete"
