@@ -23,10 +23,11 @@ type Props = {
   businessTagId?: string;
   locationTagId?: string;
   tableId?: string;
+  pinTableId?: string;
 };
 
 export default function PropertyOwnerInformationResult(props: Props) {
-  let { businessTagId, locationTagId, tableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipInfoData,
     GetOwnershipInfoDataVariables
@@ -67,6 +68,7 @@ export default function PropertyOwnerInformationResult(props: Props) {
             type: data.ownershipInfoTable.locationTag.type,
           },
         })}
+        pinTableId={pinTableId}
       />
       {loading ? (
         <LoadingIndicator />

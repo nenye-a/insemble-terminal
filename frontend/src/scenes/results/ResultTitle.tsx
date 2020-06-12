@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
 import { useLocation, useParams } from 'react-router-dom';
+import { useAlert } from 'react-alert';
 
 import {
   View,
@@ -65,6 +66,7 @@ type Props = {
   };
   locationTag?: { type: LocationTagType; params: string };
   infoboxContent?: () => JSX.Element;
+  pinTableId?: string;
 };
 
 type Params = {
@@ -86,8 +88,10 @@ export default function ResultTitle(props: Props) {
     businessTag,
     locationTag,
     infoboxContent,
+    pinTableId,
   } = props;
-
+  console.log(pinTableId);
+  let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
@@ -107,10 +111,10 @@ export default function ResultTitle(props: Props) {
     RemovePinnedTableVariables
   >(REMOVE_PINNED_TABLE, {
     onError: (e) => {
-      console.log(e);
+      alert.show(e.message);
     },
-    onCompleted: (data) => {
-      console.log(data);
+    onCompleted: () => {
+      alert.show('Table successfully removed');
     },
   });
 
@@ -236,20 +240,22 @@ export default function ResultTitle(props: Props) {
           ) : (
             <Touchable
               onPress={() => {
-                removePinnedTable({
-                  variables: {
-                    pinTableId: tableId,
-                  },
-                  awaitRefetchQueries: true,
-                  refetchQueries: [
-                    {
-                      query: GET_TERMINAL,
-                      variables: {
-                        terminalId: params?.terminalId || '',
-                      },
+                if (pinTableId) {
+                  removePinnedTable({
+                    variables: {
+                      pinTableId,
                     },
-                  ],
-                });
+                    awaitRefetchQueries: true,
+                    refetchQueries: [
+                      {
+                        query: GET_TERMINAL,
+                        variables: {
+                          terminalId: params?.terminalId || '',
+                        },
+                      },
+                    ],
+                  });
+                }
               }}
               disabled={noData}
             >

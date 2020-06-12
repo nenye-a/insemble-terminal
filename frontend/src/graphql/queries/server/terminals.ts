@@ -20,6 +20,7 @@ export const GET_TERMINAL = gql`
       name
       description
       pinnedFeeds {
+        id
         tableId
         tableType
         performanceTableType

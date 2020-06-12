@@ -23,10 +23,11 @@ type Props = {
   businessTagId?: string;
   locationTagId?: string;
   tableId?: string;
+  pinTableId?: string;
 };
 
 export default function CompanyContactsResult(props: Props) {
-  let { businessTagId, locationTagId, tableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipContactData,
     GetOwnershipContactDataVariables
@@ -70,6 +71,7 @@ export default function CompanyContactsResult(props: Props) {
             type: data.ownershipContactTable.locationTag.type,
           },
         })}
+        pinTableId={pinTableId}
       />
       {loading ? (
         <LoadingIndicator />
