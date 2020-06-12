@@ -25,30 +25,8 @@ export default function MasterTokenList(props: Props) {
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
-        <>
-          <MasterTokensTable data={data?.masterLicenseList} />
-          <RowedView>
-            <Button text="Delete" />
-            <Spacing />
-            <Button text="Increment Token" />
-          </RowedView>
-        </>
+        <MasterTokensTable data={data?.masterLicenseList} />
       )}
     </View>
   );
 }
-
-const Container = styled(View)`
-  background-color: blue;
-`;
-
-const RowedView = styled(View)`
-  flex-direction: row;
-  margin: 12px 0;
-`;
-
-const SPACING_WIDTH = 12;
-
-const Spacing = styled(View)`
-  width: ${SPACING_WIDTH.toString() + 'px'};
-`;

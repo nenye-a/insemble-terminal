@@ -4,10 +4,10 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
+import { GetTokens } from '../../generated/GetTokens';
+import { GET_TOKENS } from '../../graphql/queries/server/license';
 
 import TokensTable from './TokensTable';
-
-type Props = {};
 
 export default function TokenList() {
   let { data, loading, error } = useQuery<GetTokens>(GET_TOKENS);
