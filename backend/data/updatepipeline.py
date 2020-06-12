@@ -8,26 +8,26 @@ TEMP_PLACES = "terminal.temp_places"
 DB_TEMP = utils.SYSTEM_MONGO.get_collection(TEMP_PLACES)
 
 
-# def initial_setup():
-#     # ONLY RUN THIS ONCE
-#     # NUM TIMES RUN: 1
+def setup(query):
 
-#     utils.DB_TERMINAL_PLACES.aggregate([
-#         {
-#             '$set': {
-#                 'brand_volume': -2,
-#                 'local_retail_volume': -2,
-#                 'local_category_volume': -2
-#             }
-#         },
-#         {
-#             "$merge": "temp_places"
-#         }
-#     ])
+    if not query:
+        raise Exception('Query too broad or inexistent!')
 
-#     DB_TEMP.create_index([('brand_volume', 1)])
-#     DB_TEMP.create_index([('local_retail_volume', 1)])
-#     DB_TEMP.create_index([('local_category_volume', 1)])
+    utils.DB_TERMINAL_PLACES.aggregate([
+        {
+            '$match': query
+        },
+        {
+            '$set': {
+                'brand_volume': -2,
+                'local_retail_volume': -2,
+                'local_category_volume': -2
+            }
+        },
+        {
+            "$merge": "temp_places"
+        }
+    ])
 
 
 def update_activity_averages(batch_size=100, wait=True, additional_query=None):
@@ -108,32 +108,39 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
 
 
 if __name__ == "__main__":
-    update_activity_averages()
-    # update_activity_averages(additional_query={
-    #     '$or': [
-    #         {
-    #             'name': {"$regex": r'^' + 'Dunkin'},
-    #             'city': {"$regex": r'^' + 'Los Angeles'},
-    #         },
-    #         {
-    #             'name': {"$regex": r'^' + 'Starbucks'},
-    #             'city': {"$regex": r'^' + 'Atlanta'},
-    #         },
-    #         {
-    #             'name': {"$regex": r'^' + 'Dunkin'},
-    #             'city': {"$regex": r'^' + 'Atlanta'},
-    #         },
-    #         {
-    #             'name': {"$regex": r'^' + 'Wingstop'},
-    #             'city': {"$regex": r'^' + 'Los Angeles'},
-    #         },
-    #         {
-    #             'name': {"$regex": r'^' + 'Wingstop'},
-    #             'city': {"$regex": r'^' + 'Atlanta'},
-    #         },
-
-    #     ],
-    #     # 'name': {"$regex": r'^' + 'Dunkin'},
-    #     # 'city': {"$regex": r'^' + 'Los Angeles'},
-    # })
+    # update_activity_averages()
+    setup({
+        'name': {"$regex": r'^' + "Starbucks"},
+        'city': {"$regex": "Los Angeles"}
+    })
+    update_activity_averages(additional_query={
+        # '$or': [
+        #     {
+        #         'name': {"$regex": r'^' + 'Starbucks'},
+        #         'city': {"$regex": r'^' + 'Los Angeles'},
+        #     },
+        #     {
+        #         'name': {"$regex": r'^' + 'Starbucks'},
+        #         'city': {"$regex": r'^' + 'Atlanta'},
+        #     },
+        #     {
+        #         'name': {"$regex": r'^' + 'Dunkin'},
+        #         'city': {"$regex": r'^' + 'Los Angeles'},
+        #     },
+        #     {
+        #         'name': {"$regex": r'^' + 'Dunkin'},
+        #         'city': {"$regex": r'^' + 'Atlanta'},
+        #     },
+        #     {
+        #         'name': {"$regex": r'^' + 'Wingstop'},
+        #         'city': {"$regex": r'^' + 'Los Angeles'},
+        #     },
+        #     {
+        #         'name': {"$regex": r'^' + 'Wingstop'},
+        #         'city': {"$regex": r'^' + 'Atlanta'},
+        #     },
+        # ],
+        'name': {"$regex": r'^' + "Starbucks"},
+        'city': {"$regex": "Los Angeles"}
+    })
     # print(utils.DB_TERMINAL_PLACES.count_documents({"type": {"$ne": None}}))

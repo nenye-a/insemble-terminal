@@ -722,12 +722,14 @@ def opentable_all_meta(result, meta):
     return result
 
 
-def location_detailer(batch_size=300, wait=True):
+def location_detailer(batch_size=300, wait=True, additional_query=None):
     """
     Opentable detailer collector
     """
 
-    query = {'location': {'$exists': False}, 'address': {'$exists': True}}
+    query = {'location': {'$exists': False}}
+    additional_query and query.update(additional_query)
+
     size = {'size': batch_size}
 
     collecting = True
@@ -814,5 +816,8 @@ if __name__ == "__main__":
     # collect_locations_test()
     # divide_region_test()
     # print("doc count:", utils.DB_TERMINAL_PLACES.count_documents({}))
-    # location_detailer(batch_size=300)
-    opentable_detailer(batch_size=10)
+    location_detailer(batch_size=100, additional_query={
+        'name': {"$regex": r'^' + "Starbucks"},
+        'city': {"$regex": "New York"}
+    })
+    # opentable_detailer(batch_size=10)
