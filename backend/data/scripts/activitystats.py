@@ -38,31 +38,32 @@ def activity_statistics(num_results=50):
     ])
 
 
-def num_activity_by_city():
+def num_activity_by_key(key):
+
+    if key[0] != '$':
+        key = '$' + key
 
     sorted_total = list(utils.DB_TERMINAL_PLACES.aggregate([
-        {'$group': {'_id': '$city', 'count': {'$sum': 1}}},
+        {'$group': {'_id': key, 'count': {'$sum': 1}}},
         {'$sort': {'count': -1}}
-    ]))
+    ], allowDiskUse=True))
 
     total_df = pd.DataFrame(sorted_total)
-    total_df.to_csv(GENERATED_PATH + 'num_per_city.csv')
 
     sorted_with_activity = list(utils.DB_TERMINAL_PLACES.aggregate([
         {'$match': {'$and': [{'google_details.activity': {'$ne': None}}, {'google_details.activity': {'$ne': []}}]}},
-        {'$group': {'_id': '$city', 'count': {'$sum': 1}}},
+        {'$group': {'_id': key, 'count': {'$sum': 1}}},
         {'$sort': {'count': -1}}
     ]))
 
     total_with_activity_df = pd.DataFrame(sorted_with_activity)
     total_with_activity_df.rename(columns={'count': 'count_with_activity'}, inplace=True)
-    total_with_activity_df.to_csv(GENERATED_PATH + 'with_activity.csv')
 
     merged_df = total_df.merge(total_with_activity_df, how='left', on='_id')
     merged_df['ratio'] = 100 * merged_df['count_with_activity'] / merged_df['count']
     merged_df['ratio'] = merged_df['ratio'].round(2)
-    merged_df.to_csv(GENERATED_PATH + 'merged_with_ratio.csv')
-    merged_df.describe().to_csv(GENERATED_PATH + 'merged_stats.csv')
+    merged_df.to_csv(GENERATED_PATH + key + '_merged_with_ratio.csv')
+    merged_df.describe().to_csv(GENERATED_PATH + key + '_merged_stats.csv')
 
 
 def generate_dataframe(results):
@@ -190,6 +191,20 @@ def refactor_activities():
     })
 
 
+def parse_names():
+
+    # names = pd.read_csv(GENERATED_PATH + '$name_merged_with_ratio.csv').set_index('_id')
+    # names = names[names['count'] > 10]
+    # names = names.sort_values(by=['count_with_activity', 'ratio', 'count'], ascending=False)
+    # names.to_csv(GENERATED_PATH + 'sorted.csv')
+
+    names = pd.read_csv(GENERATED_PATH + 'sorted_names.csv').set_index('_id')
+    names.drop(["Unnamed: 0"], axis='columns')
+    print(names.head())
+    # print(names.head())
+    # print(names.iloc[1:1000]['count_with_activity'].sum())
+
+
 if __name__ == "__main__":
 
     # update_activity({
@@ -197,5 +212,7 @@ if __name__ == "__main__":
     #     'activity_volume': {'$exists': False},
     # })
     # merge_activity()
+    # num_activity_by_key('name')
+    parse_names()
 
     pass

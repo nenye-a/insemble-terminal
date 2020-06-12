@@ -1,4 +1,5 @@
 import utils
+import pandas as pd
 import time
 import performancev2
 import datetime as dt
@@ -12,6 +13,13 @@ def setup(query):
 
     if not query:
         raise Exception('Query too broad or inexistent!')
+
+    query.update({
+        '$or': [
+            {'brand_volume': {'$eq': -1}},
+            {'brand_volume': {'$exists': False}}
+        ]
+    })
 
     utils.DB_TERMINAL_PLACES.aggregate([
         {
@@ -66,6 +74,9 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
             if 'location' not in place:
                 continue
 
+            if place['activity'] == []:
+                continue
+
             # brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
             #     performancev2.build_brand_query(place['name'])
             # ))[0]['avg_total_volume'] if 'name' in place else -1
@@ -108,44 +119,9 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
 
 
 if __name__ == "__main__":
-    # update_activity_averages()
-    # setup({
-    #     'name': {"$regex": r"^Aroma Joe's"}
-    # })
-    # update_activity_averages(additional_query={
-    #     # '$or': [
-    #     #     {
-    #     #         'name': {"$regex": r'^' + 'Starbucks'},
-    #     #         'city': {"$regex": r'^' + 'Los Angeles'},
-    #     #     },
-    #     #     {
-    #     #         'name': {"$regex": r'^' + 'Starbucks'},
-    #     #         'city': {"$regex": r'^' + 'Atlanta'},
-    #     #     },
-    #     #     {
-    #     #         'name': {"$regex": r'^' + 'Dunkin'},
-    #     #         'city': {"$regex": r'^' + 'Los Angeles'},
-    #     #     },
-    #     #     {
-    #     #         'name': {"$regex": r'^' + 'Dunkin'},
-    #     #         'city': {"$regex": r'^' + 'Atlanta'},
-    #     #     },
-    #     #     {
-    #     #         'name': {"$regex": r'^' + 'Wingstop'},
-    #     #         'city': {"$regex": r'^' + 'Los Angeles'},
-    #     #     },
-    #     #     {
-    #     #         'name': {"$regex": r'^' + 'Wingstop'},
-    #     #         'city': {"$regex": r'^' + 'Atlanta'},
-    #     #     },
-    #     # ],
-    #     'name': {"$regex": r"^Aroma Joe's"}
-    # })
-    # print(utils.DB_TERMINAL_PLACES.count_documents({"type": {"$ne": None}}))
-    utils.DB_TERMINAL_PLACES.update_many({
-        'name': {'$regex': r"Aroma Joe's"},
-        'version': 0,
-    }, {'$set': {
-        'local_retail_volume': -1,
-        'local_category_volume': -1
-    }})
+
+    for name in pd.read_csv('scripts/files/activity_generated/sorted_names.csv').set_index('_id').index[:1000]:
+        print('Doing the following locations ' + name)
+        update_activity_averages(additional_query={
+            'name': name
+        })
