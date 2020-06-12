@@ -6,7 +6,7 @@ export let objectToActivityGraph = (
   location?: string,
 ) => {
   let objectKeyValue = acrivityTime.map((key) => {
-    let amount = object[key] ? object[key] : null;
+    let amount = object[key] ? object[key] : 0;
     let business = location ? `${businessName} (${location})` : businessName;
     return {
       name: key,
