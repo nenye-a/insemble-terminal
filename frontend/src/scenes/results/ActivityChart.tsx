@@ -77,7 +77,12 @@ export default function ActivityChart(props: Props) {
             tickFormatter={(val) => val.toLowerCase().replace('m', '')}
           />
           <YAxis axisLine={false} tickLine={false} tick={textStyle} />
-          <Tooltip wrapperStyle={textStyle} />
+          <Tooltip
+            wrapperStyle={textStyle}
+            itemSorter={(item1, item2) =>
+              (item2 ? Number(item2.value) : 0) - Number(item1.value)
+            }
+          />
           {lines}
         </LineChart>
         <LegendContainer flex>
