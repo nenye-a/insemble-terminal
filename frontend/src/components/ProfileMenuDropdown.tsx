@@ -53,7 +53,7 @@ export default function ProfileMenuDropdown() {
     {
       label: 'Generate Token',
       onPress: () => {
-        history.push('/generate-token');
+        history.push('/manage-token/generate-token');
       },
     },
     logoutMenu,

@@ -34,7 +34,7 @@ type CellProps = ViewProps & {
 };
 
 type HeaderCellProps = CellProps & {
-  children?: string | Array<string>;
+  children?: ReactNode;
   sortConfig?: SortConfig;
   infoboxContent?: ReactNode;
 };

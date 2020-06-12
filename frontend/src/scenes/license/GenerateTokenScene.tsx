@@ -12,7 +12,11 @@ import {
   Text,
   Alert,
 } from '../../core-ui';
-import { CREATE_TOKEN } from '../../graphql/queries/server/license';
+import {
+  CREATE_TOKEN,
+  GET_MASTER_TOKENS,
+  GET_TOKENS,
+} from '../../graphql/queries/server/license';
 import { CreateToken, CreateTokenVariables } from '../../generated/CreateToken';
 import { DARKER_PURPLE } from '../../constants/colors';
 
@@ -40,13 +44,15 @@ export default function GenerateTokenScene() {
       };
       createToken({
         variables: contactvariables,
+        awaitRefetchQueries: true,
+        refetchQueries: [{ query: GET_MASTER_TOKENS }, { query: GET_TOKENS }],
       });
     }
   };
 
   return (
     <Container>
-      <CardContainer title="Generate New Token">
+      <CardContainer title="Generate New Token" style={{ width: 360 }}>
         <Content onSubmit={handleSubmit(onSubmit)}>
           <Alert visible={!!error?.message} text={error?.message || ''} />
           <RowedView>
@@ -99,10 +105,8 @@ export default function GenerateTokenScene() {
 }
 
 const Container = styled(View)`
-  padding: 40px;
   align-items: center;
-  justify-content: center;
-  min-height: 90vh;
+  flex: 1;
 `;
 
 const TokenContainer = styled(View)`
@@ -112,7 +116,7 @@ const TokenContainer = styled(View)`
 `;
 
 const CardContainer = styled(Card)`
-  min-width: 360px;
+  width: 600px;
   min-height: 200px;
   margin: 20px 0;
 `;

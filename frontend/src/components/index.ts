@@ -7,3 +7,4 @@ export { default as PageTitle } from './PageTitle';
 export { default as PillSelector } from './PillSelector';
 export { default as PinPopover } from './PinPopover';
 export { default as Popup } from './Popup';
+export { default as Tab } from './Tab';
