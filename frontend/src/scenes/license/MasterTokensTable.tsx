@@ -12,7 +12,7 @@ export default function MasterTokensTable(props: Props) {
   return (
     <DataTable>
       <DataTable.HeaderRow>
-        <DataTable.HeaderCell width={800}>Master Token</DataTable.HeaderCell>
+        <DataTable.HeaderCell>Master Token</DataTable.HeaderCell>
         <DataTable.HeaderCell width={100} align="right">
           Name
         </DataTable.HeaderCell>
@@ -24,7 +24,7 @@ export default function MasterTokensTable(props: Props) {
         let { masterToken, name, numToken } = row;
         return (
           <DataTable.Row key={index}>
-            <DataTable.Cell width={800}>{masterToken}</DataTable.Cell>
+            <DataTable.Cell>{masterToken}</DataTable.Cell>
             <DataTable.Cell width={100} align="right">
               {name}
             </DataTable.Cell>

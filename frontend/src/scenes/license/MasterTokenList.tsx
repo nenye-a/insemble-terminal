@@ -4,45 +4,42 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator, Button } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
-import { formatErrorMessage } from '../../helpers';
-
-import MasterTokensTable from './MasterTokensTable';
 import { GetMasterTokens } from '../../generated/GetMasterTokens';
 import { GET_MASTER_TOKENS } from '../../graphql/queries/server/license';
+
+import MasterTokensTable from './MasterTokensTable';
 
 type Props = {};
 
 export default function MasterTokenList(props: Props) {
-  let { data, loading, error, refetch } = useQuery<GetMasterTokens>(
-    GET_MASTER_TOKENS,
-  );
+  let { data, loading, error } = useQuery<GetMasterTokens>(GET_MASTER_TOKENS);
 
   let noData = !data?.masterLicenseList || data?.masterLicenseList.length === 0;
 
   return (
-    <Container>
+    <View>
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+        <ErrorComponent />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
         <>
           <MasterTokensTable data={data?.masterLicenseList} />
           <RowedView>
-            <Button text="Delete"></Button>
+            <Button text="Delete" />
             <Spacing />
-            <Button text="Increment Token"></Button>
+            <Button text="Increment Token" />
           </RowedView>
         </>
       )}
-    </Container>
+    </View>
   );
 }
 
 const Container = styled(View)`
-  padding: 20px 0;
+  background-color: blue;
 `;
 
 const RowedView = styled(View)`
