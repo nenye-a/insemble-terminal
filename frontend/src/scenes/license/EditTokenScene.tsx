@@ -1,5 +1,4 @@
 import React from 'react';
-import styled from 'styled-components';
 
 import { View } from '../../core-ui';
 
@@ -8,15 +7,9 @@ import TokenList from './TokenList';
 
 export default function EditTokenScene() {
   return (
-    <Container>
+    <View>
       <MasterTokenList />
       <TokenList />
-    </Container>
+    </View>
   );
 }
-
-const Container = styled(View)`
-  padding: 40px 10%;
-  justify-content: center;
-  min-height: 90vh;
-`;
