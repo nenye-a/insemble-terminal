@@ -17,17 +17,19 @@ export default function ContactsTable(props: Props) {
         <DataTable.HeaderCell align="right">Phone</DataTable.HeaderCell>
         <DataTable.HeaderCell align="right">Email</DataTable.HeaderCell>
       </DataTable.HeaderRow>
-      {data.map((row, index) => {
-        let { name, email, phone, title } = row;
-        return (
-          <DataTable.Row key={index}>
-            <DataTable.Cell width={260}>{name}</DataTable.Cell>
-            <DataTable.Cell align="right">{title}</DataTable.Cell>
-            <DataTable.Cell align="right">{phone}</DataTable.Cell>
-            <DataTable.Cell align="right">{email}</DataTable.Cell>
-          </DataTable.Row>
-        );
-      })}
+      <DataTable.Body>
+        {data.map((row, index) => {
+          let { name, email, phone, title } = row;
+          return (
+            <DataTable.Row key={index}>
+              <DataTable.Cell width={260}>{name}</DataTable.Cell>
+              <DataTable.Cell align="right">{title}</DataTable.Cell>
+              <DataTable.Cell align="right">{phone}</DataTable.Cell>
+              <DataTable.Cell align="right">{email}</DataTable.Cell>
+            </DataTable.Row>
+          );
+        })}
+      </DataTable.Body>
     </DataTable>
   );
 }

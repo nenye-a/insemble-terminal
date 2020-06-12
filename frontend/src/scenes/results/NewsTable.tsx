@@ -42,41 +42,43 @@ export default function NewsTable(props: Props) {
           Post Date
         </DataTable.HeaderCell>
       </DataTable.HeaderRow>
-      {sortedData.map((row, index) => {
-        let { title = '', link = '', source = '', published, fill } = row;
-        let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
-        let textColor = getTextColor(bgColor);
-        return (
-          <DataTable.Row
-            key={index}
-            onPress={() => {
-              window.open(link, '_blank');
-            }}
-            style={{
-              backgroundColor: bgColor,
-            }}
-          >
-            <DataTable.Cell
-              width={500}
+      <DataTable.Body>
+        {sortedData.map((row, index) => {
+          let { title = '', link = '', source = '', published, fill } = row;
+          let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
+          let textColor = getTextColor(bgColor);
+          return (
+            <DataTable.Row
+              key={index}
+              onPress={() => {
+                window.open(link, '_blank');
+              }}
               style={{
-                textOverflow: 'ellipsis',
-                overflow: 'hidden',
-                whiteSpace: 'nowrap',
-                display: 'block',
-                color: textColor,
+                backgroundColor: bgColor,
               }}
             >
-              {title}
-            </DataTable.Cell>
-            <DataTable.Cell style={{ color: textColor }}>
-              {source}
-            </DataTable.Cell>
-            <DataTable.Cell style={{ color: textColor }} align="right">
-              {getPublishedDate(published)}
-            </DataTable.Cell>
-          </DataTable.Row>
-        );
-      })}
+              <DataTable.Cell
+                width={500}
+                style={{
+                  textOverflow: 'ellipsis',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap',
+                  display: 'block',
+                  color: textColor,
+                }}
+              >
+                {title}
+              </DataTable.Cell>
+              <DataTable.Cell style={{ color: textColor }}>
+                {source}
+              </DataTable.Cell>
+              <DataTable.Cell style={{ color: textColor }} align="right">
+                {getPublishedDate(published)}
+              </DataTable.Cell>
+            </DataTable.Row>
+          );
+        })}
+      </DataTable.Body>
     </DataTable>
   );
 }
