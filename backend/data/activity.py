@@ -21,8 +21,6 @@ def activity(name, address):
         'google_details.activity': {'$ne': None}
     })
 
-    print(place)
-
     if place:
         activity = place['google_details']['activity']
     elif not place:
@@ -36,7 +34,10 @@ def activity(name, address):
     name = place['name']
     location = place['address']
 
-    avg_activity_per_hour = avg_hourly_activity(activity)
+    activity_arrays = [[0, 0, 0] + sublist + [0, 0, 0] if len(sublist) == 18 else sublist
+                       for sublist in activity if len(sublist) == 18]
+
+    avg_activity_per_hour = avg_hourly_activity(activity_arrays)
 
     return {
         'name': name,
