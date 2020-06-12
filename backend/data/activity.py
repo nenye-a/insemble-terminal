@@ -86,46 +86,49 @@ def aggregate_activity(name, location, scope):
 
 def combine_avg_activity(list_places):
 
-    count_dict = {}
-    avg_dict = {}
-    for place in list_places:
-        activity = place['google_details']['activity']
-        packaged_data = package_activity(avg_hourly_activity(activity))
-        if packaged_data:
-            for hour in packaged_data:
-                count_dict[hour] = count_dict.get(hour, 0) + 1
-                avg_dict[hour] = (packaged_data[hour] + avg_dict.get(hour, 0) * (count_dict[hour] - 1)) / \
-                    count_dict[hour]
+    list_activity = [place['google_details']['activity'] for place in list_places]
+    activity_arrays = [[0, 0, 0] + sublist + [0, 0, 0] if len(sublist) == 18 else sublist
+                       for sublist in utils.flatten(list_activity) if len(sublist) == 18]
 
-    return utils.round_object(avg_dict)
+    return package_activity(avg_hourly_activity(activity_arrays))
 
 
 def avg_hourly_activity(activity):
     """Will dertemine the average activity of each hour over a week"""
     activity_by_hour = list(zip(*activity))
-    return [round(sum(hour_activity) / len(hour_activity)) if hour_activity else 0
+    return [round(sum(hour_activity) / len(hour_activity))
+            if hour_activity and utils.list_matches_condition(bool, hour_activity) else 0
             for hour_activity in activity_by_hour]
 
 
 def package_activity(avg_activity_per_hour):
 
-    if len(avg_activity_per_hour) == 18:
-        hours = ["{}AM".format(x) for x in range(6, 12)]
-        hours.append("12PM")
-        hours.extend(["{}PM".format(x) for x in range(1, 12)])
-    elif len(avg_activity_per_hour) == 24:
-        hours = ["{}AM".format(x) for x in range(4, 12)]
-        hours.append("12PM")
-        hours.extend(["{}PM".format(x) for x in range(1, 12)])
-        hours.append("12AM")
-        hours.extend(["{}AM".format(x) for x in range(1, 4)])
-    else:
-        return None
+    hours = ["{}AM".format(x) for x in range(4, 12)]
+    hours.append("12PM")
+    hours.extend(["{}PM".format(x) for x in range(1, 12)])
+    hours.append("12AM")
+    hours.extend(["{}AM".format(x) for x in range(1, 4)])
 
     return dict(zip(hours, avg_activity_per_hour))
 
 
 if __name__ == "__main__":
+    def test_avg_hourly_activity():
+        place = list(utils.DB_TERMINAL_PLACES.aggregate([
+            {'$match': {
+                '$and': [
+                    {'google_details.activity': {'$ne': []}},
+                    {'google_details.activity': {'$exists': True}}
+                ]
+            }},
+            {
+                '$sample': {'size': 1}
+            }
+        ]))[0]
+
+        print(place['google_details']['activity'])
+        print(avg_hourly_activity(place['google_details']['activity']))
+
     def test_activity():
         print(activity("Starbucks", "3900 Cross Creek Rd"))
         # print(activity("Starbucks", "3900 Cross Creek Rd"))
@@ -136,3 +139,4 @@ if __name__ == "__main__":
 
     # test_activity()
     test_aggregate_activity()
+    # test_avg_hourly_activity()

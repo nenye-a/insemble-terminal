@@ -1,11 +1,11 @@
-import { acrivityTime } from '../constants/activity';
+import { activityTime } from '../constants/activity';
 
 export let objectToActivityGraph = (
   object: Record<string, number | undefined>,
   businessName: string,
   location?: string,
 ) => {
-  let objectKeyValue = acrivityTime.map((key) => {
+  let objectKeyValue = activityTime.map((key) => {
     let amount = object[key] ? object[key] : 0;
     let business = location ? `${businessName} (${location})` : businessName;
     return {
