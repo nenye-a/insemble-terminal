@@ -63,6 +63,22 @@ export default function TerminalDataResult(props: Props) {
                   headerTitle="By Address"
                 />
               );
+            } else if (performanceTableType === PerformanceTableType.STATE) {
+              return (
+                <PerformanceResult
+                  {...props}
+                  title="By State"
+                  performanceType={performanceTableType}
+                />
+              );
+            } else if (performanceTableType === PerformanceTableType.CITY) {
+              return (
+                <PerformanceResult
+                  {...props}
+                  title="By City"
+                  performanceType={performanceTableType}
+                />
+              );
             }
           } else if (tableType === TableType.NEWS) {
             return <LatestNewsResult {...props} />;
