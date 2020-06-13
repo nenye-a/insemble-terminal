@@ -274,7 +274,7 @@ def is_number(num):
         return False
 
 
-def list_matches_condition(bool_func, eval_list):
+def contains_match(bool_func, eval_list):
     """
     Provided a function and a list, will return True if at least one of the items in the list meets the
     condition specified by the function

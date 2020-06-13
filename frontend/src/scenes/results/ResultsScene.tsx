@@ -37,7 +37,7 @@ export default function ResultsScene() {
     submitSearch,
     { data: submitSearchData, loading: submitSearchLoading },
   ] = useMutation<Search, SearchVariables>(SEARCH, {
-    onError: () => {},
+    onError: () => { },
   });
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
 
@@ -148,16 +148,16 @@ export default function ResultsScene() {
                   return (
                     <PerformanceResult
                       {...props}
-                      title="By City"
-                      performanceType={PerformanceTableType.CITY}
+                      title="By State"
+                      performanceType={type}
                     />
                   );
                 } else if (type === PerformanceTableType.CITY) {
                   return (
                     <PerformanceResult
                       {...props}
-                      title="By Location"
-                      performanceType={PerformanceTableType.ADDRESS}
+                      title="By City"
+                      performanceType={type}
                     />
                   );
                 }
@@ -183,16 +183,16 @@ export default function ResultsScene() {
           </Container>
         </>
       ) : (
-        <TitleContainer>
-          <TitleRow>
-            <SvgArrowUp />
-            <Title>
-              Search and find performance data on retailers and restaurants
+          <TitleContainer>
+            <TitleRow>
+              <SvgArrowUp />
+              <Title>
+                Search and find performance data on retailers and restaurants
             </Title>
-          </TitleRow>
-          <Divider color={MUTED_TEXT_COLOR} />
-        </TitleContainer>
-      )}
+            </TitleRow>
+            <Divider color={MUTED_TEXT_COLOR} />
+          </TitleContainer>
+        )}
       {submitSearchLoading && <LoadingIndicator />}
     </View>
   );
