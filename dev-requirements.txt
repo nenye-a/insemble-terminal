@@ -14,7 +14,7 @@ click==7.1.2              # via safety
 coverage==5.1             # via -r dev-requirements.in
 distlib==0.3.0            # via virtualenv
 django-naomi==0.8         # via -r dev-requirements.in
-django==2.2.12            # via -r dev-requirements.in, django-naomi, model-mommy
+django==2.2.13            # via -r dev-requirements.in, django-naomi, model-mommy
 dodgy==0.2.1              # via prospector
 dparse==0.5.1             # via safety
 filelock==3.0.12          # via virtualenv
