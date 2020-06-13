@@ -98,7 +98,7 @@ def avg_hourly_activity(activity):
     """Will dertemine the average activity of each hour over a week"""
     activity_by_hour = list(zip(*activity))
     return [round(sum(hour_activity) / len(hour_activity))
-            if hour_activity and utils.list_matches_condition(bool, hour_activity) else 0
+            if hour_activity and utils.contains_match(bool, hour_activity) else 0
             for hour_activity in activity_by_hour]
 
 

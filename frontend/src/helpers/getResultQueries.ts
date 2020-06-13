@@ -40,12 +40,22 @@ export default function getResultQueries(
       if (!locationTag || locationTag.type === LocationTagType.NATION) {
         queries.push({
           reviewTag: ReviewTag.PERFORMANCE,
-          type: PerformanceTableType.STATE,
+          type: PerformanceTableType.CITY,
+        });
+      } else if (locationTag.type === LocationTagType.STATE) {
+        queries.push({
+          reviewTag: ReviewTag.PERFORMANCE,
+          type: PerformanceTableType.CITY,
+        });
+      } else if (locationTag.type === LocationTagType.COUNTY) {
+        queries.push({
+          reviewTag: ReviewTag.PERFORMANCE,
+          type: PerformanceTableType.CITY,
         });
       } else if (locationTag.type === LocationTagType.CITY) {
         queries.push({
           reviewTag: ReviewTag.PERFORMANCE,
-          type: PerformanceTableType.CITY,
+          type: PerformanceTableType.ADDRESS,
         });
       } else {
         queries.push({

@@ -148,16 +148,16 @@ export default function ResultsScene() {
                   return (
                     <PerformanceResult
                       {...props}
-                      title="By City"
-                      performanceType={PerformanceTableType.CITY}
+                      title="By State"
+                      performanceType={type}
                     />
                   );
                 } else if (type === PerformanceTableType.CITY) {
                   return (
                     <PerformanceResult
                       {...props}
-                      title="By Location"
-                      performanceType={PerformanceTableType.ADDRESS}
+                      title="By City"
+                      performanceType={type}
                     />
                   );
                 }
