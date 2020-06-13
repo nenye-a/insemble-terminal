@@ -42,6 +42,11 @@ export default function getResultQueries(
           reviewTag: ReviewTag.PERFORMANCE,
           type: PerformanceTableType.CITY,
         });
+      } else if (locationTag.type === LocationTagType.STATE) {
+        queries.push({
+          reviewTag: ReviewTag.PERFORMANCE,
+          type: PerformanceTableType.CITY,
+        })
       } else if (locationTag.type === LocationTagType.COUNTY) {
         queries.push({
           reviewTag: ReviewTag.PERFORMANCE,
