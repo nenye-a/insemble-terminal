@@ -477,10 +477,10 @@ class InfoAPI(BasicAPI):
             # INFO + ADDRESS
             if location:
                 row = {
-                    'parent_company': '*********** Concealed',
-                    'headquarters': '*********** Concealed',
-                    'phone': '(***) *** - **** Concealed',
-                    'website': '**************.com Concealed',
+                    'parent_company': '-',
+                    'headquarters': '-',
+                    'phone': '-',
+                    'website': '-',
                     'last_update': dt.datetime.now()
                 }
                 data = row
@@ -571,10 +571,10 @@ class ContactAPI(BasicAPI):
             # CONTACTS + ADDRESS
             if location:
                 row = {
-                    'name': '***** ****** Concealed',
-                    'title': 'Property Manager',
-                    'phone': '(***) *** - ****',
-                    'email': '********@******.com'
+                    'name': '-',
+                    'title': '-',
+                    'phone': '-',
+                    'email': '-'
                 }
                 data.append(row)
 
