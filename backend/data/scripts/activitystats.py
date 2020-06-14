@@ -138,6 +138,85 @@ def merge_activity():
     ])
 
 
+def update_brand_volume():
+
+    utils.DB_TERMINAL_PLACES.aggregate(
+        [
+            {
+                '$group': {
+                    '_id': '$name',
+                    'ids': {
+                        '$push': '$_id'
+                    },
+                    'total_volume': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', 0
+                            ]
+                        }
+                    },
+                    'total_count': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, 1, 0
+                            ]
+                        }
+                    }
+                }
+            }, {
+                '$project': {
+                    '_id': '$ids',
+                    'name': '$_id',
+                    'brand_volume': {
+                        '$cond': [
+                            {
+                                '$gt': [
+                                    '$total_count', 0
+                                ]
+                            }, {
+                                '$divide': [
+                                    '$total_volume', '$total_count'
+                                ]
+                            }, -1
+                        ]
+                    }
+                }
+            }, {
+                '$unwind': {
+                    'path': '$_id'
+                }
+            }, {
+                '$sort': {
+                    'brand_volume': -1
+                }
+            }, {
+                '$merge': 'brand_activity'
+            }
+        ], allowDiskUse=True
+    )
+
+
+def merge_brand_activity():
+
+    temp_db = utils.SYSTEM_MONGO.get_collection("terminal.brand_activity")
+
+    temp_db.aggregate([
+        {"$project": {
+            "_id": 1,
+            "brand_volume": 1
+        }},
+        {"$merge": {"into": "places"}}
+    ])
+
+
 def test_activity():
 
     places = list(utils.DB_TERMINAL_PLACES.aggregate([
@@ -212,7 +291,9 @@ if __name__ == "__main__":
     #     'activity_volume': {'$exists': False},
     # })
     # merge_activity()
-    num_activity_by_key('name')
+    # num_activity_by_key('name')
+    # update_brand_volume()
+    merge_brand_activity()
     # parse_names()
 
     pass
