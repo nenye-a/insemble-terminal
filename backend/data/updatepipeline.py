@@ -121,7 +121,7 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
         })
 
 
-def update_activity_averages_v2(batch_size=500, wait=True, additional_query=None):
+def update_activity_averages_v2(batch_size=100, wait=True, additional_query=None):
 
     update_connection = mongo.Connect()
     update_db = update_connection.get_collection("terminal.update_db")
@@ -277,7 +277,8 @@ if __name__ == "__main__":
         pool.join()
         pool.close()
 
-    # test_compile_details()
+    # test_compile_details()g
     # parallel_update()
-    ordered_update()
+    # ordered_update()
     # merge_update()
+    update_activity_averages_v2(batch_size=300)
