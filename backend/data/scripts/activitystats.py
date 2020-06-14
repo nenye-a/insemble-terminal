@@ -212,7 +212,7 @@ if __name__ == "__main__":
     #     'activity_volume': {'$exists': False},
     # })
     # merge_activity()
-    # num_activity_by_key('name')
-    parse_names()
+    num_activity_by_key('name')
+    # parse_names()
 
     pass

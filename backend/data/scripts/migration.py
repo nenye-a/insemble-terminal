@@ -164,6 +164,24 @@ def test_db():
     TEST_DB.insert_many(h)
 
 
+def adjust_names():
+
+    details = utils.DB_TERMINAL_PLACES.update_many({
+        # '$and': [
+        #     {'name': {"$regex": r'^Starbucks'}},
+        #     {'name': {"$ne": "Starbucks Reserve"}}
+        # ]
+        'name': {"$regex": r'^Chipotle$'}
+    }, {
+        '$set': {
+            'name': "Chipotle Mexican Grill"
+        }
+    })
+
+    print(details.modified_count)
+    pass
+
+
 if __name__ == "__main__":
     # migrate_terminal()
     # add_city()
@@ -173,4 +191,5 @@ if __name__ == "__main__":
     # add_state_to_county()
     # test_db()
     # TEST_DB.delete_many({})
+    adjust_names()
     pass
