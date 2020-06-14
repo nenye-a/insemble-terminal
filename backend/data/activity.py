@@ -51,7 +51,7 @@ def aggregate_activity(name, location, scope):
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': location_list[1].upper(),
             'google_details.activity': {'$ne': None}
@@ -66,7 +66,7 @@ def aggregate_activity(name, location, scope):
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
             '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name[:10]), "$options": "i"},
+            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details.activity': {'$ne': None}
         }))
