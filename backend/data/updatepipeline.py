@@ -250,9 +250,9 @@ def merge_update():
     update_connection = mongo.Connect()
     update_db = update_connection.get_collection("terminal.update_db")
 
-    # update_db.aggregate([
-    #     {'$merge': 'places'}
-    # ])
+    update_db.aggregate([
+        {'$merge': 'places'}
+    ])
     # update_db.delete_many({})
 
 
@@ -281,4 +281,4 @@ if __name__ == "__main__":
     # parallel_update()
     # ordered_update()
     # merge_update()
-    update_activity_averages_v2(batch_size=300)
+    # update_activity_averages_v2(batch_size=300)
