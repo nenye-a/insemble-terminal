@@ -38,34 +38,6 @@ def activity_statistics(num_results=50):
     ])
 
 
-def num_activity_by_key(key):
-
-    if key[0] != '$':
-        key = '$' + key
-
-    sorted_total = list(utils.DB_TERMINAL_PLACES.aggregate([
-        {'$group': {'_id': key, 'count': {'$sum': 1}}},
-        {'$sort': {'count': -1}}
-    ], allowDiskUse=True))
-
-    total_df = pd.DataFrame(sorted_total)
-
-    sorted_with_activity = list(utils.DB_TERMINAL_PLACES.aggregate([
-        {'$match': {'$and': [{'google_details.activity': {'$ne': None}}, {'google_details.activity': {'$ne': []}}]}},
-        {'$group': {'_id': key, 'count': {'$sum': 1}}},
-        {'$sort': {'count': -1}}
-    ]))
-
-    total_with_activity_df = pd.DataFrame(sorted_with_activity)
-    total_with_activity_df.rename(columns={'count': 'count_with_activity'}, inplace=True)
-
-    merged_df = total_df.merge(total_with_activity_df, how='left', on='_id')
-    merged_df['ratio'] = 100 * merged_df['count_with_activity'] / merged_df['count']
-    merged_df['ratio'] = merged_df['ratio'].round(2)
-    merged_df.to_csv(GENERATED_PATH + key + '_merged_with_ratio.csv')
-    merged_df.describe().to_csv(GENERATED_PATH + key + '_merged_stats.csv')
-
-
 def generate_dataframe(results):
 
     time = dt.datetime.now().replace(microsecond=0).isoformat()
@@ -204,6 +176,113 @@ def update_brand_volume():
     )
 
 
+def stats_by_key(key):
+    """
+    Get's the stats by key, but depends on the key. Only works for certain keys.
+    """
+
+    if key[0] != '$':
+        key = '$' + key
+
+    places = list(utils.DB_TERMINAL_PLACES.aggregate(
+        [
+            {
+                '$group': {
+                    '_id': key,
+                    'std': {
+                        '$stdDevSamp': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', None
+                            ]
+                        }
+                    },
+                    'total_volume': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', 0
+                            ]
+                        }
+                    },
+                    'min_volume': {
+                        '$min': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', None
+                            ]
+                        }
+                    },
+                    'max_volume': {
+                        '$max': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', None
+                            ]
+                        }
+                    },
+                    'avg_volume': {
+                        '$avg': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', None
+                            ]
+                        }
+                    },
+                    'count_with_activity': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, 1, 0
+                            ]
+                        }
+                    },
+                    # 'category': {
+                    #     '$first': '$type'
+                    # },
+                    'count': {
+                        '$sum': 1
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'activity_ratio': {
+                        '$divide': [
+                            '$count_with_activity', '$count'
+                        ]
+                    }
+                }
+            }, {
+                '$sort': {
+                    'total_volume': -1,
+                    'activity_ratio': -1,
+                    'std': -1
+                }
+            }
+        ], allowDiskUse=True
+    ))
+
+    pd.DataFrame(places).set_index('_id').to_csv(GENERATED_PATH + key[1:] + '_stats.csv')
+
+
 def merge_brand_activity():
 
     temp_db = utils.SYSTEM_MONGO.get_collection("terminal.brand_activity")
@@ -272,16 +351,14 @@ def refactor_activities():
 
 def parse_names():
 
-    # names = pd.read_csv(GENERATED_PATH + '$name_merged_with_ratio.csv').set_index('_id')
-    # names = names[names['count'] > 10]
-    # names = names.sort_values(by=['count_with_activity', 'ratio', 'count'], ascending=False)
-    # names.to_csv(GENERATED_PATH + 'sorted.csv')
+    names = pd.read_csv(GENERATED_PATH + '$name_merged_with_ratio.csv').set_index('_id')
+    names = names[names['count'] > 10]
+    names = names.sort_values(by=['count_with_activity', 'ratio', 'count'], ascending=False)
+    names.to_csv(GENERATED_PATH + 'sorted.csv')
 
-    names = pd.read_csv(GENERATED_PATH + 'sorted_names.csv').set_index('_id')
-    names.drop(["Unnamed: 0"], axis='columns')
-    print(names.head())
+    # names = pd.read_csv(GENERATED_PATH + 'sorted_names.csv').set_index('_id')
+    # names.drop(["Unnamed: 0"], axis='columns')
     # print(names.head())
-    # print(names.iloc[1:1000]['count_with_activity'].sum())
 
 
 if __name__ == "__main__":
@@ -292,8 +369,10 @@ if __name__ == "__main__":
     # })
     # merge_activity()
     # num_activity_by_key('name')
+    # stats_by_key('google_details.price')
+    # stats_by_key('city')
     # update_brand_volume()
-    merge_brand_activity()
+    # merge_brand_activity()
     # parse_names()
 
     pass
