@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -10,7 +10,10 @@ import {
   FONT_WEIGHT_BOLD,
   FONT_SIZE_XLARGE,
 } from '../../constants/theme';
-import { GetTerminalList } from '../../generated/GetTerminalList';
+import {
+  GetTerminalList,
+  GetTerminalList_userTerminals as UserTerminal,
+} from '../../generated/GetTerminalList';
 import { GET_TERMINAL_LIST } from '../../graphql/queries/server/terminals';
 
 import TerminalCard from './TerminalCard';
@@ -18,8 +21,26 @@ import AddNewTerminalModal from './AddNewTerminalModal';
 
 export default function TerminalHomeScene() {
   let [addModalVisible, setAddModalVisible] = useState(false);
-  let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
-
+  let [searchTerminal, setSearchTerminal] = useState('');
+  let [listData, setListData] = useState<Array<UserTerminal>>([]);
+  let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST, {
+    onCompleted: ({ userTerminals }) => setListData(userTerminals),
+  });
+  let onSearchSubmit = () => {
+    if (data?.userTerminals) {
+      setListData(
+        data.userTerminals.filter(({ name }) =>
+          name.toLowerCase().includes(searchTerminal.toLowerCase()),
+        ),
+      );
+    }
+  };
+  useEffect(() => {
+    if (data?.userTerminals) {
+      setSearchTerminal('');
+      setListData(data.userTerminals);
+    }
+  }, [data]);
   return (
     <View>
       <AddNewTerminalModal
@@ -37,6 +58,9 @@ export default function TerminalHomeScene() {
               containerStyle={{ marginRight: 8 }}
               icon={true}
               iconStyle={{ top: 2, right: 3 }}
+              onChange={(e) => setSearchTerminal(e.target.value)}
+              onSubmit={onSearchSubmit}
+              value={searchTerminal}
             />
             <Button
               text="New Terminal"
@@ -53,9 +77,11 @@ export default function TerminalHomeScene() {
           <NoDataText>
             Add a terminal to begin using customizable data feeds.
           </NoDataText>
+        ) : listData.length === 0 ? (
+          <NoDataText>Search not found.</NoDataText>
         ) : (
           <CardContainer>
-            {data?.userTerminals.map(
+            {listData.map(
               ({ id, name, pinnedFeeds, description, updatedAt }, index) => (
                 <TerminalCard
                   key={`${name}-${index}`}
