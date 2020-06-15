@@ -164,6 +164,77 @@ def test_db():
     TEST_DB.insert_many(h)
 
 
+def adjust_names():
+
+    details = utils.DB_TERMINAL_PLACES.update_many({
+        # '$and': [
+        #     {'name': {"$regex": r'^Starbucks'}},
+        #     {'name': {"$ne": "Starbucks Reserve"}}
+        # ]
+        'name': {"$regex": r'^Sherwin-Williams'}
+    }, {
+        '$set': {
+            'name': "Sherwin-Williams Paint Store"
+        }
+    })
+
+    print(details.modified_count)
+    pass
+
+
+def pass_names():
+
+    places = list(utils.DB_TERMINAL_PLACES.find({
+        'name': {'$regex': r' at '}
+    }, {
+        'name': 1, '_id': 1
+    }))
+
+    for place in places:
+        try:
+            utils.DB_TERMINAL_PLACES.update_one({
+                '_id': place['_id']
+            }, {'$set': {
+                'name': place['name'].split(" at ")[0],
+                'previous_name': place['name']
+            }})
+            print('Updated succesfully ({})'.format(place['_id']))
+        except Exception:
+            utils.DB_TERMINAL_PLACES.delete_one({
+                '_id': place['_id']
+            })
+            print('Deleted Duplucate ({})'.format(place['_id']))
+
+
+def fix_blank_names():
+
+    places = list(utils.DB_TERMINAL_PLACES.find({
+        'name': {'$regex': "^ "}
+    }))
+
+    for place in places:
+        try:
+            utils.DB_TERMINAL_PLACES.update_one({
+                '_id': place['_id']
+            }, {'$set': {
+                'name': place['name'][1:],
+            }})
+            print('Updated succesfully ({})'.format(place['_id']))
+        except Exception:
+            utils.DB_TERMINAL_PLACES.delete_one({
+                '_id': place['_id']
+            })
+            print('Deleted Duplucate ({})'.format(place['_id']))
+
+
+def delete_failures():
+
+    utils.DB_TERMINAL_PLACES.delete_many({
+        'address': {'$exists': False},
+        'previous_name': {'$exists': True}
+    })
+
+
 if __name__ == "__main__":
     # migrate_terminal()
     # add_city()
@@ -173,4 +244,8 @@ if __name__ == "__main__":
     # add_state_to_county()
     # test_db()
     # TEST_DB.delete_many({})
+    # adjust_names()
+    # pass_names()
+    fix_blank_names()
+    # delete_failures()
     pass

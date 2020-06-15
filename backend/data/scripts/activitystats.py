@@ -5,9 +5,11 @@ import datetime as dt
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
+import requests
 import utils
 import pandas as pd
 import pprint
+from billiard.pool import Pool
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 GENERATED_PATH = THIS_DIR + '/files/activity_generated/'
@@ -38,33 +40,6 @@ def activity_statistics(num_results=50):
     ])
 
 
-def num_activity_by_city():
-
-    sorted_total = list(utils.DB_TERMINAL_PLACES.aggregate([
-        {'$group': {'_id': '$city', 'count': {'$sum': 1}}},
-        {'$sort': {'count': -1}}
-    ]))
-
-    total_df = pd.DataFrame(sorted_total)
-    total_df.to_csv(GENERATED_PATH + 'num_per_city.csv')
-
-    sorted_with_activity = list(utils.DB_TERMINAL_PLACES.aggregate([
-        {'$match': {'$and': [{'google_details.activity': {'$ne': None}}, {'google_details.activity': {'$ne': []}}]}},
-        {'$group': {'_id': '$city', 'count': {'$sum': 1}}},
-        {'$sort': {'count': -1}}
-    ]))
-
-    total_with_activity_df = pd.DataFrame(sorted_with_activity)
-    total_with_activity_df.rename(columns={'count': 'count_with_activity'}, inplace=True)
-    total_with_activity_df.to_csv(GENERATED_PATH + 'with_activity.csv')
-
-    merged_df = total_df.merge(total_with_activity_df, how='left', on='_id')
-    merged_df['ratio'] = 100 * merged_df['count_with_activity'] / merged_df['count']
-    merged_df['ratio'] = merged_df['ratio'].round(2)
-    merged_df.to_csv(GENERATED_PATH + 'merged_with_ratio.csv')
-    merged_df.describe().to_csv(GENERATED_PATH + 'merged_stats.csv')
-
-
 def generate_dataframe(results):
 
     time = dt.datetime.now().replace(microsecond=0).isoformat()
@@ -79,7 +54,7 @@ def generate_dataframe(results):
     stats_dataframe.to_csv(GENERATED_PATH + 'stats_df_' + time + '.csv')
 
 
-def update_activity():
+def update_activity(query=None):
     pipeline = [
         {'$unwind': {'path': '$google_details.activity',
                      'preserveNullAndEmptyArrays': True}},
@@ -119,6 +94,11 @@ def update_activity():
         {"$merge": "activity-levels"}
     ]
 
+    if query:
+        pipeline.insert(0, {
+            '$match': query
+        })
+
     # TEST_DB.aggregate(pipeline)
     utils.DB_TERMINAL_PLACES.aggregate(pipeline, allowDiskUse=True)
 
@@ -128,6 +108,229 @@ def merge_activity():
     temp_db = utils.SYSTEM_MONGO.get_collection("terminal.activity-levels")
 
     temp_db.aggregate([
+        {"$merge": {"into": "places"}}
+    ])
+
+
+def update_brand_volume():
+
+    utils.DB_TERMINAL_PLACES.aggregate(
+        [
+            {
+                '$group': {
+                    '_id': '$name',
+                    'ids': {
+                        '$push': '$_id'
+                    },
+                    'total_volume': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, '$activity_volume', 0
+                            ]
+                        }
+                    },
+                    'total_count': {
+                        '$sum': {
+                            '$cond': [
+                                {
+                                    '$gt': [
+                                        '$activity_volume', 0
+                                    ]
+                                }, 1, 0
+                            ]
+                        }
+                    }
+                }
+            }, {
+                '$project': {
+                    '_id': '$ids',
+                    'name': '$_id',
+                    'brand_volume': {
+                        '$cond': [
+                            {
+                                '$gt': [
+                                    '$total_count', 0
+                                ]
+                            }, {
+                                '$divide': [
+                                    '$total_volume', '$total_count'
+                                ]
+                            }, -1
+                        ]
+                    }
+                }
+            }, {
+                '$unwind': {
+                    'path': '$_id'
+                }
+            }, {
+                '$sort': {
+                    'brand_volume': -1
+                }
+            }, {
+                '$merge': 'brand_activity'
+            }
+        ], allowDiskUse=True
+    )
+
+
+def stats_by_key(key):
+    """
+    Get's the stats by key, but depends on the key. Only works for certain keys.
+    """
+
+    if key[0] != '$':
+        key = '$' + key
+
+    pipeline = []
+    if key == '$city':
+        pipeline.append({
+            '$addFields': {
+                'city': {
+                    '$concat': ["$city", ", ", "$state"]
+                }
+            }
+        })
+
+    group_stage = {
+        '$group': {
+            '_id': key,
+            'std': {
+                '$stdDevSamp': {
+                    '$cond': [
+                        {
+                            '$gt': [
+                                '$activity_volume', 0
+                            ]
+                        }, '$activity_volume', None
+                    ]
+                }
+            },
+            'total_volume': {
+                '$sum': {
+                    '$cond': [
+                        {
+                            '$gt': [
+                                '$activity_volume', 0
+                            ]
+                        }, '$activity_volume', 0
+                    ]
+                }
+            },
+            'min_volume': {
+                '$min': {
+                    '$cond': [
+                        {
+                            '$gt': [
+                                '$activity_volume', 0
+                            ]
+                        }, '$activity_volume', None
+                    ]
+                }
+            },
+            'max_volume': {
+                '$max': {
+                    '$cond': [
+                        {
+                            '$gt': [
+                                '$activity_volume', 0
+                            ]
+                        }, '$activity_volume', None
+                    ]
+                }
+            },
+            'avg_volume': {
+                '$avg': {
+                    '$cond': [
+                        {
+                            '$gt': [
+                                '$activity_volume', 0
+                            ]
+                        }, '$activity_volume', None
+                    ]
+                }
+            },
+            'count_with_activity': {
+                '$sum': {
+                    '$cond': [
+                        {
+                            '$gt': [
+                                '$activity_volume', 0
+                            ]
+                        }, 1, 0
+                    ]
+                }
+            },
+            'count': {
+                '$sum': 1
+            }
+        }
+    }
+
+    if key == '$name':
+        group_stage['$group']['category'] = {'$first': '$type'}
+    if key == '$city':
+        group_stage['$group'].update({
+            'avg_lat': {
+                '$avg': {
+                    '$arrayElemAt': [
+                        '$location.coordinates', 1
+                    ]
+                }
+            },
+            'avg_lng': {
+                '$avg': {
+                    '$arrayElemAt': [
+                        '$location.coordinates', 0
+                    ]
+                }
+            }
+        })
+
+    additional_fields_stage = {
+        '$addFields': {
+            'activity_ratio': {
+                '$divide': [
+                    '$count_with_activity', '$count'
+                ]
+            }
+        }
+    }
+
+    sort_stage = {
+        '$sort': {
+            'total_volume': -1,
+            'activity_ratio': -1,
+            'std': -1
+        }
+    }
+
+    pipeline.extend([
+        group_stage,
+        additional_fields_stage,
+        sort_stage
+    ])
+
+    places = list(utils.DB_TERMINAL_PLACES.aggregate(
+        pipeline, allowDiskUse=True
+    ))
+
+    pd.DataFrame(places).set_index('_id').to_csv(GENERATED_PATH + key[1:] + '_stats.csv')
+
+
+def merge_brand_activity():
+
+    temp_db = utils.SYSTEM_MONGO.get_collection("terminal.brand_activity")
+
+    temp_db.aggregate([
+        {"$project": {
+            "_id": 1,
+            "brand_volume": 1
+        }},
         {"$merge": {"into": "places"}}
     ])
 
@@ -185,14 +388,72 @@ def refactor_activities():
     })
 
 
-if __name__ == "__main__":
-    # activity_statistics(150)
-    # num_activity_by_city()
-    # update_activity()
-    # merge_activity()
-    # test_activity()
-    # remove_long_items()
-    # refactor_activities()
-    # print(utils.DB_TERMINAL_PLACES.count_documents({'name': None}))
+def fill_population():
 
+    api_url = 'http://www.spatialjusticetest.org/api.php'
+    cities = pd.read_csv(GENERATED_PATH + 'city_stats.csv').set_index('_id')
+    cities = cities[cities['count_with_activity'] > 5]
+    cities['population'] = None
+
+    # chunked_cities = utils.chunks(list(cities.index), 100)
+    # def populate_city(indexes):
+
+    for city in cities.index:
+        lat = cities.loc[city, 'avg_lat']
+        lng = cities.loc[city, 'avg_lng']
+        response = requests.get(
+            api_url,
+            params={
+                'fLat': float(round(lat, 6)),
+                'fLon': float(round(lng, 6)),
+                'sGeo': 'bg',
+                'fRadius': 1,
+                'sIntersect': 'centroid',
+            }
+        )
+
+        if response.status_code != 200:
+            continue
+
+        data = response.json()
+        population = data['pop']
+
+        cities.loc[city, 'population'] = population
+        print('{city} has {pop} people'.format(city=city, pop=population))
+
+    cities.to_csv(GENERATED_PATH + 'city_stats_with_pop.csv')
+
+
+def get_one_mile():
+
+    cities = pd.read_csv(GENERATED_PATH + 'city_stats_with_pop.csv').set_index('_id')
+    cities['activity (1mile)'] = None
+    cities['total activity (1mile)'] = None
+
+    for city in cities.index:
+        lat = cities.loc[city, 'avg_lat']
+        lng = cities.loc[city, 'avg_lng']
+        places = list(utils.DB_TERMINAL_PLACES.find({
+            'location': {
+                '$near': {
+                    '$geometry': utils.to_geojson((lat, lng)),
+                    '$maxDistance': utils.miles_to_meters(1)
+                }
+            }
+        }))
+
+        activity_volumes = [place['activity_volume'] for place in places
+                            if place['activity_volume'] > 0]
+        activity = sum(activity_volumes) / len(activity_volumes) if len(activity_volumes) > 0 else None
+        total_activity = sum(activity_volumes)
+        cities.loc[city, 'activity (1mile)'] = activity
+        cities.loc[city, 'total activity (1mile)'] = total_activity
+        print('{city} has 1 mile avg activity {activity}'.format(city=city, activity=activity))
+
+    cities.to_csv(GENERATED_PATH + 'city_stats_with_pop.csv')
+
+
+if __name__ == "__main__":
+    # stats_by_key('city')
+    # get_one_mile()
     pass
