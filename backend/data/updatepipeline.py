@@ -130,7 +130,7 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
                       place['_id']
                   ))
         try:
-            update_db.update_many(results, ordered=False, upsert=True)
+            update_db.insert_many(results, ordered=False)
         except Exception:
             pass
         print('ACTIVITY_UPDATE: Batch complete, updated {count} places. '
