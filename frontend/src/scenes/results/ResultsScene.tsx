@@ -13,7 +13,11 @@ import {
 import { FONT_SIZE_XLARGE } from '../../constants/theme';
 import { SEARCH } from '../../graphql/queries/server/search';
 import { Search, SearchVariables } from '../../generated/Search';
-import { PerformanceTableType, ReviewTag } from '../../generated/globalTypes';
+import {
+  PerformanceTableType,
+  ReviewTag,
+  OwnershipType as GeneratedOwnershipType,
+} from '../../generated/globalTypes';
 import { ResultQuery, OwnershipType, SearchTag } from '../../types/types';
 import { getResultQueries, capitalize } from '../../helpers';
 import SvgArrowUp from '../../components/icons/arrow-up';
@@ -21,11 +25,9 @@ import SvgArrowUp from '../../components/icons/arrow-up';
 import PerformanceResult from './PerformanceResult';
 import LatestNewsResult from './LatestNewsResult';
 import CustomerActivityResult from './CustomerActivityResult';
-import PropertyOwnerInformationResult from './PropertyOwnerInformationResult';
-import CompanyInformationResult from './CompanyInformationResult';
-import PropertyContactsResult from './PropertyContactsResult';
-import CompanyContactsResult from './CompanyContactsResult';
 import CoverageResult from './CoverageResult';
+import ContactsResult from './ContactsResult';
+import OwnershipInformationResult from './OwnershipInformationResult';
 
 type SearchState = {
   search: SearchTag;
@@ -167,13 +169,37 @@ export default function ResultsScene() {
                 return <CustomerActivityResult {...props} />;
               } else if (reviewTag === ReviewTag.OWNERSHIP) {
                 if (type === OwnershipType.PROPERTY_CONTACT) {
-                  return <PropertyContactsResult {...props} />;
+                  return (
+                    <ContactsResult
+                      {...props}
+                      title="Property Contacts"
+                      ownershipType={GeneratedOwnershipType.PROPERTY}
+                    />
+                  );
                 } else if (type === OwnershipType.COMPANY_CONTACT) {
-                  return <CompanyContactsResult {...props} />;
+                  return (
+                    <ContactsResult
+                      {...props}
+                      title="Company Contacts"
+                      ownershipType={GeneratedOwnershipType.COMPANY}
+                    />
+                  );
                 } else if (type === OwnershipType.PROPERTY_INFORMATION) {
-                  return <PropertyOwnerInformationResult {...props} />;
+                  return (
+                    <OwnershipInformationResult
+                      {...props}
+                      title="Property Information"
+                      ownershipType={GeneratedOwnershipType.PROPERTY}
+                    />
+                  );
                 } else if (type === OwnershipType.COMPANY_INFORMATION) {
-                  return <CompanyInformationResult {...props} />;
+                  return (
+                    <OwnershipInformationResult
+                      {...props}
+                      title="Company Information"
+                      ownershipType={GeneratedOwnershipType.COMPANY}
+                    />
+                  );
                 }
               } else if (reviewTag === ReviewTag.COVERAGE) {
                 return <CoverageResult {...props} />;
