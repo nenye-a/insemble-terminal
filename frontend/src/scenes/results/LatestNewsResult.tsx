@@ -34,6 +34,7 @@ const POLL_INTERVAL = 5000;
 export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+  let [prevTableId, setPrevTableId] = useState('');
   let alert = useAlert();
 
   let {
@@ -69,8 +70,7 @@ export default function LatestNewsResult(props: Props) {
     ) {
       stopPolling();
       if (data.newsTable.table) {
-        setPrevData(coloredData);
-        let { compareData, comparationTags } = data.newsTable.table;
+        let { compareData, comparationTags, id } = data.newsTable.table;
         if (compareData.length !== comparationTags.length) {
           let notIncluded = comparationTags
             .filter(
@@ -84,7 +84,15 @@ export default function LatestNewsResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            if (prevTableId) {
+              refetch({
+                tableId: prevTableId,
+              });
+            }
           }
+        } else {
+          setPrevData(coloredData);
+          setPrevTableId(id);
         }
       }
     }

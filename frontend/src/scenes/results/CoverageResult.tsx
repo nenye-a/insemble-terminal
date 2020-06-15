@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
+import { useAlert } from 'react-alert';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { ErrorComponent, EmptyDataComponent } from '../../components';
@@ -36,7 +37,9 @@ type ColoredData = (CoverageData | CoverageCompareData) & {
 export default function CoverageResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+  let [prevTableId, setPrevTableId] = useState('');
 
+  let alert = useAlert();
   let { isLoading } = useGoogleMaps();
   let { loading: coverageLoading, data, error, refetch } = useQuery<
     GetCoverage,
@@ -65,11 +68,36 @@ export default function CoverageResult(props: Props) {
   let loading = isLoading || coverageLoading;
 
   useEffect(() => {
-    if (!coverageLoading && data) {
-      setPrevData(coloredData);
+    if (!coverageLoading) {
+      if (data?.coverageTable) {
+        let { compareData, comparationTags, id } = data.coverageTable;
+        if (compareData.length !== comparationTags.length) {
+          let notIncluded = comparationTags
+            .filter(
+              (tag) =>
+                !compareData.map((item) => item.compareId).includes(tag.id),
+            )
+            .map((item) => item.businessTag?.params);
+          if (notIncluded.length > 0) {
+            alert.show(
+              `No data available for ${notIncluded.join(
+                ', ',
+              )}. Please check your search and try again`,
+            );
+            if (prevTableId) {
+              refetch({
+                tableId: prevTableId,
+              });
+            }
+          }
+        } else {
+          setPrevData(coloredData);
+          setPrevTableId(id);
+        }
+      }
     }
-  }, [data, coverageLoading]);
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, coverageLoading, error]);
   return (
     <View>
       <ResultTitle
@@ -102,7 +130,7 @@ export default function CoverageResult(props: Props) {
           <ErrorComponent text={formatErrorMessage(error.message)} />
         ) : noData && !loading ? (
           <EmptyDataComponent />
-        ) : (!loading && !noData) || prevData.length > 1 ? (
+        ) : (!loading && !noData) || prevData.length > 0 ? (
           <ContentContainer>
             <CoverageTable data={loading ? prevData : coloredData} />
             <CoverageMap data={loading ? prevData : coloredData} />

@@ -53,6 +53,7 @@ export default function PerformanceResult(props: Props) {
   } = props;
   let alert = useAlert();
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+  let [prevTableId, setPrevTableId] = useState('');
   let {
     data,
     loading: performanceLoading,
@@ -93,8 +94,7 @@ export default function PerformanceResult(props: Props) {
     ) {
       stopPolling();
       if (data.performanceTable.table) {
-        setPrevData(coloredData);
-        let { compareData, comparationTags } = data.performanceTable.table;
+        let { compareData, comparationTags, id } = data.performanceTable.table;
         if (compareData.length !== comparationTags.length) {
           let notIncluded = comparationTags
             .filter(
@@ -108,12 +108,26 @@ export default function PerformanceResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            if (prevTableId) {
+              refetch({
+                tableId: prevTableId,
+                performanceType,
+              });
+            }
           }
+        } else {
+          setPrevData(coloredData);
+          setPrevTableId(id);
         }
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  useEffect(() => {
+    if (error) {
+    }
+  }, [error]);
 
   useEffect(() => {
     startPolling(POLL_INTERVAL);

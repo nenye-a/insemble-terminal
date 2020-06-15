@@ -34,6 +34,7 @@ const POLL_INTERVAL = 5000;
 export default function CustomerActivityResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+  let [prevTableId, setPrevTableId] = useState('');
 
   let alert = useAlert();
   let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
@@ -67,9 +68,8 @@ export default function CustomerActivityResult(props: Props) {
       !data.activityTable.polling
     ) {
       stopPolling();
-      setPrevData(coloredData);
       if (data.activityTable.table) {
-        let { compareData, comparationTags } = data.activityTable.table;
+        let { compareData, comparationTags, id } = data.activityTable.table;
         if (compareData.length !== comparationTags.length) {
           let notIncluded = comparationTags
             .filter(
@@ -83,7 +83,15 @@ export default function CustomerActivityResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            if (prevTableId) {
+              refetch({
+                tableId: prevTableId,
+              });
+            }
           }
+        } else {
+          setPrevData(coloredData);
+          setPrevTableId(id);
         }
       }
     }
