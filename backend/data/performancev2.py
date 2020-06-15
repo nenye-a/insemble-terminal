@@ -396,7 +396,9 @@ def parse_details(details):
             'avgRating': details['rating'],
             'avgReviews': details['num_reviews'],
             'numLocations': None,
-            'numNearby': list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(place, LOW_CONFIDENCE_VICINITY)))[0]['count']
+            'numNearby': place['num_nearby'] if 'num_nearby' in place else None
+            # TODO: run confidence script to prepopulate
+            #list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(place, LOW_CONFIDENCE_VICINITY)))[0]['count']
         }
     else:
         return {
@@ -408,7 +410,8 @@ def parse_details(details):
             'nationalIndex': None,
             'avgRating': details['rating'],
             'avgReviews': details['num_reviews'],
-            'numLocations': None
+            'numLocations': None,
+            'numNearby': None
         }
 
 
@@ -440,7 +443,7 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
              'avgRating': place['google_details']['rating'] if 'rating' in place['google_details'] else None,
              'avgReviews': place['google_details']['num_reviews'] if 'num_reviews' in place['google_details'] else None,
              'numLocations': None,
-             'numNearby': list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(place, LOW_CONFIDENCE_VICINITY)))[0]['count']}
+             'numNearby': place['num_nearby'] if 'num_nearby' in place else None}
 
         corrected_name = details['name'] if not corrected_name else None
         details['name'] = details.pop('address')
