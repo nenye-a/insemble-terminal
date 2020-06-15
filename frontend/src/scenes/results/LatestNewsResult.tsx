@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -25,10 +25,15 @@ type Props = {
   pinTableId?: string;
 };
 
+type ColoredData = (NewsData | NewsCompareData) & {
+  isComparison: boolean;
+};
+
 const POLL_INTERVAL = 5000;
 
 export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let alert = useAlert();
 
   let { data, loading, error, refetch, startPolling, stopPolling } = useQuery<
@@ -60,6 +65,7 @@ export default function LatestNewsResult(props: Props) {
     ) {
       stopPolling();
       if (data.newsTable.table) {
+        setPrevData(coloredData);
         let { compareData, comparationTags } = data.newsTable.table;
         if (compareData.length !== comparationTags.length) {
           let notIncluded = comparationTags
@@ -116,19 +122,25 @@ export default function LatestNewsResult(props: Props) {
         })}
         pinTableId={pinTableId}
       />
-      {loading || data?.newsTable.polling ? (
-        <LoadingIndicator />
-      ) : error || data?.newsTable.error ? (
-        <ErrorComponent
-          text={formatErrorMessage(
-            error?.message || data?.newsTable.error || '',
-          )}
-        />
-      ) : noData ? (
-        <EmptyDataComponent />
-      ) : (
-        <NewsTable data={coloredData} />
-      )}
+      <View>
+        {(loading || data?.newsTable.polling) && (
+          <LoadingIndicator mode="overlap" />
+        )}
+        {error || data?.newsTable.error ? (
+          <ErrorComponent
+            text={formatErrorMessage(
+              error?.message || data?.newsTable.error || '',
+            )}
+          />
+        ) : (data?.newsTable.table && data.newsTable.table.data.length > 0) ||
+          prevData.length > 0 ? (
+          <NewsTable
+            data={loading || data?.newsTable.polling ? prevData : coloredData}
+          />
+        ) : noData && !(loading || data?.newsTable.polling) ? (
+          <EmptyDataComponent />
+        ) : null}
+      </View>
     </Container>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -25,10 +25,16 @@ type Props = {
   pinTableId?: string;
 };
 
+type ColoredData = (ActivityData | ActivityCompareData) & {
+  isComparison: boolean;
+};
+
 const POLL_INTERVAL = 5000;
 
 export default function CustomerActivityResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+
   let alert = useAlert();
   let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
     GetActivity,
@@ -61,6 +67,7 @@ export default function CustomerActivityResult(props: Props) {
       !data.activityTable.polling
     ) {
       stopPolling();
+      setPrevData(coloredData);
       if (data.activityTable.table) {
         let { compareData, comparationTags } = data.activityTable.table;
         if (compareData.length !== comparationTags.length) {
@@ -118,19 +125,28 @@ export default function CustomerActivityResult(props: Props) {
         })}
         pinTableId={pinTableId}
       />
-      {loading || data?.activityTable.polling ? (
-        <LoadingIndicator />
-      ) : error || data?.activityTable.error ? (
-        <ErrorComponent
-          text={formatErrorMessage(
-            error?.message || data?.activityTable.error || '',
-          )}
-        />
-      ) : noData ? (
-        <EmptyDataComponent />
-      ) : (
-        <ActivityChart data={coloredData} />
-      )}
+      <View>
+        {(loading || data?.activityTable.polling) && (
+          <LoadingIndicator mode="overlap" />
+        )}
+        {error || data?.activityTable.error ? (
+          <ErrorComponent
+            text={formatErrorMessage(
+              error?.message || data?.activityTable.error || '',
+            )}
+          />
+        ) : (data?.activityTable.table &&
+            data.activityTable.table.data.length > 0) ||
+          prevData.length > 0 ? (
+          <ActivityChart
+            data={
+              loading || data?.activityTable.polling ? prevData : coloredData
+            }
+          />
+        ) : noData && !(loading || data?.activityTable.polling) ? (
+          <EmptyDataComponent />
+        ) : null}
+      </View>
     </Container>
   );
 }

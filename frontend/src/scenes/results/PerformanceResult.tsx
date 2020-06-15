@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -34,6 +34,10 @@ type Props = {
   pinTableId?: string;
 };
 
+type ColoredData = (PerformanceData | PerformanceCompareData) & {
+  isComparison: boolean;
+};
+
 const POLL_INTERVAL = 5000;
 
 export default function PerformanceResult(props: Props) {
@@ -48,7 +52,7 @@ export default function PerformanceResult(props: Props) {
     pinTableId,
   } = props;
   let alert = useAlert();
-
+  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
     GetPerformanceTable,
     GetPerformanceTableVariables
@@ -82,6 +86,7 @@ export default function PerformanceResult(props: Props) {
     ) {
       stopPolling();
       if (data.performanceTable.table) {
+        setPrevData(coloredData);
         let { compareData, comparationTags } = data.performanceTable.table;
         if (compareData.length !== comparationTags.length) {
           let notIncluded = comparationTags
@@ -142,23 +147,30 @@ export default function PerformanceResult(props: Props) {
         infoboxContent={PerformanceTablePopover}
         pinTableId={pinTableId}
       />
-      {loading || data?.performanceTable.polling ? (
-        <LoadingIndicator />
-      ) : error || data?.performanceTable.error ? (
-        <ErrorComponent
-          text={formatErrorMessage(
-            error?.message || data?.performanceTable.error || '',
-          )}
-        />
-      ) : noData ? (
-        <EmptyDataComponent />
-      ) : (
-        <PerformanceTable
-          data={coloredData}
-          showNumLocation={showNumLocation}
-          headerTitle={headerTitle}
-        />
-      )}
+      <View>
+        {(loading || data?.performanceTable.polling) && (
+          <LoadingIndicator mode="overlap" />
+        )}
+        {error || data?.performanceTable.error ? (
+          <ErrorComponent
+            text={formatErrorMessage(
+              error?.message || data?.performanceTable.error || '',
+            )}
+          />
+        ) : (data?.performanceTable.table &&
+            data.performanceTable.table.data.length > 0) ||
+          prevData.length > 0 ? (
+          <PerformanceTable
+            data={
+              loading || data?.performanceTable.polling ? prevData : coloredData
+            }
+            showNumLocation={showNumLocation}
+            headerTitle={headerTitle}
+          />
+        ) : noData && !(loading || data?.performanceTable.polling) ? (
+          <EmptyDataComponent />
+        ) : null}
+      </View>
     </Container>
   );
 }

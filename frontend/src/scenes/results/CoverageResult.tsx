@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -29,10 +29,16 @@ type Props = {
   pinTableId?: string;
 };
 
+type ColoredData = (CoverageData | CoverageCompareData) & {
+  isComparison: boolean;
+};
+
 export default function CoverageResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+
   let { isLoading } = useGoogleMaps();
-  let { loading, data, error, refetch } = useQuery<
+  let { loading: coverageLoading, data, error, refetch } = useQuery<
     GetCoverage,
     GetCoverageVariables
   >(GET_COVERAGE_DATA, {
@@ -56,9 +62,13 @@ export default function CoverageResult(props: Props) {
   let noData =
     !data?.coverageTable.data || data?.coverageTable.data.length === 0;
 
-  if (isLoading) {
-    return <LoadingIndicator />;
-  }
+  let loading = isLoading || coverageLoading;
+
+  useEffect(() => {
+    if (!coverageLoading && data) {
+      setPrevData(coloredData);
+    }
+  }, [data]);
 
   return (
     <View>
@@ -86,18 +96,19 @@ export default function CoverageResult(props: Props) {
         })}
         pinTableId={pinTableId}
       />
-      {loading ? (
-        <LoadingIndicator />
-      ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
-      ) : noData ? (
-        <EmptyDataComponent />
-      ) : (
-        <ContentContainer>
-          <CoverageTable data={coloredData} />
-          <CoverageMap data={coloredData} />
-        </ContentContainer>
-      )}
+      <View>
+        {loading && <LoadingIndicator mode="overlap" />}
+        {error ? (
+          <ErrorComponent text={formatErrorMessage(error.message)} />
+        ) : noData && !loading ? (
+          <EmptyDataComponent />
+        ) : !noData || prevData.length > 1 ? (
+          <ContentContainer>
+            <CoverageTable data={loading ? prevData : coloredData} />
+            <CoverageMap data={loading ? prevData : coloredData} />
+          </ContentContainer>
+        ) : null}
+      </View>
     </View>
   );
 }
