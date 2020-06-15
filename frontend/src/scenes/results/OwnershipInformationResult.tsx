@@ -24,10 +24,19 @@ type Props = {
   locationTagId?: string;
   tableId?: string;
   pinTableId?: string;
+  ownershipType: OwnershipType;
+  title: string;
 };
 
-export default function PropertyOwnerInformationResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId } = props;
+export default function OwnershipInformationResult(props: Props) {
+  let {
+    businessTagId,
+    locationTagId,
+    tableId,
+    pinTableId,
+    ownershipType,
+    title,
+  } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipInfoData,
     GetOwnershipInfoDataVariables
@@ -35,23 +44,25 @@ export default function PropertyOwnerInformationResult(props: Props) {
     variables: {
       businessTagId,
       locationTagId,
-      ownershipType: OwnershipType.PROPERTY,
+      ownershipType,
       tableId,
     },
   });
-  let noData = !data || Object.keys(data?.ownershipInfoTable.data).length === 0;
+  let noData =
+    !data?.ownershipInfoTable.data ||
+    Object.keys(data?.ownershipInfoTable.data).length === 0;
 
   return (
     <Container>
       <ResultTitle
-        title="Property Owner Information"
+        title={title}
         noData={noData}
         reviewTag={ReviewTag.OWNERSHIP}
         tableId={data?.ownershipInfoTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
             tableId: newTableId,
-            ownershipType: OwnershipType.PROPERTY,
+            ownershipType,
           });
         }}
         canCompare={false}

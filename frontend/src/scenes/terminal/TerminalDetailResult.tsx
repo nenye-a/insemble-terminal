@@ -10,11 +10,9 @@ import {
 import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
-import PropertyContactsResult from '../results/PropertyContactsResult';
-import CompanyContactsResult from '../results/CompanyContactsResult';
-import PropertyOwnerInformationResult from '../results/PropertyOwnerInformationResult';
-import CompanyInformationResult from '../results/CompanyInformationResult';
 import CoverageResult from '../results/CoverageResult';
+import ContactsResult from '../results/ContactsResult';
+import OwnershipInformationResult from '../results/OwnershipInformationResult';
 
 type Props = {
   data: Array<PinnedFeeds>;
@@ -97,15 +95,39 @@ export default function TerminalDataResult(props: Props) {
             return <CustomerActivityResult {...props} />;
           } else if (tableType === TableType.OWNERSHIP_CONTACT) {
             if (ownershipTableType === OwnershipType.PROPERTY) {
-              return <PropertyContactsResult {...props} />;
+              return (
+                <ContactsResult
+                  {...props}
+                  title="Property Contacts"
+                  ownershipType={ownershipTableType}
+                />
+              );
             } else if (ownershipTableType === OwnershipType.COMPANY) {
-              return <CompanyContactsResult {...props} />;
+              return (
+                <ContactsResult
+                  {...props}
+                  title="Company Contacts"
+                  ownershipType={ownershipTableType}
+                />
+              );
             }
           } else if (tableType === TableType.OWNERSHIP_INFO) {
             if (ownershipTableType === OwnershipType.PROPERTY) {
-              return <PropertyOwnerInformationResult {...props} />;
+              return (
+                <OwnershipInformationResult
+                  {...props}
+                  title="Property Information"
+                  ownershipType={ownershipTableType}
+                />
+              );
             } else if (ownershipTableType === OwnershipType.COMPANY) {
-              return <CompanyInformationResult {...props} />;
+              return (
+                <OwnershipInformationResult
+                  {...props}
+                  title="Company Information"
+                  ownershipType={ownershipTableType}
+                />
+              );
             }
           } else if (tableType === TableType.COVERAGE) {
             return <CoverageResult {...props} />;

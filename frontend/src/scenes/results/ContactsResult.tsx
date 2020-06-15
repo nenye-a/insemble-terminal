@@ -24,10 +24,19 @@ type Props = {
   locationTagId?: string;
   tableId?: string;
   pinTableId?: string;
+  ownershipType: OwnershipType;
+  title: string;
 };
 
-export default function CompanyContactsResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId } = props;
+export default function ContactsResult(props: Props) {
+  let {
+    businessTagId,
+    locationTagId,
+    tableId,
+    pinTableId,
+    ownershipType,
+    title,
+  } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipContactData,
     GetOwnershipContactDataVariables
@@ -35,7 +44,7 @@ export default function CompanyContactsResult(props: Props) {
     variables: {
       businessTagId,
       locationTagId,
-      ownershipType: OwnershipType.COMPANY,
+      ownershipType,
       tableId,
     },
   });
@@ -47,14 +56,14 @@ export default function CompanyContactsResult(props: Props) {
   return (
     <Container>
       <ResultTitle
-        title="Company Contacts"
+        title={title}
         noData={noData}
         reviewTag={ReviewTag.OWNERSHIP}
         tableId={data?.ownershipContactTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
             tableId: newTableId,
-            ownershipType: OwnershipType.COMPANY,
+            ownershipType,
           });
         }}
         canCompare={false}

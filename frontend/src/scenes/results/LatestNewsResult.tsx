@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -25,16 +25,26 @@ type Props = {
   pinTableId?: string;
 };
 
+type ColoredData = (NewsData | NewsCompareData) & {
+  isComparison: boolean;
+};
+
 const POLL_INTERVAL = 5000;
 
 export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+  let [prevTableId, setPrevTableId] = useState('');
   let alert = useAlert();
 
-  let { data, loading, error, refetch, startPolling, stopPolling } = useQuery<
-    GetNewsTable,
-    GetNewsTableVariables
-  >(GET_NEWS_TABLE_DATA, {
+  let {
+    data,
+    loading: newsLoading,
+    error,
+    refetch,
+    startPolling,
+    stopPolling,
+  } = useQuery<GetNewsTable, GetNewsTableVariables>(GET_NEWS_TABLE_DATA, {
     variables: {
       businessTagId,
       locationTagId,
@@ -51,7 +61,7 @@ export default function LatestNewsResult(props: Props) {
   );
   let noData =
     !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
-
+  let loading = newsLoading || data?.newsTable.polling;
   useEffect(() => {
     if (
       (data?.newsTable.table?.data || data?.newsTable.error || error) &&
@@ -60,7 +70,7 @@ export default function LatestNewsResult(props: Props) {
     ) {
       stopPolling();
       if (data.newsTable.table) {
-        let { compareData, comparationTags } = data.newsTable.table;
+        let { compareData, comparationTags, id } = data.newsTable.table;
         if (compareData.length !== comparationTags.length) {
           let notIncluded = comparationTags
             .filter(
@@ -74,7 +84,15 @@ export default function LatestNewsResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            if (prevTableId) {
+              refetch({
+                tableId: prevTableId,
+              });
+            }
           }
+        } else {
+          setPrevData(coloredData);
+          setPrevTableId(id);
         }
       }
     }
@@ -116,19 +134,23 @@ export default function LatestNewsResult(props: Props) {
         })}
         pinTableId={pinTableId}
       />
-      {loading || data?.newsTable.polling ? (
-        <LoadingIndicator />
-      ) : error || data?.newsTable.error ? (
-        <ErrorComponent
-          text={formatErrorMessage(
-            error?.message || data?.newsTable.error || '',
-          )}
-        />
-      ) : noData ? (
-        <EmptyDataComponent />
-      ) : (
-        <NewsTable data={coloredData} />
-      )}
+      <View>
+        {loading && <LoadingIndicator mode="overlap" />}
+        {error || data?.newsTable.error ? (
+          <ErrorComponent
+            text={formatErrorMessage(
+              error?.message || data?.newsTable.error || '',
+            )}
+          />
+        ) : (!loading &&
+            data?.newsTable.table &&
+            data.newsTable.table.data.length > 0) ||
+          prevData.length > 0 ? (
+          <NewsTable data={loading ? prevData : coloredData} />
+        ) : noData && !loading ? (
+          <EmptyDataComponent />
+        ) : null}
+      </View>
     </Container>
   );
 }
