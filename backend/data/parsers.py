@@ -53,6 +53,14 @@ def google_detail_parser(response):
     except Exception:
         name = None
 
+    CLOSED_LOCATOR_RX = r'class="Shyhc"(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\'])+|(<span)|(\>))+'
+    CLOSE_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
+
+    try:
+        closed_indicator = re.search(CLOSE_NARROW_RX, re.search(CLOSED_LOCATOR_RX, stew).group()).group()[1:]
+    except Exception:
+        closed_indicator = None
+
     WEBSITE_LOCATOR_RX = r'<div class="QqG1Sd"><[\w\-\s\"\=]+href="[\'"]?([^\'" >]+)"'
     WEBSITE_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
     WEBSITE_RX = r'"[\'"]?([^\'" >]+)"'
@@ -216,6 +224,7 @@ def google_detail_parser(response):
     store = {
         "url": response.url,
         "name": name,
+        "closed_indicator": closed_indicator,
         "website": website,
         "rating": rating,
         "num_reviews": num_reviews,
