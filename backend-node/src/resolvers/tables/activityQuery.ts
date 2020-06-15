@@ -8,6 +8,7 @@ import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer
 import { timeCheck } from '../../helpers/timeCheck';
 import { LocationTag, BusinessTag } from '@prisma/client';
 import { objectToActivityGraph } from '../../helpers/objectToActivityGraph';
+import { todayMinOneH } from '../../helpers/todayMinOneH';
 
 let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
   _: Root,
@@ -99,6 +100,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         },
         data: {
           error: null,
+          updatedAt: todayMinOneH(),
         },
       });
       return {
@@ -248,6 +250,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
               data: {
                 error: 'Failed to update Activity. Please try again.',
                 polling: false,
+                updatedAt: todayMinOneH(),
               },
             });
           });
@@ -263,6 +266,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         locationTag: locationTag
           ? { connect: { id: locationTag.id } }
           : undefined,
+        updatedAt: todayMinOneH(),
       },
       include: {
         locationTag: true,
@@ -314,6 +318,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
               ? { connect: { id: locationTag.id } }
               : undefined,
             polling: false,
+            updatedAt: new Date(),
           },
         });
       })
@@ -323,6 +328,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
           data: {
             error: 'Failed to update Activity. Please try again.',
             polling: false,
+            updatedAt: todayMinOneH(),
           },
         });
       });

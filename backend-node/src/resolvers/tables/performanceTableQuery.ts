@@ -6,6 +6,7 @@ import { PyPerformanceResponse, PyPerformanceData } from 'dataTypes';
 import { API_URI } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
+import { todayMinOneH } from '../../helpers/todayMinOneH';
 
 let performanceTableResolver: FieldResolver<
   'Query',
@@ -97,6 +98,7 @@ let performanceTableResolver: FieldResolver<
         },
         data: {
           error: null,
+          updatedAt: todayMinOneH(),
         },
       });
       return {
@@ -260,6 +262,7 @@ let performanceTableResolver: FieldResolver<
               data: {
                 error: 'Failed to update Performance. Please try again.',
                 polling: false,
+                updatedAt: todayMinOneH(),
               },
             });
           });
@@ -276,6 +279,7 @@ let performanceTableResolver: FieldResolver<
         locationTag: locationTag
           ? { connect: { id: locationTag.id } }
           : undefined,
+        updatedAt: todayMinOneH(),
       },
       include: {
         locationTag: true,
@@ -340,6 +344,7 @@ let performanceTableResolver: FieldResolver<
               ? { connect: { id: locationTag.id } }
               : undefined,
             polling: false,
+            updatedAt: new Date(),
           },
         });
       })
@@ -349,6 +354,7 @@ let performanceTableResolver: FieldResolver<
           data: {
             error: 'Failed to update Performance. Please try again.',
             polling: false,
+            updatedAt: todayMinOneH(),
           },
         });
       });
