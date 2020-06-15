@@ -62,7 +62,7 @@ export default function AddNewTerminalForm(props: Props) {
       <TextInput
         label="Description (optional)"
         containerStyle={containerStyle}
-        ref={register()}
+        ref={register}
         name="description"
       />
       <ButtonContainer>
