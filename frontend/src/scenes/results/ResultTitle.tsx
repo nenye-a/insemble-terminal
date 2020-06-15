@@ -67,6 +67,8 @@ type Props = {
   locationTag?: { type: LocationTagType; params: string };
   infoboxContent?: () => JSX.Element;
   pinTableId?: string;
+  sortOrder?: Array<string>;
+  onSortOrderChange?: (newSortOrder: Array<string>) => void;
 };
 
 type Params = {
@@ -89,6 +91,8 @@ export default function ResultTitle(props: Props) {
     locationTag,
     infoboxContent,
     pinTableId,
+    sortOrder,
+    onSortOrderChange,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -133,6 +137,8 @@ export default function ResultTitle(props: Props) {
       tableId={tableId}
       onTableIdChange={onTableIdChange}
       activeComparison={comparisonTags}
+      sortOrder={sortOrder}
+      onSortOrderChange={onSortOrderChange}
     />
   );
 

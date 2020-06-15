@@ -35,6 +35,7 @@ export default function CustomerActivityResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
+  let [sortOrder, setSortOrder] = useState<Array<string>>([]);
 
   let alert = useAlert();
   let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
@@ -55,6 +56,7 @@ export default function CustomerActivityResult(props: Props) {
     data?.activityTable.table?.data,
     data?.activityTable.table?.compareData,
     data?.activityTable.table?.comparationTags,
+    sortOrder,
     true,
   );
   let noData =
@@ -132,6 +134,10 @@ export default function CustomerActivityResult(props: Props) {
           },
         })}
         pinTableId={pinTableId}
+        sortOrder={sortOrder}
+        onSortOrderChange={(newSortOrder: Array<string>) =>
+          setSortOrder(newSortOrder)
+        }
       />
       <View>
         {(loading || data?.activityTable.polling) && (
