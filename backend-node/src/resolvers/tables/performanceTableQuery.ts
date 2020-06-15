@@ -98,6 +98,7 @@ let performanceTableResolver: FieldResolver<
         },
         data: {
           error: null,
+          updatedAt: todayMinOneH(),
         },
       });
       return {
@@ -261,6 +262,7 @@ let performanceTableResolver: FieldResolver<
               data: {
                 error: 'Failed to update Performance. Please try again.',
                 polling: false,
+                updatedAt: todayMinOneH(),
               },
             });
           });
@@ -352,6 +354,7 @@ let performanceTableResolver: FieldResolver<
           data: {
             error: 'Failed to update Performance. Please try again.',
             polling: false,
+            updatedAt: todayMinOneH(),
           },
         });
       });

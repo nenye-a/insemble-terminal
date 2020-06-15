@@ -100,6 +100,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         },
         data: {
           error: null,
+          updatedAt: todayMinOneH(),
         },
       });
       return {
@@ -249,6 +250,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
               data: {
                 error: 'Failed to update Activity. Please try again.',
                 polling: false,
+                updatedAt: todayMinOneH(),
               },
             });
           });
@@ -326,6 +328,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
           data: {
             error: 'Failed to update Activity. Please try again.',
             polling: false,
+            updatedAt: todayMinOneH(),
           },
         });
       });

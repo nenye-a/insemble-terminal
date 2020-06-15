@@ -92,6 +92,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         },
         data: {
           error: null,
+          updatedAt: todayMinOneH(),
         },
       });
       return {
@@ -238,6 +239,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               data: {
                 error: 'Failed to update News. Please try again.',
                 polling: false,
+                updatedAt: todayMinOneH(),
               },
             });
           });
@@ -316,6 +318,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
           data: {
             error: 'Failed to update News. Please try again.',
             polling: false,
+            updatedAt: todayMinOneH(),
           },
         });
       });
