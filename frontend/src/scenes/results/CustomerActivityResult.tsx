@@ -135,7 +135,9 @@ export default function CustomerActivityResult(props: Props) {
               error?.message || data?.activityTable.error || '',
             )}
           />
-        ) : (data?.activityTable.table &&
+        ) : (!loading &&
+            !data?.activityTable.polling &&
+            data?.activityTable.table &&
             data.activityTable.table.data.length > 0) ||
           prevData.length > 0 ? (
           <ActivityChart

@@ -36,10 +36,14 @@ export default function LatestNewsResult(props: Props) {
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let alert = useAlert();
 
-  let { data, loading, error, refetch, startPolling, stopPolling } = useQuery<
-    GetNewsTable,
-    GetNewsTableVariables
-  >(GET_NEWS_TABLE_DATA, {
+  let {
+    data,
+    loading: newsLoading,
+    error,
+    refetch,
+    startPolling,
+    stopPolling,
+  } = useQuery<GetNewsTable, GetNewsTableVariables>(GET_NEWS_TABLE_DATA, {
     variables: {
       businessTagId,
       locationTagId,
@@ -56,7 +60,7 @@ export default function LatestNewsResult(props: Props) {
   );
   let noData =
     !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
-
+  let loading = newsLoading || data?.newsTable.polling;
   useEffect(() => {
     if (
       (data?.newsTable.table?.data || data?.newsTable.error || error) &&
@@ -123,21 +127,19 @@ export default function LatestNewsResult(props: Props) {
         pinTableId={pinTableId}
       />
       <View>
-        {(loading || data?.newsTable.polling) && (
-          <LoadingIndicator mode="overlap" />
-        )}
+        {loading && <LoadingIndicator mode="overlap" />}
         {error || data?.newsTable.error ? (
           <ErrorComponent
             text={formatErrorMessage(
               error?.message || data?.newsTable.error || '',
             )}
           />
-        ) : (data?.newsTable.table && data.newsTable.table.data.length > 0) ||
+        ) : (!loading &&
+            data?.newsTable.table &&
+            data.newsTable.table.data.length > 0) ||
           prevData.length > 0 ? (
-          <NewsTable
-            data={loading || data?.newsTable.polling ? prevData : coloredData}
-          />
-        ) : noData && !(loading || data?.newsTable.polling) ? (
+          <NewsTable data={loading ? prevData : coloredData} />
+        ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : null}
       </View>

@@ -68,7 +68,7 @@ export default function CoverageResult(props: Props) {
     if (!coverageLoading && data) {
       setPrevData(coloredData);
     }
-  }, [data]);
+  }, [data, coverageLoading]);
 
   return (
     <View>
@@ -102,7 +102,7 @@ export default function CoverageResult(props: Props) {
           <ErrorComponent text={formatErrorMessage(error.message)} />
         ) : noData && !loading ? (
           <EmptyDataComponent />
-        ) : !noData || prevData.length > 1 ? (
+        ) : (!loading && !noData) || prevData.length > 1 ? (
           <ContentContainer>
             <CoverageTable data={loading ? prevData : coloredData} />
             <CoverageMap data={loading ? prevData : coloredData} />

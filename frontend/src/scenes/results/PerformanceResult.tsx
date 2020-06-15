@@ -53,17 +53,24 @@ export default function PerformanceResult(props: Props) {
   } = props;
   let alert = useAlert();
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
-  let { data, loading, error, refetch, stopPolling, startPolling } = useQuery<
-    GetPerformanceTable,
-    GetPerformanceTableVariables
-  >(GET_PERFORMANCE_TABLE_DATA, {
-    variables: {
-      performanceType,
-      businessTagId,
-      locationTagId,
-      tableId,
+  let {
+    data,
+    loading: performanceLoading,
+    error,
+    refetch,
+    stopPolling,
+    startPolling,
+  } = useQuery<GetPerformanceTable, GetPerformanceTableVariables>(
+    GET_PERFORMANCE_TABLE_DATA,
+    {
+      variables: {
+        performanceType,
+        businessTagId,
+        locationTagId,
+        tableId,
+      },
     },
-  });
+  );
   let { data: coloredData, comparisonTags } = useColoredData<
     PerformanceData,
     PerformanceCompareData
@@ -75,7 +82,7 @@ export default function PerformanceResult(props: Props) {
   let noData =
     !data?.performanceTable.table?.data ||
     data.performanceTable.table?.data.length === 0;
-
+  let loading = performanceLoading || data?.performanceTable.polling;
   useEffect(() => {
     if (
       (data?.performanceTable.table?.data ||
@@ -148,26 +155,23 @@ export default function PerformanceResult(props: Props) {
         pinTableId={pinTableId}
       />
       <View>
-        {(loading || data?.performanceTable.polling) && (
-          <LoadingIndicator mode="overlap" />
-        )}
+        {loading && <LoadingIndicator mode="overlap" />}
         {error || data?.performanceTable.error ? (
           <ErrorComponent
             text={formatErrorMessage(
               error?.message || data?.performanceTable.error || '',
             )}
           />
-        ) : (data?.performanceTable.table &&
+        ) : (!loading &&
+            data?.performanceTable.table &&
             data.performanceTable.table.data.length > 0) ||
           prevData.length > 0 ? (
           <PerformanceTable
-            data={
-              loading || data?.performanceTable.polling ? prevData : coloredData
-            }
+            data={loading ? prevData : coloredData}
             showNumLocation={showNumLocation}
             headerTitle={headerTitle}
           />
-        ) : noData && !(loading || data?.performanceTable.polling) ? (
+        ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : null}
       </View>

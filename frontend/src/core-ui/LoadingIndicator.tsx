@@ -3,10 +3,10 @@ import styled, { css } from 'styled-components';
 
 import loadingWhite from '../assets/images/loading-white.gif';
 import loadingPurple from '../assets/images/loading-purple.gif';
+import { WHITE } from '../constants/colors';
 
 import View from './View';
 import Text from './Text';
-import { WHITE } from '../constants/colors';
 
 type IconSize = keyof typeof ICON_SIZES;
 type Props = ViewProps & {
