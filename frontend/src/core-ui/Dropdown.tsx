@@ -88,8 +88,9 @@ export default function Dropdown<T>(props: Props<T>) {
             setInputValue(e.currentTarget.value);
           },
           value: inputValue,
-          onKeyDown: () => {
+          onKeyDown: (e) => {
             if (
+              e.keyCode === 8 &&
               selectedOption != null &&
               typeof selectedOption === 'object' &&
               ((selectedOption as unknown) as object).hasOwnProperty('id')
