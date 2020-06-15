@@ -40,7 +40,7 @@ export default function TerminalHomeScene() {
       setSearchTerminal('');
       setListData(data.userTerminals);
     }
-  }, [data?.userTerminals]);
+  }, [data]);
   return (
     <View>
       <AddNewTerminalModal
