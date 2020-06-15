@@ -22,7 +22,7 @@ import AddNewTerminalModal from './AddNewTerminalModal';
 export default function TerminalHomeScene() {
   let [addModalVisible, setAddModalVisible] = useState(false);
   let [searchTerminal, setSearchTerminal] = useState('');
-  let [listData, setListData] = useState([] as Array<UserTerminal>);
+  let [listData, setListData] = useState<Array<UserTerminal>>([]);
   let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST, {
     onCompleted: ({ userTerminals }) => setListData(userTerminals),
   });
