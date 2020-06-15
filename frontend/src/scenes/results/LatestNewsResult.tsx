@@ -35,6 +35,7 @@ export default function LatestNewsResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
+  let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let alert = useAlert();
 
   let {
@@ -58,6 +59,7 @@ export default function LatestNewsResult(props: Props) {
     data?.newsTable.table?.data,
     data?.newsTable.table?.compareData,
     data?.newsTable.table?.comparationTags,
+    sortOrder,
   );
   let noData =
     !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
@@ -133,6 +135,10 @@ export default function LatestNewsResult(props: Props) {
           },
         })}
         pinTableId={pinTableId}
+        sortOrder={sortOrder}
+        onSortOrderChange={(newSortOrder: Array<string>) =>
+          setSortOrder(newSortOrder)
+        }
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}

@@ -11,16 +11,19 @@ export default function useColoredData<T, U>(
   data: Array<T> = [],
   compareData: Array<U & HasCompareId> = [],
   comparationTags: Array<ComparationTag> = [],
+  sortOrder: Array<string>,
   skipFirstColor = false,
 ) {
-  let comparationTagsWithFill = comparationTags.map((item, idx) => {
-    let usableColors = skipFirstColor ? COLORS.slice(1) : COLORS;
-    let fill =
-      idx <= usableColors.length - 1
-        ? usableColors[idx]
-        : generateRandomColor();
-    return { ...item, fill };
-  });
+  let comparationTagsWithFill = comparationTags
+    .sort((a, b) => sortOrder.indexOf(a.id) - sortOrder.indexOf(b.id))
+    .map((item, idx) => {
+      let usableColors = skipFirstColor ? COLORS.slice(1) : COLORS;
+      let fill =
+        idx <= usableColors.length - 1
+          ? usableColors[idx]
+          : generateRandomColor();
+      return { ...item, fill };
+    });
 
   let mergedData = [
     ...data.map((item) => ({ ...item, isComparison: false })),

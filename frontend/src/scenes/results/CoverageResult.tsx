@@ -38,6 +38,7 @@ export default function CoverageResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
+  let [sortOrder, setSortOrder] = useState<Array<string>>([]);
 
   let alert = useAlert();
   let { isLoading } = useGoogleMaps();
@@ -59,6 +60,7 @@ export default function CoverageResult(props: Props) {
     data?.coverageTable.data,
     data?.coverageTable.compareData,
     data?.coverageTable.comparationTags,
+    sortOrder,
     true,
   );
 
@@ -123,6 +125,10 @@ export default function CoverageResult(props: Props) {
           },
         })}
         pinTableId={pinTableId}
+        sortOrder={sortOrder}
+        onSortOrderChange={(newSortOrder: Array<string>) =>
+          setSortOrder(newSortOrder)
+        }
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
