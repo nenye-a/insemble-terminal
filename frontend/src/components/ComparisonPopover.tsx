@@ -44,6 +44,8 @@ type Props = {
   tableId: string;
   onTableIdChange?: (tableId: string) => void;
   activeComparison?: Array<ComparationTagWithFill>;
+  sortOrder?: Array<string>;
+  onSortOrderChange?: (order: Array<string>) => void;
 };
 
 export default function ComparisonPopover(props: Props) {
@@ -52,6 +54,8 @@ export default function ComparisonPopover(props: Props) {
     tableId: tableIdProp,
     onTableIdChange,
     activeComparison: activeComparisonProp = [],
+    sortOrder,
+    onSortOrderChange,
   } = props;
   let alert = useAlert();
   let [tableId, setTableId] = useState('');
@@ -71,6 +75,7 @@ export default function ComparisonPopover(props: Props) {
   });
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
+    let { tableId, comparationTags } = updateData.updateComparison;
     let usableColors =
       reviewTag === ReviewTag.ACTIVITY || reviewTag === ReviewTag.COVERAGE
         ? COLORS.slice(1)
@@ -112,11 +117,33 @@ export default function ComparisonPopover(props: Props) {
         fill: circleColor,
       };
     };
-    onTableIdChange && onTableIdChange(updateData.updateComparison.tableId);
-    let activeComparisonList = updateData.updateComparison.comparationTags.map(
-      mapFn,
-    );
-    setTableId(updateData.updateComparison.tableId);
+    onTableIdChange && onTableIdChange(tableId);
+    let newSortOrder: Array<string> = [];
+    if (sortOrder && onSortOrderChange) {
+      if (comparationTags.length > sortOrder.length) {
+        // add new comparison
+        let newComparison = comparationTags.filter((tag) => {
+          if (sortOrder) {
+            return !sortOrder.includes(tag.id);
+          }
+          return false;
+        });
+        if (newComparison.length === 1) {
+          newSortOrder = [...sortOrder, newComparison[0].id];
+          onSortOrderChange(newSortOrder);
+        }
+      } else if (comparationTags.length < sortOrder.length) {
+        // remove comparison
+        newSortOrder = sortOrder.filter(
+          (item) => !comparationTags.map((tag) => tag.id).includes(item),
+        );
+        onSortOrderChange(newSortOrder);
+      }
+    }
+    setTableId(tableId);
+    let activeComparisonList = comparationTags
+      .sort((a, b) => newSortOrder.indexOf(a.id) - newSortOrder.indexOf(b.id))
+      .map(mapFn);
     setActiveComparison(activeComparisonList);
   };
 

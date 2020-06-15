@@ -54,6 +54,7 @@ export default function PerformanceResult(props: Props) {
   let alert = useAlert();
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
+  let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let {
     data,
     loading: performanceLoading,
@@ -79,6 +80,7 @@ export default function PerformanceResult(props: Props) {
     data?.performanceTable.table?.data,
     data?.performanceTable.table?.compareData,
     data?.performanceTable.table?.comparationTags,
+    sortOrder,
   );
   let noData =
     !data?.performanceTable.table?.data ||
@@ -167,6 +169,10 @@ export default function PerformanceResult(props: Props) {
         })}
         infoboxContent={PerformanceTablePopover}
         pinTableId={pinTableId}
+        sortOrder={sortOrder}
+        onSortOrderChange={(newSortOrder: Array<string>) =>
+          setSortOrder(newSortOrder)
+        }
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
