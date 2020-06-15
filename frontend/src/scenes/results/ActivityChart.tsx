@@ -1,12 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import styled from 'styled-components';
 
 import { View, Text } from '../../core-ui';
@@ -89,7 +82,6 @@ export default function ActivityChart(props: Props) {
       <Row>
         <View flex ref={lineChartRef}>
           <LineChart height={200} width={chartWidth} data={lineChartData}>
-            <CartesianGrid vertical={false} />
             <XAxis
               dataKey="name"
               tick={textStyle}
