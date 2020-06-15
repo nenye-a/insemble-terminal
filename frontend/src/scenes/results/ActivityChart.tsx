@@ -1,12 +1,5 @@
-import React from 'react';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-} from 'recharts';
+import React, { useRef, useEffect, useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
 import styled from 'styled-components';
 
 import { View, Text } from '../../core-ui';
@@ -34,6 +27,8 @@ type ChartDatum = { [key: string]: any };
 
 export default function ActivityChart(props: Props) {
   let { data } = props;
+  let lineChartRef = useRef<HTMLDivElement | null>(null);
+  let [chartWidth, setChartWidth] = useState(700);
 
   let formattedData = [...data].map((item) => [...item.activityData]);
 
@@ -62,27 +57,48 @@ export default function ActivityChart(props: Props) {
     fontFamily: FONT_FAMILY_NORMAL,
   };
 
+  useEffect(() => {
+    let onResize = () => {
+      if (lineChartRef.current) {
+        setChartWidth(lineChartRef.current.getBoundingClientRect().width);
+      }
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (lineChartRef.current) {
+      setChartWidth(lineChartRef.current.getBoundingClientRect().width);
+    }
+  }, [lineChartRef]);
+
   return (
     <Container>
       <ChartTitle>Customer Activity Index</ChartTitle>
       <Row>
-        <LineChart height={200} width={745} data={lineChartData}>
-          <CartesianGrid vertical={false} />
-          <XAxis
-            dataKey="name"
-            tick={textStyle}
-            tickFormatter={(val) => val.toLowerCase().replace('m', '')}
-          />
-          <YAxis axisLine={false} tickLine={false} tick={textStyle} />
-          <Tooltip
-            wrapperStyle={textStyle}
-            itemSorter={(item1, item2) =>
-              (item2 ? Number(item2.value) : 0) - Number(item1.value)
-            }
-          />
-          {lines}
-        </LineChart>
-        <LegendContainer flex>
+        <View flex ref={lineChartRef}>
+          <LineChart height={200} width={chartWidth} data={lineChartData}>
+            <XAxis
+              dataKey="name"
+              tick={textStyle}
+              tickFormatter={(val) => val.toLowerCase().replace('m', '')}
+            />
+            <YAxis axisLine={false} tickLine={false} tick={textStyle} />
+            <Tooltip
+              wrapperStyle={textStyle}
+              itemSorter={(item1, item2) =>
+                (item2 ? Number(item2.value) : 0) - Number(item1.value)
+              }
+            />
+            {lines}
+          </LineChart>
+        </View>
+
+        <LegendContainer>
           {tooltipData.map((legend, idx) => (
             <Row style={{ alignItems: 'baseline' }} key={idx}>
               <Circle style={{ borderColor: legend.fill }} />
@@ -151,6 +167,7 @@ const ChartTitle = styled(Text)`
 
 const LegendContainer = styled(View)`
   padding-left: 24px;
+  width: 200px;
 `;
 
 const Circle = styled(View)`
