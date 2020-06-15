@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -72,6 +72,19 @@ export default function SearchFilterBar(props: Props) {
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
     GetBusinessTag
   >(GET_BUSINESS_TAG);
+
+  useEffect(() => {
+    let handleKeyPress = (e: KeyboardEvent) => {
+      if (e.keyCode === 8 && dataTypeFilterVisible) {
+        setSelectedDataType('');
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [dataTypeFilterVisible]);
 
   return (
     <View flex>

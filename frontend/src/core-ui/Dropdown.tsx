@@ -88,6 +88,15 @@ export default function Dropdown<T>(props: Props<T>) {
             setInputValue(e.currentTarget.value);
           },
           value: inputValue,
+          onKeyDown: () => {
+            if (
+              selectedOption != null &&
+              typeof selectedOption === 'object' &&
+              ((selectedOption as unknown) as object).hasOwnProperty('id')
+            ) {
+              onOptionSelected(null);
+            }
+          },
         })}
         placeholder={placeholder}
         hasSelection={!!selectedOption}

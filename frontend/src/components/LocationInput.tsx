@@ -116,6 +116,9 @@ export default function LocationInput(props: Props) {
       }
       onKeyDown={(e) => {
         if (e.which === 8) {
+          if (inputRef.current && selectedPlace.current) {
+            inputRef.current.value = '';
+          }
           onPlaceSelected && onPlaceSelected(null);
           selectedPlace.current = null;
         }
