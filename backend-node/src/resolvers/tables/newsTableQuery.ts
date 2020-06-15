@@ -6,6 +6,7 @@ import { PyNewsResponse, PyNewsData } from 'dataTypes';
 import { API_URI } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
+import { todayMinOneH } from '../../helpers/todayMinOneH';
 
 let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
   _: Root,
@@ -252,6 +253,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         locationTag: locationTag
           ? { connect: { id: locationTag.id } }
           : undefined,
+        updatedAt: todayMinOneH(),
       },
       include: {
         locationTag: true,
@@ -304,6 +306,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               ? { connect: { id: locationTag.id } }
               : undefined,
             polling: false,
+            updatedAt: new Date(),
           },
         });
       })
