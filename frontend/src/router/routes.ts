@@ -13,6 +13,7 @@ import {
   TerminalDetailScene,
   TerminalHomeScene,
   VerificationSuccessfulScene,
+  VerificationFailedScene,
   ManageTokenScene,
 } from '../scenes';
 
@@ -40,6 +41,11 @@ export const unAuthenticatedRoutes = [
   {
     path: '/verification-successful',
     component: VerificationSuccessfulScene,
+    showSearchBar: false,
+  },
+  {
+    path: '/verification-failed/:errorStatus',
+    component: VerificationFailedScene,
     showSearchBar: false,
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
