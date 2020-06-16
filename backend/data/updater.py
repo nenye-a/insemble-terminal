@@ -63,7 +63,6 @@ def update_locations(batch_size=100):
             num_results = len(results)
 
             try:
-                print(results)
                 results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
                 results_inserted = len(results)
             except utils.BWE as bwe:
