@@ -35,6 +35,7 @@ import {
   UpdateComparisonVariables,
 } from '../generated/UpdateComparison';
 import { UPDATE_COMPARISON } from '../graphql/queries/server/comparison';
+import { GET_TERMINAL } from '../graphql/queries/server/terminals';
 
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
@@ -46,6 +47,8 @@ type Props = {
   activeComparison?: Array<ComparationTagWithFill>;
   sortOrder?: Array<string>;
   onSortOrderChange?: (order: Array<string>) => void;
+  pinId?: string;
+  terminalId?: string;
 };
 
 export default function ComparisonPopover(props: Props) {
@@ -56,6 +59,8 @@ export default function ComparisonPopover(props: Props) {
     activeComparison: activeComparisonProp = [],
     sortOrder,
     onSortOrderChange,
+    pinId,
+    terminalId,
   } = props;
   let alert = useAlert();
   let [tableId, setTableId] = useState('');
@@ -73,6 +78,15 @@ export default function ComparisonPopover(props: Props) {
       onUpdateComparisonCompleted(data);
     },
   });
+  let refetchTerminalQueries = [
+    {
+      query: GET_TERMINAL,
+      variables: {
+        terminalId: terminalId || '',
+      },
+      skip: !pinId,
+    },
+  ];
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
@@ -192,7 +206,10 @@ export default function ComparisonPopover(props: Props) {
                         comparationTagId: comparison.id,
                         tableId,
                         actionType: CompareActionType.DELETE,
+                        pinId,
                       },
+                      refetchQueries: refetchTerminalQueries,
+                      awaitRefetchQueries: true,
                     });
                   }}
                 >
@@ -221,8 +238,11 @@ export default function ComparisonPopover(props: Props) {
                   businessTagId: businessTagWithId?.id,
                   locationTag,
                   tableId,
+                  pinId,
                   actionType: CompareActionType.ADD,
                 },
+                refetchQueries: refetchTerminalQueries,
+                awaitRefetchQueries: true,
               });
             }}
           />

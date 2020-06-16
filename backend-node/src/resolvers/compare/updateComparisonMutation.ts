@@ -17,6 +17,7 @@ export let updateComparisonResolver: FieldResolver<
     tableId,
     actionType,
     comparationTagId,
+    pinId,
   },
   context: Context,
   info,
@@ -107,12 +108,31 @@ export let updateComparisonResolver: FieldResolver<
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');
         }
-        return await deleteComparisonResolver(
+        let {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        } = await deleteComparisonResolver(
           _,
           { reviewTag, comparationTagId, tableId },
           context,
           info,
         );
+        let newTableId = await promiseTableId;
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: newTableId,
+            },
+          });
+        }
+
+        return {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        };
       }
       table = await context.prisma.performance.findOne({
         where: { id: tableId },
@@ -160,6 +180,14 @@ export let updateComparisonResolver: FieldResolver<
         performance = performance.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: performance[0].id,
+            },
+          });
+        }
         return {
           reviewTag,
           tableId: performance[0].id,
@@ -253,6 +281,14 @@ export let updateComparisonResolver: FieldResolver<
       } else {
         table = tables[0];
       }
+      if (pinId) {
+        await context.prisma.pinnedFeed.update({
+          where: { id: pinId },
+          data: {
+            tableId: table.id,
+          },
+        });
+      }
       return {
         reviewTag,
         tableId: table.id,
@@ -263,12 +299,31 @@ export let updateComparisonResolver: FieldResolver<
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');
         }
-        return await deleteComparisonResolver(
+        let {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        } = await deleteComparisonResolver(
           _,
           { reviewTag, comparationTagId, tableId },
           context,
           info,
         );
+        let newTableId = await promiseTableId;
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: newTableId,
+            },
+          });
+        }
+
+        return {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        };
       }
       table = await context.prisma.news.findOne({
         where: { id: tableId },
@@ -313,6 +368,14 @@ export let updateComparisonResolver: FieldResolver<
         news = news.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: news[0].id,
+            },
+          });
+        }
         return {
           reviewTag,
           tableId: news[0].id,
@@ -402,6 +465,14 @@ export let updateComparisonResolver: FieldResolver<
       } else {
         table = tables[0];
       }
+      if (pinId) {
+        await context.prisma.pinnedFeed.update({
+          where: { id: pinId },
+          data: {
+            tableId: table.id,
+          },
+        });
+      }
       return {
         reviewTag,
         tableId: table.id,
@@ -412,12 +483,31 @@ export let updateComparisonResolver: FieldResolver<
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');
         }
-        return await deleteComparisonResolver(
+        let {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        } = await deleteComparisonResolver(
           _,
           { reviewTag, comparationTagId, tableId },
           context,
           info,
         );
+        let newTableId = await promiseTableId;
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: newTableId,
+            },
+          });
+        }
+
+        return {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        };
       }
       table = await context.prisma.activity.findOne({
         where: { id: tableId },
@@ -463,6 +553,14 @@ export let updateComparisonResolver: FieldResolver<
         activity = activity.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: activity[0].id,
+            },
+          });
+        }
         return {
           reviewTag,
           tableId: activity[0].id,
@@ -552,6 +650,14 @@ export let updateComparisonResolver: FieldResolver<
       } else {
         table = tables[0];
       }
+      if (pinId) {
+        await context.prisma.pinnedFeed.update({
+          where: { id: pinId },
+          data: {
+            tableId: table.id,
+          },
+        });
+      }
       return {
         reviewTag,
         tableId: table.id,
@@ -562,12 +668,31 @@ export let updateComparisonResolver: FieldResolver<
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');
         }
-        return await deleteComparisonResolver(
+        let {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        } = await deleteComparisonResolver(
           _,
           { reviewTag, comparationTagId, tableId },
           context,
           info,
         );
+        let newTableId = await promiseTableId;
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: newTableId,
+            },
+          });
+        }
+
+        return {
+          comparationTags: promiseCompareTags,
+          reviewTag: promiseReviewTag,
+          tableId: promiseTableId,
+        };
       }
       table = await context.prisma.coverage.findOne({
         where: { id: tableId },
@@ -613,6 +738,15 @@ export let updateComparisonResolver: FieldResolver<
         coverage = coverage.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
+        if (pinId) {
+          await context.prisma.pinnedFeed.update({
+            where: { id: pinId },
+            data: {
+              tableId: coverage[0].id,
+            },
+          });
+        }
+
         return {
           reviewTag,
           tableId: coverage[0].id,
@@ -702,6 +836,15 @@ export let updateComparisonResolver: FieldResolver<
       } else {
         table = tables[0];
       }
+      if (pinId) {
+        await context.prisma.pinnedFeed.update({
+          where: { id: pinId },
+          data: {
+            tableId: table.id,
+          },
+        });
+      }
+
       return {
         reviewTag,
         tableId: table.id,
@@ -726,6 +869,7 @@ export let updateComparation = mutationField('updateComparison', {
     businessTagId: stringArg(),
     locationTag: arg({ type: 'LocationTagInput' }),
     tableId: stringArg({ required: true }),
+    pinId: stringArg(),
   },
   resolve: updateComparisonResolver,
 });

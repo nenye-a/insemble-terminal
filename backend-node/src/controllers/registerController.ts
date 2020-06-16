@@ -19,15 +19,15 @@ export let registerHandler = async (req: Request, res: Response) => {
     },
   });
   if (!verification) {
-    res.status(400).send('Invalid verification code');
+    res.redirect(`${FRONTEND_HOST}/verification-failed/invalid`);
     return;
   }
   if (verification.verified) {
-    res.status(400).send('Verification code already used.');
+    res.redirect(`${FRONTEND_HOST}/verification-failed/used`);
     return;
   }
   if (decodedTokenEmail !== verification.tokenEmail) {
-    res.status(400).send('Invalid token');
+    res.redirect(`${FRONTEND_HOST}/verification-failed/invalid`);
     return;
   }
   let user = JSON.parse(verification.userInput);

@@ -22,15 +22,15 @@ export let emailVerificationHandler = async (req: Request, res: Response) => {
     },
   });
   if (!emailVerification) {
-    res.status(400).send('Invalid verification code');
+    res.redirect(`${FRONTEND_HOST}/verification-failed/invalid`);
     return;
   }
   if (emailVerification.verified) {
-    res.status(400).send('Verification code already used.');
+    res.redirect(`${FRONTEND_HOST}/verification-failed/used`);
     return;
   }
   if (decodedTokenEmail !== emailVerification.tokenEmail) {
-    res.status(400).send('Invalid token');
+    res.redirect(`${FRONTEND_HOST}/verification-failed/invalid`);
     return;
   }
   await prisma.user.update({

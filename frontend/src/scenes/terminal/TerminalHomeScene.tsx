@@ -22,23 +22,17 @@ import AddNewTerminalModal from './AddNewTerminalModal';
 export default function TerminalHomeScene() {
   let [addModalVisible, setAddModalVisible] = useState(false);
   let [searchTerminal, setSearchTerminal] = useState('');
-  let [listData, setListData] = useState<Array<UserTerminal>>([]);
-  let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST, {
-    onCompleted: ({ userTerminals }) => setListData(userTerminals),
-  });
-  let onSearchSubmit = () => {
-    if (data?.userTerminals) {
-      setListData(
-        data.userTerminals.filter(({ name }) =>
-          name.toLowerCase().includes(searchTerminal.toLowerCase()),
-        ),
-      );
-    }
-  };
+  let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
+
+  let listData: Array<UserTerminal> = [];
+  if (data?.userTerminals) {
+    listData = data.userTerminals.filter(({ name }) =>
+      name.toLowerCase().includes(searchTerminal.toLowerCase()),
+    );
+  }
   useEffect(() => {
     if (data?.userTerminals) {
       setSearchTerminal('');
-      setListData(data.userTerminals);
     }
   }, [data]);
   return (
@@ -59,7 +53,6 @@ export default function TerminalHomeScene() {
               icon={true}
               iconStyle={{ top: 2, right: 3 }}
               onChange={(e) => setSearchTerminal(e.target.value)}
-              onSubmit={onSearchSubmit}
               value={searchTerminal}
             />
             <Button

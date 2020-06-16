@@ -9,6 +9,7 @@ export const UPDATE_COMPARISON = gql`
     $tableId: String!
     $comparationTagId: String
     $actionType: CompareActionType!
+    $pinId: String
   ) {
     updateComparison(
       reviewTag: $reviewTag
@@ -18,6 +19,7 @@ export const UPDATE_COMPARISON = gql`
       tableId: $tableId
       comparationTagId: $comparationTagId
       actionType: $actionType
+      pinId: $pinId
     ) {
       comparationTags {
         id
