@@ -31,7 +31,7 @@ function App() {
   };
 
   useEffect(() => {
-    ReactGA.initialize('UA-169608294-1');
+    ReactGA.initialize(process.env.REACT_APP_GA_ID || '');
 
     window.addEventListener('keydown', handleFirstTab);
     window.addEventListener('mousedown', handleMouseClick);
