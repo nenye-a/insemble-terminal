@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useForm, FieldValues } from 'react-hook-form';
 import { useMutation } from '@apollo/react-hooks';
 import { Redirect } from 'react-router-dom';
+import ReactGA from 'react-ga';
 
 import {
   View,
@@ -21,6 +22,11 @@ import {
 } from '../../generated/UserRegister';
 import { USER_REGISTER } from '../../graphql/queries/server/auth';
 import { validateEmail } from '../../helpers';
+import { TERMS_OF_SERVICE_PDF, PRIVACY_POLICY_PDF } from '../../constants/uri';
+import {
+  TERMS_OF_SERVICE_ROUTE,
+  PRIVACY_POLICY_ROUTE,
+} from '../../constants/trackEvents';
 
 export default function SignUpForm() {
   let [hasAgreed, setHasAgreed] = useState(false);
@@ -33,6 +39,10 @@ export default function SignUpForm() {
   let errorMessage = error?.message;
 
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
+
+  let trackEvent = (route: string) => {
+    ReactGA.pageview(route);
+  };
 
   let onSubmit = (data: FieldValues) => {
     if (hasAgreed && Object.keys(errors).length === 0) {
@@ -153,10 +163,23 @@ export default function SignUpForm() {
           title={
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <SmallText> I accept the </SmallText>
-              {/* TODO: add href */}
-              <Link href="">Privacy Policy</Link>
+              <Link
+                href={PRIVACY_POLICY_PDF}
+                onPress={() => {
+                  trackEvent(PRIVACY_POLICY_ROUTE);
+                }}
+              >
+                Privacy Policy
+              </Link>
               <SmallText> and the </SmallText>
-              <Link href="">Terms of Service</Link>
+              <Link
+                href={TERMS_OF_SERVICE_PDF}
+                onPress={() => {
+                  trackEvent(TERMS_OF_SERVICE_ROUTE);
+                }}
+              >
+                Terms of Service
+              </Link>
             </View>
           }
           size="13px"

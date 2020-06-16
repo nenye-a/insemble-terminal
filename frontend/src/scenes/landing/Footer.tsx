@@ -1,13 +1,18 @@
 import React from 'react';
+import ReactGA from 'react-ga';
 import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
 import { View, Text, TouchableOpacity, Link } from '../../core-ui';
+import { useViewport } from '../../helpers';
 import { BLACK, WHITE } from '../../constants/colors';
 import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../../constants/uri';
 import { VIEWPORT_TYPE } from '../../constants/viewports';
-import { useViewport } from '../../helpers';
 import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import {
+  TERMS_OF_SERVICE_ROUTE,
+  PRIVACY_POLICY_ROUTE,
+} from '../../constants/trackEvents';
 
 type ViewWithViewportType = ViewProps & {
   isDesktop: boolean;
@@ -17,6 +22,10 @@ export default function Footer() {
   let history = useHistory();
   let { viewportType } = useViewport();
   let isDesktop = viewportType === VIEWPORT_TYPE.DESKTOP;
+
+  let trackEvent = (route: string) => {
+    ReactGA.pageview(route);
+  };
 
   return (
     <Container isDesktop={isDesktop}>
@@ -30,8 +39,22 @@ export default function Footer() {
       <Row isDesktop={isDesktop}>
         {isDesktop && (
           <CopyrightContainer isDesktop={isDesktop}>
-            <WhiteLink href={TERMS_OF_SERVICE_PDF}>Terms of Service</WhiteLink>
-            <WhiteLink href={PRIVACY_POLICY_PDF}>Privacy Policy</WhiteLink>
+            <WhiteLink
+              href={TERMS_OF_SERVICE_PDF}
+              onPress={() => {
+                trackEvent(TERMS_OF_SERVICE_ROUTE);
+              }}
+            >
+              Terms of Service
+            </WhiteLink>
+            <WhiteLink
+              href={PRIVACY_POLICY_PDF}
+              onPress={() => {
+                trackEvent(PRIVACY_POLICY_ROUTE);
+              }}
+            >
+              Privacy Policy
+            </WhiteLink>
           </CopyrightContainer>
         )}
         <CopyrightContainer isDesktop={isDesktop}>
