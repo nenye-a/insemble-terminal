@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
+import { useParams, useHistory } from 'react-router-dom';
 import styled from 'styled-components';
 
 import { View, Text, Card } from '../../core-ui';
 import { FONT_SIZE_MEDIUM, FONT_WEIGHT_LIGHT } from '../../constants/theme';
 import { DARK_TEXT_COLOR } from '../../constants/colors';
 import InsembleLogo from '../../components/InsembleLogo';
-import { useParams, useHistory } from 'react-router-dom';
 
 type Params = {
   errorStatus: string;
