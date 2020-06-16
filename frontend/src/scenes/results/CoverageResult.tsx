@@ -132,7 +132,9 @@ export default function CoverageResult(props: Props) {
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
-        {error ? (
+        {loading && prevData.length === 0 ? (
+          <View style={{ height: 90 }} />
+        ) : error ? (
           <ErrorComponent text={formatErrorMessage(error.message)} />
         ) : noData && !loading ? (
           <EmptyDataComponent />

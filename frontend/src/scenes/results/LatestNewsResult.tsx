@@ -142,7 +142,9 @@ export default function LatestNewsResult(props: Props) {
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
-        {error || data?.newsTable.error ? (
+        {loading && prevData.length === 0 ? (
+          <View style={{ height: 90 }} />
+        ) : error || data?.newsTable.error ? (
           <ErrorComponent
             text={formatErrorMessage(
               error?.message || data?.newsTable.error || '',
