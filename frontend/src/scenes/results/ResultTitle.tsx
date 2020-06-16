@@ -45,6 +45,7 @@ import SvgQuestionMark from '../../components/icons/question-mark';
 import {
   REMOVE_PINNED_TABLE,
   GET_TERMINAL,
+  GET_TERMINAL_LIST,
 } from '../../graphql/queries/server/terminals';
 import {
   RemovePinnedTable,
@@ -139,6 +140,8 @@ export default function ResultTitle(props: Props) {
       activeComparison={comparisonTags}
       sortOrder={sortOrder}
       onSortOrderChange={onSortOrderChange}
+      pinId={pinTableId}
+      terminalId={params.terminalId}
     />
   );
 
@@ -211,7 +214,16 @@ export default function ResultTitle(props: Props) {
                       actionType: CompareActionType.DELETE_ALL,
                       tableId,
                       reviewTag,
+                      pinId: pinTableId,
                     },
+                    refetchQueries: [
+                      {
+                        query: GET_TERMINAL,
+                        variables: {
+                          terminalId: params?.terminalId || '',
+                        },
+                      },
+                    ],
                   });
                 }}
               >
@@ -258,6 +270,7 @@ export default function ResultTitle(props: Props) {
                           terminalId: params?.terminalId || '',
                         },
                       },
+                      { query: GET_TERMINAL_LIST },
                     ],
                   });
                 }

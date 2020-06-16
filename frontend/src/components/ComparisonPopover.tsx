@@ -38,6 +38,7 @@ import { UPDATE_COMPARISON } from '../graphql/queries/server/comparison';
 
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
+import { GET_TERMINAL } from '../graphql/queries/server/terminals';
 
 type Props = {
   reviewTag: ReviewTag;
@@ -46,6 +47,8 @@ type Props = {
   activeComparison?: Array<ComparationTagWithFill>;
   sortOrder?: Array<string>;
   onSortOrderChange?: (order: Array<string>) => void;
+  pinId?: string;
+  terminalId?: string;
 };
 
 export default function ComparisonPopover(props: Props) {
@@ -56,6 +59,8 @@ export default function ComparisonPopover(props: Props) {
     activeComparison: activeComparisonProp = [],
     sortOrder,
     onSortOrderChange,
+    pinId,
+    terminalId,
   } = props;
   let alert = useAlert();
   let [tableId, setTableId] = useState('');
@@ -73,6 +78,16 @@ export default function ComparisonPopover(props: Props) {
       onUpdateComparisonCompleted(data);
     },
   });
+  let refetchTerminalQueries = pinId
+    ? [
+        {
+          query: GET_TERMINAL,
+          variables: {
+            terminalId: terminalId || '',
+          },
+        },
+      ]
+    : [];
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
@@ -192,7 +207,9 @@ export default function ComparisonPopover(props: Props) {
                         comparationTagId: comparison.id,
                         tableId,
                         actionType: CompareActionType.DELETE,
+                        pinId,
                       },
+                      refetchQueries: refetchTerminalQueries,
                     });
                   }}
                 >
@@ -221,8 +238,10 @@ export default function ComparisonPopover(props: Props) {
                   businessTagId: businessTagWithId?.id,
                   locationTag,
                   tableId,
+                  pinId,
                   actionType: CompareActionType.ADD,
                 },
+                refetchQueries: refetchTerminalQueries,
               });
             }}
           />

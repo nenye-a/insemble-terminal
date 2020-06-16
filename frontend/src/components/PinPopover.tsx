@@ -21,6 +21,7 @@ import { TableType } from '../generated/globalTypes';
 import { GetTerminalList } from '../generated/GetTerminalList';
 import { PinTable, PinTableVariables } from '../generated/PinTable';
 import {
+  GET_TERMINAL,
   GET_TERMINAL_LIST,
   PIN_TABLE,
 } from '../graphql/queries/server/terminals';
@@ -74,7 +75,15 @@ export default function PinPopover(props: Props) {
                         tableType,
                       },
                       awaitRefetchQueries: true,
-                      refetchQueries: [{ query: GET_TERMINAL_LIST }],
+                      refetchQueries: [
+                        {
+                          query: GET_TERMINAL,
+                          variables: {
+                            terminalId: id,
+                          },
+                        },
+                        { query: GET_TERMINAL_LIST },
+                      ],
                     });
                   }}
                   stopPropagation={true}
