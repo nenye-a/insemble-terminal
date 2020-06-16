@@ -143,8 +143,8 @@ const Row = styled(TouchableOpacity)`
 `;
 
 const AddButton = styled(Button)`
-  margin: 12px 0px;
-  width: 150px;
+  margin-top: 12px;
+  align-self: flex-start;
 `;
 
 const MessageAlert = styled(Alert)`

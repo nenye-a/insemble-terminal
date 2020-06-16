@@ -72,6 +72,7 @@ export default function PerformanceResult(props: Props) {
         locationTagId,
         tableId,
       },
+      fetchPolicy: 'network-only',
     },
   );
   let { data: coloredData, comparisonTags } = useColoredData<
