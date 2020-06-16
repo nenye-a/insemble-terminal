@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { ApolloProvider } from '@apollo/react-hooks';
 import { transitions, positions, Provider as AlertProvider } from 'react-alert';
+import ReactGA from 'react-ga';
 
 import { AlertTemplate } from './core-ui';
 import MainRoute from './router/MainRoute';
@@ -30,6 +31,8 @@ function App() {
   };
 
   useEffect(() => {
+    ReactGA.initialize('UA-169608294-1');
+
     window.addEventListener('keydown', handleFirstTab);
     window.addEventListener('mousedown', handleMouseClick);
     return () => {
