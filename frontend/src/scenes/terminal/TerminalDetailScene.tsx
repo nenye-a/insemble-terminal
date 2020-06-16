@@ -35,7 +35,6 @@ export default function TerminalDetailScene() {
       variables: {
         terminalId: params.terminalId,
       },
-      fetchPolicy: 'network-only',
     },
   );
   return (
