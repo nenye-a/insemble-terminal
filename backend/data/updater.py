@@ -141,6 +141,11 @@ def _print_log(term, num_queried, num_results, results_inserted):
     timestamp = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
     print("Last Update: {}".format(timestamp.ctime()))
 
+    print('Only {} more points to search for {}.'.format(
+        TEMP_DB.count_documents({'searched_terms': {'$nin': [term]}}),
+        term
+    ))
+
 
 if __name__ == "__main__":
     # setup()
