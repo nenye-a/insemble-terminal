@@ -56,6 +56,8 @@ def update_locations(batch_size=100):
                 res_parser=google.GoogleNearby.parse_address_latlng
             ))
 
+            if not results:
+                results = {}
             results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
                        for k, v in results.items()]
             clean(results)
@@ -115,7 +117,7 @@ def setup():
                 },
                 {
                     '$sample': {
-                        'size': int(count / 3.7)
+                        'size': int(count / 16)
                     }
                 },
                 {
@@ -149,3 +151,6 @@ def _print_log(term, num_queried, num_results, results_inserted):
 if __name__ == "__main__":
     # setup()
     update_locations()
+    # TEMP_DB.update_many({}, {'$set': {
+    #     'searched_terms': []
+    # }})
