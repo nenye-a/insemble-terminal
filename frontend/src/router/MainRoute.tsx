@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, ComponentType } from 'react';
+import ReactGA from 'react-ga';
 import {
   BrowserRouter as Router,
   Switch,
@@ -28,32 +29,20 @@ export default function MainRoute() {
 }
 
 function Routes() {
-  let history = useHistory();
   let { isAuthenticated, user } = useAuth();
   let mapFn = (
-    {
-      component: Component,
-      showHeader = true,
-      showSearchBar,
-      ...routeProps
-    }: RouteType,
+    { component, showHeader = true, showSearchBar, ...routeProps }: RouteType,
     index: number,
   ) => {
     return (
       <Route
         key={index.toString() + routeProps.path}
         render={() => (
-          <View>
-            {showHeader && (
-              <HeaderNavigationBar
-                showSearchBar={showSearchBar}
-                onSearchPress={(search) => {
-                  history.push('/results', { search });
-                }}
-              />
-            )}
-            <Component />
-          </View>
+          <RouteWithTracker
+            component={component}
+            showHeader={showHeader}
+            showSearchBar={showSearchBar}
+          />
         )}
         {...routeProps}
       />
@@ -70,5 +59,34 @@ function Routes() {
         : unAuthenticatedRoutes.map(mapFn)}
       <Route component={AuthScene} />
     </Switch>
+  );
+}
+
+type RouteWithTrackerProps = {
+  showHeader: boolean;
+  showSearchBar?: boolean;
+  component: ComponentType;
+};
+
+function RouteWithTracker(props: RouteWithTrackerProps) {
+  let { showHeader = true, showSearchBar, component: Component } = props;
+  let history = useHistory();
+
+  useEffect(() => {
+    ReactGA.pageview(window.location.pathname + window.location.search);
+  }, []);
+
+  return (
+    <View>
+      {showHeader && (
+        <HeaderNavigationBar
+          showSearchBar={showSearchBar}
+          onSearchPress={(search) => {
+            history.push('/results', { search });
+          }}
+        />
+      )}
+      <Component />
+    </View>
   );
 }
