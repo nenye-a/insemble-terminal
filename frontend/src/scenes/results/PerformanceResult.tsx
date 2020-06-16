@@ -34,8 +34,9 @@ type Props = {
   pinTableId?: string;
 };
 
-type ColoredData = (PerformanceData | PerformanceCompareData) & {
+type Data = (PerformanceData | PerformanceCompareData) & {
   isComparison: boolean;
+  hasAsterisk: boolean;
 };
 
 const POLL_INTERVAL = 5000;
@@ -52,7 +53,7 @@ export default function PerformanceResult(props: Props) {
     pinTableId,
   } = props;
   let alert = useAlert();
-  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
+  let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let {
@@ -82,10 +83,17 @@ export default function PerformanceResult(props: Props) {
     data?.performanceTable.table?.comparationTags,
     sortOrder,
   );
+
+  let dataWithAsterisk = coloredData.map((datum) => ({
+    ...datum,
+    hasAsterisk: !!datum.numLocation && datum.numLocation >= 3,
+  }));
+
   let noData =
     !data?.performanceTable.table?.data ||
     data.performanceTable.table?.data.length === 0;
   let loading = performanceLoading || data?.performanceTable.polling;
+
   useEffect(() => {
     if (
       (data?.performanceTable.table?.data ||
@@ -118,7 +126,7 @@ export default function PerformanceResult(props: Props) {
             }
           }
         } else {
-          setPrevData(coloredData);
+          setPrevData(dataWithAsterisk);
           setPrevTableId(id);
         }
       }
@@ -189,7 +197,7 @@ export default function PerformanceResult(props: Props) {
             data.performanceTable.table.data.length > 0) ||
           prevData.length > 0 ? (
           <PerformanceTable
-            data={loading ? prevData : coloredData}
+            data={loading ? prevData : dataWithAsterisk}
             showNumLocation={showNumLocation}
             headerTitle={headerTitle}
           />
