@@ -4,6 +4,7 @@ import { AlertComponentPropsWithStyle } from 'react-alert';
 
 import { THEME_COLOR, ALERT_BACKGROUND_COLOR } from '../constants/colors';
 import { FONT_SIZE_SMALL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
+import { formatGraphQLError } from '../helpers';
 import SvgInfo from '../components/icons/info';
 import SvgClose from '../components/icons/close';
 
@@ -19,13 +20,14 @@ type Props = ViewProps & {
 
 export default function Alert(props: Props) {
   let { visible, text, onClose, ...otherProps } = props;
+  let formattedText = formatGraphQLError(text);
   if (visible) {
     return (
       <Container {...otherProps}>
         <Row>
           <SvgInfo style={{ color: THEME_COLOR }} />
           <Message color={THEME_COLOR} fontSize={FONT_SIZE_SMALL}>
-            {text}
+            {formattedText}
           </Message>
         </Row>
         {onClose ? (
@@ -41,12 +43,14 @@ export default function Alert(props: Props) {
 
 export function AlertTemplate(props: AlertComponentPropsWithStyle) {
   let { message, close, ...otherProps } = props;
+  let formattedMessage =
+    typeof message === 'string' ? formatGraphQLError(message) : message;
   return (
     <Container {...otherProps}>
       <Row>
         <SvgInfo style={{ color: THEME_COLOR }} />
         <Message color={THEME_COLOR} fontSize={FONT_SIZE_SMALL}>
-          {message}
+          {formattedMessage}
         </Message>
       </Row>
       {close ? (
