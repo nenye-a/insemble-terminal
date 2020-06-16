@@ -5,6 +5,7 @@ BASE_DIR = os.path.dirname(THIS_DIR)
 sys.path.extend([THIS_DIR, BASE_DIR])
 
 import performance
+import performancev2
 import re
 import utils
 import pandas as pd
@@ -14,38 +15,51 @@ from fuzzywuzzy import fuzz
 def generate_report(brand_name, custom_query=None):
 
     query = {
-        '$text': {
-            '$search': brand_name
-        },
         'name': {
-            '$regex': brand_name + ".*",
-            '$options': "i"
-        }}
+            '$regex': r'^' + brand_name,
+        },
+        'activity_volume': {'$gt': 0}
+    }
     if custom_query:
         query.update(custom_query)
 
-    places = utils.DB_TERMINAL_PLACES.find(query)
-
+    items = utils.DB_TERMINAL_PLACES.find(query)
     results_list = []
-    for item in places:
+    all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
+    for item in items:
         if fuzz.WRatio(brand_name, item['name']) < 80:
             continue
         if 'google_details' in item:
-            if 'activity' in item['google_details']:
-                if item['google_details']['activity']:
-                    sales_index = performance.activity_score(item['google_details']['activity'])
-                    if sales_index != 0:
-                        results_list.append({
-                            'name': item['name'],
-                            'address': item['address'],
-                            'sales_index': sales_index,
-                            'rating': item['google_details']['rating'],
-                            'num_reviews': item['google_details']['num_reviews']
-                        })
+            volume = item['activity_volume']
+            results_list.append({
+                'name': item['name'],
+                'address': item['address'],
+                'customerVolumeIndex': round(performancev2.BASELINE * volume / all_retail_volume) if all_retail_volume else None,
+
+                'localRetailIndex': round(performancev2.BASELINE * volume / item['local_retail_volume'])
+                if (volume != 0 and 'local_retail_volume' in item and item['local_retail_volume'] != -1) else None,
+
+                'localCategoryIndex': round(performancev2.BASELINE * volume / item['local_category_volume'])
+                if (volume != 0 and 'local_category_volume' in item and item['local_category_volume'] != -1) else None,
+
+                'nationalIndex': round(performancev2.BASELINE * volume / item['brand_volume'])
+                if (volume != 0 and 'brand_volume' in item and item['brand_volume'] != -1) else None,
+            })
+            # if 'activity' in item['google_details']:
+            #     if item['google_details']['activity']:
+            #         sales_index = performance.activity_score(item['google_details']['activity'])
+            #         if sales_index != 0:
+            #             results_list.append({
+            #                 'name': item['name'],
+            #                 'address': item['address'],
+            #                 'sales_index': sales_index,
+            #                 'rating': item['google_details']['rating'],
+            #                 'num_reviews': item['google_details']['num_reviews']
+            #             })
 
     file_name = brand_name.lower()
     my_dataframe = pd.DataFrame(results_list)
-    my_dataframe.sort_values('sales_index', ascending=False).reset_index(drop=True).to_csv(file_name + '_report_values.csv')
+    my_dataframe.sort_values('customerVolumeIndex', ascending=False).reset_index(drop=True).to_csv(file_name + '_report_values.csv')
     my_dataframe.describe().to_csv(file_name + '_report_stats.csv')
 
 
@@ -98,7 +112,7 @@ def compare_bookings_activity():
 
 
 def compare_locations_terminal():
-    terminal_places = list(utils.DB_TERMINAL_PLACES.find({
+    terminal_items = list(utils.DB_TERMINAL_itemS.find({
         'location': {
             '$geoWithin': {
                 '$geometry': {
@@ -119,8 +133,8 @@ def compare_locations_terminal():
     }))
     count = 0
     matching_count = 0
-    for item in terminal_places:
-        matching_item = utils.DB_PLACES.find_one({
+    for item in terminal_items:
+        matching_item = utils.DB_itemS.find_one({
             'location': {
                 '$near': {
                     '$geometry': item['location'],
@@ -140,12 +154,12 @@ def compare_locations_terminal():
 
 
 def compare_locations_fast():
-    terminal_places = list(utils.DB_TERMINAL_PLACES.find(
+    terminal_items = list(utils.DB_TERMINAL_itemS.find(
         {'location': {'$exists': True}},
         {'location': 1}
     ))
-    locations = [terminal_place['location'] for terminal_place in terminal_places]
-    diff_list = list(utils.DB_PLACES.find({
+    locations = [terminal_item['location'] for terminal_item in terminal_items]
+    diff_list = list(utils.DB_itemS.find({
         '$and': [
             {'location': {
                 '$geoWithin': {
@@ -171,7 +185,7 @@ def compare_locations_fast():
 
 
 def num_insemble_in_viewport():
-    insemble_places = list(utils.DB_PLACES.find({
+    insemble_items = list(utils.DB_itemS.find({
         'location': {
             '$geoWithin': {
                 '$geometry': {
@@ -188,12 +202,12 @@ def num_insemble_in_viewport():
         },
         "name": {"$regex": "^Popeyes Louisiana"}
     }))
-    num_places_in_insemble = len(insemble_places)
-    print(num_places_in_insemble)
+    num_items_in_insemble = len(insemble_items)
+    print(num_items_in_insemble)
 
 
 def categories():
-    sorted_places = utils.DB_PLACES.find({
+    sorted_items = utils.DB_itemS.find({
         'location': {
             '$geoWithin': {
                 '$geometry': {
@@ -213,8 +227,8 @@ def categories():
 
     categories = {}
     counter = 0
-    for place in sorted_places:
-        category_dicts = place['categories']
+    for item in sorted_items:
+        category_dicts = item['categories']
         for category_dict in category_dicts:
             if category_dict['source'] == 'Foursquare':
                 if category_dict['categories'] and len(category_dict['categories']) > 0:
@@ -229,7 +243,7 @@ def categories():
 
 
 def categories_terminal():
-    sorted_places = utils.DB_TERMINAL_PLACES.find({
+    sorted_items = utils.DB_TERMINAL_itemS.find({
         'location': {
             '$geoWithin': {
                 '$geometry': {
@@ -249,8 +263,8 @@ def categories_terminal():
 
     categories = {}
     counter = 0
-    for place in sorted_places:
-        category = place['google_details']['type'].split(" in ")[0]
+    for item in sorted_items:
+        category = item['google_details']['type'].split(" in ")[0]
         categories[category] = categories.get(category, 0) + 1
         counter += 1
         if counter % 1000 == 0:
@@ -262,8 +276,8 @@ def categories_terminal():
 
 def deterimine_cities():
 
-    cities = list(set([utils.extract_city(place['address']) for place in
-                       utils.DB_TERMINAL_PLACES.find({'address': {'$exists': True}}, {'address': 1})]))
+    cities = list(set([utils.extract_city(item['address']) for item in
+                       utils.DB_TERMINAL_itemS.find({'address': {'$exists': True}}, {'address': 1})]))
     pd.Series(list(set(cities))).to_csv('cities.csv')
 
 
@@ -281,7 +295,7 @@ def get_stage_locations():
 
 def view_locations(query):
 
-    locations = list(utils.DB_TERMINAL_PLACES.find(dict(query, **{'location': {'$exists': True}})))
+    locations = list(utils.DB_TERMINAL_itemS.find(dict(query, **{'location': {'$exists': True}})))
     data = []
     for item in locations:
         data.append({
@@ -308,12 +322,12 @@ def observe_activity():
 
     import pprint
 
-    places_with_activity = list(utils.DB_TERMINAL_PLACES.find({}))
+    items_with_activity = list(utils.DB_TERMINAL_itemS.find({}))
     stat_dict = {}
-    for place in places_with_activity:
-        if 'google_details' in place and place['google_details']['activity']:
+    for item in items_with_activity:
+        if 'google_details' in item and item['google_details']['activity']:
 
-            activity = place['google_details']['activity']
+            activity = item['google_details']['activity']
             activity_index = "{} days".format(len(activity))
             stat_dict[activity_index] = stat_dict.get(activity_index, 0) + 1
 
@@ -329,6 +343,13 @@ if __name__ == "__main__":
     #     '$regex': ".*FL",
     #     "$options": "i"
     # }})
+    generate_report('Dunkin', custom_query={
+        'state': 'CA'
+        # '$or': [
+        #     {'city': 'Los Angeles'},
+        #     {'city': 'Los Angeles'}
+        # ]
+    })
     # compare_bookings_activity()
     # compare_locations()
     # categories()
@@ -341,4 +362,4 @@ if __name__ == "__main__":
     #     'address': {"$regex": "NY"}
     # })
     # deterimine_cities()
-    observe_activity()
+    # observe_activity()
