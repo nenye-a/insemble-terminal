@@ -35,10 +35,10 @@ import {
   UpdateComparisonVariables,
 } from '../generated/UpdateComparison';
 import { UPDATE_COMPARISON } from '../graphql/queries/server/comparison';
+import { GET_TERMINAL } from '../graphql/queries/server/terminals';
 
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
-import { GET_TERMINAL } from '../graphql/queries/server/terminals';
 
 type Props = {
   reviewTag: ReviewTag;
