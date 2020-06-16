@@ -81,11 +81,17 @@ export default function ActivityChart(props: Props) {
       <ChartTitle>Customer Activity Index</ChartTitle>
       <Row>
         <View flex ref={lineChartRef}>
-          <LineChart height={200} width={chartWidth} data={lineChartData}>
+          <LineChart
+            height={200}
+            width={chartWidth}
+            data={lineChartData}
+            margin={{ right: 5 }}
+          >
             <XAxis
               dataKey="name"
               tick={textStyle}
               tickFormatter={(val) => val.toLowerCase().replace('m', '')}
+              interval={1}
             />
             <YAxis axisLine={false} tickLine={false} tick={textStyle} />
             <Tooltip

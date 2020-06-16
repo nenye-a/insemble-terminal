@@ -176,7 +176,9 @@ export default function PerformanceResult(props: Props) {
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
-        {error || data?.performanceTable.error ? (
+        {loading && prevData.length === 0 ? (
+          <View style={{ height: 90 }} />
+        ) : error || data?.performanceTable.error ? (
           <ErrorComponent
             text={formatErrorMessage(
               error?.message || data?.performanceTable.error || '',

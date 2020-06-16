@@ -143,7 +143,9 @@ export default function CustomerActivityResult(props: Props) {
         {(loading || data?.activityTable.polling) && (
           <LoadingIndicator mode="overlap" />
         )}
-        {error || data?.activityTable.error ? (
+        {loading && prevData.length === 0 ? (
+          <View style={{ height: 90 }} />
+        ) : error || data?.activityTable.error ? (
           <ErrorComponent
             text={formatErrorMessage(
               error?.message || data?.activityTable.error || '',
