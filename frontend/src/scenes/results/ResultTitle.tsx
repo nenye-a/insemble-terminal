@@ -216,6 +216,7 @@ export default function ResultTitle(props: Props) {
                       reviewTag,
                       pinId: pinTableId,
                     },
+                    awaitRefetchQueries: true,
                     refetchQueries: [
                       {
                         query: GET_TERMINAL,

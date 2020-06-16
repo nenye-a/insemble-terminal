@@ -78,16 +78,15 @@ export default function ComparisonPopover(props: Props) {
       onUpdateComparisonCompleted(data);
     },
   });
-  let refetchTerminalQueries = pinId
-    ? [
-        {
-          query: GET_TERMINAL,
-          variables: {
-            terminalId: terminalId || '',
-          },
-        },
-      ]
-    : [];
+  let refetchTerminalQueries = [
+    {
+      query: GET_TERMINAL,
+      variables: {
+        terminalId: terminalId || '',
+      },
+      skip: !pinId,
+    },
+  ];
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
@@ -210,6 +209,7 @@ export default function ComparisonPopover(props: Props) {
                         pinId,
                       },
                       refetchQueries: refetchTerminalQueries,
+                      awaitRefetchQueries: true,
                     });
                   }}
                 >
@@ -242,6 +242,7 @@ export default function ComparisonPopover(props: Props) {
                   actionType: CompareActionType.ADD,
                 },
                 refetchQueries: refetchTerminalQueries,
+                awaitRefetchQueries: true,
               });
             }}
           />
