@@ -2,6 +2,7 @@ import React, {
   useEffect,
   useRef,
   useCallback,
+  useState,
   ComponentProps,
   RefObject,
   CSSProperties,
@@ -41,6 +42,7 @@ export default function LocationInput(props: Props) {
     defaultValue,
     ...otherProps
   } = props;
+  let [inputValue, setInputValue] = useState('');
   let inputRef = useRef<HTMLInputElement | null>(null);
   let selectedPlace = useRef<PlaceResult | null>(null);
   let submitHandler = useCallback(() => {
@@ -75,6 +77,7 @@ export default function LocationInput(props: Props) {
       let listener = autocomplete.addListener('place_changed', () => {
         let place = autocomplete.getPlace();
         selectedPlace.current = place;
+        setInputValue(place?.formatted_address || '');
         submitHandler();
       });
       return () => {
@@ -82,6 +85,10 @@ export default function LocationInput(props: Props) {
       };
     }
   }, [submitHandler, isLoading]);
+
+  useEffect(() => {
+    setInputValue(defaultValue?.toString() || '');
+  }, [defaultValue]);
 
   if (isLoading) {
     return null;
@@ -114,6 +121,10 @@ export default function LocationInput(props: Props) {
             }
           : undefined
       }
+      value={inputValue}
+      onChange={(e) => {
+        setInputValue(e.target.value);
+      }}
       onKeyDown={(e) => {
         if (e.which === 8) {
           if (inputRef.current && selectedPlace.current) {

@@ -16,6 +16,7 @@ import {
 import { Direction } from '../../types/types';
 import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { PerformanceTableType } from '../../generated/globalTypes';
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
@@ -31,10 +32,22 @@ type Props = {
   compareData?: Array<PerformanceTableCompareData>;
   showNumLocation?: boolean;
   headerTitle?: string;
+  onPerformanceRowPress?: (param: {
+    name: string;
+    isLocation: boolean;
+    isBusiness: boolean;
+  }) => void;
+  performanceType: PerformanceTableType;
 };
 
 export default function PerformanceTable(props: Props) {
-  let { data, showNumLocation = true, headerTitle = 'Company' } = props;
+  let {
+    data,
+    showNumLocation = true,
+    headerTitle = 'Company',
+    onPerformanceRowPress,
+    performanceType,
+  } = props;
   let [infoboxVisible, setInfoboxVisible] = useState(false);
 
   let { sortedData, requestSort, sortConfig } = useSortableData<
@@ -150,6 +163,23 @@ export default function PerformanceTable(props: Props) {
               key={index}
               style={{
                 backgroundColor: bgColor,
+              }}
+              onPress={() => {
+                if (onPerformanceRowPress) {
+                  if (performanceType === PerformanceTableType.ADDRESS) {
+                    onPerformanceRowPress({
+                      name,
+                      isLocation: true,
+                      isBusiness: false,
+                    });
+                  } else if (performanceType === PerformanceTableType.BRAND) {
+                    onPerformanceRowPress({
+                      name,
+                      isLocation: false,
+                      isBusiness: true,
+                    });
+                  }
+                }
               }}
             >
               <DataTable.Cell style={{ color: textColor }}>
