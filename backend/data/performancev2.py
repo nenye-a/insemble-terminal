@@ -3,6 +3,8 @@ import google
 import performance
 import utils
 import numpy as np
+from billiard.pool import Pool
+from functools import partial
 
 '''
 
@@ -308,20 +310,19 @@ def aggregate_performance(name, location, scope):
     if not matching_places:
         return None
 
-    if scope == 'city':
-        data = combine_parse_details(matching_places)
-        if data['overall']['name'] is None:
-            data['overall']['name'] = name
-    elif scope == 'county':
+    if scope == 'county':
         data = categorical_data(matching_places, name, 'city')
         data.pop('by_location')
         data['data'] = data['by_city']
+    else:
+        data = combine_parse_details(matching_places)
+        if data['overall']['name'] is None:
+            data['overall']['name'] = name
 
     return data
 
 
-def category_performance(category, location, scope):
-    exists_dict = {'$exists': True}
+def category_performance(category, location, scope, return_type):
     data_name = category if category else location
 
     if scope.lower() == 'address':
@@ -336,41 +337,49 @@ def category_performance(category, location, scope):
                 time.sleep(1 + backoff)
                 backoff += 1
 
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+        query = {
             'location': {'$near': {'$geometry': coordinates,
                                    '$maxDistance': utils.miles_to_meters(0.5)}},
-            'type': utils.adjust_case(category) if category else exists_dict,
             'google_details': {'$exists': True}
-        }))
+        }
+        if category:
+            query['type'] = utils.adjust_case(category)
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
     elif scope.lower() == 'city':
         location_list = [word.strip() for word in location.split(',')]
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
+        query = {
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': location_list[1].upper(),
             'google_details': {'$exists': True}
-        }))
+        }
+        if category:
+            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
     elif scope.lower() == 'county':
         location_list = [word.strip() for word in location.split(',')]
         region = utils.DB_REGIONS.find_one({
             'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(), "$options": "i",
+            'state': location_list[1].upper(),
             'type': 'county'
         })
         if not region:
             return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
+        query = {
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
-        }))
+        }
+        if category:
+            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
     else:
         return None
 
     if not matching_places:
         return None
 
-    return categorical_data(matching_places, data_name)
+    if return_type:
+        return_type = return_type.lower()
+    return categorical_data(matching_places, data_name, return_type)
 
 
 def parse_details(details):
@@ -425,6 +434,7 @@ def combine_parse_details(list_places, forced_name=None,
     """
     Provided un-parsed places details, will generate combined report.
     """
+    start = time.time()
 
     location_data = []
     customer_volume_index_sum, customer_volume_index_count = 0, 0
@@ -494,6 +504,7 @@ def combine_parse_details(list_places, forced_name=None,
     if default_name and corrected_name is None:
         corrected_name = default_name
 
+    print(time.time() - start, 'loop 1')
     return {
         # TODO: confidence level for overall comparison if a certain percentage of addresses have low confidence
         'overall': {
@@ -523,6 +534,22 @@ def combine_parse_details(list_places, forced_name=None,
     }
 
 
+def split_list(item, data_type):
+    if data_type == 'brand':
+        brand, location_list = item
+        result = combine_parse_details(location_list, default_name=brand)
+    elif data_type == 'category':
+        category, location_list = item
+        result = combine_parse_details(location_list, forced_name=category)
+    elif data_type == 'city':
+        city, location_list = item
+        result = combine_parse_details(location_list, forced_name=city)
+    else:
+        return None
+
+    return result
+
+
 def categorical_data(matching_places, data_name, *return_types):
 
     overall_details = combine_parse_details(matching_places)
@@ -530,20 +557,27 @@ def categorical_data(matching_places, data_name, *return_types):
     category_details = None
     city_details = None
 
-    if not return_types or 'brand' in return_types:
-        brand_dict = performance.section_by_key(matching_places, 'name')
-        brand_details = [combine_parse_details(location_list, default_name=brand)['overall']
-                         for brand, location_list in brand_dict.items()]
+    if None not in return_types:
+        pool_exists = False
+        try:
+            pool, pool_exists = Pool(10), True
+            if not return_types or 'by_brand' in return_types:
+                brand_dict = performance.section_by_key(matching_places, 'name')
 
-    if not return_types or 'category' in return_types:
-        category_dict = performance.section_by_key(matching_places, 'type')
-        category_details = [combine_parse_details(location_list, forced_name=category)['overall']
-                            for category, location_list in category_dict.items()]
+                brand_details = pool.map(partial(split_list, data_type='brand'), brand_dict.items())
 
-    if not return_types or 'city' in return_types:
-        city_dict = performance.section_by_key(matching_places, 'city')
-        city_details = [combine_parse_details(location_list, forced_name=city)['overall']
-                        for city, location_list in city_dict.items()]
+            if not return_types or 'by_category' in return_types:
+                category_dict = performance.section_by_key(matching_places, 'type')
+                category_details = pool.map(partial(split_list, data_type='category'), category_dict.items())
+
+            if not return_types or 'by_city' in return_types:
+                city_dict = performance.section_by_key(matching_places, 'city')
+                city_details = pool.map(partial(split_list, data_type='city'), city_dict.items())
+        except Exception as e:
+            print(e)
+        finally:
+            if pool_exists:
+                pool.terminate()
 
     overall_details['overall']['name'] = utils.adjust_case(data_name)
 
@@ -658,9 +692,10 @@ if __name__ == "__main__":
 
     def test_category_performance_higher_scope():
         # performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
-        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county")
+        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county", 'by_city')
         # performance = category_performance(None, "Los Angeles", "County")
-        print(performance['by_category'])
+        # print(performance['by_location'])
+        print(performance['by_city'])
 
     def test_get_immediate_vicinity_volume():
         size = 1000
@@ -673,7 +708,6 @@ if __name__ == "__main__":
     # test_build_brand_query()
     # test_build_all_query()
     # test_performance()
-    test_aggregate_performance()
+    # test_aggregate_performance()
     # test_category_performance()
-    # test_category_performance_higher_scope()
-    # test_get_immediate_vicinity_volume()
+    test_category_performance_higher_scope()
