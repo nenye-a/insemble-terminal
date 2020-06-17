@@ -87,7 +87,7 @@ export default function PerformanceResult(props: Props) {
 
   let dataWithAsterisk = coloredData.map((datum) => ({
     ...datum,
-    hasAsterisk: !!datum.numLocation && datum.numLocation >= 3,
+    hasAsterisk: !!datum.numNearby && datum.numNearby >= 3,
   }));
 
   let noData =

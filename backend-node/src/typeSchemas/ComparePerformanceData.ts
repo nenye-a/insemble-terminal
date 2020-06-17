@@ -8,6 +8,7 @@ export let ComparePerformanceData = objectType({
     t.model.avgRating();
     t.model.numLocation();
     t.model.numReview();
+    t.model.numNearby();
     t.model.customerVolumeIndex();
     t.model.localCategoryIndex();
     t.model.localRetailIndex();
