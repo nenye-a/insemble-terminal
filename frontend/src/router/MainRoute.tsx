@@ -10,6 +10,7 @@ import {
 import { View } from '../core-ui';
 import HeaderNavigationBar from '../components/HeaderNavigationBar';
 import { useAuth } from '../context';
+import { UserHomeScene } from '../scenes';
 
 import {
   authenticatedRoutes,
@@ -61,6 +62,7 @@ function Routes() {
             : authenticatedRoutes.map(mapFn)
           : authenticatedUnactiveRoutes.map(mapFn)
         : unAuthenticatedRoutes.map(mapFn)}
+      <Route component={UserHomeScene} />
     </Switch>
   );
 }

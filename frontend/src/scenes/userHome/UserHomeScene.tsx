@@ -1,14 +1,22 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
+import { useHistory, Redirect } from 'react-router-dom';
 
 import { View } from '../../core-ui';
+import { SearchPlaceholder, SearchFilterBar } from '../../components';
+import { useAuth } from '../../context/AuthContext';
 import { WHITE } from '../../constants/colors';
 import InsembleLogo from '../../components/InsembleLogo';
-import { SearchPlaceholder, SearchFilterBar } from '../../components';
 
 export default function UserHomeScene() {
   let history = useHistory();
+  let { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) {
+    return <Redirect to="/login" />;
+  } else if (isAuthenticated && user && !user.license) {
+    return <Redirect to="/activation" />;
+  }
+
   return (
     <Container>
       <InsembleLogo color="purple" size="big" />

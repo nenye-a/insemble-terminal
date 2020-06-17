@@ -115,7 +115,7 @@ export const authenticatedUnactiveRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
+    component: UserHomeScene,
   }, // TODO: change component
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },

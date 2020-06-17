@@ -29,7 +29,7 @@ export default function Login() {
   if (data?.login.token) {
     let { token } = data.login;
     saveToken(token);
-    return <Redirect to="/results" />;
+    return <Redirect to="/" />;
   }
 
   return (
