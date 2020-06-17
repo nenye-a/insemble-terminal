@@ -90,7 +90,7 @@ def categorical_data(list_places):
     brand_dict = performance.section_by_key(list_places, 'name')
     coverage_dict = {k: extract_coverage(v) for k, v in brand_dict.items()}
     coverage = [{
-        'business_name': brand,
+        'business_name': utils.adjust_case(brand),
         'num_locations': locations['num_locations'],
         'locations': locations['locations']
     } for brand, locations in coverage_dict.items()]
