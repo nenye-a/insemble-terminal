@@ -17,6 +17,8 @@ import {
   PerformanceTableType,
   ReviewTag,
   OwnershipType as GeneratedOwnershipType,
+  LocationTagType,
+  BusinessTagType,
 } from '../../generated/globalTypes';
 import { ResultQuery, OwnershipType, SearchTag } from '../../types/types';
 import { getResultQueries, capitalize } from '../../helpers';
@@ -41,13 +43,14 @@ export default function ResultsScene() {
   ] = useMutation<Search, SearchVariables>(SEARCH, {
     onError: () => {},
   });
+  let [selectedSearchTag, setSelectedSearchTag] = useState<SearchTag>();
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
-
   let onSubmit = ({
     reviewTag,
     businessTagWithId,
     ...searchVariables
   }: SearchTag) => {
+    setSelectedSearchTag({ ...searchVariables, reviewTag, businessTagWithId });
     submitSearch({
       variables: {
         ...searchVariables,
@@ -55,6 +58,35 @@ export default function ResultsScene() {
         businessTagId: businessTagWithId?.id,
       },
     });
+  };
+
+  let onPerformanceRowPress = (params: {
+    name: string;
+    isLocation: boolean;
+    isBusiness: boolean;
+  }) => {
+    let { name, isLocation, isBusiness } = params;
+    if (isLocation) {
+      onSubmit({
+        reviewTag: undefined,
+        businessTagWithId: isLocation
+          ? selectedSearchTag?.businessTagWithId
+          : null,
+        locationTag: {
+          params: name,
+          type: LocationTagType.ADDRESS,
+        },
+      });
+    } else if (isBusiness) {
+      onSubmit({
+        reviewTag: undefined,
+        businessTag: {
+          params: name,
+          type: BusinessTagType.BUSINESS,
+        },
+        locationTag: selectedSearchTag?.locationTag,
+      });
+    }
   };
 
   useEffect(() => {
@@ -71,6 +103,7 @@ export default function ResultsScene() {
 
   useEffect(() => {
     if (history?.location?.state?.search) {
+      setSelectedSearchTag(history.location.state.search);
       onSubmit(history.location.state.search);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,18 +116,15 @@ export default function ResultsScene() {
         showSearchBar={true}
         onSearchPress={onSubmit}
         defaultReviewTag={
-          history?.location.state?.search.reviewTag
-            ? capitalize(history.location.state.search.reviewTag)
+          selectedSearchTag?.reviewTag
+            ? capitalize(selectedSearchTag?.reviewTag)
             : undefined
         }
         defaultBusinessTag={
-          history?.location?.state?.search?.businessTagWithId
-            ? history.location.state.search.businessTagWithId
-            : history?.location?.state?.search?.businessTag?.params || undefined
+          selectedSearchTag?.businessTagWithId ||
+          selectedSearchTag?.businessTag?.params
         }
-        defaultLocationTag={
-          history?.location?.state?.search.locationTag || undefined
-        }
+        defaultLocationTag={selectedSearchTag?.locationTag || undefined}
       />
       {submitSearchData?.search ? (
         <>
@@ -128,6 +158,7 @@ export default function ResultsScene() {
                       performanceType={type}
                       showNumLocation={false}
                       headerTitle="By Address"
+                      onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );
                 } else if (type === PerformanceTableType.BRAND) {

@@ -32,6 +32,11 @@ type Props = {
   showNumLocation?: boolean;
   headerTitle?: string;
   pinTableId?: string;
+  onPerformanceRowPress?: (param: {
+    name: string;
+    isLocation: boolean;
+    isBusiness: boolean;
+  }) => void;
 };
 
 type Data = (PerformanceData | PerformanceCompareData) & {
@@ -51,6 +56,7 @@ export default function PerformanceResult(props: Props) {
     showNumLocation,
     headerTitle,
     pinTableId,
+    onPerformanceRowPress,
   } = props;
   let alert = useAlert();
   let [prevData, setPrevData] = useState<Array<Data>>([]);
@@ -201,6 +207,8 @@ export default function PerformanceResult(props: Props) {
             data={loading ? prevData : dataWithAsterisk}
             showNumLocation={showNumLocation}
             headerTitle={headerTitle}
+            onPerformanceRowPress={onPerformanceRowPress}
+            performanceType={performanceType}
           />
         ) : noData && !loading ? (
           <EmptyDataComponent />

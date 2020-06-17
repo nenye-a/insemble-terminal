@@ -58,15 +58,13 @@ export default function SearchFilterBar(props: Props) {
     disableReviewTag = false,
   } = props;
   let [dataTypeFilterVisible, setDataTypeFilterVisible] = useState(false);
-  let [selectedDataType, setSelectedDataType] = useState(
-    defaultReviewTag || '',
-  );
+  let [selectedDataType, setSelectedDataType] = useState('');
   let [
     selectedBusiness,
     setSelectedBusiness,
-  ] = useState<SelectedBusiness | null>(defaultBusinessTag || null);
+  ] = useState<SelectedBusiness | null>(null);
   let [selectedPlace, setSelectedPlace] = useState<LocationTagInput | null>(
-    defaultLocationTag || null,
+    null,
   );
   let [errorMessage, setErrorMessage] = useState('');
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
@@ -85,6 +83,18 @@ export default function SearchFilterBar(props: Props) {
       window.removeEventListener('keydown', handleKeyPress);
     };
   }, [dataTypeFilterVisible]);
+
+  useEffect(() => {
+    setSelectedDataType(defaultReviewTag || '');
+  }, [defaultReviewTag]);
+
+  useEffect(() => {
+    setSelectedBusiness(defaultBusinessTag || null);
+  }, [defaultBusinessTag]);
+
+  useEffect(() => {
+    setSelectedPlace(defaultLocationTag || null);
+  }, [defaultLocationTag]);
 
   return (
     <View flex>

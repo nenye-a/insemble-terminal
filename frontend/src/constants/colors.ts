@@ -73,7 +73,6 @@ export const COLORS = [
   SEMI_PURPLE,
   '#EF5B5B',
   '#FFBA49',
-  '#B3FFFC',
   '#20A39E',
   '#A4A9AD',
   '#F2FF49',

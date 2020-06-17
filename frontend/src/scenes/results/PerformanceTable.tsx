@@ -14,8 +14,9 @@ import {
   getTextColor,
 } from '../../helpers';
 import { Direction } from '../../types/types';
-import { WHITE, THEME_COLOR } from '../../constants/colors';
-import { FONT_WEIGHT_BOLD } from '../../constants/theme';
+import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
+import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { PerformanceTableType } from '../../generated/globalTypes';
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
@@ -31,10 +32,22 @@ type Props = {
   compareData?: Array<PerformanceTableCompareData>;
   showNumLocation?: boolean;
   headerTitle?: string;
+  onPerformanceRowPress?: (param: {
+    name: string;
+    isLocation: boolean;
+    isBusiness: boolean;
+  }) => void;
+  performanceType: PerformanceTableType;
 };
 
 export default function PerformanceTable(props: Props) {
-  let { data, showNumLocation = true, headerTitle = 'Company' } = props;
+  let {
+    data,
+    showNumLocation = true,
+    headerTitle = 'Company',
+    onPerformanceRowPress,
+    performanceType,
+  } = props;
   let [infoboxVisible, setInfoboxVisible] = useState(false);
 
   let { sortedData, requestSort, sortConfig } = useSortableData<
@@ -151,6 +164,23 @@ export default function PerformanceTable(props: Props) {
               style={{
                 backgroundColor: bgColor,
               }}
+              onPress={() => {
+                if (onPerformanceRowPress) {
+                  if (performanceType === PerformanceTableType.ADDRESS) {
+                    onPerformanceRowPress({
+                      name,
+                      isLocation: true,
+                      isBusiness: false,
+                    });
+                  } else if (performanceType === PerformanceTableType.BRAND) {
+                    onPerformanceRowPress({
+                      name,
+                      isLocation: false,
+                      isBusiness: true,
+                    });
+                  }
+                }
+              }}
             >
               <DataTable.Cell style={{ color: textColor }}>
                 {hasAsterisk ? `${name}*` : name}
@@ -160,28 +190,36 @@ export default function PerformanceTable(props: Props) {
                 align="right"
                 style={{ color: textColor }}
               >
-                {customerVolumeIndex || '-'}
+                {customerVolumeIndex ? Number(customerVolumeIndex) / 100 : '-'}
+                {!!customerVolumeIndex && <Times>x</Times>}
               </DataTable.Cell>
               <DataTable.Cell
                 width={90}
                 align="right"
                 style={{ color: textColor }}
               >
-                {formatNullData(localRetailIndex)}
+                {isNull(localRetailIndex)
+                  ? '-'
+                  : Number(localRetailIndex) / 100}
+                {!isNull(localRetailIndex) && <Times>x</Times>}
               </DataTable.Cell>
               <DataTable.Cell
                 width={100}
                 align="right"
                 style={{ color: textColor }}
               >
-                {formatNullData(localCategoryIndex)}
+                {isNull(localCategoryIndex)
+                  ? '-'
+                  : Number(localCategoryIndex) / 100}
+                {!isNull(localCategoryIndex) && <Times>x</Times>}
               </DataTable.Cell>
               <DataTable.Cell
                 width={90}
                 align="right"
                 style={{ color: textColor }}
               >
-                {formatNullData(nationalIndex)}
+                {isNull(nationalIndex) ? '-' : Number(nationalIndex) / 100}
+                {!isNull(nationalIndex) && <Times>x</Times>}
               </DataTable.Cell>
               <DataTable.Cell
                 width={90}
@@ -249,6 +287,10 @@ function formatNullData(value: string | number | null) {
   return value;
 }
 
+function isNull(value: string | number | null) {
+  return value == null;
+}
+
 function ConfidencePopover() {
   return (
     <PopoverContainer>
@@ -270,4 +312,10 @@ const PopoverTitle = styled(Text)`
   color: ${THEME_COLOR};
   font-weight: ${FONT_WEIGHT_BOLD};
   margin-bottom: 12px;
+`;
+
+const Times = styled(Text)`
+  padding-left: 2px;
+  font-weight: ${FONT_WEIGHT_MEDIUM};
+  color: ${GRAY_TEXT};
 `;
