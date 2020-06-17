@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
 import {
@@ -10,9 +10,20 @@ import {
   Dropdown,
   LoadingIndicator,
 } from '../core-ui';
-import { parsePlaceType, isSearchCombinationValid } from '../helpers';
+import {
+  parsePlaceType,
+  isSearchCombinationValid,
+  capitalize,
+} from '../helpers';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
-import { BACKGROUND_COLOR, MUTED_TEXT_COLOR } from '../constants/colors';
+import {
+  BACKGROUND_COLOR,
+  MUTED_TEXT_COLOR,
+  LIGHT_PURPLE,
+  DARK_TEXT_COLOR,
+  GRAY_TEXT,
+  LIGHTER_GRAY,
+} from '../constants/colors';
 import { SearchTag } from '../types/types';
 import {
   ReviewTag,
@@ -128,6 +139,19 @@ export default function SearchFilterBar(props: Props) {
                 return item?.params || '';
               }}
               disabled={disableAll}
+              renderCustomList={(item: SelectedBusiness | null) => {
+                if (item && typeof item !== 'string') {
+                  return (
+                    <Row>
+                      <Text>{item.params}</Text>
+                      <TagType type={item.type}>
+                        {capitalize(item.type)}
+                      </TagType>
+                    </Row>
+                  );
+                }
+                return null;
+              }}
             />
             <SpacedText>in</SpacedText>
             <SearchLocationInput
@@ -200,6 +224,10 @@ export default function SearchFilterBar(props: Props) {
   );
 }
 
+type TagTypeProps = TextProps & {
+  tagType: BusinessTagType;
+};
+
 const SearchContainer = styled(View)`
   flex-direction: row;
   align-items: center;
@@ -233,4 +261,30 @@ const SpacedText = styled(Text)`
 
 const ErrorMessage = styled(Text)`
   padding-top: 2px;
+`;
+
+const Row = styled(View)`
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const TagType = styled(Text)<TagTypeProps>`
+  padding: 4px 8px;
+  height: 26px;
+  width: 92px;
+  border-radius: 13px;
+  text-align: center;
+  font-weight: ${FONT_WEIGHT_MEDIUM};
+  ${(props) =>
+    props.type === BusinessTagType.BUSINESS
+      ? css`
+          background-color: ${LIGHT_PURPLE};
+          color: ${DARK_TEXT_COLOR};
+        `
+      : css`
+          background-color: ${LIGHTER_GRAY};
+          color: ${GRAY_TEXT};
+        `}
 `;

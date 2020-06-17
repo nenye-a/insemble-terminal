@@ -1,7 +1,6 @@
 import { RouteProps } from 'react-router-dom';
 
 import {
-  AuthScene,
   ActivationScene,
   ContactUsScene,
   EditProfileScene,
@@ -15,6 +14,7 @@ import {
   VerificationSuccessfulScene,
   VerificationFailedScene,
   ManageTokenScene,
+  UserHomeScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -22,6 +22,7 @@ export type RouteType = Omit<RouteProps, 'component'> & {
   component: React.ComponentType<any>;
   showHeader?: boolean;
   showSearchBar?: boolean;
+  headerMode?: 'default' | 'transparent';
 };
 
 export const unAuthenticatedRoutes = [
@@ -55,21 +56,24 @@ export const authenticatedRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
+    component: UserHomeScene,
   }, // TODO: change component
   {
     path: '/results',
     component: ResultsScene,
     showHeader: false,
+    showSearchBar: true,
   },
   {
     path: '/terminals',
     component: TerminalHomeScene,
+    showSearchBar: true,
     exact: true,
   },
   {
     path: '/terminals/:terminalId',
     component: TerminalDetailScene,
+    showSearchBar: true,
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
@@ -79,8 +83,9 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
-  }, // TODO: change component
+    component: UserHomeScene,
+    headerMode: 'transparent',
+  },
   {
     path: '/results',
     component: ResultsScene,
@@ -90,10 +95,12 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
     path: '/terminals',
     component: TerminalHomeScene,
     exact: true,
+    showSearchBar: true,
   },
   {
     path: '/terminals/:terminalId',
     component: TerminalDetailScene,
+    showSearchBar: true,
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
@@ -109,7 +116,8 @@ export const authenticatedUnactiveRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
+    component: UserHomeScene,
+    headerMode: 'transparent',
   }, // TODO: change component
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },

@@ -8,9 +8,9 @@ import {
 } from 'react-router-dom';
 
 import { View } from '../core-ui';
-import { AuthScene } from '../scenes';
 import HeaderNavigationBar from '../components/HeaderNavigationBar';
 import { useAuth } from '../context';
+import { UserHomeScene } from '../scenes';
 
 import {
   authenticatedRoutes,
@@ -31,7 +31,13 @@ export default function MainRoute() {
 function Routes() {
   let { isAuthenticated, user } = useAuth();
   let mapFn = (
-    { component, showHeader = true, showSearchBar, ...routeProps }: RouteType,
+    {
+      component,
+      showHeader = true,
+      showSearchBar = false,
+      headerMode = 'default',
+      ...routeProps
+    }: RouteType,
     index: number,
   ) => {
     return (
@@ -42,6 +48,7 @@ function Routes() {
             component={component}
             showHeader={showHeader}
             showSearchBar={showSearchBar}
+            headerMode={headerMode}
           />
         )}
         {...routeProps}
@@ -57,7 +64,7 @@ function Routes() {
             : authenticatedRoutes.map(mapFn)
           : authenticatedUnactiveRoutes.map(mapFn)
         : unAuthenticatedRoutes.map(mapFn)}
-      <Route component={AuthScene} />
+      <Route component={UserHomeScene} />
     </Switch>
   );
 }
@@ -66,10 +73,11 @@ type RouteWithTrackerProps = {
   showHeader: boolean;
   showSearchBar?: boolean;
   component: ComponentType;
+  headerMode?: 'default' | 'transparent';
 };
 
 function RouteWithTracker(props: RouteWithTrackerProps) {
-  let { showHeader = true, showSearchBar, component: Component } = props;
+  let { showHeader, showSearchBar, component: Component, headerMode } = props;
   let history = useHistory();
 
   useEffect(() => {
@@ -84,6 +92,7 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
           onSearchPress={(search) => {
             history.push('/results', { search });
           }}
+          mode={headerMode}
         />
       )}
       <Component />

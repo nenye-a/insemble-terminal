@@ -1,4 +1,3 @@
-export { default as AuthScene } from './auth/AuthScene';
 export { default as EmailVerificationScene } from './auth/EmailVerificationScene';
 export { default as LoginScene } from './auth/LoginScene';
 export { default as SignUpScene } from './auth/SignUpScene';
@@ -12,3 +11,4 @@ export { default as EditProfileScene } from './profile/EditProfileScene';
 export { default as ResultsScene } from './results/ResultsScene';
 export { default as TerminalDetailScene } from './terminal/TerminalDetailScene';
 export { default as TerminalHomeScene } from './terminal/TerminalHomeScene';
+export { default as UserHomeScene } from './userHome/UserHomeScene';

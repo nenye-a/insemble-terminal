@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ComponentProps } from 'react';
+import React, { useState, useEffect, ComponentProps, ReactNode } from 'react';
 import { useCombobox } from 'downshift';
 import styled, { css } from 'styled-components';
 
@@ -14,6 +14,7 @@ import { FONT_SIZE_NORMAL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
 
 import TextInput from './TextInput';
 import TouchableOpacity from './TouchableOpacity';
+import Text from './Text';
 
 type Props<T> = {
   options: Array<T>;
@@ -22,6 +23,7 @@ type Props<T> = {
   optionExtractor?: (option: T) => string;
   placeholder?: string;
   disabled?: boolean;
+  renderCustomList?: (item: T) => ReactNode;
 };
 
 const defaultOptionExtractor = (item: unknown) => String(item);
@@ -34,6 +36,7 @@ export default function Dropdown<T>(props: Props<T>) {
     optionExtractor = defaultOptionExtractor,
     placeholder,
     disabled,
+    renderCustomList,
   } = props;
 
   let [inputItems, setInputItems] = useState<Array<T>>(options);
@@ -134,7 +137,11 @@ export default function Dropdown<T>(props: Props<T>) {
                   },
                 })}
               >
-                {optionExtractor(item)}
+                {renderCustomList ? (
+                  renderCustomList(item)
+                ) : (
+                  <Text>{optionExtractor(item)}</Text>
+                )}
               </OptionList>
             ))
           : null}
@@ -165,8 +172,8 @@ const OptionList = styled.li`
   padding: 8px 18px;
   font-family: 'Avenir';
   font-size: ${FONT_SIZE_NORMAL};
-  min-width: 200px;
-  max-width: 300px;
+  min-width: 400px;
+  max-width: 500px;
 `;
 const InputContainer = styled(TextInput)<InputContainerProps>`
   border: none;

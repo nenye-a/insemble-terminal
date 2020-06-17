@@ -35,7 +35,7 @@ export default function EmailVerificationScene() {
       let { token } = auth;
       login(token);
 
-      return <Redirect to="/results" />;
+      return <Redirect to="/" />;
     }
   }
   return (
