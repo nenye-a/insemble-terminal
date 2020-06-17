@@ -28,14 +28,13 @@ type Props = {
 export default function HeaderNavigationBar(props: Props) {
   let {
     onSearchPress,
-    showSearchBar = true,
+    showSearchBar,
     defaultReviewTag,
     defaultBusinessTag,
     defaultLocationTag,
   } = props;
   let history = useHistory();
   let { isAuthenticated } = useAuth();
-
   return (
     <Container>
       <TouchableOpacity

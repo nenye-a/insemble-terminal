@@ -12,3 +12,4 @@ export { default as EditProfileScene } from './profile/EditProfileScene';
 export { default as ResultsScene } from './results/ResultsScene';
 export { default as TerminalDetailScene } from './terminal/TerminalDetailScene';
 export { default as TerminalHomeScene } from './terminal/TerminalHomeScene';
+export { default as UserHomeScene } from './userHome/UserHomeScene';

@@ -3,14 +3,13 @@ import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 
-import { View, Text, Divider, LoadingIndicator } from '../../core-ui';
-import { HeaderNavigationBar, PageTitle } from '../../components';
+import { View, Divider, LoadingIndicator } from '../../core-ui';
 import {
-  MUTED_TEXT_COLOR,
-  DARK_TEXT_COLOR,
-  BACKGROUND_COLOR,
-} from '../../constants/colors';
-import { FONT_SIZE_XLARGE } from '../../constants/theme';
+  HeaderNavigationBar,
+  PageTitle,
+  SearchPlaceholder,
+} from '../../components';
+import { MUTED_TEXT_COLOR, BACKGROUND_COLOR } from '../../constants/colors';
 import { SEARCH } from '../../graphql/queries/server/search';
 import { Search, SearchVariables } from '../../generated/Search';
 import {
@@ -20,7 +19,6 @@ import {
 } from '../../generated/globalTypes';
 import { ResultQuery, OwnershipType, SearchTag } from '../../types/types';
 import { getResultQueries, capitalize } from '../../helpers';
-import SvgArrowUp from '../../components/icons/arrow-up';
 
 import PerformanceResult from './PerformanceResult';
 import LatestNewsResult from './LatestNewsResult';
@@ -210,12 +208,7 @@ export default function ResultsScene() {
         </>
       ) : (
         <TitleContainer>
-          <TitleRow>
-            <SvgArrowUp />
-            <Title>
-              Search and find performance data on retailers and restaurants
-            </Title>
-          </TitleRow>
+          <SearchPlaceholder />
           <Divider color={MUTED_TEXT_COLOR} />
         </TitleContainer>
       )}
@@ -230,16 +223,6 @@ const Container = styled(View)`
   min-height: 90vh;
 `;
 
-const Title = styled(Text)`
-  font-size: ${FONT_SIZE_XLARGE};
-  color: ${DARK_TEXT_COLOR};
-  padding: 20px 12px;
-`;
-
 const TitleContainer = styled(View)`
   padding: 20px 15%;
-`;
-const TitleRow = styled(View)`
-  flex-direction: row;
-  align-items: center;
 `;

@@ -15,6 +15,7 @@ import {
   VerificationSuccessfulScene,
   VerificationFailedScene,
   ManageTokenScene,
+  UserHomeScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -55,21 +56,24 @@ export const authenticatedRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
+    component: UserHomeScene,
   }, // TODO: change component
   {
     path: '/results',
     component: ResultsScene,
     showHeader: false,
+    showSearchBar: true,
   },
   {
     path: '/terminals',
     component: TerminalHomeScene,
+    showSearchBar: true,
     exact: true,
   },
   {
     path: '/terminals/:terminalId',
     component: TerminalDetailScene,
+    showSearchBar: true,
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
@@ -79,7 +83,7 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
   {
     path: '/',
     exact: true,
-    component: AuthScene,
+    component: UserHomeScene,
   }, // TODO: change component
   {
     path: '/results',
@@ -90,10 +94,12 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
     path: '/terminals',
     component: TerminalHomeScene,
     exact: true,
+    showSearchBar: true,
   },
   {
     path: '/terminals/:terminalId',
     component: TerminalDetailScene,
+    showSearchBar: true,
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },

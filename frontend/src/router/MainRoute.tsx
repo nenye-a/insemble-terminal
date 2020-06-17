@@ -8,7 +8,6 @@ import {
 } from 'react-router-dom';
 
 import { View } from '../core-ui';
-import { AuthScene } from '../scenes';
 import HeaderNavigationBar from '../components/HeaderNavigationBar';
 import { useAuth } from '../context';
 
@@ -31,7 +30,12 @@ export default function MainRoute() {
 function Routes() {
   let { isAuthenticated, user } = useAuth();
   let mapFn = (
-    { component, showHeader = true, showSearchBar, ...routeProps }: RouteType,
+    {
+      component,
+      showHeader = true,
+      showSearchBar = false,
+      ...routeProps
+    }: RouteType,
     index: number,
   ) => {
     return (
@@ -57,7 +61,6 @@ function Routes() {
             : authenticatedRoutes.map(mapFn)
           : authenticatedUnactiveRoutes.map(mapFn)
         : unAuthenticatedRoutes.map(mapFn)}
-      <Route component={AuthScene} />
     </Switch>
   );
 }
@@ -69,7 +72,7 @@ type RouteWithTrackerProps = {
 };
 
 function RouteWithTracker(props: RouteWithTrackerProps) {
-  let { showHeader = true, showSearchBar, component: Component } = props;
+  let { showHeader, showSearchBar, component: Component } = props;
   let history = useHistory();
 
   useEffect(() => {

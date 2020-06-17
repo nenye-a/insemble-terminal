@@ -4,17 +4,14 @@ import styled from 'styled-components';
 import { useParams, useLocation } from 'react-router-dom';
 
 import { View, LoadingIndicator, Text } from '../../core-ui';
-import { PageTitle, ErrorComponent } from '../../components';
+import { PageTitle, ErrorComponent, SearchPlaceholder } from '../../components';
 import { GetTerminal, GetTerminalVariables } from '../../generated/GetTerminal';
 import { GET_TERMINAL } from '../../graphql/queries/server/terminals';
 import {
   BACKGROUND_COLOR,
-  DARK_TEXT_COLOR,
   THEME_COLOR,
   GRAY_TEXT,
 } from '../../constants/colors';
-import { FONT_SIZE_XLARGE } from '../../constants/theme';
-import SvgArrowUp from '../../components/icons/arrow-up';
 import SvgPin from '../../components/icons/pin';
 
 import TerminalDetailResult from './TerminalDetailResult';
@@ -47,12 +44,7 @@ export default function TerminalDetailScene() {
           <ErrorComponent />
         ) : data?.terminal.pinnedFeeds.length === 0 ? (
           <>
-            <TitleRow>
-              <SvgArrowUp />
-              <Title>
-                Search and find performance data on retailers and restaurants
-              </Title>
-            </TitleRow>
+            <SearchPlaceholder />
             <TitleRow>
               <SvgPin
                 style={{ color: THEME_COLOR, margin: 3 }}
@@ -79,12 +71,6 @@ const ContentContainer = styled(View)`
   padding: 20px 15%;
   background-color: ${BACKGROUND_COLOR};
   min-height: 90vh;
-`;
-
-const Title = styled(Text)`
-  font-size: ${FONT_SIZE_XLARGE};
-  color: ${DARK_TEXT_COLOR};
-  padding: 20px 12px;
 `;
 
 const TitleRow = styled(View)`
