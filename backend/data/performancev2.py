@@ -12,7 +12,7 @@ Performance related queries.
 
 LOCAL_RETAIL_RADIUS = 1  # miles
 LOCAL_CATEGORY_RADIUS = 3  # miles
-LOW_CONFIDENCE_VICINITY = 0.01 # miles
+LOW_CONFIDENCE_VICINITY = 0.01  # miles
 BASELINE = 100  # baseline for index
 
 
@@ -432,21 +432,38 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     for place in list_places:
-        volume = total_volume(place['google_details']['activity'])
-        details = \
-            {'name': place['name'],
-             'address': place['address'],
-             'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
-             'localRetailIndex': round(BASELINE * volume / place['local_retail_volume']) if (volume != 0 and 'local_retail_volume' in place and place['local_retail_volume'] != -1) else None,
-             'localCategoryIndex': round(BASELINE * volume / place['local_category_volume']) if (volume != 0 and 'local_category_volume' in place and place['local_category_volume'] != -1) else None,
-             'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
-             'avgRating': place['google_details']['rating'] if 'rating' in place['google_details'] else None,
-             'avgReviews': place['google_details']['num_reviews'] if 'num_reviews' in place['google_details'] else None,
-             'numLocations': None,
-             'numNearby': place['num_nearby'] if 'num_nearby' in place else None}
 
-        corrected_name = details['name'] if not corrected_name else None
-        details['name'] = details.pop('address')
+        volume = 0
+        if 'activity_volume' in place and place['activity_volume'] > 0:
+            volume = place['activity_volume']
+
+        details = {
+            'name': place['name'],
+            'address': place['address'],
+            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume)
+            if all_retail_volume else None,
+
+            'localRetailIndex': round(BASELINE * volume / place['local_retail_volume'])
+            if (volume > 0 and 'local_retail_volume' in place and place['local_retail_volume'] > 0) else None,
+
+            'localCategoryIndex': round(BASELINE * volume / place['local_category_volume'])
+            if (volume > 0 and 'local_category_volume' in place and place['local_category_volume'] > 0) else None,
+
+            'nationalIndex': round(BASELINE * volume / place['brand_volume'])
+            if (volume > 0 and 'brand_volume' in place and place['brand_volume'] > 0) else None,
+
+            'avgRating': place['google_details']['rating']
+            if 'rating' in place['google_details'] else None,
+
+            'avgReviews': place['google_details']['num_reviews']
+            if 'num_reviews' in place['google_details'] else None,
+
+            'numLocations': None
+        }
+        if not corrected_name or len(details['name']) < len(corrected_name):
+            corrected_name = details['name']
+
+        details['name'] = '{} ({})'.format(details.pop('address'), details['name'])
         location_data.append(details)
 
         if details['customerVolumeIndex']:
@@ -475,12 +492,25 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
         # TODO: confidence level for overall comparison if a certain percentage of addresses have low confidence
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
-            'customerVolumeIndex': round(customer_volume_index_sum / customer_volume_index_count) if customer_volume_index_count != 0 else None,
-            'localRetailIndex': round(local_retail_index_sum / local_retail_index_count) if local_retail_index_count != 0 else None,
-            'localCategoryIndex': round(local_category_index_sum / local_category_index_count) if local_category_index_count != 0 else None,
-            'nationalIndex': round(national_index_sum / national_index_count) if national_index_count != 0 else None,
-            'avgRating': round(rating_sum / rating_count, 1) if rating_count != 0 else None,
-            'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
+
+            'customerVolumeIndex': round(customer_volume_index_sum / customer_volume_index_count)
+            if customer_volume_index_count != 0 else None,
+
+            'localRetailIndex': round(local_retail_index_sum / local_retail_index_count)
+            if local_retail_index_count != 0 else None,
+
+            'localCategoryIndex': round(local_category_index_sum / local_category_index_count)
+            if local_category_index_count != 0 else None,
+
+            'nationalIndex': round(national_index_sum / national_index_count)
+            if national_index_count != 0 else None,
+
+            'avgRating': round(rating_sum / rating_count, 1)
+            if rating_count != 0 else None,
+
+            'avgReviews': round(num_rating_sum / num_rating_count)
+            if num_rating_count != 0 else None,
+
             'numLocations': len(location_data)
         },
         'data': location_data
@@ -556,14 +586,6 @@ if __name__ == "__main__":
         place = utils.DB_TERMINAL_PLACES.find_one({})
         pipeline = build_proximity_query(place, 10, "Convenience Store")
         print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-        # print(list(utils.DB_TERMINAL_PLACES.aggregate(
-        #     [
-        #         {'$facet': {
-        #             'output1': pipeline,
-        #             'output2': pipeline
-        #         }}
-        #     ]
-        # )))
 
     def test_build_brand_query():
         place = utils.DB_TERMINAL_PLACES.find_one({})
@@ -623,7 +645,7 @@ if __name__ == "__main__":
     def test_get_immediate_vicinity_volume():
         size = 1000
         start = time.time()
-        [print(time.time()-start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
+        [print(time.time() - start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
          for location in utils.DB_TERMINAL_PLACES.aggregate([{"$sample": {"size": size}}]) if 'location' in location]
 
     # test_build_proximity_query()
@@ -631,7 +653,7 @@ if __name__ == "__main__":
     # test_build_brand_query()
     # test_build_all_query()
     # test_performance()
-    test_aggregate_performance()
+    # test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()
     # test_get_immediate_vicinity_volume()
