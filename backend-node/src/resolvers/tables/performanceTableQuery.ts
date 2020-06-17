@@ -182,6 +182,7 @@ let performanceTableResolver: FieldResolver<
                 localCategoryIndex,
                 localRetailIndex,
                 nationalIndex,
+                numNearby,
               }) => {
                 return {
                   name: name || '-',
@@ -192,6 +193,7 @@ let performanceTableResolver: FieldResolver<
                   nationalIndex,
                   numLocation: numLocations,
                   numReview: avgReviews,
+                  numNearby,
                 };
               },
             );
@@ -218,6 +220,7 @@ let performanceTableResolver: FieldResolver<
                 localRetailIndex,
                 nationalIndex,
                 compareId,
+                numNearby,
               }) => {
                 return {
                   name: name || '-',
@@ -229,6 +232,7 @@ let performanceTableResolver: FieldResolver<
                   numLocation: numLocations,
                   numReview: avgReviews,
                   compareId,
+                  numNearby,
                 };
               },
             );
@@ -318,6 +322,7 @@ let performanceTableResolver: FieldResolver<
             localCategoryIndex,
             localRetailIndex,
             nationalIndex,
+            numNearby,
           }) => {
             return {
               name: name || '-',
@@ -328,6 +333,7 @@ let performanceTableResolver: FieldResolver<
               nationalIndex,
               numLocation: numLocations,
               numReview: avgReviews,
+              numNearby,
             };
           },
         );
