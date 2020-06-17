@@ -1,4 +1,3 @@
-export { default as AuthScene } from './auth/AuthScene';
 export { default as EmailVerificationScene } from './auth/EmailVerificationScene';
 export { default as LoginScene } from './auth/LoginScene';
 export { default as SignUpScene } from './auth/SignUpScene';
