@@ -50,6 +50,7 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
           avgRating
           numLocation
           numReview
+          numNearby
           customerVolumeIndex
           localCategoryIndex
           localRetailIndex
@@ -61,6 +62,7 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
           avgRating
           numLocation
           numReview
+          numNearby
           customerVolumeIndex
           localCategoryIndex
           localRetailIndex
