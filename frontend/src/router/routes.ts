@@ -1,7 +1,6 @@
 import { RouteProps } from 'react-router-dom';
 
 import {
-  AuthScene,
   ActivationScene,
   ContactUsScene,
   EditProfileScene,
