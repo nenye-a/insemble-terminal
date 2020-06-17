@@ -200,17 +200,29 @@ export default function ComparisonPopover(props: Props) {
                 <CloseContainer
                   key={'del_' + comparison.id}
                   onPress={() => {
-                    updateComparison({
-                      variables: {
-                        reviewTag,
-                        comparationTagId: comparison.id,
-                        tableId,
-                        actionType: CompareActionType.DELETE,
-                        pinId,
-                      },
-                      refetchQueries: refetchTerminalQueries,
-                      awaitRefetchQueries: true,
-                    });
+                    if (terminalId) {
+                      updateComparison({
+                        variables: {
+                          reviewTag,
+                          comparationTagId: comparison.id,
+                          tableId,
+                          actionType: CompareActionType.DELETE,
+                          pinId,
+                        },
+                        refetchQueries: refetchTerminalQueries,
+                        awaitRefetchQueries: true,
+                      });
+                    } else {
+                      updateComparison({
+                        variables: {
+                          reviewTag,
+                          comparationTagId: comparison.id,
+                          tableId,
+                          actionType: CompareActionType.DELETE,
+                          pinId,
+                        },
+                      });
+                    }
                   }}
                 >
                   <SvgRoundClose />
@@ -231,19 +243,33 @@ export default function ComparisonPopover(props: Props) {
             defaultReviewTag={capitalize(reviewTag)}
             onSearchPress={(searchTags) => {
               let { businessTag, businessTagWithId, locationTag } = searchTags;
-              updateComparison({
-                variables: {
-                  reviewTag,
-                  businessTag,
-                  businessTagId: businessTagWithId?.id,
-                  locationTag,
-                  tableId,
-                  pinId,
-                  actionType: CompareActionType.ADD,
-                },
-                refetchQueries: refetchTerminalQueries,
-                awaitRefetchQueries: true,
-              });
+              if (terminalId) {
+                updateComparison({
+                  variables: {
+                    reviewTag,
+                    businessTag,
+                    businessTagId: businessTagWithId?.id,
+                    locationTag,
+                    tableId,
+                    pinId,
+                    actionType: CompareActionType.ADD,
+                  },
+                  refetchQueries: refetchTerminalQueries,
+                  awaitRefetchQueries: true,
+                });
+              } else {
+                updateComparison({
+                  variables: {
+                    reviewTag,
+                    businessTag,
+                    businessTagId: businessTagWithId?.id,
+                    locationTag,
+                    tableId,
+                    pinId,
+                    actionType: CompareActionType.ADD,
+                  },
+                });
+              }
             }}
           />
         </View>
