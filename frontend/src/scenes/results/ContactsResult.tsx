@@ -18,6 +18,7 @@ import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ContactsTable from './ContactsTable';
+import FeedbackButton from './FeedbackButton';
 
 type Props = {
   businessTagId?: string;
@@ -91,6 +92,10 @@ export default function ContactsResult(props: Props) {
       ) : (
         <ContactsTable data={data?.ownershipContactTable.data} />
       )}
+      <FeedbackButton
+        tableId={tableId}
+        tableType={TableType.OWNERSHIP_CONTACT}
+      />
     </Container>
   );
 }

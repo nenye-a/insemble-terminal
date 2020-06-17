@@ -22,6 +22,7 @@ import { formatErrorMessage, useColoredData } from '../../helpers';
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
 import PerformanceTablePopover from './PerformanceTablePopover';
+import FeedbackButton from './FeedbackButton';
 
 type Props = {
   businessTagId?: string;
@@ -214,6 +215,7 @@ export default function PerformanceResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
+      <FeedbackButton tableId={tableId} tableType={TableType.PERFORMANCE} />
     </Container>
   );
 }

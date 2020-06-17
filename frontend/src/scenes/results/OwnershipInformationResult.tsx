@@ -18,6 +18,7 @@ import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import OwnershipInformationCard from './OwnershipInformationCard';
+import FeedbackButton from './FeedbackButton';
 
 type Props = {
   businessTagId?: string;
@@ -96,6 +97,7 @@ export default function OwnershipInformationResult(props: Props) {
           lastUpdate={data?.ownershipInfoTable.data.lastUpdate}
         />
       )}
+      <FeedbackButton tableId={tableId} tableType={TableType.OWNERSHIP_INFO} />
     </Container>
   );
 }
