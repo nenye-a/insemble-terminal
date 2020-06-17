@@ -534,13 +534,13 @@ def combine_parse_details(list_places, forced_name=None,
 def split_list(item, data_type):
     if data_type == 'brand':
         brand, location_list = item
-        result = combine_parse_details(location_list, default_name=brand)
+        result = combine_parse_details(location_list, default_name=brand)['overall']
     elif data_type == 'category':
         category, location_list = item
-        result = combine_parse_details(location_list, forced_name=category)
+        result = combine_parse_details(location_list, forced_name=category)['overall']
     elif data_type == 'city':
         city, location_list = item
-        result = combine_parse_details(location_list, forced_name=city)
+        result = combine_parse_details(location_list, forced_name=city)['overall']
     else:
         return None
 
