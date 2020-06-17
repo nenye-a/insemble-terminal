@@ -81,6 +81,7 @@ class PerformanceAPI(BasicAPI):
                         localRetailIndex?: number,
                         localCategoryIndex?: number,
                         nationalIndex?: number,
+                        num_nearby?: number
                     }
                 ]
             }

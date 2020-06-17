@@ -9,20 +9,17 @@ from bson import ObjectId
 from billiard.pool import Pool
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
-TEMP_PLACES = "terminal.temp_places"
-DB_TEMP = utils.SYSTEM_MONGO.get_collection(TEMP_PLACES)
 
 
-def setup(query):
-
-    if not query:
-        raise Exception('Query too broad or inexistent!')
+def setup(query={}):
 
     query.update({
         '$or': [
-            {'brand_volume': {'$eq': -1}},
-            {'brand_volume': {'$exists': False}}
-        ]
+            {'local_retail_volume': {'$eq': -1}},
+            {'local_retail_volume': {'$exists': False}}
+        ],
+        'activity': {'$ne': []},
+        'activity_volume': {'$ne': -1}
     })
 
     utils.DB_TERMINAL_PLACES.aggregate([
@@ -31,18 +28,46 @@ def setup(query):
         },
         {
             '$set': {
-                'brand_volume': -2,
                 'local_retail_volume': -2,
                 'local_category_volume': -2
             }
         },
         {
-            "$merge": "temp_places"
+            "$merge": "temp_volume_places"
         }
     ])
 
 
-def update_activity_averages(batch_size=100, wait=True, additional_query=None):
+def setup_confidence(query={}):
+
+    query.update({
+        '$or': [
+            {'num_nearby': {'$eq': 0}},
+            {'num_nearby': {'$exists': False}}
+        ],
+        'activity_volume': {'$ne': -1}
+    })
+
+    utils.DB_TERMINAL_PLACES.aggregate([
+        {
+            '$match': query
+        },
+        {
+            "$merge": "temp_confidence_places"
+        }
+    ])
+
+
+def proximity_update(update_type, batch_size=100, wait=True, additional_query=None):
+
+    update_db = utils.SYSTEM_MONGO.get_collection("terminal.update_db")
+    if update_type == 'volume':
+        temp_db = utils.SYSTEM_MONGO.get_collection("terminal.temp_volume_places")
+    elif update_type == 'confidence':
+        temp_db = utils.SYSTEM_MONGO.get_collection("terminal.temp_confidence_places")
+    else:
+        raise Exception('Update type: \'{}\' is not either \'volume\' '
+                        'or \'confidence\'. Please retry.'.format(update_type))
 
     query = {}
     additional_query and query.update(additional_query)
@@ -58,89 +83,7 @@ def update_activity_averages(batch_size=100, wait=True, additional_query=None):
             pipeline.append({'$match': query})
         pipeline.append({'$sample': size})
 
-        places = list(DB_TEMP.aggregate(pipeline))
-
-        id_list = [place['_id'] for place in places]
-
-        if len(places) == 0:
-            if wait:
-                print('ACTIVITY_UPDATE:      '
-                      'No un-processed name_addresses observed, '
-                      'waiting 10 seconds for new locations...')
-                time.sleep(10)
-                continue
-            else:
-                collecting = False
-
-        for place in places:
-
-            if 'location' not in place:
-                continue
-
-            if place['activity'] == []:
-                continue
-
-            # brand_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
-            #     performancev2.build_brand_query(place['name'])
-            # ))[0]['avg_total_volume'] if 'name' in place else -1
-            # brand_volume = -1
-
-            local_retail_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
-                performancev2.build_proximity_query(place, performancev2.LOCAL_RETAIL_RADIUS)
-            ))[0]['avg_total_volume']
-
-            local_category_volume = list(utils.DB_TERMINAL_PLACES.aggregate(
-                performancev2.build_proximity_query(
-                    place,
-                    performancev2.LOCAL_CATEGORY_RADIUS,
-                    utils.adjust_case(place['type']))
-            ))[0]['avg_total_volume'] if 'type' in place else -1
-
-            utils.DB_TERMINAL_PLACES.update_one({'_id': place['_id']}, {
-                '$set': {
-                    # 'brand_volume': brand_volume,
-                    'local_retail_volume': local_retail_volume,
-                    'local_category_volume': local_category_volume
-                }
-            })
-
-            print('ACTIVITY_UPDATE:      '
-                  'Updated {} at {} ({}) with activity.'.format(
-                      place['name'],
-                      place['address'],
-                      place['_id']
-                  ))
-        print('ACTIVITY_UPDATE: Batch complete, updated {count} places. '
-              'searching for more locations. Last Update: {update_time}'.format(
-                  count=len(places),
-                  update_time=dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
-              ))
-
-        DB_TEMP.delete_many({
-            '_id': {"$in": id_list}
-        })
-
-
-def update_activity_averages_v2(batch_size=100, wait=True, additional_query=None):
-
-    update_connection = mongo.Connect()
-    update_db = update_connection.get_collection("terminal.update_db")
-
-    query = {}
-    additional_query and query.update(additional_query)
-
-    size = {'size': batch_size}
-
-    collecting = True
-
-    while collecting:
-
-        pipeline = []
-        if query:
-            pipeline.append({'$match': query})
-        pipeline.append({'$sample': size})
-
-        places = list(DB_TEMP.aggregate(pipeline))
+        places = list(temp_db.aggregate(pipeline))
 
         id_list = [place['_id'] for place in places]
 
@@ -160,41 +103,32 @@ def update_activity_averages_v2(batch_size=100, wait=True, additional_query=None
             if 'location' not in place:
                 continue
 
-            if place['activity'] == []:
-                continue
+            if update_type == 'volume':
+                if place['activity'] == []:
+                    continue
+                local_retail_volume = compile_details(place['location'],
+                                                      performancev2.LOCAL_RETAIL_RADIUS)
+                local_category_volume = compile_details(
+                    place['location'], performancev2.LOCAL_CATEGORY_RADIUS,
+                    retail_type=place['type']) if 'type' in place else -1
 
-            local_retail_volume = compile_details(place['location'],
-                                                  performancev2.LOCAL_RETAIL_RADIUS)
-            local_category_volume = compile_details(
-                place['location'], performancev2.LOCAL_CATEGORY_RADIUS,
-                retail_type=place['type']) if 'type' in place else -1
-
-            results.append({
-                '_id': place['_id'],
-                'local_retail_volume': local_retail_volume,
-                'local_category_volume': local_category_volume
-            })
+                results.append({
+                    '_id': place['_id'],
+                    'local_retail_volume': local_retail_volume,
+                    'local_category_volume': local_category_volume
+                })
+            elif update_type == 'confidence':
+                num_nearby = len(get_nearby(place['location'], 0.01))
+                results.append({
+                    '_id': place['_id'],
+                    'num_nearby': num_nearby
+                })
             print('ACTIVITY_UPDATE:      '
                   'Added {} at {} ({}) to update.'.format(
                       place['name'],
                       place['address'],
                       place['_id']
                   ))
-
-            # utils.DB_TERMINAL_PLACES.update_one({'_id': place['_id']}, {
-            #     '$set': {
-            #         'local_retail_volume': local_retail_volume,
-            #         'local_category_volume': local_category_volume
-            #     }
-            # })
-
-            # print('ACTIVITY_UPDATE:      '
-            #       'Updated {} at {} ({}) with activity.'.format(
-            #           place['name'],
-            #           place['address'],
-            #           place['_id']
-            #       ))
-
         try:
             update_db.insert_many(results, ordered=False)
         except Exception:
@@ -205,12 +139,22 @@ def update_activity_averages_v2(batch_size=100, wait=True, additional_query=None
                   update_time=dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
               ))
 
-        DB_TEMP.delete_many({
+        temp_db.delete_many({
             '_id': {"$in": id_list}
         })
 
 
 def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
+
+    nearby_places = get_nearby(geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
+    volume_array = [place['activity_volume'] for place in nearby_places
+                    if 'activity_volume' in place and place['activity_volume'] > 0]
+    total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
+
+    return total_volume
+
+
+def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
 
     if not terminal_db:
         terminal_db = utils.DB_TERMINAL_PLACES
@@ -229,18 +173,14 @@ def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
 
     nearby_places = list(terminal_db.find(query))
 
-    volume_array = [place['activity_volume'] for place in nearby_places
-                    if 'activity_volume' in place and place['activity_volume'] > 0]
-    total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
-
-    return total_volume
+    return nearby_places
 
 
 def ordered_update():
 
     for name in pd.read_csv('scripts/files/activity_generated/sorted_names.csv').set_index('_id').index[:1000]:
         print('Doing the following locations ' + name)
-        update_activity_averages_v2(wait=False, additional_query={
+        proximity_update('volume', wait=False, additional_query={
             'name': name
         })
 
@@ -277,8 +217,5 @@ if __name__ == "__main__":
         pool.join()
         pool.close()
 
-    # test_compile_details()g
-    # parallel_update()
-    # ordered_update()
-    # merge_update()
-    # update_activity_averages_v2(batch_size=300)
+    # setup_confidence()
+    proximity_update('confidence', wait=False)

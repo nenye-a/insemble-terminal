@@ -14,12 +14,22 @@ from locations import divide_region
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 RUN_TIME = dt.datetime.now()
 
+SEARCH_TERMS = ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
+                "bars", "arcade", "gym", "medical", "dentist", "shipping", "barber shop",
+                "salon"]
+
+UPDATE_TERMS = SEARCH_TERMS[:-1]  # for not we don't need to update barber shop
+
 
 def search_locations():
 
     opaque_locations = list(utils.DB_REGIONS.find({
-        'searched': {'$exists': False}, 'type': "msa"}
-    ).sort("rank"))
+        'type': "msa",
+        '$or': [
+            {'searched': False},
+            {'searched': {'$exists': False}},
+        ]
+    }).sort("rank"))
     eliminated_locations = list(utils.DB_REGIONS.find({
         'searched': True,
         '$or': [{'type': "msa"}, {'type': 'city-box'}]
@@ -42,8 +52,7 @@ def search_locations():
         center = utils.from_geojson(location["center"])
         viewport = (utils.from_geojson(location["viewport"]["nw"]),
                     utils.from_geojson(location["viewport"]["se"]))
-        for term in ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
-                     "bars", "arcade", "gym", "medical", "dentist", "shipping"]:
+        for term in SEARCH_TERMS:
             if 'searched_terms' in location and term in location['searched_terms']:
                 continue
             staged_finder(center, viewport, term, course_zoom=15,
@@ -95,7 +104,8 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
     """
 
     first_stage_zoom = 15
-    other_stage_zoom = 18
+    second_stage_zoom = 18
+    third_stage_zoom = 19
 
     nw, se = viewport
     run_identifier = {
@@ -136,7 +146,14 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
         _eliminate_regions(term, eliminated_regions, run_identifier, log_identifier)
 
     for next_stage in (1, 2, 3):
-        zoom = first_stage_zoom if next_stage == 1 else other_stage_zoom
+
+        if next_stage == 1:
+            zoom = first_stage_zoom
+        elif next_stage == 2:
+            zoom = second_stage_zoom
+        elif next_stage == 3:
+            zoom = third_stage_zoom
+
         stage_caller(run_identifier, term, next_stage, batch_size, zoom, log_identifier)
 
 

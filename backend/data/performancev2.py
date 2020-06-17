@@ -12,6 +12,7 @@ Performance related queries.
 
 LOCAL_RETAIL_RADIUS = 1  # miles
 LOCAL_CATEGORY_RADIUS = 3  # miles
+LOW_CONFIDENCE_VICINITY = 0.01 # miles
 BASELINE = 100  # baseline for index
 
 
@@ -378,7 +379,6 @@ def parse_details(details):
         'google_details.activity': {'$ne': None}
     })
 
-    # TODO: input all retail volume
     all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     if place:
@@ -395,10 +395,12 @@ def parse_details(details):
             'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
             'avgRating': details['rating'],
             'avgReviews': details['num_reviews'],
-            'numLocations': None
+            'numLocations': None,
+            'numNearby': place['num_nearby'] if 'num_nearby' in place else None
+            # TODO: run confidence script to prepopulate
+            #list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(place, LOW_CONFIDENCE_VICINITY)))[0]['count']
         }
     else:
-        # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
         return {
             'name': details['name'],
             'address': details['address'],
@@ -408,7 +410,8 @@ def parse_details(details):
             'nationalIndex': None,
             'avgRating': details['rating'],
             'avgReviews': details['num_reviews'],
-            'numLocations': None
+            'numLocations': None,
+            'numNearby': None
         }
 
 
@@ -426,7 +429,6 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     num_rating_sum, num_rating_count = 0, 0
     corrected_name = None
 
-    # TODO: input all retail volume
     all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     for place in list_places:
@@ -440,7 +442,9 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
              'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
              'avgRating': place['google_details']['rating'] if 'rating' in place['google_details'] else None,
              'avgReviews': place['google_details']['num_reviews'] if 'num_reviews' in place['google_details'] else None,
-             'numLocations': None}
+             'numLocations': None,
+             'numNearby': place['num_nearby'] if 'num_nearby' in place else None}
+
         corrected_name = details['name'] if not corrected_name else None
         details['name'] = details.pop('address')
         location_data.append(details)
@@ -468,6 +472,7 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
         corrected_name = default_name
 
     return {
+        # TODO: confidence level for overall comparison if a certain percentage of addresses have low confidence
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
             'customerVolumeIndex': round(customer_volume_index_sum / customer_volume_index_count) if customer_volume_index_count != 0 else None,
@@ -599,7 +604,7 @@ if __name__ == "__main__":
         print(performancev2(name, address))
 
     def test_aggregate_performance():
-        performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
+        performance_data = aggregate_performance("Starbucks", "Atlanta, GA, USA", "city")
         print(performance_data)
         print(len(performance_data['data']))
 
@@ -615,6 +620,12 @@ if __name__ == "__main__":
         # performance = category_performance(None, "Los Angeles", "County")
         print(performance['by_category'])
 
+    def test_get_immediate_vicinity_volume():
+        size = 1000
+        start = time.time()
+        [print(time.time()-start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
+         for location in utils.DB_TERMINAL_PLACES.aggregate([{"$sample": {"size": size}}]) if 'location' in location]
+
     # test_build_proximity_query()
     # test_get_local_retail_volume()
     # test_build_brand_query()
@@ -623,3 +634,4 @@ if __name__ == "__main__":
     test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()
+    # test_get_immediate_vicinity_volume()
