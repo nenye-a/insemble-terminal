@@ -61,7 +61,10 @@ export default function PinPopover(props: Props) {
             visible={!!pinTableData}
             text="Data succesfully pinned to terminal"
           />
-          <MessageAlert visible={!!pinTableError} text="Fail to pin data" />
+          <MessageAlert
+            visible={!!pinTableError}
+            text="Failed to pin data. Table may already be on terminal."
+          />
           <ListContainer>
             {terminalsData?.userTerminals.map(
               ({ id, name, pinnedFeeds }, index) => (

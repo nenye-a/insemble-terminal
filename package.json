@@ -3,7 +3,8 @@
   "scripts": {
     "start": "yarn --cwd backend-node start",
     "start:build": "yarn build && yarn start",
-    "dev": "concurrently --kill-others  \"yarn dev:backend-node\" \"yarn dev:frontend\" \"yarn dev:backend-python\"",
+    "dev": "concurrently --kill-others  \"yarn dev:backend-node\" \"yarn dev:frontend\"",
+    "dev:all": "concurrently --kill-others  \"yarn dev:backend-node\" \"yarn dev:frontend\" \"yarn dev:backend-python\"",
     "dev:backend-node": "yarn --cwd backend-node start:watch",
     "dev:backend-python": "python backend/manage.py runserver",
     "dev:frontend": "yarn --cwd frontend start",
