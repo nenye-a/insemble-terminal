@@ -2,7 +2,11 @@ import sgMail from '@sendgrid/mail';
 import fs from 'fs';
 import ejs from 'ejs';
 
-import { SENDGRID_API_KEY, CONTACT_PERSON } from '../constants/constants';
+import {
+  SENDGRID_API_KEY,
+  CONTACT_PERSON,
+  SUPPORT_EMAIL,
+} from '../constants/constants';
 
 sgMail.setApiKey(SENDGRID_API_KEY);
 
@@ -10,6 +14,7 @@ let emailVerificationTemplate = fs
   .readFileSync('src/emailTemplates/emailVerification.html')
   .toString();
 let contactUs = fs.readFileSync('src/emailTemplates/contactUs.html').toString();
+let feedback = fs.readFileSync('src/emailTemplates/feedback.html').toString();
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
@@ -67,4 +72,30 @@ async function sendContactUsEmail(
   await sgMail.send(msg);
 }
 
-export { sendVerificationEmail, sendForgotPasswordEmail, sendContactUsEmail };
+async function sendFeedbackEmail(
+  sender: { email: string; name: string },
+  feedbackContent: { title: string; detail: string; feed: string },
+) {
+  let htmlContent = ejs.render(feedback, {
+    name: sender.name,
+    email: sender.email,
+    title: feedbackContent.title,
+    detail: feedbackContent.detail,
+    feed: feedbackContent.feed,
+  });
+  let msg = {
+    to: SUPPORT_EMAIL,
+    from: 'Insemble Terminal <no-reply@insemble.co>',
+    subject: `[Feedback] ${sender.name}`,
+    text: `${sender.email} made a Feedback.`,
+    html: htmlContent,
+  };
+  await sgMail.send(msg);
+}
+
+export {
+  sendVerificationEmail,
+  sendForgotPasswordEmail,
+  sendContactUsEmail,
+  sendFeedbackEmail,
+};
