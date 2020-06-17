@@ -156,14 +156,21 @@ class PerformanceAPI(BasicAPI):
 
             # ADDRESS & CITY & COUNTY + CATEGORY
             if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
-                raw_data = performancev2.category_performance(
-                    business['params'], location['params'], location['locationType'])
                 if data_type == 'OVERALL':
-                    raw_data and data.append(raw_data['overall'])
+                    data_key = 'overall'
                 elif data_type == 'BRAND':
-                    raw_data and data.extend(raw_data['by_brand'])
+                    data_key = 'by_brand'
                 elif data_type == 'ADDRESS':
-                    raw_data and data.extend(raw_data['by_location'])
+                    data_key = 'by_location'
+                elif data_type == 'CITY':
+                    data_key = 'by_city'
+                return_type = data_key if data_key != 'overall' else None
+                raw_data = performancev2.category_performance(
+                    business['params'], location['params'], location['locationType'], return_type)
+                if data_type == 'OVERALL':
+                    raw_data and data.append(raw_data[data_key])
+                else:
+                    raw_data and data.extend(raw_data[data_key])
 
             # OTHER SCOPES UNIMPLEMENTED
             else:

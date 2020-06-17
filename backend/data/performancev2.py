@@ -2,7 +2,8 @@ import time
 import google
 import performance
 import utils
-import numpy as np
+from billiard.pool import Pool
+from functools import partial
 
 '''
 
@@ -12,7 +13,7 @@ Performance related queries.
 
 LOCAL_RETAIL_RADIUS = 1  # miles
 LOCAL_CATEGORY_RADIUS = 3  # miles
-LOW_CONFIDENCE_VICINITY = 0.01 # miles
+LOW_CONFIDENCE_VICINITY = 0.01  # miles
 BASELINE = 100  # baseline for index
 
 
@@ -308,15 +309,19 @@ def aggregate_performance(name, location, scope):
     if not matching_places:
         return None
 
-    data = combine_parse_details(matching_places)
-    if data['overall']['name'] is None:
-        data['overall']['name'] = name
+    if scope == 'county':
+        data = categorical_data(matching_places, name, 'city')
+        data.pop('by_location')
+        data['data'] = data['by_city']
+    else:
+        data = combine_parse_details(matching_places)
+        if data['overall']['name'] is None:
+            data['overall']['name'] = name
 
     return data
 
 
-def category_performance(category, location, scope):
-    exists_dict = {'$exists': True}
+def category_performance(category, location, scope, return_type):
     data_name = category if category else location
 
     if scope.lower() == 'address':
@@ -331,41 +336,49 @@ def category_performance(category, location, scope):
                 time.sleep(1 + backoff)
                 backoff += 1
 
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
+        query = {
             'location': {'$near': {'$geometry': coordinates,
                                    '$maxDistance': utils.miles_to_meters(0.5)}},
-            'type': utils.adjust_case(category) if category else exists_dict,
             'google_details': {'$exists': True}
-        }))
+        }
+        if category:
+            query['type'] = utils.adjust_case(category)
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
     elif scope.lower() == 'city':
         location_list = [word.strip() for word in location.split(',')]
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
+        query = {
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': location_list[1].upper(),
             'google_details': {'$exists': True}
-        }))
+        }
+        if category:
+            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
     elif scope.lower() == 'county':
         location_list = [word.strip() for word in location.split(',')]
         region = utils.DB_REGIONS.find_one({
             'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(), "$options": "i",
+            'state': location_list[1].upper(),
             'type': 'county'
         })
         if not region:
             return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"} if category else exists_dict,
+        query = {
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
-        }))
+        }
+        if category:
+            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
     else:
         return None
 
     if not matching_places:
         return None
 
-    return categorical_data(matching_places, data_name)
+    if return_type:
+        return_type = return_type.lower()
+    return categorical_data(matching_places, data_name, return_type)
 
 
 def parse_details(details):
@@ -415,7 +428,8 @@ def parse_details(details):
         }
 
 
-def combine_parse_details(list_places, forced_name=None, default_name=None):
+def combine_parse_details(list_places, forced_name=None,
+                          default_name=None):
     """
     Provided un-parsed places details, will generate combined report.
     """
@@ -432,21 +446,38 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
 
     for place in list_places:
-        volume = total_volume(place['google_details']['activity'])
-        details = \
-            {'name': place['name'],
-             'address': place['address'],
-             'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
-             'localRetailIndex': round(BASELINE * volume / place['local_retail_volume']) if (volume != 0 and 'local_retail_volume' in place and place['local_retail_volume'] != -1) else None,
-             'localCategoryIndex': round(BASELINE * volume / place['local_category_volume']) if (volume != 0 and 'local_category_volume' in place and place['local_category_volume'] != -1) else None,
-             'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
-             'avgRating': place['google_details']['rating'] if 'rating' in place['google_details'] else None,
-             'avgReviews': place['google_details']['num_reviews'] if 'num_reviews' in place['google_details'] else None,
-             'numLocations': None,
-             'numNearby': place['num_nearby'] if 'num_nearby' in place else None}
 
-        corrected_name = details['name'] if not corrected_name else None
-        details['name'] = details.pop('address')
+        volume = 0
+        if 'activity_volume' in place and place['activity_volume'] > 0:
+            volume = place['activity_volume']
+
+        details = {
+            'name': place['name'],
+            'address': place['address'],
+            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume)
+            if all_retail_volume else None,
+
+            'localRetailIndex': round(BASELINE * volume / place['local_retail_volume'])
+            if (volume > 0 and 'local_retail_volume' in place and place['local_retail_volume'] > 0) else None,
+
+            'localCategoryIndex': round(BASELINE * volume / place['local_category_volume'])
+            if (volume > 0 and 'local_category_volume' in place and place['local_category_volume'] > 0) else None,
+
+            'nationalIndex': round(BASELINE * volume / place['brand_volume'])
+            if (volume > 0 and 'brand_volume' in place and place['brand_volume'] > 0) else None,
+
+            'avgRating': place['google_details']['rating']
+            if 'rating' in place['google_details'] else None,
+
+            'avgReviews': place['google_details']['num_reviews']
+            if 'num_reviews' in place['google_details'] else None,
+
+            'numLocations': None
+        }
+        if not corrected_name or len(details['name']) < len(corrected_name):
+            corrected_name = details['name']
+
+        details['name'] = '{} ({})'.format(details.pop('address'), details['name'])
         location_data.append(details)
 
         if details['customerVolumeIndex']:
@@ -475,27 +506,75 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
         # TODO: confidence level for overall comparison if a certain percentage of addresses have low confidence
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
-            'customerVolumeIndex': round(customer_volume_index_sum / customer_volume_index_count) if customer_volume_index_count != 0 else None,
-            'localRetailIndex': round(local_retail_index_sum / local_retail_index_count) if local_retail_index_count != 0 else None,
-            'localCategoryIndex': round(local_category_index_sum / local_category_index_count) if local_category_index_count != 0 else None,
-            'nationalIndex': round(national_index_sum / national_index_count) if national_index_count != 0 else None,
-            'avgRating': round(rating_sum / rating_count, 1) if rating_count != 0 else None,
-            'avgReviews': round(num_rating_sum / num_rating_count) if num_rating_count != 0 else None,
+
+            'customerVolumeIndex': round(customer_volume_index_sum / customer_volume_index_count)
+            if customer_volume_index_count != 0 else None,
+
+            'localRetailIndex': round(local_retail_index_sum / local_retail_index_count)
+            if local_retail_index_count != 0 else None,
+
+            'localCategoryIndex': round(local_category_index_sum / local_category_index_count)
+            if local_category_index_count != 0 else None,
+
+            'nationalIndex': round(national_index_sum / national_index_count)
+            if national_index_count != 0 else None,
+
+            'avgRating': round(rating_sum / rating_count, 1)
+            if rating_count != 0 else None,
+
+            'avgReviews': round(num_rating_sum / num_rating_count)
+            if num_rating_count != 0 else None,
+
             'numLocations': len(location_data)
         },
         'data': location_data
     }
 
 
-def categorical_data(matching_places, data_name):
+def split_list(item, data_type):
+    if data_type == 'brand':
+        brand, location_list = item
+        result = combine_parse_details(location_list, default_name=brand)
+    elif data_type == 'category':
+        category, location_list = item
+        result = combine_parse_details(location_list, forced_name=category)
+    elif data_type == 'city':
+        city, location_list = item
+        result = combine_parse_details(location_list, forced_name=city)
+    else:
+        return None
+
+    return result
+
+
+def categorical_data(matching_places, data_name, *return_types):
 
     overall_details = combine_parse_details(matching_places)
-    brand_dict = performance.section_by_key(matching_places, 'name')
-    brand_details = [combine_parse_details(location_list, default_name=brand)['overall']
-                     for brand, location_list in brand_dict.items()]
-    category_dict = performance.section_by_key(matching_places, 'type')
-    category_details = [combine_parse_details(location_list, forced_name=category)['overall']
-                        for category, location_list in category_dict.items()]
+    brand_details = None
+    category_details = None
+    city_details = None
+
+    if None not in return_types:
+        pool_exists = False
+        try:
+            pool, pool_exists = Pool(10), True
+            if not return_types or 'by_brand' in return_types:
+                brand_dict = performance.section_by_key(matching_places, 'name')
+
+                brand_details = pool.map(partial(split_list, data_type='brand'), brand_dict.items())
+
+            if not return_types or 'by_category' in return_types:
+                category_dict = performance.section_by_key(matching_places, 'type')
+                category_details = pool.map(partial(split_list, data_type='category'), category_dict.items())
+
+            if not return_types or 'by_city' in return_types:
+                city_dict = performance.section_by_key(matching_places, 'city')
+                city_details = pool.map(partial(split_list, data_type='city'), city_dict.items())
+        except Exception as e:
+            print(e)
+        finally:
+            if pool_exists:
+                pool.terminate()
 
     overall_details['overall']['name'] = utils.adjust_case(data_name)
 
@@ -503,7 +582,8 @@ def categorical_data(matching_places, data_name):
         'overall': overall_details['overall'],
         'by_location': overall_details['data'],
         'by_brand': brand_details,
-        'by_category': category_details
+        'by_category': category_details,
+        'by_city': city_details,
     }
 
 
@@ -556,14 +636,6 @@ if __name__ == "__main__":
         place = utils.DB_TERMINAL_PLACES.find_one({})
         pipeline = build_proximity_query(place, 10, "Convenience Store")
         print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-        # print(list(utils.DB_TERMINAL_PLACES.aggregate(
-        #     [
-        #         {'$facet': {
-        #             'output1': pipeline,
-        #             'output2': pipeline
-        #         }}
-        #     ]
-        # )))
 
     def test_build_brand_query():
         place = utils.DB_TERMINAL_PLACES.find_one({})
@@ -604,7 +676,8 @@ if __name__ == "__main__":
         print(performancev2(name, address))
 
     def test_aggregate_performance():
-        performance_data = aggregate_performance("Starbucks", "Atlanta, GA, USA", "city")
+        # performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
+        performance_data = aggregate_performance("Wingstop", "Los Angeles County, CA, USA", "county")
         print(performance_data)
         print(len(performance_data['data']))
 
@@ -616,14 +689,15 @@ if __name__ == "__main__":
 
     def test_category_performance_higher_scope():
         # performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
-        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county")
+        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county", 'by_city')
         # performance = category_performance(None, "Los Angeles", "County")
-        print(performance['by_category'])
+        # print(performance['by_location'])
+        print(performance['by_city'])
 
     def test_get_immediate_vicinity_volume():
         size = 1000
         start = time.time()
-        [print(time.time()-start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
+        [print(time.time() - start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
          for location in utils.DB_TERMINAL_PLACES.aggregate([{"$sample": {"size": size}}]) if 'location' in location]
 
     # test_build_proximity_query()
@@ -631,7 +705,6 @@ if __name__ == "__main__":
     # test_build_brand_query()
     # test_build_all_query()
     # test_performance()
-    test_aggregate_performance()
+    # test_aggregate_performance()
     # test_category_performance()
-    # test_category_performance_higher_scope()
-    # test_get_immediate_vicinity_volume()
+    test_category_performance_higher_scope()
