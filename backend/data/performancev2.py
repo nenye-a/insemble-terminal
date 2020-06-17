@@ -504,7 +504,6 @@ def combine_parse_details(list_places, forced_name=None,
     if default_name and corrected_name is None:
         corrected_name = default_name
 
-    print(time.time() - start, 'loop 1')
     return {
         # TODO: confidence level for overall comparison if a certain percentage of addresses have low confidence
         'overall': {
