@@ -7,6 +7,7 @@ export type PyPerformanceData = {
   avgRating?: number;
   avgReviews?: number;
   numLocations?: number;
+  numNearby?: number;
 };
 
 export type PyPerformanceResponse = {
