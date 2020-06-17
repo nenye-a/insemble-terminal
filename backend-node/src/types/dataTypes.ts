@@ -1,3 +1,11 @@
+import {
+  TableType,
+  PerformanceType,
+  OwnershipType,
+  BusinessTag,
+  LocationTag,
+} from '@prisma/client';
+
 export type PyPerformanceData = {
   name?: string;
   customerVolumeIndex?: number;
@@ -149,3 +157,12 @@ export type LicenseToken = {
   token: string;
   linkedEmail: string;
 };
+
+export type TableParams = {
+  tableType?: TableType;
+  type?: AllTableType;
+  businessTag?: BusinessTag;
+  locationTag?: LocationTag;
+};
+
+export type AllTableType = PerformanceType | OwnershipType;
