@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
 import { TouchableOpacity, View, Button } from '../core-ui';
@@ -18,6 +18,7 @@ import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 
 type Props = {
+  mode?: 'default' | 'transparent';
   onSearchPress?: (searchTags: SearchTag) => void;
   showSearchBar?: boolean;
   defaultReviewTag?: string;
@@ -27,6 +28,7 @@ type Props = {
 
 export default function HeaderNavigationBar(props: Props) {
   let {
+    mode = 'default',
     onSearchPress,
     showSearchBar,
     defaultReviewTag,
@@ -36,7 +38,7 @@ export default function HeaderNavigationBar(props: Props) {
   let history = useHistory();
   let { isAuthenticated } = useAuth();
   return (
-    <Container>
+    <Container mode={mode}>
       <TouchableOpacity
         onPress={() => {
           history.push('/');
@@ -91,12 +93,21 @@ export default function HeaderNavigationBar(props: Props) {
   );
 }
 
-const Container = styled(View)`
+type ContainerProps = ViewProps & { mode: 'default' | 'transparent' };
+
+const Container = styled(View)<ContainerProps>`
   flex-direction: row;
   align-items: center;
   width: 100vw;
-  background-color: ${WHITE};
-  box-shadow: 0px 1px 1px 0px ${HEADER_SHADOW_COLOR};
+  ${(props) =>
+    props.mode === 'default'
+      ? css`
+          background-color: ${WHITE};
+          box-shadow: 0px 1px 1px 0px ${HEADER_SHADOW_COLOR};
+        `
+      : css`
+          background-color: transparent;
+        `}
   padding: 12px 32px;
   position: sticky;
   top: 0px;

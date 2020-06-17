@@ -23,6 +23,7 @@ export type RouteType = Omit<RouteProps, 'component'> & {
   component: React.ComponentType<any>;
   showHeader?: boolean;
   showSearchBar?: boolean;
+  headerMode?: 'default' | 'transparent';
 };
 
 export const unAuthenticatedRoutes = [
@@ -84,7 +85,8 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
     path: '/',
     exact: true,
     component: UserHomeScene,
-  }, // TODO: change component
+    headerMode: 'transparent',
+  },
   {
     path: '/results',
     component: ResultsScene,
@@ -116,6 +118,7 @@ export const authenticatedUnactiveRoutes: Array<RouteType> = [
     path: '/',
     exact: true,
     component: UserHomeScene,
+    headerMode: 'transparent',
   }, // TODO: change component
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },

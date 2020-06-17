@@ -35,6 +35,7 @@ function Routes() {
       component,
       showHeader = true,
       showSearchBar = false,
+      headerMode = 'default',
       ...routeProps
     }: RouteType,
     index: number,
@@ -47,6 +48,7 @@ function Routes() {
             component={component}
             showHeader={showHeader}
             showSearchBar={showSearchBar}
+            headerMode={headerMode}
           />
         )}
         {...routeProps}
@@ -71,10 +73,11 @@ type RouteWithTrackerProps = {
   showHeader: boolean;
   showSearchBar?: boolean;
   component: ComponentType;
+  headerMode?: 'default' | 'transparent';
 };
 
 function RouteWithTracker(props: RouteWithTrackerProps) {
-  let { showHeader, showSearchBar, component: Component } = props;
+  let { showHeader, showSearchBar, component: Component, headerMode } = props;
   let history = useHistory();
 
   useEffect(() => {
@@ -89,6 +92,7 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
           onSearchPress={(search) => {
             history.push('/results', { search });
           }}
+          mode={headerMode}
         />
       )}
       <Component />
