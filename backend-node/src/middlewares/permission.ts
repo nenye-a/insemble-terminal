@@ -32,6 +32,7 @@ let permissions = shield({
     removeMasterLicenses: isUserAuthenticated,
     incrementMaxLicense: isUserAuthenticated,
     activateAccount: isUserAuthenticated,
+    feedback: isUserAuthenticated,
   },
 });
 

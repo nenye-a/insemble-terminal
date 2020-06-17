@@ -32,3 +32,4 @@ export * from './license/masterLicenseListQuery';
 export * from './license/licenseListQuery';
 
 export * from './contactUs/contactUsMutation';
+export * from './contactUs/feedbackMutation';
