@@ -7,7 +7,7 @@ import React, {
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
 
-import { WHITE } from '../constants/colors';
+import { WHITE, THEME_COLOR } from '../constants/colors';
 import SvgClose from '../components/icons/close';
 
 import View from './View';
@@ -51,7 +51,7 @@ export default function Modal({
         >
           {!hideCloseButton && (
             <CloseIcon onPress={onClose} style={iconContainerStyle}>
-              <SvgClose {...svgCloseProps} />
+              <SvgClose style={{ color: THEME_COLOR }} {...svgCloseProps} />
             </CloseIcon>
           )}
           {children}

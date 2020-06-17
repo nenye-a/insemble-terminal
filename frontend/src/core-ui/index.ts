@@ -11,6 +11,8 @@ export { default as Link } from './Link';
 export { default as LoadingIndicator } from './LoadingIndicator';
 export { default as Modal } from './Modal';
 export { default as Pill } from './Pill';
+export { default as RadioButton } from './RadioButton';
+export { default as RadioGroup } from './RadioGroup';
 export { default as Text } from './Text';
 export { default as TextArea } from './TextArea';
 export { default as TextInput } from './TextInput';
