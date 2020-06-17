@@ -2,7 +2,6 @@ import time
 import google
 import performance
 import utils
-import numpy as np
 from billiard.pool import Pool
 from functools import partial
 
@@ -434,7 +433,6 @@ def combine_parse_details(list_places, forced_name=None,
     """
     Provided un-parsed places details, will generate combined report.
     """
-    start = time.time()
 
     location_data = []
     customer_volume_index_sum, customer_volume_index_count = 0, 0
