@@ -308,9 +308,14 @@ def aggregate_performance(name, location, scope):
     if not matching_places:
         return None
 
-    data = combine_parse_details(matching_places)
-    if data['overall']['name'] is None:
-        data['overall']['name'] = name
+    if scope == 'city':
+        data = combine_parse_details(matching_places)
+        if data['overall']['name'] is None:
+            data['overall']['name'] = name
+    elif scope == 'county':
+        data = categorical_data(matching_places, name, 'city')
+        data.pop('by_location')
+        data['data'] = data['by_city']
 
     return data
 
@@ -415,7 +420,8 @@ def parse_details(details):
         }
 
 
-def combine_parse_details(list_places, forced_name=None, default_name=None):
+def combine_parse_details(list_places, forced_name=None,
+                          default_name=None):
     """
     Provided un-parsed places details, will generate combined report.
     """
@@ -517,15 +523,27 @@ def combine_parse_details(list_places, forced_name=None, default_name=None):
     }
 
 
-def categorical_data(matching_places, data_name):
+def categorical_data(matching_places, data_name, *return_types):
 
     overall_details = combine_parse_details(matching_places)
-    brand_dict = performance.section_by_key(matching_places, 'name')
-    brand_details = [combine_parse_details(location_list, default_name=brand)['overall']
-                     for brand, location_list in brand_dict.items()]
-    category_dict = performance.section_by_key(matching_places, 'type')
-    category_details = [combine_parse_details(location_list, forced_name=category)['overall']
-                        for category, location_list in category_dict.items()]
+    brand_details = None
+    category_details = None
+    city_details = None
+
+    if not return_types or 'brand' in return_types:
+        brand_dict = performance.section_by_key(matching_places, 'name')
+        brand_details = [combine_parse_details(location_list, default_name=brand)['overall']
+                         for brand, location_list in brand_dict.items()]
+
+    if not return_types or 'category' in return_types:
+        category_dict = performance.section_by_key(matching_places, 'type')
+        category_details = [combine_parse_details(location_list, forced_name=category)['overall']
+                            for category, location_list in category_dict.items()]
+
+    if not return_types or 'city' in return_types:
+        city_dict = performance.section_by_key(matching_places, 'city')
+        city_details = [combine_parse_details(location_list, forced_name=city)['overall']
+                        for city, location_list in city_dict.items()]
 
     overall_details['overall']['name'] = utils.adjust_case(data_name)
 
@@ -533,7 +551,8 @@ def categorical_data(matching_places, data_name):
         'overall': overall_details['overall'],
         'by_location': overall_details['data'],
         'by_brand': brand_details,
-        'by_category': category_details
+        'by_category': category_details,
+        'by_city': city_details,
     }
 
 
@@ -626,7 +645,8 @@ if __name__ == "__main__":
         print(performancev2(name, address))
 
     def test_aggregate_performance():
-        performance_data = aggregate_performance("Starbucks", "Atlanta, GA, USA", "city")
+        # performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
+        performance_data = aggregate_performance("Wingstop", "Los Angeles County, CA, USA", "county")
         print(performance_data)
         print(len(performance_data['data']))
 
@@ -653,7 +673,7 @@ if __name__ == "__main__":
     # test_build_brand_query()
     # test_build_all_query()
     # test_performance()
-    # test_aggregate_performance()
+    test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()
     # test_get_immediate_vicinity_volume()
