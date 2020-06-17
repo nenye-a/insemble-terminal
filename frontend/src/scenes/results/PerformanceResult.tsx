@@ -215,7 +215,10 @@ export default function PerformanceResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      <FeedbackButton tableId={tableId} tableType={TableType.PERFORMANCE} />
+      <FeedbackButton
+        tableId={data?.performanceTable.table?.id}
+        tableType={TableType.PERFORMANCE}
+      />
     </Container>
   );
 }

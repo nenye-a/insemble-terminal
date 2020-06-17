@@ -160,7 +160,10 @@ export default function LatestNewsResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      <FeedbackButton tableId={tableId} tableType={TableType.NEWS} />
+      <FeedbackButton
+        tableId={data?.newsTable.table?.id}
+        tableType={TableType.NEWS}
+      />
     </Container>
   );
 }

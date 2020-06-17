@@ -55,7 +55,6 @@ export default function AddFeedbackModal(props: Props) {
 
   let onSubmit = (fieldValues: FieldValues) => {
     let { title, details } = fieldValues;
-    console.log(title, details, tableId, tableType);
     if (tableId) {
       sendFeedback({
         variables: {
@@ -71,15 +70,18 @@ export default function AddFeedbackModal(props: Props) {
   return (
     <Container visible={visible} onClose={onClose}>
       <Form onSubmit={handleSubmit(onSubmit)}>
+        <Title>Feedback</Title>
         <Alert visible={!!data?.feedback} text="Feedback successfully sent." />
         <Alert visible={!!error} text={error?.message || ''} />
-        <Title>Feedback</Title>
         <FeedbackRadioGroup
           options={RADIO_OPTIONS}
           onSelect={setSelectedRadio}
           selectedOption={selectedRadio}
           ref={register}
           name="title"
+          radioItemProps={{
+            ref: register,
+          }}
         />
         <TextArea label="Details (optional)" ref={register} name="details" />
         <ButtonRow>

@@ -166,7 +166,10 @@ export default function CustomerActivityResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      <FeedbackButton tableId={tableId} tableType={TableType.ACTIVITY} />
+      <FeedbackButton
+        tableId={data?.activityTable.table?.id}
+        tableType={TableType.ACTIVITY}
+      />
     </Container>
   );
 }

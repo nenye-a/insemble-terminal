@@ -146,7 +146,10 @@ export default function CoverageResult(props: Props) {
           </ContentContainer>
         ) : null}
       </View>
-      <FeedbackButton tableId={tableId} tableType={TableType.COVERAGE} />
+      <FeedbackButton
+        tableId={data?.coverageTable.id}
+        tableType={TableType.COVERAGE}
+      />
     </View>
   );
 }

@@ -93,7 +93,7 @@ export default function ContactsResult(props: Props) {
         <ContactsTable data={data?.ownershipContactTable.data} />
       )}
       <FeedbackButton
-        tableId={tableId}
+        tableId={data?.ownershipContactTable.id}
         tableType={TableType.OWNERSHIP_CONTACT}
       />
     </Container>

@@ -97,7 +97,10 @@ export default function OwnershipInformationResult(props: Props) {
           lastUpdate={data?.ownershipInfoTable.data.lastUpdate}
         />
       )}
-      <FeedbackButton tableId={tableId} tableType={TableType.OWNERSHIP_INFO} />
+      <FeedbackButton
+        tableId={data?.ownershipInfoTable.id}
+        tableType={TableType.OWNERSHIP_INFO}
+      />
     </Container>
   );
 }
