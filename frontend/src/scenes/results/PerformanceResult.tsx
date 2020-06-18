@@ -15,6 +15,8 @@ import {
   PerformanceTableType,
   ReviewTag,
   TableType,
+  LocationTagType,
+  BusinessTagType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 import { formatErrorMessage, useColoredData } from '../../helpers';
@@ -34,8 +36,8 @@ type Props = {
   pinTableId?: string;
   onPerformanceRowPress?: (param: {
     name: string;
-    isLocation: boolean;
-    isBusiness: boolean;
+    locationType?: LocationTagType;
+    businessType?: BusinessTagType;
   }) => void;
 };
 

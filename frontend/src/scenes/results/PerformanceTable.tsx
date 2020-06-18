@@ -16,7 +16,11 @@ import {
 import { Direction } from '../../types/types';
 import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
-import { PerformanceTableType } from '../../generated/globalTypes';
+import {
+  PerformanceTableType,
+  LocationTagType,
+  BusinessTagType,
+} from '../../generated/globalTypes';
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
@@ -34,8 +38,8 @@ type Props = {
   headerTitle?: string;
   onPerformanceRowPress?: (param: {
     name: string;
-    isLocation: boolean;
-    isBusiness: boolean;
+    locationType?: LocationTagType;
+    businessType?: BusinessTagType;
   }) => void;
   performanceType: PerformanceTableType;
 };
@@ -166,17 +170,15 @@ export default function PerformanceTable(props: Props) {
               }}
               onPress={() => {
                 if (onPerformanceRowPress) {
-                  if (performanceType === PerformanceTableType.ADDRESS) {
+                  if (performanceType === PerformanceTableType.CITY) {
                     onPerformanceRowPress({
                       name,
-                      isLocation: true,
-                      isBusiness: false,
+                      locationType: LocationTagType.ADDRESS,
                     });
-                  } else if (performanceType === PerformanceTableType.BRAND) {
+                  } else if (performanceType === PerformanceTableType.ADDRESS) {
                     onPerformanceRowPress({
                       name,
-                      isLocation: false,
-                      isBusiness: true,
+                      locationType: LocationTagType.ADDRESS,
                     });
                   }
                 }

@@ -60,27 +60,25 @@ export default function ResultsScene() {
 
   let onPerformanceRowPress = (params: {
     name: string;
-    isLocation: boolean;
-    isBusiness: boolean;
+    locationType?: LocationTagType;
+    businessType?: BusinessTagType;
   }) => {
-    let { name, isLocation, isBusiness } = params;
-    if (isLocation) {
+    let { name, locationType, businessType } = params;
+    if (locationType) {
       onSubmit({
         reviewTag: undefined,
-        businessTagWithId: isLocation
-          ? selectedSearchTag?.businessTagWithId
-          : null,
+        businessTagWithId: selectedSearchTag?.businessTagWithId,
         locationTag: {
           params: name,
-          type: LocationTagType.ADDRESS,
+          type: locationType,
         },
       });
-    } else if (isBusiness) {
+    } else if (businessType) {
       onSubmit({
         reviewTag: undefined,
         businessTag: {
           params: name,
-          type: BusinessTagType.BUSINESS,
+          type: businessType,
         },
         locationTag: selectedSearchTag?.locationTag,
       });
@@ -189,6 +187,7 @@ export default function ResultsScene() {
                       {...props}
                       title="By City"
                       performanceType={type}
+                      onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );
                 }
