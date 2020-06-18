@@ -14,6 +14,7 @@ import {
   GetOwnershipInfoDataVariables,
 } from '../../generated/GetOwnershipInfoData';
 import { GET_OWNERSHIP_INFO_DATA } from '../../graphql/queries/server/results';
+import { WHITE } from '../../constants/colors';
 import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
@@ -82,7 +83,9 @@ export default function OwnershipInformationResult(props: Props) {
         pinTableId={pinTableId}
       />
       {loading ? (
-        <LoadingIndicator />
+        <LoadingIndicator
+          containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
+        />
       ) : error ? (
         <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (

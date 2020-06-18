@@ -6,7 +6,6 @@ import { GREY_DIVIDER } from '../../constants/colors';
 import ResultsSection from './ResultsSection';
 import TerminalSection from './TerminalSection';
 import ContactUsSection from './ContactUsSection';
-import Footer from './Footer';
 
 export default function LandingScene() {
   return (
@@ -15,7 +14,6 @@ export default function LandingScene() {
       <TerminalSection />
       <Divider color={GREY_DIVIDER} />
       <ContactUsSection />
-      <Footer />
     </View>
   );
 }

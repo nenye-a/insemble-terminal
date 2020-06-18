@@ -170,6 +170,8 @@ export default function SearchFilterBar(props: Props) {
               defaultValue={defaultLocationTag?.params}
             />
             <TouchableOpacity
+              text="Search"
+              forwardedAs="button"
               onPress={() => {
                 let isValid = isSearchCombinationValid(
                   selectedDataType,

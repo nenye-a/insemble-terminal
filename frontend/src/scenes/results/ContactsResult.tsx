@@ -14,6 +14,7 @@ import {
   GetOwnershipContactDataVariables,
 } from '../../generated/GetOwnershipContactData';
 import { GET_OWNERSHIP_CONTACT_DATA } from '../../graphql/queries/server/results';
+import { WHITE } from '../../constants/colors';
 import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
@@ -83,7 +84,9 @@ export default function ContactsResult(props: Props) {
         pinTableId={pinTableId}
       />
       {loading ? (
-        <LoadingIndicator />
+        <LoadingIndicator
+          containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
+        />
       ) : error ? (
         <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (

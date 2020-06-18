@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom';
 
 import { View } from '../core-ui';
-import HeaderNavigationBar from '../components/HeaderNavigationBar';
+import { Footer, HeaderNavigationBar } from '../components';
 import { useAuth } from '../context';
 import { UserHomeScene } from '../scenes';
 
@@ -95,7 +95,10 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
           mode={headerMode}
         />
       )}
-      <Component />
+      <View style={{ minHeight: '90vh' }}>
+        <Component />
+      </View>
+      <Footer />
     </View>
   );
 }

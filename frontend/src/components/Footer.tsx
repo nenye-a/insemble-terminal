@@ -3,16 +3,21 @@ import ReactGA from 'react-ga';
 import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { View, Text, TouchableOpacity, Link } from '../../core-ui';
-import { useViewport } from '../../helpers';
-import { BLACK, WHITE } from '../../constants/colors';
-import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../../constants/uri';
-import { VIEWPORT_TYPE } from '../../constants/viewports';
-import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { View, Text, TouchableOpacity, Link } from '../core-ui';
+import { useViewport } from '../helpers';
+import { BLACK, WHITE } from '../constants/colors';
+import {
+  PRIVACY_POLICY_PDF,
+  TERMS_OF_SERVICE_PDF,
+  INSEMBLE_LEASING_URI,
+} from '../constants/uri';
+import { VIEWPORT_TYPE } from '../constants/viewports';
+import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import {
   TERMS_OF_SERVICE_ROUTE,
   PRIVACY_POLICY_ROUTE,
-} from '../../constants/trackEvents';
+  INSEMBLE_LEASING_ROUTE,
+} from '../constants/trackEvents';
 
 type ViewWithViewportType = ViewProps & {
   isDesktop: boolean;
@@ -54,6 +59,14 @@ export default function Footer() {
               }}
             >
               Privacy Policy
+            </WhiteLink>
+            <WhiteLink
+              href={INSEMBLE_LEASING_URI}
+              onPress={() => {
+                trackEvent(INSEMBLE_LEASING_ROUTE);
+              }}
+            >
+              Insemble Leasing
             </WhiteLink>
           </CopyrightContainer>
         )}
@@ -102,8 +115,10 @@ const CopyrightContainer = styled(View)<ViewWithViewportType>`
 
 const WhiteText = styled(Text)`
   color: ${WHITE};
+  line-height: 1.7;
 `;
 
 const WhiteLink = styled(Link)`
   color: ${WHITE};
+  line-height: 1.7;
 `;

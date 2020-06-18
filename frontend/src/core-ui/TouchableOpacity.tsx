@@ -1,6 +1,8 @@
 import React, { MouseEvent, forwardRef, Ref } from 'react';
 import styled, { css } from 'styled-components';
 
+import { isLocalUrl } from '../helpers';
+
 import View from './View';
 
 type PressHandler = () => void;
@@ -13,7 +15,7 @@ type Props = Omit<ViewProps, 'onClick'> & {
 export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
   let { onPress, href, stopPropagation, disabled, ...otherProps } = props;
   let isLink = href != null;
-  let isLocalLink = isLink && isLocalURL(href);
+  let isLocalLink = isLink && isLocalUrl(href);
   return (
     <Touchable
       as={isLink ? 'a' : undefined}
@@ -21,6 +23,15 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
       target={isLink && !isLocalLink ? '_blank' : undefined}
       disabled={disabled}
       ref={forwardedRef}
+      onKeyDown={(e: KeyboardEvent) => {
+        if (
+          (e.key === 'Enter' || e.key === 'Spacebar') &&
+          onPress &&
+          !disabled
+        ) {
+          onPress();
+        }
+      }}
       {...otherProps}
       onClick={(event: MouseEvent) => {
         if (stopPropagation) {
@@ -67,9 +78,3 @@ const Touchable = styled(View)<ViewProps>`
     opacity: 0.5;
   }
 `;
-
-function isLocalURL(link: string) {
-  let firstChar = link.charAt(0);
-  // TODO: More comprehensive implementation of this?
-  return firstChar === '.' || firstChar === '/';
-}

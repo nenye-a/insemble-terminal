@@ -2,6 +2,7 @@ export { default as DataTable } from './DataTable';
 export { default as ComparisonPopover } from './ComparisonPopover';
 export { default as EmptyDataComponent } from './EmptyDataComponent';
 export { default as ErrorComponent } from './ErrorComponent';
+export { default as Footer } from './Footer';
 export { default as HeaderNavigationBar } from './HeaderNavigationBar';
 export { default as InsembleLogo } from './InsembleLogo';
 export { default as PageTitle } from './PageTitle';
