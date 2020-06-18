@@ -34,7 +34,7 @@ export let shareTerminalResolver: FieldResolver<
   if (terminal.user.id !== context.userId) {
     throw new Error('This is not your terminal.');
   }
-  let expireDay = 30;
+  let expireDay = 10;
   let sharedTerminal;
   let sharedTerminals = await context.prisma.sharedTerminal.findMany({
     where: {
