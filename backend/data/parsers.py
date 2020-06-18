@@ -649,11 +649,12 @@ def google_news_parser(response):
             link = re.search(LINK_NARROW_RX, re.search(LINK_LOCATOR_RX, beef).group()).group()
         except Exception:
             if og_title:
-                LINK_LOCATOR_RX_2 = r'{}[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\/]+'.format(og_title)
+                encoded_title = title.replace('&amp;','\u0026')
+                LINK_LOCATOR_RX_2 = r'{}(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\/\’])|(\\\"))+'.format(encoded_title)
                 LINK_NARROW_RX_2 = r'"http[\s\w\=\;\:\-\.\?\&\%\(\)\—\|\+\[\]\*\#\'\/]+"'
 
                 try:
-                    link = re.search(LINK_NARROW_RX_2, re.search(LINK_LOCATOR_RX_2, stew).group()).group()[1:-1]
+                    link = re.findall(LINK_NARROW_RX_2, re.search(LINK_LOCATOR_RX_2, stew).group())[0][1:-1]
                     link = link if 'google.com' not in link else None
                 except:
                     link = None
