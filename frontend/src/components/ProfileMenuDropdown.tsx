@@ -17,9 +17,11 @@ import {
 } from '../constants/theme';
 import arrowIcon from '../assets/images/arrow-down.svg';
 import { useAuth } from '../context/AuthContext';
+import AddFeedbackModal from '../scenes/results/AddFeedbackModal';
 
 export default function ProfileMenuDropdown() {
   let [menuOpen, setMenuOpen] = useState(false);
+  let [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
   let { user, logout } = useAuth();
   let history = useHistory();
   let logoutMenu = {
@@ -39,7 +41,7 @@ export default function ProfileMenuDropdown() {
     {
       label: 'Give Feedback',
       onPress: () => {
-        history.push('/contact-us');
+        setFeedbackModalVisible(true);
       },
     },
     {
@@ -60,53 +62,61 @@ export default function ProfileMenuDropdown() {
   ];
   const MENUS = user?.role === 'ADMIN' ? ADMIN_MENUS : USER_MENUS;
   return (
-    <ClickAway
-      onClickAway={() => {
-        setMenuOpen(false);
-      }}
-    >
-      <TouchableContainer
-        isOpen={menuOpen}
-        onPress={() => {
-          setMenuOpen(!menuOpen);
+    <>
+      <AddFeedbackModal
+        visible={feedbackModalVisible}
+        onClose={() => {
+          setFeedbackModalVisible(false);
+        }}
+      />
+      <ClickAway
+        onClickAway={() => {
+          setMenuOpen(false);
         }}
       >
-        <Placeholder>{user?.firstName}</Placeholder>
-        <ArrowIcon src={arrowIcon} alt="arrow-icon" isOpen={menuOpen} />
-      </TouchableContainer>
-      {menuOpen && (
-        <View style={{ zIndex: 99 }}>
-          <MenuWrapper>
-            <Header>
-              <Text
-                color={WHITE}
-                fontSize={FONT_SIZE_SEMI_MEDIUM}
-                fontWeight={FONT_WEIGHT_MEDIUM}
-              >
-                {user?.firstName}
-              </Text>
-              <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
-                {user?.email}
-              </Text>
-            </Header>
-            {MENUS.map(({ label, onPress }, index) => {
-              let lastIndex = index === MENUS.length - 1;
-              return (
-                <OptionContainer key={index} onPress={onPress}>
-                  <Text
-                    fontWeight={FONT_WEIGHT_MEDIUM}
-                    color={lastIndex ? THEME_COLOR : DARK_TEXT_COLOR}
-                    fontSize={FONT_SIZE_SEMI_MEDIUM}
-                  >
-                    {label}
-                  </Text>
-                </OptionContainer>
-              );
-            })}
-          </MenuWrapper>
-        </View>
-      )}
-    </ClickAway>
+        <TouchableContainer
+          isOpen={menuOpen}
+          onPress={() => {
+            setMenuOpen(!menuOpen);
+          }}
+        >
+          <Placeholder>{user?.firstName}</Placeholder>
+          <ArrowIcon src={arrowIcon} alt="arrow-icon" isOpen={menuOpen} />
+        </TouchableContainer>
+        {menuOpen && (
+          <View style={{ zIndex: 99 }}>
+            <MenuWrapper>
+              <Header>
+                <Text
+                  color={WHITE}
+                  fontSize={FONT_SIZE_SEMI_MEDIUM}
+                  fontWeight={FONT_WEIGHT_MEDIUM}
+                >
+                  {user?.firstName}
+                </Text>
+                <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
+                  {user?.email}
+                </Text>
+              </Header>
+              {MENUS.map(({ label, onPress }, index) => {
+                let lastIndex = index === MENUS.length - 1;
+                return (
+                  <OptionContainer key={index} onPress={onPress}>
+                    <Text
+                      fontWeight={FONT_WEIGHT_MEDIUM}
+                      color={lastIndex ? THEME_COLOR : DARK_TEXT_COLOR}
+                      fontSize={FONT_SIZE_SEMI_MEDIUM}
+                    >
+                      {label}
+                    </Text>
+                  </OptionContainer>
+                );
+              })}
+            </MenuWrapper>
+          </View>
+        )}
+      </ClickAway>
+    </>
   );
 }
 

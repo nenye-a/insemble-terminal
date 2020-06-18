@@ -17,6 +17,7 @@ import { formatErrorMessage, useColoredData } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import NewsTable from './NewsTable';
+import FeedbackButton from './FeedbackButton';
 
 type Props = {
   businessTagId?: string;
@@ -159,6 +160,10 @@ export default function LatestNewsResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
+      <FeedbackButton
+        tableId={data?.newsTable.table?.id}
+        tableType={TableType.NEWS}
+      />
     </Container>
   );
 }

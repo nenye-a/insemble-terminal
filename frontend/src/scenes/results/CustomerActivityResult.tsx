@@ -17,6 +17,7 @@ import { formatErrorMessage, useColoredData } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ActivityChart from './ActivityChart';
+import FeedbackButton from './FeedbackButton';
 
 type Props = {
   businessTagId?: string;
@@ -165,6 +166,10 @@ export default function CustomerActivityResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
+      <FeedbackButton
+        tableId={data?.activityTable.table?.id}
+        tableType={TableType.ACTIVITY}
+      />
     </Container>
   );
 }

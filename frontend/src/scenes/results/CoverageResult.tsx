@@ -22,6 +22,7 @@ import { GET_COVERAGE_DATA } from '../../graphql/queries/server/results';
 import CoverageTable from './CoverageTable';
 import CoverageMap from './CoverageMap';
 import ResultTitle from './ResultTitle';
+import FeedbackButton from './FeedbackButton';
 
 type Props = {
   businessTagId?: string;
@@ -145,6 +146,10 @@ export default function CoverageResult(props: Props) {
           </ContentContainer>
         ) : null}
       </View>
+      <FeedbackButton
+        tableId={data?.coverageTable.id}
+        tableType={TableType.COVERAGE}
+      />
     </View>
   );
 }

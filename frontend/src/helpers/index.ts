@@ -7,6 +7,7 @@ export { default as getResultQueries } from './getResultQueries';
 export { default as getResultTitle } from './getResultTitle';
 export { default as getTextColor } from './getTextColor';
 export { default as getViewportType } from './getViewportType';
+export * from './isEqual';
 export { default as isLocalUrl } from './isLocalUrl';
 export { default as isSearchCombinationValid } from './isSearchCombinationValid';
 export { default as lightenOrDarkenColor } from './lightenOrDarkenColor';
