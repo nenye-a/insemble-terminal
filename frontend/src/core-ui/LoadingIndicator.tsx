@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 import styled, { css } from 'styled-components';
 
 import loadingWhite from '../assets/images/loading-white.gif';
@@ -15,6 +15,7 @@ type Props = ViewProps & {
   visible?: boolean;
   size?: IconSize;
   text?: string;
+  containerStyle?: CSSProperties;
 };
 
 type IconProps = {
@@ -29,12 +30,17 @@ export default function LoadingIndicator(props: Props) {
     visible = true,
     size = 'small' as IconSize,
     text,
+    containerStyle,
     ...otherProps
   } = props;
 
   if (visible) {
     return (
-      <LoadingIndicatorContainer mode={mode} {...otherProps}>
+      <LoadingIndicatorContainer
+        mode={mode}
+        style={containerStyle}
+        {...otherProps}
+      >
         <Icon
           src={color === 'white' ? loadingWhite : loadingPurple}
           size={ICON_SIZES[size]}
@@ -60,7 +66,7 @@ const Icon = styled.img<IconProps>`
 const LoadingIndicatorContainer = styled(View)<ContainerProps>`
   padding: 6px;
   align-items: center;
-  justify-content: 'center';
+  justify-content: center;
   ${(props) =>
     props.mode === 'overlap' &&
     css`
@@ -70,7 +76,6 @@ const LoadingIndicatorContainer = styled(View)<ContainerProps>`
       z-index: 5;
       width: 100%;
       height: 100%;
-      justify-content: center;
       min-height: 30px;
     `}
 `;

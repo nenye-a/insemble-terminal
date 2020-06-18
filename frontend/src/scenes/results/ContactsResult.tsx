@@ -18,6 +18,7 @@ import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ContactsTable from './ContactsTable';
+import { WHITE } from '../../constants/colors';
 
 type Props = {
   businessTagId?: string;
@@ -83,7 +84,9 @@ export default function ContactsResult(props: Props) {
         pinTableId={pinTableId}
       />
       {loading ? (
-        <LoadingIndicator />
+        <LoadingIndicator
+          containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
+        />
       ) : error ? (
         <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (

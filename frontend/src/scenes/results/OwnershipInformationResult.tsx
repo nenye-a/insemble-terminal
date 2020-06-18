@@ -18,6 +18,7 @@ import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import OwnershipInformationCard from './OwnershipInformationCard';
+import { WHITE } from '../../constants/colors';
 
 type Props = {
   businessTagId?: string;
@@ -82,7 +83,9 @@ export default function OwnershipInformationResult(props: Props) {
         pinTableId={pinTableId}
       />
       {loading ? (
-        <LoadingIndicator />
+        <LoadingIndicator
+          containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
+        />
       ) : error ? (
         <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : noData ? (
