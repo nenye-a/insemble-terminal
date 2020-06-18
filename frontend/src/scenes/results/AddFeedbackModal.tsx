@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useForm, FieldValues } from 'react-hook-form';
 import { useMutation } from '@apollo/react-hooks';
@@ -44,12 +44,14 @@ export default function AddFeedbackModal(props: Props) {
   let { visible, onClose, tableId, tableType } = props;
   let { register, handleSubmit, reset } = useForm();
   let [selectedRadio, setSelectedRadio] = useState(RADIO_OPTIONS[0]);
+  let [message, setMessage] = useState('');
   let [sendFeedback, { loading, data, error }] = useMutation<
     SendFeedback,
     SendFeedbackVariables
   >(SEND_FEEDBACK, {
     onCompleted: () => {
       reset();
+      setSelectedRadio(RADIO_OPTIONS[0]);
     },
   });
 
@@ -65,12 +67,24 @@ export default function AddFeedbackModal(props: Props) {
     });
   };
 
+  useEffect(() => {
+    if (error) {
+      setMessage(error.message);
+    } else if (data) {
+      setMessage('Feedback successfully sent.');
+    }
+  }, [data, error]);
+
+  useEffect(() => {
+    // clean up the message when modal re-opened
+    setMessage('');
+  }, [visible]);
+
   return (
     <Container visible={visible} onClose={onClose}>
       <Form onSubmit={handleSubmit(onSubmit)}>
         <Title>Feedback</Title>
-        <Alert visible={!!data?.feedback} text="Feedback successfully sent." />
-        <Alert visible={!!error} text={error?.message || ''} />
+        <Alert visible={!!message} text={message} />
         <FeedbackRadioGroup
           options={RADIO_OPTIONS}
           onSelect={setSelectedRadio}
