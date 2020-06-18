@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 import { View, Divider, LoadingIndicator } from '../../core-ui';
 import {
@@ -35,13 +35,20 @@ type SearchState = {
 
 export default function ResultsScene() {
   let history = useHistory<SearchState>();
+  let { searchId } = useParams();
   let [
     submitSearch,
     { data: submitSearchData, loading: submitSearchLoading },
   ] = useMutation<Search, SearchVariables>(SEARCH, {
     onError: () => {},
     onCompleted: ({ search }) => {
-      history.push('/results/' + search.searchId);
+      history.push('/results/' + search.searchId, {
+        search: {
+          businessTagWithId: search.businessTag,
+          locationTag: search.locationTag,
+          reviewTag: search.reviewTag,
+        },
+      });
     },
   });
   let [selectedSearchTag, setSelectedSearchTag] = useState<SearchTag>();
@@ -89,6 +96,12 @@ export default function ResultsScene() {
       });
     }
   };
+  useEffect(() => {
+    if (history?.location?.state?.search) {
+      setSelectedSearchTag(history.location.state.search);
+      onSubmit(history.location.state.search);
+    }
+  }, [searchId]);
 
   useEffect(() => {
     if (submitSearchData) {
