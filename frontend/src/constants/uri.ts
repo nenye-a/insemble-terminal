@@ -11,3 +11,5 @@ export const PRIVACY_POLICY_PDF =
 
 export const TERMS_OF_SERVICE_PDF =
   'https://drive.google.com/file/d/1F5M5EBp_vaU_ejobrqh5RCvYG9akqEKx/view';
+
+export const INSEMBLE_LEASING_URI = 'https://leasing.insemble.co/';
