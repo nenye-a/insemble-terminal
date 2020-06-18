@@ -5,6 +5,7 @@ export * from './auth/userProfileQuery';
 export * from './auth/editUserProfileMutation';
 
 export * from './search/searchMutation';
+export * from './search/searchQuery';
 export * from './compare/updateComparisonMutation';
 export * from './compare/deleteComparisonMutation';
 export * from './tags/businessTagsQuery';

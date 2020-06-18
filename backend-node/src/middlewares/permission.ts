@@ -19,6 +19,7 @@ let permissions = shield({
     performanceTable: isUserAuthenticated,
     ownershipContactTable: isUserAuthenticated,
     ownershipInfoTable: isUserAuthenticated,
+    search: isUserAuthenticated,
   },
   Mutation: {
     editUserProfile: isUserAuthenticated,
