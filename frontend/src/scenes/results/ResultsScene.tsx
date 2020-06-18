@@ -40,6 +40,9 @@ export default function ResultsScene() {
     { data: submitSearchData, loading: submitSearchLoading },
   ] = useMutation<Search, SearchVariables>(SEARCH, {
     onError: () => {},
+    onCompleted: ({ search }) => {
+      history.push('/results/' + search.searchId);
+    },
   });
   let [selectedSearchTag, setSelectedSearchTag] = useState<SearchTag>();
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
@@ -89,8 +92,14 @@ export default function ResultsScene() {
 
   useEffect(() => {
     if (submitSearchData) {
-      let { reviewTag, businessTag, locationTag } = submitSearchData.search;
+      let {
+        reviewTag,
+        businessTag,
+        locationTag,
+        searchId,
+      } = submitSearchData.search;
       let queries = getResultQueries({
+        searchId,
         reviewTag,
         businessTag,
         locationTag,

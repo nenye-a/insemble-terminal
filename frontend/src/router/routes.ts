@@ -59,7 +59,7 @@ export const authenticatedRoutes: Array<RouteType> = [
     component: UserHomeScene,
   }, // TODO: change component
   {
-    path: '/results',
+    path: '/results/:searchId',
     component: ResultsScene,
     showHeader: false,
     showSearchBar: true,
