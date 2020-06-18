@@ -142,11 +142,6 @@ export default function PerformanceResult(props: Props) {
   }, [data]);
 
   useEffect(() => {
-    if (error) {
-    }
-  }, [error]);
-
-  useEffect(() => {
     startPolling(POLL_INTERVAL);
     return stopPolling;
     // eslint-disable-next-line react-hooks/exhaustive-deps

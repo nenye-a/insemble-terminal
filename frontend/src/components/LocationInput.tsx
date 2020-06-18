@@ -99,7 +99,6 @@ export default function LocationInput(props: Props) {
       placeholder={placeholder}
       onSubmit={submitHandler}
       label={label}
-      defaultValue={defaultValue}
       containerStyle={{
         flex: 1,
         justifyContent: 'center',
