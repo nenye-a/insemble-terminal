@@ -14,11 +14,11 @@ import {
   GetOwnershipInfoDataVariables,
 } from '../../generated/GetOwnershipInfoData';
 import { GET_OWNERSHIP_INFO_DATA } from '../../graphql/queries/server/results';
+import { WHITE } from '../../constants/colors';
 import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import OwnershipInformationCard from './OwnershipInformationCard';
-import { WHITE } from '../../constants/colors';
 
 type Props = {
   businessTagId?: string;

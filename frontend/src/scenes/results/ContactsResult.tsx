@@ -14,11 +14,11 @@ import {
   GetOwnershipContactDataVariables,
 } from '../../generated/GetOwnershipContactData';
 import { GET_OWNERSHIP_CONTACT_DATA } from '../../graphql/queries/server/results';
+import { WHITE } from '../../constants/colors';
 import { formatErrorMessage } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ContactsTable from './ContactsTable';
-import { WHITE } from '../../constants/colors';
 
 type Props = {
   businessTagId?: string;
