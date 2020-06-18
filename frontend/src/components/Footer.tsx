@@ -3,16 +3,16 @@ import ReactGA from 'react-ga';
 import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { View, Text, TouchableOpacity, Link } from '../../core-ui';
-import { useViewport } from '../../helpers';
-import { BLACK, WHITE } from '../../constants/colors';
-import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../../constants/uri';
-import { VIEWPORT_TYPE } from '../../constants/viewports';
-import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { View, Text, TouchableOpacity, Link } from '../core-ui';
+import { useViewport } from '../helpers';
+import { BLACK, WHITE } from '../constants/colors';
+import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../constants/uri';
+import { VIEWPORT_TYPE } from '../constants/viewports';
+import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import {
   TERMS_OF_SERVICE_ROUTE,
   PRIVACY_POLICY_ROUTE,
-} from '../../constants/trackEvents';
+} from '../constants/trackEvents';
 
 type ViewWithViewportType = ViewProps & {
   isDesktop: boolean;
