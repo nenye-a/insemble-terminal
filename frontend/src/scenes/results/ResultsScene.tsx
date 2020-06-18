@@ -42,13 +42,19 @@ export default function ResultsScene() {
   ] = useMutation<Search, SearchVariables>(SEARCH, {
     onError: () => {},
     onCompleted: ({ search }) => {
-      history.push('/results/' + search.searchId, {
-        search: {
-          businessTagWithId: search.businessTag,
-          locationTag: search.locationTag,
-          reviewTag: search.reviewTag,
-        },
-      });
+      if (search.reviewTag)
+        history.push('/results/' + search.searchId, {
+          search: {
+            businessTagWithId: search.businessTag,
+            locationTag: search.locationTag
+              ? {
+                  params: search.locationTag.params,
+                  type: search.locationTag.type,
+                }
+              : null,
+            reviewTag: search.reviewTag,
+          },
+        });
     },
   });
   let [selectedSearchTag, setSelectedSearchTag] = useState<SearchTag>();
@@ -99,7 +105,6 @@ export default function ResultsScene() {
   useEffect(() => {
     if (history?.location?.state?.search) {
       setSelectedSearchTag(history.location.state.search);
-      onSubmit(history.location.state.search);
     }
   }, [searchId]);
 
