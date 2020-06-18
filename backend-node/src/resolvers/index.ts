@@ -22,6 +22,8 @@ export * from './terminal/createTerminalMutation';
 export * from './terminal/deleteTerminalMutation';
 export * from './terminal/pinTableMutation';
 export * from './terminal/removePinnedTableMutation';
+export * from './terminal/shareTerminalMutation';
+export * from './terminal/sharedTerminalQuery';
 
 export * from './license/createLicenseMutation';
 export * from './license/activateAccountMutation';
