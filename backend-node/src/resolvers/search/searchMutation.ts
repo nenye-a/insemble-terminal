@@ -65,7 +65,7 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
     }
   }
 
-  await context.prisma.searchLog.create({
+  let search = await context.prisma.searchLog.create({
     data: {
       reviewTag,
       businessTag: selectedBusinessTag
@@ -79,6 +79,7 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
   });
 
   return {
+    searchId: search.id,
     reviewTag,
     businessTag: selectedBusinessTag,
     locationTag: selectedLocationTag,
