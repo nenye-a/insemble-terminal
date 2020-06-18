@@ -13,6 +13,7 @@ export const SEARCH = gql`
       businessTagId: $businessTagId
       locationTag: $locationTag
     ) {
+      searchId
       reviewTag
       businessTag {
         id
