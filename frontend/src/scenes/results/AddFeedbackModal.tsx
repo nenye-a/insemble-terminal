@@ -30,7 +30,7 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   tableId?: string;
-  tableType: TableType;
+  tableType?: TableType;
 };
 
 const RADIO_OPTIONS = [
@@ -55,16 +55,14 @@ export default function AddFeedbackModal(props: Props) {
 
   let onSubmit = (fieldValues: FieldValues) => {
     let { title, details } = fieldValues;
-    if (tableId) {
-      sendFeedback({
-        variables: {
-          tableId,
-          tableType,
-          feedbackTitle: title,
-          feedbackDetail: details,
-        },
-      });
-    }
+    sendFeedback({
+      variables: {
+        tableId,
+        tableType,
+        feedbackTitle: title,
+        feedbackDetail: details,
+      },
+    });
   };
 
   return (

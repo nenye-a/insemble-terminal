@@ -77,34 +77,11 @@ export const authenticatedRoutes: Array<RouteType> = [
   },
   { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
+  { path: '/send-feedback', component: ContactUsScene },
 ];
 
 export const authenticatedAdminRoutes: Array<RouteType> = [
-  {
-    path: '/',
-    exact: true,
-    component: UserHomeScene,
-    headerMode: 'transparent',
-  },
-  {
-    path: '/results',
-    component: ResultsScene,
-    showHeader: false,
-  },
-  {
-    path: '/terminals',
-    component: TerminalHomeScene,
-    exact: true,
-    showSearchBar: true,
-  },
-  {
-    path: '/terminals/:terminalId',
-    component: TerminalDetailScene,
-    showSearchBar: true,
-  },
-  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
-  { path: '/edit-profile', component: EditProfileScene },
-
+  ...authenticatedRoutes,
   {
     path: '/manage-token/:param',
     component: ManageTokenScene,
