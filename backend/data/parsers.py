@@ -639,14 +639,26 @@ def google_news_parser(response):
         beef = match.group()
 
         try:
-            title = utils.format_punct(re.search(TITLE_NARROW_RX, re.search(TITLE_LOCATOR_RX, beef).group()).group()[1:])
+            og_title = re.search(TITLE_NARROW_RX, re.search(TITLE_LOCATOR_RX, beef).group()).group()[1:]
+            title = utils.format_punct(og_title)
         except Exception:
+            og_title = None
             title = None
 
         try:
             link = re.search(LINK_NARROW_RX, re.search(LINK_LOCATOR_RX, beef).group()).group()
         except Exception:
-            link = None
+            if og_title:
+                LINK_LOCATOR_RX_2 = r'{}[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\/]+'.format(og_title)
+                LINK_NARROW_RX_2 = r'"http[\s\w\=\;\:\-\.\?\&\%\(\)\—\|\+\[\]\*\#\'\/]+"'
+
+                try:
+                    link = re.search(LINK_NARROW_RX_2, re.search(LINK_LOCATOR_RX_2, stew).group()).group()[1:-1]
+                    link = link if 'google.com' not in link else None
+                except:
+                    link = None
+            else:
+                link = None
 
         try:
             source = utils.format_punct(re.search(SOURCE_NARROW_RX, re.search(SOURCE_LOCATOR_RX, beef).group()).group()[1:])
