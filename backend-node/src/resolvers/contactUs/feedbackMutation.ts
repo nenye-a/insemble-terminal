@@ -19,76 +19,80 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
   if (!user) {
     throw new Error('User not found');
   }
-  let table;
-  let type: undefined | AllTableType;
-  switch (tableType) {
-    case 'ACTIVITY':
-      table = await context.prisma.activity.findOne({
-        where: { id: tableId },
-        include: {
-          businessTag: true,
-          locationTag: true,
-        },
-      });
-      break;
-    case 'COVERAGE':
-      table = await context.prisma.coverage.findOne({
-        where: { id: tableId },
-        include: {
-          businessTag: true,
-          locationTag: true,
-        },
-      });
-      break;
-    case 'NEWS':
-      table = await context.prisma.news.findOne({
-        where: { id: tableId },
-        include: {
-          businessTag: true,
-          locationTag: true,
-        },
-      });
-      break;
-    case 'OWNERSHIP_CONTACT':
-      table = await context.prisma.ownershipContact.findOne({
-        where: { id: tableId },
-        include: {
-          businessTag: true,
-          locationTag: true,
-        },
-      });
-      type = table.type;
-      break;
-    case 'OWNERSHIP_INFO':
-      table = await context.prisma.ownershipInfo.findOne({
-        where: { id: tableId },
-        include: {
-          businessTag: true,
-          locationTag: true,
-        },
-      });
-      type = table.type;
-      break;
-    case 'PERFORMANCE':
-      table = await context.prisma.performance.findOne({
-        where: { id: tableId },
-        include: {
-          businessTag: true,
-          locationTag: true,
-        },
-      });
-      type = table.type;
-      break;
+
+  let feed = 'General';
+  if (tableType && tableId) {
+    let table;
+    let type: undefined | AllTableType;
+    switch (tableType) {
+      case 'ACTIVITY':
+        table = await context.prisma.activity.findOne({
+          where: { id: tableId },
+          include: {
+            businessTag: true,
+            locationTag: true,
+          },
+        });
+        break;
+      case 'COVERAGE':
+        table = await context.prisma.coverage.findOne({
+          where: { id: tableId },
+          include: {
+            businessTag: true,
+            locationTag: true,
+          },
+        });
+        break;
+      case 'NEWS':
+        table = await context.prisma.news.findOne({
+          where: { id: tableId },
+          include: {
+            businessTag: true,
+            locationTag: true,
+          },
+        });
+        break;
+      case 'OWNERSHIP_CONTACT':
+        table = await context.prisma.ownershipContact.findOne({
+          where: { id: tableId },
+          include: {
+            businessTag: true,
+            locationTag: true,
+          },
+        });
+        type = table.type;
+        break;
+      case 'OWNERSHIP_INFO':
+        table = await context.prisma.ownershipInfo.findOne({
+          where: { id: tableId },
+          include: {
+            businessTag: true,
+            locationTag: true,
+          },
+        });
+        type = table.type;
+        break;
+      case 'PERFORMANCE':
+        table = await context.prisma.performance.findOne({
+          where: { id: tableId },
+          include: {
+            businessTag: true,
+            locationTag: true,
+          },
+        });
+        type = table.type;
+        break;
+    }
+    if (!table) {
+      throw new Error('Table not found');
+    }
+    feed = getFeedString({
+      tableType,
+      type,
+      businessTag: table.businessTag,
+      locationTag: table.locationTag,
+    });
   }
-  if (!table) {
-    throw new Error('Table not found');
-  }
-  let feed = getFeedString({
-    tableType,
-    type,
-    businessTag: table.businessTag,
-    locationTag: table.locationTag,
-  });
   let name = `${user.firstName} ${user.lastName}`;
   await context.prisma.feedBack.create({
     data: {
@@ -124,8 +128,8 @@ export let feedback = mutationField('feedback', {
   args: {
     feedbackTitle: stringArg({ required: true }),
     feedbackDetail: stringArg(),
-    tableType: arg({ type: 'TableType', required: true }),
-    tableId: stringArg({ required: true }),
+    tableType: arg({ type: 'TableType' }),
+    tableId: stringArg(),
   },
   resolve: feedbackResolver,
 });
