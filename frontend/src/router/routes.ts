@@ -15,6 +15,7 @@ import {
   VerificationFailedScene,
   ManageTokenScene,
   UserHomeScene,
+  SharedTerminalDetailScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -23,15 +24,28 @@ export type RouteType = Omit<RouteProps, 'component'> & {
   showHeader?: boolean;
   showSearchBar?: boolean;
   headerMode?: 'default' | 'transparent';
+  readOnly?: boolean;
 };
 
+export const allAccessRoutes = [
+  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
+  {
+    path: '/shared/:sharedTerminalId',
+    component: SharedTerminalDetailScene,
+    readOnly: true,
+    showHeader: true,
+    showSearchBar: true,
+  },
+];
+
 export const unAuthenticatedRoutes = [
+  ...allAccessRoutes,
   {
     path: '/',
     exact: true,
     component: LandingScene,
     showSearchBar: false,
-  }, // TODO: change component
+  },
   { path: '/signup', component: SignUpScene, showSearchBar: false },
   { path: '/login', component: LoginScene, showSearchBar: false },
   {
@@ -49,15 +63,15 @@ export const unAuthenticatedRoutes = [
     component: VerificationFailedScene,
     showSearchBar: false,
   },
-  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
 ];
 
 export const authenticatedRoutes: Array<RouteType> = [
+  ...allAccessRoutes,
   {
     path: '/',
     exact: true,
     component: UserHomeScene,
-  }, // TODO: change component
+  },
   {
     path: '/results',
     component: ResultsScene,
@@ -83,7 +97,6 @@ export const authenticatedRoutes: Array<RouteType> = [
     component: TerminalDetailScene,
     showSearchBar: true,
   },
-  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
   { path: '/edit-profile', component: EditProfileScene },
   { path: '/send-feedback', component: ContactUsScene },
 ];
@@ -98,13 +111,13 @@ export const authenticatedAdminRoutes: Array<RouteType> = [
 ];
 
 export const authenticatedUnactiveRoutes: Array<RouteType> = [
+  ...allAccessRoutes,
   {
     path: '/',
     exact: true,
     component: UserHomeScene,
     headerMode: 'transparent',
-  }, // TODO: change component
-  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
+  },
   { path: '/edit-profile', component: EditProfileScene },
   { path: '/activation', component: ActivationScene, showSearchBar: false },
 ];

@@ -16,6 +16,7 @@ import { SearchTag, BusinessTagResult } from '../types/types';
 import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
+import ReadOnlyBanner from './ReadOnlyBanner';
 
 type Props = {
   mode?: 'default' | 'transparent';
@@ -24,6 +25,7 @@ type Props = {
   defaultReviewTag?: string;
   defaultBusinessTag?: BusinessTagResult | BusinessTag | string;
   defaultLocationTag?: LocationTagInput;
+  readOnly?: boolean;
 };
 
 export default function HeaderNavigationBar(props: Props) {
@@ -34,61 +36,65 @@ export default function HeaderNavigationBar(props: Props) {
     defaultReviewTag,
     defaultBusinessTag,
     defaultLocationTag,
+    readOnly,
   } = props;
   let history = useHistory();
   let { isAuthenticated } = useAuth();
   return (
     <Container mode={mode}>
-      <TouchableOpacity
-        onPress={() => {
-          history.push('/');
-        }}
-      >
-        <InsembleLogo color="purple" />
-      </TouchableOpacity>
-      {showSearchBar ? (
-        <SearchContainer flex>
-          <SearchFilterBar
-            onSearchPress={onSearchPress}
-            defaultReviewTag={defaultReviewTag}
-            defaultBusinessTag={defaultBusinessTag}
-            defaultLocationTag={defaultLocationTag}
-          />
-        </SearchContainer>
-      ) : (
-        <View flex />
-      )}
-      {isAuthenticated ? (
-        <RowEnd>
-          <TerminalButton
-            mode="transparent"
-            text="Terminals"
-            textProps={{ style: { color: DARK_TEXT_COLOR } }}
-            onPress={() => {
-              history.push('/terminals');
-            }}
-          />
-          <ProfileMenuDropdown />
-        </RowEnd>
-      ) : (
-        <RowEnd>
-          <Button
-            shape="round"
-            mode="secondary"
-            text="Sign in"
-            onPress={() => {
-              history.push('/login');
-            }}
-          />
-          <SignUpButton
-            shape="round"
-            text="Contact us"
-            onPress={() => {
-              history.push('/contact-us');
-            }}
-          />
-        </RowEnd>
-      )}
+      {readOnly && <ReadOnlyBanner />}
+      <Row>
+        <TouchableOpacity
+          onPress={() => {
+            history.push('/');
+          }}
+        >
+          <InsembleLogo color="purple" />
+        </TouchableOpacity>
+        {showSearchBar ? (
+          <SearchContainer flex>
+            <SearchFilterBar
+              onSearchPress={onSearchPress}
+              defaultReviewTag={defaultReviewTag}
+              defaultBusinessTag={defaultBusinessTag}
+              defaultLocationTag={defaultLocationTag}
+            />
+          </SearchContainer>
+        ) : (
+          <View flex />
+        )}
+        {isAuthenticated ? (
+          <RowEnd>
+            <TerminalButton
+              mode="transparent"
+              text="Terminals"
+              textProps={{ style: { color: DARK_TEXT_COLOR } }}
+              onPress={() => {
+                history.push('/terminals');
+              }}
+            />
+            <ProfileMenuDropdown />
+          </RowEnd>
+        ) : (
+          <RowEnd>
+            <Button
+              shape="round"
+              mode="secondary"
+              text="Sign in"
+              onPress={() => {
+                history.push('/login');
+              }}
+            />
+            <SignUpButton
+              shape="round"
+              text="Contact us"
+              onPress={() => {
+                history.push('/contact-us');
+              }}
+            />
+          </RowEnd>
+        )}
+      </Row>
     </Container>
   );
 }
@@ -96,8 +102,6 @@ export default function HeaderNavigationBar(props: Props) {
 type ContainerProps = ViewProps & { mode: 'default' | 'transparent' };
 
 const Container = styled(View)<ContainerProps>`
-  flex-direction: row;
-  align-items: center;
   width: 100vw;
   ${(props) =>
     props.mode === 'default'
@@ -108,7 +112,6 @@ const Container = styled(View)<ContainerProps>`
       : css`
           background-color: transparent;
         `}
-  padding: 12px 32px;
   position: sticky;
   top: 0px;
   z-index: 99;
@@ -130,4 +133,10 @@ const TerminalButton = styled(Button)`
 
 const SearchContainer = styled(View)`
   margin: 0 64px;
+`;
+
+const Row = styled(View)`
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 32px;
 `;

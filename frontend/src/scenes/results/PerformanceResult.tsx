@@ -35,6 +35,7 @@ type Props = {
   showNumLocation?: boolean;
   headerTitle?: string;
   pinTableId?: string;
+  readOnly?: boolean;
   onPerformanceRowPress?: (param: {
     name: string;
     locationType?: LocationTagType;
@@ -60,6 +61,7 @@ export default function PerformanceResult(props: Props) {
     headerTitle,
     pinTableId,
     onPerformanceRowPress,
+    readOnly,
   } = props;
   let alert = useAlert();
   let [prevData, setPrevData] = useState<Array<Data>>([]);
@@ -183,6 +185,7 @@ export default function PerformanceResult(props: Props) {
         infoboxContent={PerformanceTablePopover}
         pinTableId={pinTableId}
         sortOrder={sortOrder}
+        readOnly={readOnly}
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
@@ -212,10 +215,12 @@ export default function PerformanceResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      <FeedbackButton
-        tableId={data?.performanceTable.table?.id}
-        tableType={TableType.PERFORMANCE}
-      />
+      {!readOnly && (
+        <FeedbackButton
+          tableId={data?.performanceTable.table?.id}
+          tableType={TableType.PERFORMANCE}
+        />
+      )}
     </Container>
   );
 }

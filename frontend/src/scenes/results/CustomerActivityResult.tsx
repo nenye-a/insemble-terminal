@@ -24,6 +24,7 @@ type Props = {
   locationTagId?: string;
   tableId?: string;
   pinTableId?: string;
+  readOnly?: boolean;
 };
 
 type ColoredData = (ActivityData | ActivityCompareData) & {
@@ -33,7 +34,7 @@ type ColoredData = (ActivityData | ActivityCompareData) & {
 const POLL_INTERVAL = 5000;
 
 export default function CustomerActivityResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
@@ -136,6 +137,7 @@ export default function CustomerActivityResult(props: Props) {
         })}
         pinTableId={pinTableId}
         sortOrder={sortOrder}
+        readOnly={readOnly}
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
@@ -166,10 +168,12 @@ export default function CustomerActivityResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      <FeedbackButton
-        tableId={data?.activityTable.table?.id}
-        tableType={TableType.ACTIVITY}
-      />
+      {!readOnly && (
+        <FeedbackButton
+          tableId={data?.activityTable.table?.id}
+          tableType={TableType.ACTIVITY}
+        />
+      )}
     </Container>
   );
 }

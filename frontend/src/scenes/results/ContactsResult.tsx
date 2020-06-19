@@ -28,6 +28,7 @@ type Props = {
   pinTableId?: string;
   ownershipType: OwnershipType;
   title: string;
+  readOnly?: boolean;
 };
 
 export default function ContactsResult(props: Props) {
@@ -38,6 +39,7 @@ export default function ContactsResult(props: Props) {
     pinTableId,
     ownershipType,
     title,
+    readOnly,
   } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipContactData,
@@ -83,6 +85,7 @@ export default function ContactsResult(props: Props) {
           },
         })}
         pinTableId={pinTableId}
+        readOnly={readOnly}
       />
       {loading ? (
         <LoadingIndicator
@@ -95,10 +98,12 @@ export default function ContactsResult(props: Props) {
       ) : (
         <ContactsTable data={data?.ownershipContactTable.data} />
       )}
-      <FeedbackButton
-        tableId={data?.ownershipContactTable.id}
-        tableType={TableType.OWNERSHIP_CONTACT}
-      />
+      {!readOnly && (
+        <FeedbackButton
+          tableId={data?.ownershipContactTable.id}
+          tableType={TableType.OWNERSHIP_CONTACT}
+        />
+      )}
     </Container>
   );
 }

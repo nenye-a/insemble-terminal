@@ -24,6 +24,7 @@ type Props = {
   locationTagId?: string;
   tableId?: string;
   pinTableId?: string;
+  readOnly?: boolean;
 };
 
 type ColoredData = (NewsData | NewsCompareData) & {
@@ -33,7 +34,7 @@ type ColoredData = (NewsData | NewsCompareData) & {
 const POLL_INTERVAL = 5000;
 
 export default function LatestNewsResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
@@ -140,6 +141,7 @@ export default function LatestNewsResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
+        readOnly={readOnly}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
@@ -160,10 +162,12 @@ export default function LatestNewsResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      <FeedbackButton
-        tableId={data?.newsTable.table?.id}
-        tableType={TableType.NEWS}
-      />
+      {!readOnly && (
+        <FeedbackButton
+          tableId={data?.newsTable.table?.id}
+          tableType={TableType.NEWS}
+        />
+      )}
     </Container>
   );
 }
