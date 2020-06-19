@@ -6,8 +6,6 @@ import {
   TableType,
   PerformanceTableType,
   OwnershipType,
-  LocationTagType,
-  BusinessTagType,
 } from '../../generated/globalTypes';
 import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
@@ -23,14 +21,6 @@ type Props = {
 
 export default function TerminalDataResult(props: Props) {
   let { data, readOnly } = props;
-  let onPerformanceRowPress = (params: {
-    name: string;
-    locationType?: LocationTagType;
-    businessType?: BusinessTagType;
-  }) => {
-    // history.push('/results', { search: {
-    // } });
-  };
   return (
     <View>
       {data.map(
@@ -83,7 +73,6 @@ export default function TerminalDataResult(props: Props) {
                   performanceType={performanceTableType}
                   showNumLocation={false}
                   headerTitle="By Address"
-                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.STATE) {
@@ -100,7 +89,6 @@ export default function TerminalDataResult(props: Props) {
                   {...props}
                   title="By City"
                   performanceType={performanceTableType}
-                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             }

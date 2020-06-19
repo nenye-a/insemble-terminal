@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import styled from 'styled-components';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 import { View, LoadingIndicator, Text } from '../../core-ui';
 import { PageTitle, ErrorComponent, SearchPlaceholder } from '../../components';
@@ -19,13 +19,9 @@ import TerminalDetailResult from './TerminalDetailResult';
 type Params = {
   terminalId: string;
 };
-type State = {
-  name: string;
-};
 
 export default function TerminalDetailScene() {
   let params = useParams<Params>();
-  let location = useLocation<State>();
   let { loading, data, error } = useQuery<GetTerminal, GetTerminalVariables>(
     GET_TERMINAL,
     {
@@ -37,7 +33,7 @@ export default function TerminalDetailScene() {
   return (
     <View>
       <PageTitle
-        text={location.state.name || ''}
+        text={data?.terminal.name || ''}
         showLocation={false}
         terminalId={params.terminalId}
       />
