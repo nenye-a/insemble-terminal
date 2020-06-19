@@ -5,10 +5,11 @@ import {
   BusinessType,
 } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
+import { BusinessTagResult } from '../types/types';
 
 export default function isSearchCombinationValid(
   reviewTag: string,
-  businessTag: BusinessTag | string | null,
+  businessTag: BusinessTagResult | BusinessTag | string | null,
   locationTag: LocationTagInput | null,
 ) {
   let formattedReviewTag = reviewTag.toUpperCase();

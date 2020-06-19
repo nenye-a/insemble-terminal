@@ -3,17 +3,14 @@ import styled from 'styled-components';
 
 import { Text, View } from '../core-ui';
 import { ReviewTag, LocationTagType } from '../generated/globalTypes';
-import {
-  Search_search_businessTag as BusinessTag,
-  Search_search_locationTag as LocationTag,
-} from '../generated/Search';
 import { THEME_COLOR, WHITE } from '../constants/colors';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { getResultTitle } from '../helpers';
+import { BusinessTagResult, LocationTag } from '../types/types';
 
 type Props = {
   reviewTag?: ReviewTag | null;
-  businessTag?: BusinessTag | null;
+  businessTag?: BusinessTagResult | null;
   locationTag?: LocationTag | null;
   text?: string;
   showLocation?: boolean;

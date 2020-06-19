@@ -12,6 +12,7 @@ export { default as isLocalUrl } from './isLocalUrl';
 export { default as isSearchCombinationValid } from './isSearchCombinationValid';
 export { default as lightenOrDarkenColor } from './lightenOrDarkenColor';
 export { default as localStorage } from './localStorage';
+export { default as omitTypename } from './omitTypename';
 export { default as parsePlaceType } from './parsePlaceType';
 export { default as useColoredData } from './useColoredData';
 export { default as useID } from './useID';

@@ -24,6 +24,26 @@ export const SEARCH = gql`
         params
         type
       }
+      searchId
+    }
+  }
+`;
+
+export const GET_SEARCH_TAG = gql`
+  query GetSearchTag($searchId: String!) {
+    search(searchId: $searchId) {
+      reviewTag
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      searchId
     }
   }
 `;

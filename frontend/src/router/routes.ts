@@ -63,6 +63,14 @@ export const authenticatedRoutes: Array<RouteType> = [
     component: ResultsScene,
     showHeader: false,
     showSearchBar: true,
+    exact: true,
+  },
+  {
+    path: '/results/:searchId',
+    component: ResultsScene,
+    exact: false,
+    showHeader: false,
+    showSearchBar: true,
   },
   {
     path: '/terminals',
