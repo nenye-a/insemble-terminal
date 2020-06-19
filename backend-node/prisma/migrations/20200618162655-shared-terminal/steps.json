@@ -1,0 +1,66 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateModel",
+      "model": "SharedTerminal"
+    },
+    {
+      "tag": "CreateField",
+      "model": "SharedTerminal",
+      "field": "id",
+      "type": "String",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "SharedTerminal",
+          "field": "id"
+        },
+        "directive": "default"
+      }
+    },
+    {
+      "tag": "CreateArgument",
+      "location": {
+        "tag": "Directive",
+        "path": {
+          "tag": "Field",
+          "model": "SharedTerminal",
+          "field": "id"
+        },
+        "directive": "default"
+      },
+      "argument": "",
+      "value": "cuid()"
+    },
+    {
+      "tag": "CreateDirective",
+      "location": {
+        "path": {
+          "tag": "Field",
+          "model": "SharedTerminal",
+          "field": "id"
+        },
+        "directive": "id"
+      }
+    },
+    {
+      "tag": "CreateField",
+      "model": "SharedTerminal",
+      "field": "terminal",
+      "type": "Terminal",
+      "arity": "Required"
+    },
+    {
+      "tag": "CreateField",
+      "model": "SharedTerminal",
+      "field": "expireDate",
+      "type": "DateTime",
+      "arity": "Required"
+    }
+  ]
+}
