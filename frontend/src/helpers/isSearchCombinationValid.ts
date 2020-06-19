@@ -22,7 +22,7 @@ export default function isSearchCombinationValid(
   } else if (formattedReviewTag === ReviewTag.NEWS) {
     // all case is valid
     return true;
-  } else if (formattedReviewTag === ReviewTag.OWNERSHIP) {
+  } else if (formattedReviewTag === ReviewTag.CONTACT) {
     if (locationTag?.type === LocationTagType.ADDRESS) {
       return true;
     } else if (

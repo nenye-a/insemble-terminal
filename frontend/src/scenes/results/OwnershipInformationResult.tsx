@@ -59,7 +59,7 @@ export default function OwnershipInformationResult(props: Props) {
       <ResultTitle
         title={title}
         noData={noData}
-        reviewTag={ReviewTag.OWNERSHIP}
+        reviewTag={ReviewTag.CONTACT}
         tableId={data?.ownershipInfoTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({

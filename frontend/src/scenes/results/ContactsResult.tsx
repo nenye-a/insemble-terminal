@@ -60,7 +60,7 @@ export default function ContactsResult(props: Props) {
       <ResultTitle
         title={title}
         noData={noData}
-        reviewTag={ReviewTag.OWNERSHIP}
+        reviewTag={ReviewTag.CONTACT}
         tableId={data?.ownershipContactTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({
