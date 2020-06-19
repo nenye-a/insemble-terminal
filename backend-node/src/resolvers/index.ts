@@ -21,6 +21,7 @@ export * from './terminal/userTerminalsQuery';
 export * from './terminal/terminalQuery';
 export * from './terminal/createTerminalMutation';
 export * from './terminal/deleteTerminalMutation';
+export * from './terminal/editTerminalMutation';
 export * from './terminal/pinTableMutation';
 export * from './terminal/removePinnedTableMutation';
 export * from './terminal/shareTerminalMutation';
