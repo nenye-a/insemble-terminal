@@ -55,7 +55,7 @@ const DATA_TYPE_OPTIONS = [
   'News',
   'Performance',
   'Coverage',
-  'Ownership',
+  'Contact',
   'Activity',
 ];
 

@@ -195,7 +195,7 @@ export default function ResultsScene() {
                 return <LatestNewsResult {...props} />;
               } else if (reviewTag === ReviewTag.ACTIVITY) {
                 return <CustomerActivityResult {...props} />;
-              } else if (reviewTag === ReviewTag.OWNERSHIP) {
+              } else if (reviewTag === ReviewTag.CONTACT) {
                 if (type === OwnershipType.PROPERTY_CONTACT) {
                   return (
                     <ContactsResult

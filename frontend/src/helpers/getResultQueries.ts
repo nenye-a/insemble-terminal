@@ -84,10 +84,10 @@ export default function getResultQueries(
       queries.push({ reviewTag: ReviewTag.ACTIVITY, type: 'ACTIVITY' });
     }
   }
-  if (!reviewTag || reviewTag === ReviewTag.OWNERSHIP) {
+  if (!reviewTag || reviewTag === ReviewTag.CONTACT) {
     if (businessTag?.type === BusinessType.BUSINESS) {
       queries.push({
-        reviewTag: ReviewTag.OWNERSHIP,
+        reviewTag: ReviewTag.CONTACT,
         type: OwnershipType.COMPANY_CONTACT,
       });
     }
@@ -96,13 +96,13 @@ export default function getResultQueries(
       locationTag?.type === LocationTagType.ADDRESS
     ) {
       queries.push({
-        reviewTag: ReviewTag.OWNERSHIP,
+        reviewTag: ReviewTag.CONTACT,
         type: OwnershipType.PROPERTY_CONTACT,
       });
     }
     if (businessTag?.type === BusinessType.BUSINESS) {
       queries.push({
-        reviewTag: ReviewTag.OWNERSHIP,
+        reviewTag: ReviewTag.CONTACT,
         type: OwnershipType.COMPANY_INFORMATION,
       });
     }
@@ -111,7 +111,7 @@ export default function getResultQueries(
       locationTag?.type === LocationTagType.ADDRESS
     ) {
       queries.push({
-        reviewTag: ReviewTag.OWNERSHIP,
+        reviewTag: ReviewTag.CONTACT,
         type: OwnershipType.PROPERTY_INFORMATION,
       });
     }
