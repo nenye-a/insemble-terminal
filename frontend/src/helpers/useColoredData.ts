@@ -25,26 +25,30 @@ export default function useColoredData<T, U>(
       return { ...item, fill };
     });
 
-  let fillterdDataWithTagFounded: Array<
+  let filteredDataWithFoundTag: Array<
     U & {
       isComparison: boolean;
       compareId: string;
     }
   > = [];
   comparationTagsWithFill.reduce((result, tag) => {
-    let foundItem = compareData.find((item) => tag.id === item.compareId);
-    if (foundItem) {
-      result.push({
-        ...foundItem,
-        isComparison: true,
-        fill: tag.fill,
-      });
+    let foundItems = compareData.filter((item) => tag.id === item.compareId);
+    if (foundItems) {
+      result.push(
+        ...foundItems.map((item) => {
+          return {
+            ...item,
+            isComparison: true,
+            fill: tag.fill,
+          };
+        }),
+      );
     }
     return result;
-  }, fillterdDataWithTagFounded);
+  }, filteredDataWithFoundTag);
   let mergedData = [
     ...data.map((item) => ({ ...item, isComparison: false })),
-    ...fillterdDataWithTagFounded,
+    ...filteredDataWithFoundTag,
   ];
 
   return {
