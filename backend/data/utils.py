@@ -36,6 +36,7 @@ DB_PLACES_HISTORY = SYSTEM_MONGO.get_collection(mongo.PLACES_HISTORY)
 DB_TERMINAL_RUNS = SYSTEM_MONGO.get_collection(mongo.TERMINAL_RUNS)
 DB_COORDINATES = SYSTEM_MONGO.get_collection(mongo.COORDINATES)
 DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
+DB_MISC = SYSTEM_MONGO.get_collection(mongo.MISC)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
 BWE = mongo.BulkWriteError
@@ -121,6 +122,8 @@ def create_index(collection):
         DB_MINESWEEPER_PLACES.create_index([('opentable_detials.category', 1)])
     if collection.lower() == 'stats':
         DB_STATS.create_index([('stat_name', 1)], unique=True)
+    if collection.lower() == 'misc':
+        DB_MISC.create_index([('name', 1)], unique=True)
 
 
 def meters_to_miles(meters):
@@ -396,6 +399,12 @@ def dictionary_diff(previous, new, replaced=True):
     return diff_dict
 
 
+def alpanumeric(string):
+    """Strips string of non alphanumeric characters"""
+    pattern = re.compile('[\W_]+')
+    return pattern.sub('', string)
+
+
 def restart_program():
     """
     Restarts the current program, with file objects and descriptors
@@ -477,7 +486,7 @@ if __name__ == "__main__":
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
     # RUN
-    create_index("stats")
+    # create_index("stats")
 
     # TESTS
 
