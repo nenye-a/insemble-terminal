@@ -46,6 +46,22 @@ export const CREATE_TERMINAL = gql`
   }
 `;
 
+export const EDIT_TERMINAL = gql`
+  mutation EditTerminal(
+    $terminalId: String!
+    $name: String
+    $description: String
+  ) {
+    editTerminal(
+      terminalId: $terminalId
+      name: $name
+      description: $description
+    ) {
+      id
+    }
+  }
+`;
+
 export const DELETE_TERMINAL = gql`
   mutation DeleteTerminal($terminalId: String!) {
     deleteTerminal(terminalId: $terminalId) {

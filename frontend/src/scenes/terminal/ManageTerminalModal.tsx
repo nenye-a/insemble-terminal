@@ -52,6 +52,7 @@ export default function ManageTerminalModal(props: Props) {
           {...(mode === 'edit' && {
             prevName: terminalBasicInfoData?.terminal.name,
             prevDescription: terminalBasicInfoData?.terminal.description,
+            terminalId,
           })}
         />
       )}

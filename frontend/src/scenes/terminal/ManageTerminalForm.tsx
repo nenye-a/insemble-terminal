@@ -7,27 +7,43 @@ import { View, TextInput, Button, Text, Form, Alert } from '../../core-ui';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
 import {
+  CREATE_TERMINAL,
+  GET_TERMINAL_LIST,
+  EDIT_TERMINAL,
+  GET_TERMINAL,
+} from '../../graphql/queries/server/terminals';
+import {
   CreateTerminal,
   CreateTerminalVariables,
 } from '../../generated/CreateTerminal';
 import {
-  CREATE_TERMINAL,
-  GET_TERMINAL_LIST,
-} from '../../graphql/queries/server/terminals';
+  EditTerminal,
+  EditTerminalVariables,
+} from '../../generated/EditTerminal';
 
 type Props = {
   onClose: () => void;
   mode: 'add' | 'edit';
   prevName?: string;
   prevDescription?: string | null;
+  terminalId?: string;
 };
 
 export default function ManageTerminalForm(props: Props) {
-  let { onClose, mode, prevName, prevDescription } = props;
+  let { onClose, mode, prevName, prevDescription, terminalId } = props;
   let [
     addTerminal,
     { loading: addTerminalLoading, error: addTerminalError },
   ] = useMutation<CreateTerminal, CreateTerminalVariables>(CREATE_TERMINAL, {
+    onCompleted: () => {
+      onClose();
+    },
+  });
+
+  let [
+    editTerminal,
+    { loading: editTerminalLoading, error: editTerminalError },
+  ] = useMutation<EditTerminal, EditTerminalVariables>(EDIT_TERMINAL, {
     onCompleted: () => {
       onClose();
     },
@@ -47,7 +63,24 @@ export default function ManageTerminalForm(props: Props) {
         awaitRefetchQueries: true,
         refetchQueries: [{ query: GET_TERMINAL_LIST }],
       });
-    } else if (mode === 'edit') {
+    } else if (mode === 'edit' && terminalId) {
+      editTerminal({
+        variables: {
+          name,
+          description,
+          terminalId,
+        },
+        awaitRefetchQueries: true,
+        refetchQueries: [
+          { query: GET_TERMINAL_LIST },
+          {
+            query: GET_TERMINAL,
+            variables: {
+              terminalId,
+            },
+          },
+        ],
+      });
     }
   };
   return (
@@ -55,6 +88,10 @@ export default function ManageTerminalForm(props: Props) {
       <Alert
         visible={!!addTerminalError}
         text={addTerminalError?.message || ''}
+      />
+      <Alert
+        visible={!!editTerminalError}
+        text={editTerminalError?.message || ''}
       />
       <Title>{isEditMode ? 'Edit Terminal' : 'Add a New Terminal'}</Title>
       <TextInput
@@ -83,7 +120,7 @@ export default function ManageTerminalForm(props: Props) {
           text={isEditMode ? 'Save' : 'Create'}
           size="small"
           style={{ marginLeft: 8 }}
-          loading={addTerminalLoading}
+          loading={addTerminalLoading || editTerminalLoading}
         />
       </ButtonContainer>
     </Form>
