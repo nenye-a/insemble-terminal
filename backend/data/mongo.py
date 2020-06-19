@@ -17,6 +17,7 @@ MONGO_PASS = config('MONGO_DB_PASS')
 # Databases
 PROXY_LOG = "news.proxy_log"
 PLACES = "appData.places"
+BRANDS = "appData.brands"
 CITY_TEST = "terminal.city_test"
 TERMINAL_PLACES = "terminal.places"
 PLACES_HISTORY = "terminal.places_history"
