@@ -103,6 +103,18 @@ export default function ResultTitle(props: Props) {
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
 
+  let refetchTerminalQueries = params.terminalId
+    ? [
+        {
+          query: GET_TERMINAL,
+          variables: {
+            terminalId: params.terminalId || '',
+          },
+          skip: params.terminalId,
+        },
+      ]
+    : [];
+
   let [updateComparison, { loading }] = useMutation<
     UpdateComparison,
     UpdateComparisonVariables
@@ -220,14 +232,7 @@ export default function ResultTitle(props: Props) {
                         pinId: pinTableId,
                       },
                       awaitRefetchQueries: true,
-                      refetchQueries: [
-                        {
-                          query: GET_TERMINAL,
-                          variables: {
-                            terminalId: params?.terminalId || '',
-                          },
-                        },
-                      ],
+                      refetchQueries: refetchTerminalQueries,
                     });
                   }}
                 >
