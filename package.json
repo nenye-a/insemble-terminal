@@ -7,7 +7,7 @@
     "dev:all": "concurrently --kill-others  \"yarn dev:backend-node\" \"yarn dev:frontend\" \"yarn dev:backend-python\"",
     "dev:backend-node": "yarn --cwd backend-node start:watch",
     "dev:backend-python": "python backend/manage.py runserver",
-    "dev:frontend": "yarn --cwd frontend start",
+    "dev:frontend": "yarn --cwd frontend apollo:generate && yarn --cwd frontend start",
     "migrate": "yarn --cwd backend-node migrate",
     "build": "yarn --cwd backend-node build && yarn --cwd frontend apollo:generate && yarn --cwd frontend build",
     "clean": "yarn clean:frontend && yarn clean:backend",
