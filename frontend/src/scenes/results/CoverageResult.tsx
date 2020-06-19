@@ -29,6 +29,7 @@ type Props = {
   locationTagId?: string;
   tableId?: string;
   pinTableId?: string;
+  readOnly?: boolean;
 };
 
 type ColoredData = (CoverageData | CoverageCompareData) & {
@@ -36,7 +37,7 @@ type ColoredData = (CoverageData | CoverageCompareData) & {
 };
 
 export default function CoverageResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId } = props;
+  let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
@@ -127,6 +128,7 @@ export default function CoverageResult(props: Props) {
         })}
         pinTableId={pinTableId}
         sortOrder={sortOrder}
+        readOnly={readOnly}
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
@@ -146,10 +148,12 @@ export default function CoverageResult(props: Props) {
           </ContentContainer>
         ) : null}
       </View>
-      <FeedbackButton
-        tableId={data?.coverageTable.id}
-        tableType={TableType.COVERAGE}
-      />
+      {!readOnly && (
+        <FeedbackButton
+          tableId={data?.coverageTable.id}
+          tableType={TableType.COVERAGE}
+        />
+      )}
     </View>
   );
 }

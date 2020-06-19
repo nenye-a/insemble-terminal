@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
+import Popover from 'react-tiny-popover';
 
-import { Text, View } from '../core-ui';
+import { Text, View, TouchableOpacity } from '../core-ui';
 import { ReviewTag, LocationTagType } from '../generated/globalTypes';
 import { THEME_COLOR, WHITE } from '../constants/colors';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { getResultTitle } from '../helpers';
 import { BusinessTagResult, LocationTag } from '../types/types';
+
+import SvgShare from './icons/share';
+import ShareTerminalPopover from './ShareTerminalPopover';
 
 type Props = {
   reviewTag?: ReviewTag | null;
@@ -14,6 +18,7 @@ type Props = {
   locationTag?: LocationTag | null;
   text?: string;
   showLocation?: boolean;
+  terminalId?: string;
 };
 
 export default function PageTitle(props: Props) {
@@ -23,7 +28,10 @@ export default function PageTitle(props: Props) {
     locationTag,
     text,
     showLocation = true,
+    terminalId,
   } = props;
+
+  let [sharePopoverVisible, setSharePopoverVisible] = useState(false);
 
   let resultTitle = getResultTitle({
     reviewTag,
@@ -38,12 +46,32 @@ export default function PageTitle(props: Props) {
       : undefined,
   });
 
+  let shareTerminalPopover = (
+    <ShareTerminalPopover terminalId={terminalId || ''} />
+  );
+
   return (
     <TitleContainer>
       <Title>{text ? text : resultTitle}</Title>
+      {!!terminalId && (
+        <Popover
+          isOpen={sharePopoverVisible}
+          content={shareTerminalPopover}
+          position={['bottom']}
+          onClickOutside={() => setSharePopoverVisible(false)}
+          align="end"
+        >
+          {(ref) => (
+            <Touchable ref={ref} onPress={() => setSharePopoverVisible(true)}>
+              <SvgShare style={{ marginRight: 4 }} />
+              <PurpleText>Share</PurpleText>
+            </Touchable>
+          )}
+        </Popover>
+      )}
       {showLocation &&
         (locationTag?.type === LocationTagType.NATION || !locationTag) && (
-          <USText>All United States</USText>
+          <PurpleText>All United States</PurpleText>
         )}
     </TitleContainer>
   );
@@ -62,7 +90,12 @@ const TitleContainer = styled(View)`
   padding: 25px 15%;
 `;
 
-const USText = styled(Text)`
+const PurpleText = styled(Text)`
   font-weight: ${FONT_WEIGHT_MEDIUM};
   color: ${THEME_COLOR};
+`;
+
+const Touchable = styled(TouchableOpacity)`
+  flex-direction: row;
+  align-items: center;
 `;

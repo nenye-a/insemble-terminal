@@ -36,7 +36,11 @@ export default function TerminalDetailScene() {
   );
   return (
     <View>
-      <PageTitle text={location.state.name || ''} showLocation={false} />
+      <PageTitle
+        text={location.state.name || ''}
+        showLocation={false}
+        terminalId={params.terminalId}
+      />
       <ContentContainer>
         {loading ? (
           <LoadingIndicator />

@@ -1,5 +1,20 @@
 import gql from 'graphql-tag';
 
+const TERMINAL = gql`
+  fragment TerminalFragment on Terminal {
+    id
+    name
+    description
+    pinnedFeeds {
+      id
+      tableId
+      tableType
+      performanceTableType
+      ownershipTableType
+    }
+    updatedAt
+  }
+`;
 export const GET_TERMINAL_LIST = gql`
   query GetTerminalList {
     userTerminals {
@@ -17,18 +32,10 @@ export const GET_TERMINAL_LIST = gql`
 export const GET_TERMINAL = gql`
   query GetTerminal($terminalId: String!) {
     terminal(terminalId: $terminalId) {
-      name
-      description
-      pinnedFeeds {
-        id
-        tableId
-        tableType
-        performanceTableType
-        ownershipTableType
-      }
-      updatedAt
+      ...TerminalFragment
     }
   }
+  ${TERMINAL}
 `;
 
 export const CREATE_TERMINAL = gql`
@@ -69,4 +76,19 @@ export const REMOVE_PINNED_TABLE = gql`
       id
     }
   }
+`;
+
+export const SHARE_TERMINAL = gql`
+  mutation ShareTerminal($terminalId: String!) {
+    shareTerminal(terminalId: $terminalId)
+  }
+`;
+
+export const GET_SHARED_TERMINAL = gql`
+  query GetSharedTerminal($sharedTerminalId: String!) {
+    sharedTerminal(sharedTerminalId: $sharedTerminalId) {
+      ...TerminalFragment
+    }
+  }
+  ${TERMINAL}
 `;

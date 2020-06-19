@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
+import { useHistory } from 'react-router-dom';
 
 import {
   View,
@@ -24,6 +25,7 @@ import {
   GRAY_TEXT,
   LIGHTER_GRAY,
 } from '../constants/colors';
+import { useAuth } from '../context';
 import { SearchTag, BusinessTagResult } from '../types/types';
 import {
   ReviewTag,
@@ -68,6 +70,7 @@ export default function SearchFilterBar(props: Props) {
     disableAll = false,
     disableReviewTag = false,
   } = props;
+
   let [dataTypeFilterVisible, setDataTypeFilterVisible] = useState(false);
   let [selectedDataType, setSelectedDataType] = useState('');
   let [
@@ -78,6 +81,8 @@ export default function SearchFilterBar(props: Props) {
     null,
   );
   let [errorMessage, setErrorMessage] = useState('');
+  let history = useHistory();
+  let { isAuthenticated, user } = useAuth();
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
     GetBusinessTag
   >(GET_BUSINESS_TAG);
@@ -173,32 +178,36 @@ export default function SearchFilterBar(props: Props) {
               text="Search"
               forwardedAs="button"
               onPress={() => {
-                let isValid = isSearchCombinationValid(
-                  selectedDataType,
-                  selectedBusiness,
-                  selectedPlace,
-                );
-                if (isValid) {
-                  onSearchPress &&
-                    onSearchPress({
-                      reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
-                      businessTag:
-                        typeof selectedBusiness === 'string'
-                          ? {
-                              type: BusinessTagType.BUSINESS,
-                              params: selectedBusiness,
-                            }
-                          : undefined,
-                      businessTagWithId:
-                        selectedBusiness &&
-                        typeof selectedBusiness !== 'string' &&
-                        selectedBusiness?.id
-                          ? selectedBusiness
-                          : undefined,
-                      locationTag: selectedPlace ? selectedPlace : undefined,
-                    });
+                if (isAuthenticated && !!user?.license) {
+                  let isValid = isSearchCombinationValid(
+                    selectedDataType,
+                    selectedBusiness,
+                    selectedPlace,
+                  );
+                  if (isValid) {
+                    onSearchPress &&
+                      onSearchPress({
+                        reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                        businessTag:
+                          typeof selectedBusiness === 'string'
+                            ? {
+                                type: BusinessTagType.BUSINESS,
+                                params: selectedBusiness,
+                              }
+                            : undefined,
+                        businessTagWithId:
+                          selectedBusiness &&
+                          typeof selectedBusiness !== 'string' &&
+                          selectedBusiness?.id
+                            ? selectedBusiness
+                            : undefined,
+                        locationTag: selectedPlace ? selectedPlace : undefined,
+                      });
+                  } else {
+                    setErrorMessage('Search combination is not valid');
+                  }
                 } else {
-                  setErrorMessage('Search combination is not valid');
+                  history.push('/contact-us');
                 }
               }}
               stopPropagation={true}

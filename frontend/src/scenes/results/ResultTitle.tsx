@@ -70,6 +70,7 @@ type Props = {
   pinTableId?: string;
   sortOrder?: Array<string>;
   onSortOrderChange?: (newSortOrder: Array<string>) => void;
+  readOnly?: boolean;
 };
 
 type Params = {
@@ -94,6 +95,7 @@ export default function ResultTitle(props: Props) {
     pinTableId,
     sortOrder,
     onSortOrderChange,
+    readOnly,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -207,33 +209,35 @@ export default function ResultTitle(props: Props) {
           ) : (
             <>
               <CompareText>{formattedCompareText}</CompareText>
-              <Touchable
-                onPress={() => {
-                  updateComparison({
-                    variables: {
-                      actionType: CompareActionType.DELETE_ALL,
-                      tableId,
-                      reviewTag,
-                      pinId: pinTableId,
-                    },
-                    awaitRefetchQueries: true,
-                    refetchQueries: [
-                      {
-                        query: GET_TERMINAL,
-                        variables: {
-                          terminalId: params?.terminalId || '',
-                        },
+              {!readOnly && (
+                <Touchable
+                  onPress={() => {
+                    updateComparison({
+                      variables: {
+                        actionType: CompareActionType.DELETE_ALL,
+                        tableId,
+                        reviewTag,
+                        pinId: pinTableId,
                       },
-                    ],
-                  });
-                }}
-              >
-                <SvgRoundClose />
-              </Touchable>
+                      awaitRefetchQueries: true,
+                      refetchQueries: [
+                        {
+                          query: GET_TERMINAL,
+                          variables: {
+                            terminalId: params?.terminalId || '',
+                          },
+                        },
+                      ],
+                    });
+                  }}
+                >
+                  <SvgRoundClose />
+                </Touchable>
+              )}
             </>
           )
         ) : null}
-        {canCompare && (
+        {canCompare && !readOnly && (
           <Popover
             isOpen={comparisonPopoverOpen}
             content={comparisonPopover}
@@ -252,7 +256,7 @@ export default function ResultTitle(props: Props) {
             )}
           </Popover>
         )}
-        {isTerminalScene ? (
+        {readOnly ? null : isTerminalScene ? (
           removePinnedTableLoading ? (
             <LoadingIndicator />
           ) : (

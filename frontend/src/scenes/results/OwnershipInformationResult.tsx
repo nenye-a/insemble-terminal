@@ -28,6 +28,7 @@ type Props = {
   pinTableId?: string;
   ownershipType: OwnershipType;
   title: string;
+  readOnly?: boolean;
 };
 
 export default function OwnershipInformationResult(props: Props) {
@@ -38,6 +39,7 @@ export default function OwnershipInformationResult(props: Props) {
     pinTableId,
     ownershipType,
     title,
+    readOnly,
   } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipInfoData,
@@ -82,6 +84,7 @@ export default function OwnershipInformationResult(props: Props) {
           },
         })}
         pinTableId={pinTableId}
+        readOnly={readOnly}
       />
       {loading ? (
         <LoadingIndicator
@@ -100,10 +103,12 @@ export default function OwnershipInformationResult(props: Props) {
           lastUpdate={data?.ownershipInfoTable.data.lastUpdate}
         />
       )}
-      <FeedbackButton
-        tableId={data?.ownershipInfoTable.id}
-        tableType={TableType.OWNERSHIP_INFO}
-      />
+      {!readOnly && (
+        <FeedbackButton
+          tableId={data?.ownershipInfoTable.id}
+          tableType={TableType.OWNERSHIP_INFO}
+        />
+      )}
     </Container>
   );
 }

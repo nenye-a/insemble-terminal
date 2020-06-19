@@ -16,9 +16,11 @@ import OwnershipInformationResult from '../results/OwnershipInformationResult';
 
 type Props = {
   data: Array<PinnedFeeds>;
+  readOnly?: boolean;
 };
+
 export default function TerminalDataResult(props: Props) {
-  let { data } = props;
+  let { data, readOnly } = props;
   return (
     <View>
       {data.map(
@@ -36,6 +38,7 @@ export default function TerminalDataResult(props: Props) {
             tableId,
             key,
             pinTableId,
+            readOnly,
           };
           if (tableType === TableType.PERFORMANCE) {
             if (performanceTableType === PerformanceTableType.OVERALL) {
