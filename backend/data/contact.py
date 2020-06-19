@@ -53,14 +53,13 @@ def retail_contact(name, address=None):
         "last_updated": company['time_of_scrape'] if company and 'time_of_scrape' in company else None,
         "contacts": [
             {
-                # TODO: someone may have first name, and not last name documented
-                "name": person['first_name'] + " " + person['last_name'] if person['first_name'] and person['last_name'] else None,
+                "name": person['name'] if 'name' in person else None,
                 # NOTE: Title is made none for now until improved. Previously: person['position'],
-                "title": None,
-                "phone": person['phone'],
-                "email": person['email'],
-            } for person in contacts if contacts
-        ]
+                "title": (person['title']+" - "+person['region']).strip(" - ") if 'title' in person and 'region' in person else None,
+                "phone": person['phone'] if 'phone' in person else None,
+                "email": person['email'] if 'email' in person else None,
+            } for person in contacts
+        ] if contacts else [{"name":None, "title":None, "phone":None, "email":None}]
     }
 
 # property contact lookup
@@ -142,25 +141,49 @@ def convert_street_address(address):
 
 
 def find_retail_contacts(name, address=None):
-    # find the general company information
-    company = google.get_company(name)
-    # TODO: check crittenden/ICSC for company info, maybe wrap into general company lookup function with google_company()
+    # get crit company contacts from DB
+    crit_company = utils.DB_BRANDS.find_one({"brand_name": {"$regex": r"^" + utils.adjust_case(name), "$options": "i"}})
+    company = None
+    if crit_company:
+        company = {"name": crit_company['brand_name'], "category": None, "website": crit_company['domain'],
+                   "description": None, "stock": None, "headquarters": crit_company['headquarters_address'], "revenue": None,
+                   "num_employees": None, "parents": crit_company['parent_company'], "subsidiaries": None, "time_of_scrape": None}
+
+    if not company:
+        # if not in db, find the general company information from google
+        company = google.get_company(name)
+    # TODO: check ICSC for company info, maybe wrap into general company lookup function with google_company()
 
     if company:
         if address is None:
             # if just the name, get the general contact list
             domain = company['website']
-            contacts = get_emails(domain)
-            # TODO: check crittenden/icsc for contacts
+            try:
+                contacts = crit_company['contacts']['owners']
+            except:
+                contacts = []
+            email_contacts = get_emails(domain)
+            contacts.append(email_contacts) if email_contacts else ''
+            # TODO: check icsc for contacts
 
         else:
             # if name and address, get the location specific contact
 
-            # TODO: check crittenden/icsc for contacts, location specific
+            # TODO: check icsc for contacts, location specific
 
             # return json of crittenden/icsc contacts and hunter contacts
             details = google.get_google_details(name, address, 'website,phone')
-            contacts = get_emails(details['website']) if details is not None else []
+            try:
+                contacts = crit_company['contacts']['owners']
+                # narrow down to find the specific person who represents the region
+                local_contacts = [person for person in contacts if utils.extract_state(address) in person['region']]
+                if local_contacts:
+                    contacts = local_contacts
+            except:
+                contacts = []
+
+            email_contacts = get_emails(details['website']) if details is not None else []
+            contacts+=email_contacts if email_contacts else ''
             if company is None and details:
                 company = {"name": None, "category": None, "website": details['website'], "phone": details['phone'],
                            "description": None, "stock": None, "headquarters": None, "revenue": None, "num_employees": None,
@@ -183,7 +206,7 @@ def get_emails(domain):
     response = requests.get(url).json()
 
     try:
-        return [{"email": item['value'], "first_name": item['first_name'], "last_name": item['last_name'],
+        return [{"email": item['value'], "name": ((item['first_name'] or '')+" "+(item['last_name'] or '')).strip() or None,
                  "position": item['position'], "confidence": item['confidence'], "phone": item['phone_number'],
                  "linkedin": item['linkedin'], "twitter": item['twitter']} for item in response['data']['emails']]
     except:
@@ -220,6 +243,10 @@ if __name__ == "__main__":
 
     def test_retail_contact():
         from pprint import pprint
+        name = "7-Eleven"
+        address = "500 W 7th St, Los Angeles, CA 90014"
+        pprint(retail_contact(name, address))
+        print("----------------------------")
         name = 'Ramonas Mexican Food'
         address = '3728 Crenshaw Blvd, Los Angeles, CA 90016'
         pprint(retail_contact(name, address))
@@ -227,6 +254,7 @@ if __name__ == "__main__":
         name = 'Gamestop'
         address = '3935 Grand Ave C-1, Chino, CA 91710'
         pprint(retail_contact(name, address))
+        print("----------------------------")
         name = 'Daikokuya'
         address = '327 E 1st St, Los Angeles, CA 90012'
         pprint(retail_contact(name, address))

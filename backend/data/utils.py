@@ -29,6 +29,7 @@ SPACE = '\xa0'
 
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
+DB_BRANDS = SYSTEM_MONGO.get_collection(mongo.BRANDS)
 DB_PROXY_LOG = SYSTEM_MONGO.get_collection(mongo.PROXY_LOG)
 DB_CITY_TEST = SYSTEM_MONGO.get_collection(mongo.CITY_TEST)
 DB_TERMINAL_PLACES = SYSTEM_MONGO.get_collection(mongo.TERMINAL_PLACES)
@@ -368,6 +369,18 @@ def extract_city(address):
     else:
         return match[0][0].strip()
 
+def extract_state(address):
+    """
+    Provided an address with the following ending:
+    "Los Angeles, CA 90012". Will extract the state.
+    """
+    STATE_LOCATOR_RX = r',\s[A-Z]{2}'
+    try:
+        return re.search(STATE_LOCATOR_RX, address).group()[2:]
+    except Exception:
+        return None
+
+
 
 def dictionary_diff(previous, new, replaced=True):
     """
@@ -448,6 +461,9 @@ if __name__ == "__main__":
     def test_extract_city():
         print(extract_city("3006 S Sepulveda Blvd, Los Angeles, CA 90034"))
 
+    def test_extract_state():
+        print(extract_state("3006 S Sepulveda Blvd, Los Angeles, CA 90034"))
+
     def test_dictionary_diff():
         dict1 = {
             "hello": 1,
@@ -477,7 +493,7 @@ if __name__ == "__main__":
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
     # RUN
-    create_index("stats")
+    # create_index("stats")
 
     # TESTS
 
@@ -487,5 +503,6 @@ if __name__ == "__main__":
     # test_snake_to_word()
     # test_round_object()
     # test_extract_city()
+    test_extract_state()
     # test_chunks()
     # test_dictionary_diff()
