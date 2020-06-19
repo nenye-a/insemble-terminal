@@ -12,7 +12,7 @@ import datetime as dt
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 RUN_TIME = dt.datetime.now()
 
-UPDATE_TERMS = searcher.SEARCH_TERMS[:-1]  # for not we don't need to update barber shop
+UPDATE_TERMS = searcher.SEARCH_TERMS[:-2]  # for not we don't need to update barber shop or salon
 
 TEMP_COLLECTION_STRING = 'updater_temp_collection'
 TEMP_DB = utils.SYSTEM_MONGO.get_collection('terminal.' + TEMP_COLLECTION_STRING)
