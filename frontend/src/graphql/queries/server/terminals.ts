@@ -70,3 +70,9 @@ export const REMOVE_PINNED_TABLE = gql`
     }
   }
 `;
+
+export const SHARE_TERMINAL = gql`
+  mutation ShareTerminal($terminalId: String!) {
+    shareTerminal(terminalId: $terminalId)
+  }
+`;

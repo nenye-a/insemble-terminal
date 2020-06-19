@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { useMutation } from '@apollo/react-hooks';
 
 import {
   Card,
   Text,
   LoadingIndicator,
   View,
-  Alert,
   Button,
   TextInput,
 } from '../core-ui';
 import {
-  DARK_TEXT_COLOR,
   SHADOW_COLOR,
+  DEFAULT_TEXT_COLOR,
   THEME_COLOR,
 } from '../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../constants/theme';
+import { SHARE_TERMINAL } from '../graphql/queries/server/terminals';
+import {
+  ShareTerminal,
+  ShareTerminalVariables,
+} from '../generated/ShareTerminal';
+import { copyToClipboard } from '../helpers';
 
 import ErrorComponent from './ErrorComponent';
 
@@ -25,35 +31,64 @@ type Props = {
 
 export default function ShareTerminalPopover(props: Props) {
   let { terminalId } = props;
-  let {
-    loading: terminalsLoading,
-    data: terminalsData,
-    error: terminalsError,
-  } = { loading: false, data: [], error: null };
+  let [
+    shareTerminal,
+    {
+      loading: shareTerminalLoading,
+      data: shareTerminalData,
+      error: shareTerminalError,
+    },
+  ] = useMutation<ShareTerminal, ShareTerminalVariables>(SHARE_TERMINAL);
   let [isCopied, setCopied] = useState(false);
+  let inputRef = useRef<HTMLInputElement | null>(null);
+
+  let onCopyPress = (text: string) => {
+    copyToClipboard(text);
+    setCopied(true);
+  };
+
+  useEffect(() => {
+    shareTerminal({
+      variables: {
+        terminalId,
+      },
+    });
+  }, [shareTerminal, terminalId]);
 
   return (
     <Container>
-      {terminalsLoading ? (
+      {shareTerminalLoading ? (
         <LoadingIndicator />
-      ) : terminalsError ? (
+      ) : shareTerminalError ? (
         <ErrorComponent />
       ) : (
         <>
           <Title>Share Terminal</Title>
           <Description>
             Your terminal link has been generated! This link will expire after
-            30 days.
+            10 days.
           </Description>
           <Row>
             <TextInput
+              ref={inputRef}
               label="Terminal Link"
-              containerStyle={{ flex: 1, marginRight: 8 }}
+              containerStyle={{ flex: 1 }}
+              defaultValue={shareTerminalData?.shareTerminal}
+              readOnly={true}
             />
-            <Button
+            <CopyButton
               mode="transparent"
               text={isCopied ? 'Copied' : 'Copy'}
-              style={{ alignSelf: 'flex-end' }}
+              onPress={() =>
+                onCopyPress(shareTerminalData?.shareTerminal || '')
+              }
+              {...(isCopied && {
+                textProps: {
+                  style: {
+                    color: DEFAULT_TEXT_COLOR,
+                  },
+                },
+              })}
             />
           </Row>
         </>
@@ -83,4 +118,9 @@ const Row = styled(View)`
 
 const Description = styled(Text)`
   padding: 12px 0;
+`;
+
+const CopyButton = styled(Button)`
+  align-self: flex-end;
+  width: 60px;
 `;
