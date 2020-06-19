@@ -11,7 +11,11 @@ import {
 } from '../../components';
 import { MUTED_TEXT_COLOR, BACKGROUND_COLOR } from '../../constants/colors';
 import { SEARCH, GET_SEARCH_TAG } from '../../graphql/queries/server/search';
-import { Search, SearchVariables } from '../../generated/Search';
+import {
+  Search,
+  SearchVariables,
+  Search_search as SearchData,
+} from '../../generated/Search';
 import {
   PerformanceTableType,
   ReviewTag,
@@ -30,6 +34,7 @@ import { getResultQueries, capitalize } from '../../helpers';
 import {
   GetSearchTag,
   GetSearchTagVariables,
+  GetSearchTag_search as GetSearchTagData,
 } from '../../generated/GetSearchTag';
 
 import PerformanceResult from './PerformanceResult';
@@ -66,10 +71,15 @@ export default function ResultsScene() {
       history.push('/results/' + search.searchId);
     },
   });
-  let [
-    getSearchTag,
-    { data: getSearchTagData, loading: getSearchTagLoading },
-  ] = useLazyQuery<GetSearchTag, GetSearchTagVariables>(GET_SEARCH_TAG);
+  let [getSearchTag, { loading: getSearchTagLoading }] = useLazyQuery<
+    GetSearchTag,
+    GetSearchTagVariables
+  >(GET_SEARCH_TAG, {
+    onCompleted: ({ search }) => {
+      let { reviewTag, businessTag, locationTag, searchId } = search;
+      updateStates({ reviewTag, businessTag, locationTag, searchId });
+    },
+  });
 
   /**
    * Search tag as response from getSearchTag query or submitSearch mutation.
@@ -82,7 +92,12 @@ export default function ResultsScene() {
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
 
   let loading = submitSearchLoading || getSearchTagLoading;
-  let onSubmit = ({ reviewTag, businessTagWithId, locationTag }: SearchTag) => {
+  let onSubmit = ({
+    reviewTag,
+    businessTagWithId,
+    businessTag,
+    locationTag,
+  }: SearchTag) => {
     submitSearch({
       variables: {
         locationTag: locationTag
@@ -93,6 +108,7 @@ export default function ResultsScene() {
           : undefined,
         reviewTag: reviewTag || undefined,
         businessTagId: businessTagWithId?.id,
+        businessTag,
       },
     });
   };
@@ -126,6 +142,38 @@ export default function ResultsScene() {
     }
   };
 
+  let updateStates = ({
+    reviewTag,
+    businessTag,
+    locationTag,
+    searchId,
+  }: Omit<SearchData, '__typename'> | Omit<GetSearchTagData, '__typename'>) => {
+    setSelectedSearchTagWithIds({
+      reviewTag: reviewTag || undefined,
+      businessTag: businessTag
+        ? {
+            id: businessTag.id,
+            params: businessTag.params,
+            type: businessTag.type,
+          }
+        : undefined,
+      locationTag: locationTag
+        ? {
+            id: locationTag.id,
+            params: locationTag.params,
+            type: locationTag.type,
+          }
+        : undefined,
+    });
+
+    let queries = getResultQueries({
+      searchId,
+      reviewTag,
+      businessTag,
+      locationTag,
+    });
+    setResultQueries(queries);
+  };
   useEffect(() => {
     if (submitSearchData) {
       let {
@@ -134,68 +182,9 @@ export default function ResultsScene() {
         locationTag,
         searchId,
       } = submitSearchData.search;
-      setSelectedSearchTagWithIds({
-        reviewTag: reviewTag || undefined,
-        businessTag: businessTag
-          ? {
-              id: businessTag.id,
-              params: businessTag.params,
-              type: businessTag.type,
-            }
-          : undefined,
-        locationTag: locationTag
-          ? {
-              id: locationTag.id,
-              params: locationTag.params,
-              type: locationTag.type,
-            }
-          : undefined,
-      });
-      let queries = getResultQueries({
-        searchId,
-        reviewTag,
-        businessTag,
-        locationTag,
-      });
-      setResultQueries(queries);
+      updateStates({ reviewTag, businessTag, locationTag, searchId });
     }
   }, [submitSearchData]);
-
-  useEffect(() => {
-    if (getSearchTagData) {
-      let {
-        reviewTag,
-        businessTag,
-        locationTag,
-        searchId,
-      } = getSearchTagData.search;
-      setSelectedSearchTagWithIds({
-        reviewTag: reviewTag || undefined,
-        businessTag: businessTag
-          ? {
-              id: businessTag.id,
-              params: businessTag.params,
-              type: businessTag.type,
-            }
-          : undefined,
-        locationTag: locationTag
-          ? {
-              id: locationTag.id,
-              params: locationTag.params,
-              type: locationTag.type,
-            }
-          : undefined,
-      });
-
-      let queries = getResultQueries({
-        searchId,
-        reviewTag,
-        businessTag,
-        locationTag,
-      });
-      setResultQueries(queries);
-    }
-  }, [getSearchTagData]);
 
   useEffect(() => {
     if (searchIdParam) {
