@@ -3,12 +3,13 @@ from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
 from .serializers import (SearchSerializer, OptionalSearchSerializer, PerformanceSerializer,
-                          OwnershipSerializer)
+                          OwnershipSerializer, PreProcessSerializer)
 import datetime as dt
 import performancev2
 import news
 import activity
 import contact
+import preprocess
 import data.coverage as coverage
 
 
@@ -36,6 +37,40 @@ class BasicAPI(generics.GenericAPIView):
         }
 
         return Response(response, status=status.HTTP_200_OK)
+
+
+class PreProcessAPI(BasicAPI):
+    """
+    Pre-process data api
+    Preprocess api path: api/preprocess
+    """
+
+    serializer_class = PreProcessSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+        Pre-process business tags to filter out incorrect names, and fuzzy match to
+        correct names. Will return the word that was provided or the corrected version,
+        however if the word is a prohibited word, will return None.
+
+        Parameters: {
+            business: string
+        }
+
+        Response: {
+            business_name: string | null
+        }
+        """
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        params = serializer.validated_data
+
+        business_name = preprocess.preprocess(params['business'])
+
+        return Response({
+            'business_name': business_name
+        })
 
 
 class PerformanceAPI(BasicAPI):

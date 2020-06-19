@@ -26,6 +26,7 @@ COORDINATES = "terminal.coordinates"
 REGIONS = "terminal.regions"
 LOG = "terminal.log"
 STATS = "terminal.stats"
+MISC = "terminal.misc"
 
 # TODO: Remove or Archive
 MINESWEEPER_PLACES = "terminal.minesweeper_places"

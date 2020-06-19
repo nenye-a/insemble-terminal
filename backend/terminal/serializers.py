@@ -50,6 +50,10 @@ class BusinessSerializer(serializers.Serializer):
         return attrs
 
 
+class PreProcessSerializer(serializers.Serializer):
+    business = serializers.CharField(max_length=255)
+
+
 class SearchSerializer(serializers.Serializer):
 
     """
