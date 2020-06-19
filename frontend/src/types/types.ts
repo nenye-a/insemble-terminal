@@ -69,7 +69,7 @@ export type LocationLatLng = {
 export type SearchTag = {
   reviewTag?: ReviewTag | null;
   businessTag?: BusinessTagInput | null;
-  businessTagWithId?: BusinessTag | null;
+  businessTagWithId?: Omit<BusinessTag, '__typename'> | null;
   locationTag?: LocationTagInput | null;
 };
 

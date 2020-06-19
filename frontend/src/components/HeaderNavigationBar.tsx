@@ -11,7 +11,7 @@ import {
 import { useAuth } from '../context';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import { LocationTagInput } from '../generated/globalTypes';
-import { SearchTag } from '../types/types';
+import { SearchTag, BusinessTagResult } from '../types/types';
 
 import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
@@ -22,7 +22,7 @@ type Props = {
   onSearchPress?: (searchTags: SearchTag) => void;
   showSearchBar?: boolean;
   defaultReviewTag?: string;
-  defaultBusinessTag?: BusinessTag | string;
+  defaultBusinessTag?: BusinessTagResult | BusinessTag | string;
   defaultLocationTag?: LocationTagInput;
 };
 

@@ -24,7 +24,7 @@ import {
   GRAY_TEXT,
   LIGHTER_GRAY,
 } from '../constants/colors';
-import { SearchTag } from '../types/types';
+import { SearchTag, BusinessTagResult } from '../types/types';
 import {
   ReviewTag,
   LocationTagInput,
@@ -40,7 +40,7 @@ import PillSelector from './PillSelector';
 import LocationInput from './LocationInput';
 import SvgSearch from './icons/search';
 
-type SelectedBusiness = BusinessTag | string;
+type SelectedBusiness = BusinessTagResult | BusinessTag | string;
 
 type Props = {
   onSearchPress?: (searchTags: SearchTag) => void;
