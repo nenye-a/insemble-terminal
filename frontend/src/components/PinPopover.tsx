@@ -16,7 +16,7 @@ import {
   SHADOW_COLOR,
 } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
-import AddNewTerminalForm from '../scenes/terminal/AddNewTerminalForm';
+import ManageTerminalForm from '../scenes/terminal/ManageTerminalForm';
 import { TableType } from '../generated/globalTypes';
 import { GetTerminalList } from '../generated/GetTerminalList';
 import { PinTable, PinTableVariables } from '../generated/PinTable';
@@ -53,7 +53,7 @@ export default function PinPopover(props: Props) {
       ) : terminalsError ? (
         <ErrorComponent />
       ) : terminalsData?.userTerminals.length === 0 || addTerminalVisible ? (
-        <AddNewTerminalForm onClose={onClickAway} />
+        <ManageTerminalForm mode="add" onClose={onClickAway} />
       ) : (
         <>
           <Title>Select the terminal to add this data feed to.</Title>

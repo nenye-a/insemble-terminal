@@ -7,18 +7,30 @@ import { View, TextInput, Button, Text, Form, Alert } from '../../core-ui';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
 import {
+  CREATE_TERMINAL,
+  GET_TERMINAL_LIST,
+  EDIT_TERMINAL,
+  GET_TERMINAL,
+} from '../../graphql/queries/server/terminals';
+import {
   CreateTerminal,
   CreateTerminalVariables,
 } from '../../generated/CreateTerminal';
 import {
-  CREATE_TERMINAL,
-  GET_TERMINAL_LIST,
-} from '../../graphql/queries/server/terminals';
+  EditTerminal,
+  EditTerminalVariables,
+} from '../../generated/EditTerminal';
 
-type Props = { onClose: () => void };
+type Props = {
+  onClose: () => void;
+  mode: 'add' | 'edit';
+  prevName?: string;
+  prevDescription?: string | null;
+  terminalId?: string;
+};
 
-export default function AddNewTerminalForm(props: Props) {
-  let { onClose } = props;
+export default function ManageTerminalForm(props: Props) {
+  let { onClose, mode, prevName, prevDescription, terminalId } = props;
   let [
     addTerminal,
     { loading: addTerminalLoading, error: addTerminalError },
@@ -27,19 +39,49 @@ export default function AddNewTerminalForm(props: Props) {
       onClose();
     },
   });
+
+  let [
+    editTerminal,
+    { loading: editTerminalLoading, error: editTerminalError },
+  ] = useMutation<EditTerminal, EditTerminalVariables>(EDIT_TERMINAL, {
+    onCompleted: () => {
+      onClose();
+    },
+  });
   let { register, handleSubmit, errors } = useForm();
+  let isEditMode = mode === 'edit';
   let containerStyle = { paddingTop: 6, paddingBottom: 6 };
 
   let onSubmit = (data: FieldValues) => {
     let { name, description } = data;
-    addTerminal({
-      variables: {
-        name,
-        description,
-      },
-      awaitRefetchQueries: true,
-      refetchQueries: [{ query: GET_TERMINAL_LIST }],
-    });
+    if (mode === 'add') {
+      addTerminal({
+        variables: {
+          name,
+          description,
+        },
+        awaitRefetchQueries: true,
+        refetchQueries: [{ query: GET_TERMINAL_LIST }],
+      });
+    } else if (mode === 'edit' && terminalId) {
+      editTerminal({
+        variables: {
+          name,
+          description,
+          terminalId,
+        },
+        awaitRefetchQueries: true,
+        refetchQueries: [
+          { query: GET_TERMINAL_LIST },
+          {
+            query: GET_TERMINAL,
+            variables: {
+              terminalId,
+            },
+          },
+        ],
+      });
+    }
   };
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
@@ -47,7 +89,11 @@ export default function AddNewTerminalForm(props: Props) {
         visible={!!addTerminalError}
         text={addTerminalError?.message || ''}
       />
-      <Title>Add a New Terminal</Title>
+      <Alert
+        visible={!!editTerminalError}
+        text={editTerminalError?.message || ''}
+      />
+      <Title>{isEditMode ? 'Edit Terminal' : 'Add a New Terminal'}</Title>
       <TextInput
         label="Name"
         containerStyle={containerStyle}
@@ -55,6 +101,7 @@ export default function AddNewTerminalForm(props: Props) {
           required: 'Name should not be empty',
         })}
         name="name"
+        defaultValue={prevName}
         {...(errors?.name?.message && {
           errorMessage: errors.name.message,
         })}
@@ -64,15 +111,16 @@ export default function AddNewTerminalForm(props: Props) {
         containerStyle={containerStyle}
         ref={register}
         name="description"
+        defaultValue={prevDescription || undefined}
       />
       <ButtonContainer>
         <Button text="Cancel" size="small" mode="secondary" onPress={onClose} />
         <Button
           type="submit"
-          text="Create"
+          text={isEditMode ? 'Save' : 'Create'}
           size="small"
           style={{ marginLeft: 8 }}
-          loading={addTerminalLoading}
+          loading={addTerminalLoading || editTerminalLoading}
         />
       </ButtonContainer>
     </Form>

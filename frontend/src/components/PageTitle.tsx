@@ -8,8 +8,10 @@ import { THEME_COLOR, WHITE } from '../constants/colors';
 import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import { getResultTitle } from '../helpers';
 import { BusinessTagResult, LocationTag } from '../types/types';
+import ManageTerminalModal from '../scenes/terminal/ManageTerminalModal';
 
 import SvgShare from './icons/share';
+import SvgEdit from './icons/edit';
 import ShareTerminalPopover from './ShareTerminalPopover';
 
 type Props = {
@@ -32,6 +34,7 @@ export default function PageTitle(props: Props) {
   } = props;
 
   let [sharePopoverVisible, setSharePopoverVisible] = useState(false);
+  let [editTerminalVisible, setEditTerminalVisible] = useState(false);
 
   let resultTitle = getResultTitle({
     reviewTag,
@@ -52,22 +55,39 @@ export default function PageTitle(props: Props) {
 
   return (
     <TitleContainer>
+      <ManageTerminalModal
+        mode="edit"
+        visible={editTerminalVisible}
+        onClose={() => {
+          setEditTerminalVisible(false);
+        }}
+        terminalId={terminalId}
+      />
       <Title>{text ? text : resultTitle}</Title>
       {!!terminalId && (
-        <Popover
-          isOpen={sharePopoverVisible}
-          content={shareTerminalPopover}
-          position={['bottom']}
-          onClickOutside={() => setSharePopoverVisible(false)}
-          align="end"
-        >
-          {(ref) => (
-            <Touchable ref={ref} onPress={() => setSharePopoverVisible(true)}>
-              <SvgShare style={{ marginRight: 4 }} />
-              <PurpleText>Share</PurpleText>
-            </Touchable>
-          )}
-        </Popover>
+        <Row>
+          <Touchable
+            onPress={() => setEditTerminalVisible(true)}
+            style={{ marginRight: 12 }}
+          >
+            <SvgEdit style={{ marginRight: 4 }} />
+            <PurpleText>Edit Terminal</PurpleText>
+          </Touchable>
+          <Popover
+            isOpen={sharePopoverVisible}
+            content={shareTerminalPopover}
+            position={['bottom']}
+            onClickOutside={() => setSharePopoverVisible(false)}
+            align="end"
+          >
+            {(ref) => (
+              <Touchable ref={ref} onPress={() => setSharePopoverVisible(true)}>
+                <SvgShare style={{ marginRight: 4 }} />
+                <PurpleText>Share</PurpleText>
+              </Touchable>
+            )}
+          </Popover>
+        </Row>
       )}
       {showLocation &&
         (locationTag?.type === LocationTagType.NATION || !locationTag) && (
@@ -98,4 +118,8 @@ const PurpleText = styled(Text)`
 const Touchable = styled(TouchableOpacity)`
   flex-direction: row;
   align-items: center;
+`;
+
+const Row = styled(View)`
+  flex-direction: row;
 `;

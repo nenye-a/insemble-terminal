@@ -46,6 +46,22 @@ export const CREATE_TERMINAL = gql`
   }
 `;
 
+export const EDIT_TERMINAL = gql`
+  mutation EditTerminal(
+    $terminalId: String!
+    $name: String
+    $description: String
+  ) {
+    editTerminal(
+      terminalId: $terminalId
+      name: $name
+      description: $description
+    ) {
+      id
+    }
+  }
+`;
+
 export const DELETE_TERMINAL = gql`
   mutation DeleteTerminal($terminalId: String!) {
     deleteTerminal(terminalId: $terminalId) {
@@ -91,4 +107,13 @@ export const GET_SHARED_TERMINAL = gql`
     }
   }
   ${TERMINAL}
+`;
+
+export const GET_TERMINAL_BASIC_INFO = gql`
+  query GetTerminalBasicInfo($terminalId: String!) {
+    terminal(terminalId: $terminalId) {
+      name
+      description
+    }
+  }
 `;

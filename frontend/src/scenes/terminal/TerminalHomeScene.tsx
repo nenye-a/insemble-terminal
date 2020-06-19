@@ -17,7 +17,7 @@ import {
 import { GET_TERMINAL_LIST } from '../../graphql/queries/server/terminals';
 
 import TerminalCard from './TerminalCard';
-import AddNewTerminalModal from './AddNewTerminalModal';
+import ManageTerminalModal from './ManageTerminalModal';
 
 export default function TerminalHomeScene() {
   let [addModalVisible, setAddModalVisible] = useState(false);
@@ -37,7 +37,8 @@ export default function TerminalHomeScene() {
   }, [data]);
   return (
     <View>
-      <AddNewTerminalModal
+      <ManageTerminalModal
+        mode="add"
         visible={addModalVisible}
         onClose={() => setAddModalVisible(false)}
       />

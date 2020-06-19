@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { View, Text } from '../core-ui';
 import { ERROR_COMPONENT_BACKGROUND, WHITE } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM, DEFAULT_BORDER_RADIUS } from '../constants/theme';
+import { formatGraphQLError } from '../helpers';
 
 type Props = {
   text?: string;
@@ -13,9 +14,10 @@ export default function ErrorComponent(props: Props) {
   let {
     text = 'Something went wrong. Please check your search, or try again.',
   } = props;
+  let formattedText = formatGraphQLError(text);
   return (
     <Container>
-      <ErrorMessage>{text}</ErrorMessage>
+      <ErrorMessage>{formattedText}</ErrorMessage>
     </Container>
   );
 }

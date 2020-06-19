@@ -88,9 +88,7 @@ export default function TerminalCard(props: Props) {
       />
       <Container
         onPress={() => {
-          history.push(`/terminals/${id}`, {
-            name,
-          });
+          history.push(`/terminals/${id}`);
         }}
         disabled={isLandingPage}
         {...otherProps}
