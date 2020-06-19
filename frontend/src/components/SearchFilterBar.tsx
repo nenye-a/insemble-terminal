@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
+import { useAlert } from 'react-alert';
 
 import {
   View,
@@ -70,6 +71,7 @@ export default function SearchFilterBar(props: Props) {
     disableAll = false,
     disableReviewTag = false,
   } = props;
+  let alert = useAlert();
 
   let [dataTypeFilterVisible, setDataTypeFilterVisible] = useState(false);
   let [selectedDataType, setSelectedDataType] = useState('');
@@ -80,7 +82,6 @@ export default function SearchFilterBar(props: Props) {
   let [selectedPlace, setSelectedPlace] = useState<LocationTagInput | null>(
     null,
   );
-  let [errorMessage, setErrorMessage] = useState('');
   let history = useHistory();
   let { isAuthenticated, user } = useAuth();
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
@@ -204,7 +205,9 @@ export default function SearchFilterBar(props: Props) {
                         locationTag: selectedPlace ? selectedPlace : undefined,
                       });
                   } else {
-                    setErrorMessage('Search combination is not valid');
+                    alert.show(
+                      'Search combination is not valid. Please try again.',
+                    );
                   }
                 } else {
                   history.push('/contact-us');
@@ -216,7 +219,6 @@ export default function SearchFilterBar(props: Props) {
               <SvgSearch />
             </TouchableOpacity>
           </SearchContainer>
-          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
         </>
       ) : null}
       {dataTypeFilterVisible && (
@@ -268,10 +270,6 @@ const SpacedText = styled(Text)`
   padding: 0 8px;
   color: ${MUTED_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
-`;
-
-const ErrorMessage = styled(Text)`
-  padding-top: 2px;
 `;
 
 const Row = styled(View)`
