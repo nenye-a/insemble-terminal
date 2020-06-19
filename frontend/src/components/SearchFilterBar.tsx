@@ -82,7 +82,6 @@ export default function SearchFilterBar(props: Props) {
   let [selectedPlace, setSelectedPlace] = useState<LocationTagInput | null>(
     null,
   );
-  let [errorMessage, setErrorMessage] = useState('');
   let history = useHistory();
   let { isAuthenticated, user } = useAuth();
   let { data: businessTagData, loading: businessTagLoading } = useQuery<
@@ -220,7 +219,6 @@ export default function SearchFilterBar(props: Props) {
               <SvgSearch />
             </TouchableOpacity>
           </SearchContainer>
-          {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
         </>
       ) : null}
       {dataTypeFilterVisible && (
@@ -272,10 +270,6 @@ const SpacedText = styled(Text)`
   padding: 0 8px;
   color: ${MUTED_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
-`;
-
-const ErrorMessage = styled(Text)`
-  padding-top: 2px;
 `;
 
 const Row = styled(View)`
