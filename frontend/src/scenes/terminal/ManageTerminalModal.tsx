@@ -4,18 +4,19 @@ import styled from 'styled-components';
 import { Modal } from '../../core-ui';
 import { DEFAULT_BORDER_RADIUS } from '../../constants/theme';
 
-import AddNewTerminalForm from './AddNewTerminalForm';
+import ManageTerminalForm from './ManageTerminalForm';
 
 type Props = {
   visible: boolean;
   onClose: () => void;
+  mode?: 'add' | 'edit';
 };
 
-export default function AddNewTerminalModal(props: Props) {
-  let { visible, onClose } = props;
+export default function ManageTerminalModal(props: Props) {
+  let { visible, onClose, mode = 'add' } = props;
   return (
     <Container visible={visible} hideCloseButton={true} onClose={onClose}>
-      <AddNewTerminalForm onClose={onClose} />
+      <ManageTerminalForm onClose={onClose} mode={mode} />
     </Container>
   );
 }

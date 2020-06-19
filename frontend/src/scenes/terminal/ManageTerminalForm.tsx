@@ -15,10 +15,15 @@ import {
   GET_TERMINAL_LIST,
 } from '../../graphql/queries/server/terminals';
 
-type Props = { onClose: () => void };
+type Props = {
+  onClose: () => void;
+  mode: 'add' | 'edit';
+  prevName?: string;
+  prevDescription?: string;
+};
 
-export default function AddNewTerminalForm(props: Props) {
-  let { onClose } = props;
+export default function ManageTerminalForm(props: Props) {
+  let { onClose, mode, prevName, prevDescription } = props;
   let [
     addTerminal,
     { loading: addTerminalLoading, error: addTerminalError },
@@ -32,14 +37,17 @@ export default function AddNewTerminalForm(props: Props) {
 
   let onSubmit = (data: FieldValues) => {
     let { name, description } = data;
-    addTerminal({
-      variables: {
-        name,
-        description,
-      },
-      awaitRefetchQueries: true,
-      refetchQueries: [{ query: GET_TERMINAL_LIST }],
-    });
+    if (mode === 'add') {
+      addTerminal({
+        variables: {
+          name,
+          description,
+        },
+        awaitRefetchQueries: true,
+        refetchQueries: [{ query: GET_TERMINAL_LIST }],
+      });
+    } else if (mode === 'edit') {
+    }
   };
   return (
     <Form onSubmit={handleSubmit(onSubmit)}>
@@ -47,7 +55,7 @@ export default function AddNewTerminalForm(props: Props) {
         visible={!!addTerminalError}
         text={addTerminalError?.message || ''}
       />
-      <Title>Add a New Terminal</Title>
+      <Title>{mode === 'add' ? 'Add a New Terminal' : 'Edit Terminal'}</Title>
       <TextInput
         label="Name"
         containerStyle={containerStyle}
