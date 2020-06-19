@@ -27,6 +27,7 @@ let permissions = shield({
     createTerminal: isUserAuthenticated,
     deleteTerminal: isUserAuthenticated,
     shareTerminal: isUserAuthenticated,
+    editTerminal: isUserAuthenticated,
     pinTable: isUserAuthenticated,
     removePinnedTable: isUserAuthenticated,
     createLicense: isUserAuthenticated,
