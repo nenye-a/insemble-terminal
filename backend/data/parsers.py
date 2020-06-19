@@ -4,6 +4,7 @@ import ast
 import re
 import utils
 import dateutil.parser as tparser
+from fuzzywuzzy import process
 from bs4 import BeautifulSoup
 
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
@@ -634,17 +635,26 @@ def google_news_parser(response):
     DESCRIPTION_LOCATOR_RX = r'xBbh9">[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
     DESCRIPTION_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\']+'
 
+    TITLELINK_LOCATOR_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+","[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+",[\[\]\d\s\,]+,[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+"http[\s\w\=\;\:\-\.\?\&\%\(\)\—\|\+\[\]\*\#\'\/]+"'
+    TITLELINK_NARROW_TITLE_RX = r'"[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+"'
+    TITLELINK_NARROW_LINK_RX = r'http[\s\w\=\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
+
+    titlelinks = {re.findall(TITLELINK_NARROW_TITLE_RX, tlinktext)[0]:
+                      re.search(TITLELINK_NARROW_LINK_RX, tlinktext).group() if 'http' in tlinktext else None for tlinktext in re.findall(TITLELINK_LOCATOR_RX, stew)}
+
     results = []
     for match in re.finditer(NEWS_LOCATOR_RX, stew):
         beef = match.group()
 
         try:
-            title = utils.format_punct(re.search(TITLE_NARROW_RX, re.search(TITLE_LOCATOR_RX, beef).group()).group()[1:])
+            og_title = re.search(TITLE_NARROW_RX, re.search(TITLE_LOCATOR_RX, beef).group()).group()[1:]
+            title = utils.format_punct(og_title)
         except Exception:
             title = None
 
         try:
-            link = re.search(LINK_NARROW_RX, re.search(LINK_LOCATOR_RX, beef).group()).group()
+            match = process.extractOne(title, list(titlelinks.keys())) if title else None
+            link = titlelinks[match[0]] if match else None
         except Exception:
             link = None
 
