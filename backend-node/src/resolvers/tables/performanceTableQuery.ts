@@ -16,21 +16,6 @@ let performanceTableResolver: FieldResolver<
   { performanceType, businessTagId, locationTagId, tableId },
   context: Context,
 ) => {
-  let user = await context.prisma.user.findOne({
-    where: {
-      id: context.userId,
-    },
-    include: { license: true },
-  });
-
-  if (!user) {
-    throw new Error('User not found!');
-  }
-
-  if (!user.license && user.role === 'USER') {
-    throw new Error('Pelase activate your account.');
-  }
-
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
