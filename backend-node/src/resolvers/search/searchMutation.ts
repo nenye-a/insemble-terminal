@@ -1,6 +1,10 @@
 import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
 
 import { Context } from 'serverTypes';
+import axios from 'axios';
+import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
+import { API_URI } from '../../constants/constants';
+import { PyPreprocessingResponse } from 'dataTypes';
 
 export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
   _,
@@ -27,19 +31,33 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
       throw new Error('Tag does not exist!');
     }
   } else if (businessTag) {
+    let preprocessBusinessName;
+    try {
+      let { business_name: pyPreprocessName }: PyPreprocessingResponse = (
+        await axios.get(`${API_URI}/api/preprocess`, {
+          params: {
+            business: businessTag.params,
+          },
+          paramsSerializer: axiosParamsSerializer,
+        })
+      ).data;
+      preprocessBusinessName = pyPreprocessName;
+    } catch {
+      // TODO: Handle if error.
+      preprocessBusinessName = businessTag.params;
+    }
     let businessTagsCheck = await context.prisma.businessTag.findMany({
       where: {
-        params: businessTag.params,
+        params: preprocessBusinessName,
         type: businessTag.type,
       },
     });
     if (businessTagsCheck.length) {
       selectedBusinessTag = businessTagsCheck[0];
     } else {
-      // TODO: preprocess typo data before save
       selectedBusinessTag = await context.prisma.businessTag.create({
         data: {
-          params: businessTag.params,
+          params: preprocessBusinessName,
           type: businessTag.type,
         },
       });

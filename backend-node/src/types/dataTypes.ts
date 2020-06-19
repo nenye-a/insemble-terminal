@@ -133,6 +133,10 @@ export type PyOwnershipInfoResponse = {
   data: PyInfoData;
 };
 
+export type PyPreprocessingResponse = {
+  business_name?: string;
+};
+
 export type ActivityGraphData = {
   name: string;
   business: string;
