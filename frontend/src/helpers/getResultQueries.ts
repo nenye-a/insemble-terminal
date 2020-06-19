@@ -57,6 +57,8 @@ export default function getResultQueries(
           reviewTag: ReviewTag.PERFORMANCE,
           type: PerformanceTableType.ADDRESS,
         });
+      } else if (locationTag.type === LocationTagType.ADDRESS) {
+        // Do nothing, no need to at any address table.
       } else {
         queries.push({
           reviewTag: ReviewTag.PERFORMANCE,
@@ -95,10 +97,10 @@ export default function getResultQueries(
       (!businessTag || businessTag.type === BusinessType.BUSINESS) &&
       locationTag?.type === LocationTagType.ADDRESS
     ) {
-      queries.push({
-        reviewTag: ReviewTag.CONTACT,
-        type: OwnershipType.PROPERTY_CONTACT,
-      });
+      // queries.push({
+      //   reviewTag: ReviewTag.CONTACT,
+      //   type: OwnershipType.PROPERTY_CONTACT,
+      // });
     }
     if (businessTag?.type === BusinessType.BUSINESS) {
       queries.push({
@@ -110,10 +112,10 @@ export default function getResultQueries(
       (!businessTag || businessTag.type === BusinessType.BUSINESS) &&
       locationTag?.type === LocationTagType.ADDRESS
     ) {
-      queries.push({
-        reviewTag: ReviewTag.CONTACT,
-        type: OwnershipType.PROPERTY_INFORMATION,
-      });
+      // queries.push({
+      //   reviewTag: ReviewTag.CONTACT,
+      //   type: OwnershipType.PROPERTY_INFORMATION,
+      // });
     }
   }
 
