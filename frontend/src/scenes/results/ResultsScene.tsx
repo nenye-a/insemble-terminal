@@ -157,15 +157,12 @@ export default function ResultsScene() {
         businessTag,
         locationTag,
       });
-      console.log(queries, submitSearchData);
       setResultQueries(queries);
     }
   }, [submitSearchData]);
 
   useEffect(() => {
     if (getSearchTagData) {
-      console.log('get search data', getSearchTagData);
-
       let {
         reviewTag,
         businessTag,
