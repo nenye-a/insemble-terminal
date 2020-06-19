@@ -19,7 +19,7 @@ type Props = {
   onClose: () => void;
   mode: 'add' | 'edit';
   prevName?: string;
-  prevDescription?: string;
+  prevDescription?: string | null;
 };
 
 export default function ManageTerminalForm(props: Props) {
@@ -33,6 +33,7 @@ export default function ManageTerminalForm(props: Props) {
     },
   });
   let { register, handleSubmit, errors } = useForm();
+  let isEditMode = mode === 'edit';
   let containerStyle = { paddingTop: 6, paddingBottom: 6 };
 
   let onSubmit = (data: FieldValues) => {
@@ -55,7 +56,7 @@ export default function ManageTerminalForm(props: Props) {
         visible={!!addTerminalError}
         text={addTerminalError?.message || ''}
       />
-      <Title>{mode === 'add' ? 'Add a New Terminal' : 'Edit Terminal'}</Title>
+      <Title>{isEditMode ? 'Edit Terminal' : 'Add a New Terminal'}</Title>
       <TextInput
         label="Name"
         containerStyle={containerStyle}
@@ -63,6 +64,7 @@ export default function ManageTerminalForm(props: Props) {
           required: 'Name should not be empty',
         })}
         name="name"
+        defaultValue={prevName}
         {...(errors?.name?.message && {
           errorMessage: errors.name.message,
         })}
@@ -72,12 +74,13 @@ export default function ManageTerminalForm(props: Props) {
         containerStyle={containerStyle}
         ref={register}
         name="description"
+        defaultValue={prevDescription || undefined}
       />
       <ButtonContainer>
         <Button text="Cancel" size="small" mode="secondary" onPress={onClose} />
         <Button
           type="submit"
-          text="Create"
+          text={isEditMode ? 'Save' : 'Create'}
           size="small"
           style={{ marginLeft: 8 }}
           loading={addTerminalLoading}

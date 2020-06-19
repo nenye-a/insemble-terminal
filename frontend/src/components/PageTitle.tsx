@@ -61,6 +61,7 @@ export default function PageTitle(props: Props) {
         onClose={() => {
           setEditTerminalVisible(false);
         }}
+        terminalId={terminalId}
       />
       <Title>{text ? text : resultTitle}</Title>
       {!!terminalId && (

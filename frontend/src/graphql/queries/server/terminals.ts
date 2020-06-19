@@ -92,3 +92,12 @@ export const GET_SHARED_TERMINAL = gql`
   }
   ${TERMINAL}
 `;
+
+export const GET_TERMINAL_BASIC_INFO = gql`
+  query GetTerminalBasicInfo($terminalId: String!) {
+    terminal(terminalId: $terminalId) {
+      name
+      description
+    }
+  }
+`;
