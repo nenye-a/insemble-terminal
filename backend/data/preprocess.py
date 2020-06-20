@@ -1,5 +1,4 @@
 import utils
-import re
 from fuzzywuzzy import process
 
 """
@@ -24,6 +23,10 @@ def preprocess(business_name):
 def get_matching_name(word):
     word = utils.alpanumeric(word)
     matches = process.extractBests(word, NAMES, score_cutoff=80)
+    for match in matches.copy():
+        # Remove any words that do not start with this item.
+        if match[0][0].lower() != word[0].lower():
+            matches.remove(match)
     if matches:
         word_length = len(word)
         best_word = "word".join([word for x in range(14)])
@@ -113,6 +116,8 @@ if __name__ == "__main__":
     # clean_names()
 
     print(preprocess('Pap[]a Jo-hn\'s'))
+    print(preprocess('Retail'))
+    print(preprocess('California Pizza'))
     # # print(process.extractBests("Papa Johns", NAMES))
     # print(time.time() - start)
     # pass
