@@ -372,6 +372,10 @@ def targeted_update(msa_name, batch_size=100):
         timestamp = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
         print("Last Update: {}".format(timestamp.ctime()))
 
+        print("Num Left: {}".format(utils.DB_COORDINATES.count_documents({
+            'ran': False
+        })))
+
 
 if __name__ == "__main__":
     # search_locations()
