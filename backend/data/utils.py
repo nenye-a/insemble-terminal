@@ -88,6 +88,8 @@ def create_index(collection):
         DB_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_COORDINATES.create_index([('processed_terms', 1)])
         DB_COORDINATES.create_index([('stage', 1)])
+        DB_COORDINATES.create_index([('ran', 1), ('stage', 1)])
+        DB_COORDINATES.create_index([('ran', 1)])
     if collection.lower() == 'log':
         DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
     if collection.lower() == 'regions':

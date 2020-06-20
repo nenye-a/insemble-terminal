@@ -182,25 +182,8 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
             return
 
         queried_ids = [document['_id'] for document in point_documents]
-        latlngs = [tuple(reversed(document['query_point']['coordinates']))
-                   for document in point_documents]
 
-        nearby_scraper = google.GoogleNearby('STAGE NEARBY SCRAPER')
-        urls = [nearby_scraper.build_request(term, lat, lng, zoom)
-                for (lat, lng) in latlngs]
-
-        results = utils.flatten(nearby_scraper.async_request(
-            urls,
-            pool_limit=20,
-            timeout=10,
-            quality_proxy=True,
-            res_parser=google.GoogleNearby.parse_address_latlng
-        ))
-        if not results:
-            results = {}
-        new_locations = list(results.values())
-        results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
-                   for k, v in results.items()]
+        results, new_locations = get_results(point_documents, term, zoom)
 
         next_stage_dict = {'stage': stage + 1, 'generating_term': term}
         new_locations = [dict(run_identifier, **next_stage_dict, **{'query_point': utils.to_geojson(location)})
@@ -300,6 +283,49 @@ def _print_log(stage, term, num_queried, locations_inserted, results_inserted, l
     })
 
 
+def get_results(point_documents, term, zoom, rerun=False):
+    """
+    Parameters:
+        point_documents - documents including, stage, default_zoom, etc. generated
+                          in the process of making stages
+        term - term that sould be queried (this term is queried if not a re-run, otherwise it is ignored)
+        zoom - zoom that should be queried
+        rerun - whether or not to re-run the details
+
+    """
+
+    nearby_scraper = google.GoogleNearby('STAGE NEARBY SCRAPER')
+
+    if not rerun:
+        coordinates = [tuple(reversed(document['query_point']['coordinates']))
+                       for document in point_documents]
+        urls = [nearby_scraper.build_request(term, lat, lng, zoom)
+                for (lat, lng) in coordinates]
+    else:
+        query_tuples = [(point_document['generating_term'], utils.from_geojson(point_document['query_point']))
+                        for point_document in point_documents]
+        urls = [nearby_scraper.build_request(term, lat, lng, zoom)
+                for (term, (lat, lng)) in query_tuples]
+
+    results = utils.flatten(nearby_scraper.async_request(
+        urls,
+        pool_limit=20,
+        timeout=10,
+        quality_proxy=True,
+        res_parser=google.GoogleNearby.parse_address_latlng
+    ))
+    if not results:
+        results = {}
+    new_locations = list(results.values())
+    results = [dict(utils.split_name_address(k, as_dict=True), **{"location": utils.to_geojson(v)})
+               for k, v in results.items()]
+    for location in results:
+        city = utils.extract_city(location['address'])
+        location['city'] = city
+
+    return results, new_locations
+
+
 def _timed_refresh():
     """Refreshes scraper after a specified amount of time"""
     minutes = 10
@@ -308,5 +334,46 @@ def _timed_refresh():
         utils.restart_program()
 
 
+def targeted_update(msa_name, batch_size=100):
+    zoom = 19
+    msa = utils.DB_REGIONS.find_one({'type': 'msa', 'name': {'$regex': r'^' + msa_name}})
+
+    while True:
+
+        query_points = list(utils.DB_COORDINATES.aggregate([
+            {'$match': {
+                'query_point': {'$geoWithin': {'$geometry': msa['geometry']}},
+                'stage': 2,
+                'ran': False
+            }},
+            {'$sample': {
+                'size': batch_size
+            }}
+        ]))
+
+        queried_ids = [document['_id'] for document in query_points]
+
+        results, _ = get_results(query_points, None, zoom, rerun=True)
+
+        try:
+            results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
+            results_inserted = len(results)
+        except utils.BWE as bwe:
+            results_inserted = bwe.details['nInserted']
+
+        utils.DB_COORDINATES.update_many({'_id': {'$in': queried_ids}}, {'$set': {
+            'ran': True,
+        }})
+        num_queried = len(queried_ids)
+
+        print("STAGE: Points Queried: {}".format(num_queried))
+        print("STAGE: Number of Results Inserted: {}".format(results_inserted))
+
+        timestamp = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
+        print("Last Update: {}".format(timestamp.ctime()))
+
+
 if __name__ == "__main__":
-    search_locations()
+    # search_locations()
+    targeted_update('New York')
+    pass
