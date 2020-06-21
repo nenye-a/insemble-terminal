@@ -10,16 +10,10 @@ TEMP_DB = utils.SYSTEM_MONGO.get_collection("terminal.temp_places")
 
 def google_detailer(batch_size=100, wait=True, additional_query=None):
     """
-    Google detail collector.
+    Google detail collector. Assumes setup() has alrady been run.
     """
 
-    query = {
-        # '$or': [
-        #     {'last_update': {'$eq': -1}},
-        #     {'last_update': {'$lt': dt.datetime.now() - dt.timedelta(weeks=2)}}
-        # ],
-        'last_update': {'$eq': -1},
-    }
+    query = {}
     additional_query and query.update(additional_query)
 
     size = {'size': batch_size}
@@ -29,11 +23,12 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
     while collecting:
 
         # Using temp DB temporarily to reduce disk utilization.
-        places = list(TEMP_DB.aggregate([
-            {'$match': query},
-            {'$sample': size}
-        ]))
+        pipeline = []
+        if query:
+            pipeline.append({'$match': query})
+        pipeline.append({'$sample': size})
 
+        places = list(TEMP_DB.aggregate(pipeline))
         id_list = [place['_id'] for place in places]
 
         if len(places) == 0:
@@ -146,14 +141,23 @@ def update_last_update():
     })
 
 
-def migrate_db():
+def setup():
 
-    places = list(utils.DB_TERMINAL_PLACES.find({"last_update": -1}))
-    TEMP_DB.insert_many(places)
+    utils.DB_TERMINAL_PLACES.aggregate([
+        {'$match': {
+            '$or': [
+                {'last_update': {'$lt': dt.datetime.now() - dt.timedelta(weeks=1.5)}},
+                {'last_update': -1},
+                {'last_update': {'$exists': False}}
+            ]
+        }},
+        {'$merge': "temp_places"}
+    ])
 
 
 if __name__ == "__main__":
-    google_detailer(wait=True)
-    # migrate_db()
+
+    # setup()
+    google_detailer(wait=False)
     # check_recency()
     # update_last_update()
