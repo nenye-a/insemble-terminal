@@ -321,7 +321,7 @@ def aggregate_performance(name, location, scope):
     return data
 
 
-def category_performance(category, location, scope, return_type):
+def category_performance(category, location, scope, return_type=None):
     data_name = category if category else location
 
     if scope.lower() == 'address':
@@ -411,7 +411,7 @@ def parse_details(details):
             'numLocations': None,
             'numNearby': place['num_nearby'] if 'num_nearby' in place else None
             # TODO: run confidence script to prepopulate
-            #list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(place, LOW_CONFIDENCE_VICINITY)))[0]['count']
+            # list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(place, LOW_CONFIDENCE_VICINITY)))[0]['count']
         }
     else:
         return {
@@ -560,13 +560,11 @@ def categorical_data(matching_places, data_name, *return_types):
             pool, pool_exists = Pool(10), True
             if not return_types or 'by_brand' in return_types:
                 brand_dict = performance.section_by_key(matching_places, 'name')
-
                 brand_details = pool.map(partial(split_list, data_type='brand'), brand_dict.items())
 
             if not return_types or 'by_category' in return_types:
                 category_dict = performance.section_by_key(matching_places, 'type')
                 category_details = pool.map(partial(split_list, data_type='category'), category_dict.items())
-
             if not return_types or 'by_city' in return_types:
                 city_dict = performance.section_by_key(matching_places, 'city')
                 city_details = pool.map(partial(split_list, data_type='city'), city_dict.items())
@@ -688,11 +686,11 @@ if __name__ == "__main__":
         pprint.pprint(performance)
 
     def test_category_performance_higher_scope():
-        # performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
-        performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county", 'by_city')
+        performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
+        # performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county", 'by_city')
         # performance = category_performance(None, "Los Angeles", "County")
         # print(performance['by_location'])
-        print(performance['by_city'])
+        print(performance)
 
     def test_get_immediate_vicinity_volume():
         size = 1000

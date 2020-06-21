@@ -141,18 +141,19 @@ class PerformanceAPI(BasicAPI):
 
             # NO BUSINESS & LOCATION
             if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                if data_type == 'BRAND':
+                    data_key = 'by_brand'
+                elif data_type == 'CATEGORY':
+                    data_key = 'by_category'
+                else:
+                    error = "{data_type} not supported for request Location Only requests.".format(
+                        data_type=data_type
+                    )
+                    return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+                return_type = data_key
                 raw_data = performancev2.category_performance(
-                    None, location['params'], location['locationType'])
-                if raw_data:
-                    if data_type == 'CATEGORY':
-                        data.extend(raw_data['by_category'])
-                    elif data_type == 'BRAND':
-                        data.extend(raw_data['by_brand'])
-                    else:
-                        error = "{data_type} not supported for request Location Only requests.".format(
-                            data_type=data_type
-                        )
-                        return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+                    None, location['params'], location['locationType'], return_type)
+                raw_data and data.extend(raw_data[data_key])
             else:
                 return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
