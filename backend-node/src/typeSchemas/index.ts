@@ -20,6 +20,8 @@ export * from './ComparePerformanceData';
 export * from './NewsTable';
 export * from './NewsData';
 export * from './CompareNewsData';
+export * from './OpenNews';
+export * from './Article';
 
 export * from './ActivityTable';
 export * from './ActivityData';

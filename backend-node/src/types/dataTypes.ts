@@ -169,4 +169,11 @@ export type TableParams = {
   locationTag?: LocationTag;
 };
 
+export type FirstArticle = {
+  title: string;
+  source: string;
+  published: string;
+  link: string;
+};
+
 export type AllTableType = PerformanceType | OwnershipType;
