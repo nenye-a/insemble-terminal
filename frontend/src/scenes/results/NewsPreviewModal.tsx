@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { ComponentProps } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { Modal, Text, View, Divider } from '../../core-ui';
-import { getPublishedDate } from '../../helpers';
+import { Modal, Text, View, Divider, TouchableOpacity } from '../../core-ui';
+import { getPublishedDate, useViewport } from '../../helpers';
 import {
   DEFAULT_BORDER_RADIUS,
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
 import { GRAY_TEXT, THEME_COLOR } from '../../constants/colors';
+import SvgArrowLeft from '../../components/icons/arrow-left';
 
 type State = {
   title: string;
@@ -22,6 +23,7 @@ type Params = {
 };
 
 export default function NewsPreview() {
+  let { isDesktop } = useViewport();
   let history = useHistory<State>();
   let {
     title = '-',
@@ -31,17 +33,26 @@ export default function NewsPreview() {
   } = history.location.state;
 
   // TODO: get news detail by id.
+
+  let goBack = () => {
+    // TODO: check length. if it's the first state then push other scene
+
+    history.goBack();
+  };
   return (
-    <>
-      <Container
-        visible={true}
-        hideCloseButton={true}
-        onClose={() => {
-          // TODO: check length. if it's the first state then push other scene
-          history.goBack();
-        }}
-      >
-        <TitleContainer>
+    <Container
+      visible={true}
+      hideCloseButton={true}
+      onClose={goBack}
+      isDekstop={isDesktop}
+    >
+      <TitleContainer isDesktop={isDesktop}>
+        {!isDesktop && (
+          <TouchableOpacity onPress={goBack}>
+            <SvgArrowLeft style={{ marginRight: 8 }} />
+          </TouchableOpacity>
+        )}
+        <View flex>
           <Text color={THEME_COLOR}>Article</Text>
           <Title>{title}</Title>
           <Row>
@@ -50,22 +61,31 @@ export default function NewsPreview() {
             </Text>
             <PublishedDate>{getPublishedDate(published)}</PublishedDate>
           </Row>
-        </TitleContainer>
-        <Divider width={12} />
-        <Iframe src={link} />
-      </Container>
-    </>
+        </View>
+      </TitleContainer>
+      <Divider width={12} />
+      <Iframe src={link} />
+    </Container>
   );
 }
 
-const Container = styled(Modal)`
-  width: 750px;
+type ContainerProps = ComponentProps<typeof Modal> & {
+  isDesktop: boolean;
+};
+
+type TitleContainerProps = ViewProps & { isDesktop: boolean };
+
+const Container = styled(Modal)<ContainerProps>`
+  width: ${({ isDesktop }) => (isDesktop ? '750px' : '100%')};
   height: 80vh;
-  border-radius: ${DEFAULT_BORDER_RADIUS};
+  border-radius: ${({ isDesktop }) =>
+    isDesktop ? DEFAULT_BORDER_RADIUS : '2px'};
 `;
 
-const TitleContainer = styled(View)`
-  padding: 9px 18px;
+const TitleContainer = styled(View)<TitleContainerProps>`
+  padding: ${({ isDesktop }) => (isDesktop ? `9px 18px` : `14px 12px`)};
+  flex-direction: row;
+  align-items: center;
 `;
 
 const Title = styled(Text)`
@@ -75,6 +95,7 @@ const Title = styled(Text)`
 
 const Row = styled(View)`
   flex-direction: row;
+  align-items: center;
 `;
 
 const Iframe = styled.iframe`
