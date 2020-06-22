@@ -23,11 +23,9 @@ import {
   FONT_WEIGHT_BOLD,
   FONT_SIZE_SMALL,
 } from '../../constants/theme';
+import { useAuth } from '../../context';
+import { getResultTitle } from '../../helpers';
 import { ComparationTagWithFill } from '../../types/types';
-import SvgPin from '../../components/icons/pin';
-import SvgRoundAdd from '../../components/icons/round-add';
-import SvgRoundClose from '../../components/icons/round-close';
-import SvgClose from '../../components/icons/close';
 import {
   ReviewTag,
   LocationTagType,
@@ -40,8 +38,6 @@ import {
   UpdateComparison,
   UpdateComparisonVariables,
 } from '../../generated/UpdateComparison';
-import { getResultTitle } from '../../helpers';
-import SvgQuestionMark from '../../components/icons/question-mark';
 import {
   REMOVE_PINNED_TABLE,
   GET_TERMINAL,
@@ -51,6 +47,11 @@ import {
   RemovePinnedTable,
   RemovePinnedTableVariables,
 } from '../../generated/RemovePinnedTable';
+import SvgPin from '../../components/icons/pin';
+import SvgRoundAdd from '../../components/icons/round-add';
+import SvgRoundClose from '../../components/icons/round-close';
+import SvgClose from '../../components/icons/close';
+import SvgQuestionMark from '../../components/icons/question-mark';
 
 type Props = {
   title: string;
@@ -102,6 +103,7 @@ export default function ResultTitle(props: Props) {
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
+  let { isAuthenticated } = useAuth();
 
   let refetchTerminalQueries = params.terminalId
     ? [
@@ -174,6 +176,10 @@ export default function ResultTitle(props: Props) {
       : comparisonTags && comparisonTags?.length > 0
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
+
+  let showAuthAlert = () => {
+    alert.show('You need to login to access this feature');
+  };
 
   return (
     <Container>
@@ -253,7 +259,13 @@ export default function ResultTitle(props: Props) {
             {(ref) => (
               <Touchable
                 ref={ref}
-                onPress={() => setComparisonPopoverOpen(true)}
+                onPress={() => {
+                  if (isAuthenticated) {
+                    setComparisonPopoverOpen(true);
+                  } else {
+                    showAuthAlert();
+                  }
+                }}
                 disabled={noData}
               >
                 <SvgRoundAdd {...(noData && { fill: DISABLED_TEXT_COLOR })} />
@@ -302,7 +314,13 @@ export default function ResultTitle(props: Props) {
             {(ref) => (
               <Touchable
                 ref={ref}
-                onPress={() => setPinPopoverOpen(true)}
+                onPress={() => {
+                  if (isAuthenticated) {
+                    setPinPopoverOpen(true);
+                  } else {
+                    showAuthAlert();
+                  }
+                }}
                 disabled={noData}
               >
                 <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />

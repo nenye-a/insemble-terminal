@@ -21,6 +21,7 @@ type Props = {
   text?: string;
   showLocation?: boolean;
   terminalId?: string;
+  rightText?: string;
 };
 
 export default function PageTitle(props: Props) {
@@ -31,6 +32,7 @@ export default function PageTitle(props: Props) {
     text,
     showLocation = true,
     terminalId,
+    rightText,
   } = props;
 
   let [sharePopoverVisible, setSharePopoverVisible] = useState(false);
@@ -89,10 +91,12 @@ export default function PageTitle(props: Props) {
           </Popover>
         </Row>
       )}
-      {showLocation &&
-        (locationTag?.type === LocationTagType.NATION || !locationTag) && (
-          <PurpleText>All United States</PurpleText>
-        )}
+      {rightText ? (
+        <PurpleText>{rightText}</PurpleText>
+      ) : showLocation &&
+        (locationTag?.type === LocationTagType.NATION || !locationTag) ? (
+        <PurpleText>All United States</PurpleText>
+      ) : null}
     </TitleContainer>
   );
 }
