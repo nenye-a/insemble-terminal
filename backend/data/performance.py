@@ -206,7 +206,8 @@ def section_by_key(list_locations, key):
 
     my_dict = {}
     for location in list_locations:
-        my_dict[location[key]] = my_dict.get(location[key], []) + [location]
+        if key in location:
+            my_dict[location[key]] = my_dict.get(location[key], []) + [location]
     return my_dict
 
 
