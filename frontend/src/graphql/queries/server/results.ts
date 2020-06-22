@@ -105,12 +105,14 @@ export const GET_NEWS_TABLE_DATA = gql`
           ...ComparationTagFragment
         }
         data {
+          id
           title
           link
           source
           published
         }
         compareData {
+          id
           title
           link
           source

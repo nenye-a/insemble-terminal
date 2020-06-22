@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
 
 import { DataTable } from '../../components';
 import {
@@ -16,6 +17,8 @@ type Props = {
 
 export default function NewsTable(props: Props) {
   let { data } = props;
+  let history = useHistory();
+  // let location = useLocation();
 
   let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
     data,
@@ -44,14 +47,21 @@ export default function NewsTable(props: Props) {
       </DataTable.HeaderRow>
       <DataTable.Body>
         {sortedData.map((row, index) => {
-          let { title = '', link = '', source = '', published, fill } = row;
+          let { id, title = '', link = '', source = '', published, fill } = row;
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
           return (
             <DataTable.Row
               key={index}
               onPress={() => {
-                window.open(link, '_blank');
+                history.push(`/news/${id}`, {
+                  title,
+                  link,
+                  source,
+                  published,
+                  background: history.location,
+                });
+                // window.open(link, '_blank');
               }}
               style={{
                 backgroundColor: bgColor,

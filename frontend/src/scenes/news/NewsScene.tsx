@@ -22,6 +22,7 @@ import { BACKGROUND_COLOR } from '../../constants/colors';
 import ResultTitle from '../results/ResultTitle';
 import NewsTable from '../results/NewsTable';
 import FeedbackButton from '../results/FeedbackButton';
+import LatestNewsResult from '../results/LatestNewsResult';
 
 type Props = {
   businessTagId?: string;
@@ -37,7 +38,7 @@ type ColoredData = (NewsData | NewsCompareData) & {
 
 const POLL_INTERVAL = 5000;
 
-export default function NewsPage(props: Props) {
+export default function NewsScene(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
@@ -117,63 +118,7 @@ export default function NewsPage(props: Props) {
     <>
       <PageTitle text="News" rightText="5/1" />
       <Container>
-        <ResultTitle
-          title="Latest News"
-          noData={false}
-          reviewTag={ReviewTag.NEWS}
-          tableId={data?.newsTable.table?.id || ''}
-          onTableIdChange={(newTableId: string) => {
-            refetch({
-              tableId: newTableId,
-            });
-            startPolling(POLL_INTERVAL);
-          }}
-          comparisonTags={comparisonTags}
-          tableType={TableType.NEWS}
-          {...(data?.newsTable.table?.businessTag && {
-            businessTag: {
-              params: data.newsTable.table.businessTag.params,
-              type: data.newsTable.table.businessTag.type,
-            },
-          })}
-          {...(data?.newsTable.table?.locationTag && {
-            locationTag: {
-              params: data.newsTable.table.locationTag.params,
-              type: data.newsTable.table.locationTag.type,
-            },
-          })}
-          pinTableId={pinTableId}
-          sortOrder={sortOrder}
-          onSortOrderChange={(newSortOrder: Array<string>) =>
-            setSortOrder(newSortOrder)
-          }
-          readOnly={readOnly}
-        />
-        <View>
-          {loading && <LoadingIndicator mode="overlap" />}
-          {loading && prevData.length === 0 ? (
-            <View style={{ height: 90 }} />
-          ) : error || data?.newsTable.error ? (
-            <ErrorComponent
-              text={formatErrorMessage(
-                error?.message || data?.newsTable.error || '',
-              )}
-            />
-          ) : (!loading &&
-              data?.newsTable.table &&
-              data.newsTable.table.data.length > 0) ||
-            prevData.length > 0 ? (
-            <NewsTable data={loading ? prevData : coloredData} />
-          ) : noData && !loading ? (
-            <EmptyDataComponent />
-          ) : null}
-        </View>
-        {!readOnly && (
-          <FeedbackButton
-            tableId={data?.newsTable.table?.id}
-            tableType={TableType.NEWS}
-          />
-        )}
+        <LatestNewsResult />
       </Container>
     </>
   );

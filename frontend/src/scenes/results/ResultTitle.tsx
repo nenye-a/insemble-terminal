@@ -178,7 +178,7 @@ export default function ResultTitle(props: Props) {
       : '';
 
   let showAuthAlert = () => {
-    alert.show('You need to login to access this feature');
+    alert.show('You need to sign in to access this feature');
   };
 
   return (
