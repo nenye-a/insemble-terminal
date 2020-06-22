@@ -27,6 +27,10 @@ COORDINATES = "terminal.coordinates"
 REGIONS = "terminal.regions"
 LOG = "terminal.log"
 STATS = "terminal.stats"
+ZIPS = "news.zipcodes"
+UNSUBSCRIBED = "news.unsubscribed"
+FEEDS = "news.feeds"
+
 MISC = "terminal.misc"
 
 # TODO: Remove or Archive

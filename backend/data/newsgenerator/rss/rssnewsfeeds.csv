@@ -1,0 +1,142 @@
+Feed,Link,Latitude,Longitude,City,Scope,Topic,Tag
+New York Times (Real Estate),https://rss.nytimes.com/services/xml/rss/nyt/RealEstate.xml,,,,National,Real Estate,newyorktimes
+New York Times (Most Shared),https://rss.nytimes.com/services/xml/rss/nyt/MostShared.xml,,,,National,Trending,newyorktimes
+New York Times (Travel),https://www.nytimes.com/services/xml/rss/nyt/Travel.xml,,,,National,Travel,newyorktimes
+New York Times (Business),https://rss.nytimes.com/services/xml/rss/nyt/Business.xml,,,,National,Business,newyorktimes
+New York Times (Small Business),https://rss.nytimes.com/services/xml/rss/nyt/SmallBusiness.xml,,,,National,Business,newyorktimes
+New York Times (Economy),https://rss.nytimes.com/services/xml/rss/nyt/Economy.xml,,,,National,Business,newyorktimes
+New York Times (Deal Book),https://rss.nytimes.com/services/xml/rss/nyt/Dealbook.xml,,,,National,Business,newyorktimes
+New York Times (Your Money),https://rss.nytimes.com/services/xml/rss/nyt/YourMoney.xml,,,,National,Business,newyorktimes
+New York Times (US),https://rss.nytimes.com/services/xml/rss/nyt/US.xml,,,,National,US,newyorktimes
+New York Times (NY),https://rss.nytimes.com/services/xml/rss/nyt/NYRegion.xml,40.7128,-74.0060,New York City,Regional,Region,newyorktimes
+CNN (Business),http://rss.cnn.com/rss/money_latest.rss,,,,National,Business,cnn
+CNN (Travel),http://rss.cnn.com/rss/cnn_travel.rss,,,,National,Travel,cnn
+CNN (US),http://rss.cnn.com/rss/cnn_us.rss,,,,National,US,cnn
+HuffingtonPost (Environment),https://www.huffpost.com/section/green/feed,,,,National,Environment,huffpost
+HuffingtonPost (Business),https://www.huffpost.com/section/business/feed,,,,National,Business,huffpost
+HuffingtonPost (Money),https://www.huffpost.com/section/money/feed,,,,National,Business,huffpost
+HuffingtonPost (Travel),https://www.huffpost.com/section/travel/feed,,,,National,Travel,huffpost
+HuffingtonPost (US),https://www.huffpost.com/section/us-news/feed,,,,National,US,huffpost
+HuffingtonPost (NY),https://www.huffpost.com/topic/new-york/feed,40.7128,-74.0060,New York City,Regional,General,huffpost
+HuffingtonPost (Real Estate),https://www.huffpost.com/topic/real-estate/feed,,,,National,Real Estate,huffpost
+HuffingtonPost (Los Angeles),https://www.huffpost.com/topic/los-angeles/feed,34.0522,-118.2437,Los Angeles,Local,General,huffpost
+HuffingtonPost (Chicago),https://www.huffpost.com/topic/chicago/feed,41.8781,-87.6298,Chicago,Local,General,huffpost
+HuffingtonPost (Dallas/Fort Worth),https://www.huffpost.com/topic/dallas/feed,32.7767,-96.7970,Dallas,Local,General,huffpost
+HuffingtonPost (Houston),https://www.huffpost.com/topic/houston/feed,29.7604,-95.3698,Houston,Local,General,huffpost
+HuffingtonPost (DC),https://www.huffpost.com/topic/washington-dc/feed,38.9072,-77.0369,DC,Local,General,huffpost
+HuffingtonPost (Miami),https://www.huffpost.com/topic/miami/feed,25.7617,-80.1918,Miami,Local,General,huffpost
+HuffingtonPost (Philadelphia),https://www.huffpost.com/topic/philadelphia/feed,39.9526,-75.1652,Philadelphia,Local,General,huffpost
+HuffingtonPost (Atlanta),https://www.huffpost.com/topic/atlanta-georgia/feed,33.7490,-84.3880,Atlanta,Local,General,huffpost
+HuffingtonPost (Boston),https://www.huffpost.com/topic/boston/feed,42.3601,-71.0589,Boston,Local,General,huffpost
+HuffingtonPost (Phoenix),https://www.huffpost.com/topic/phoenix/feed,33.4484,-112.0740,Pheonix,Local,General,huffpost
+HuffingtonPost (San Francisco),https://www.huffpost.com/topic/san-francisco/feed,37.7749,-122.4194,San Francisco,Local,General,huffpost
+HuffingtonPost (Detroit),https://www.huffpost.com/topic/detroit/feed,42.3314,-83.0458,Detroid,Local,General,huffpost
+HuffingtonPost (Seattle),https://www.huffpost.com/topic/seattle/feed,47.6062,-122.3321,Seattle,Local,General,huffpost
+HuffingtonPost (Minneapolis),https://www.huffpost.com/topic/minneapolis/feed,44.9778,-93.2650,Minneapolis,Local,General,huffpost
+HuffingtonPost (San Diego),https://www.huffpost.com/topic/san-diego/feed,32.7157,-117.1611,San Diego,Local,General,huffpost
+HuffingtonPost (St. Louis),https://www.huffpost.com/topic/st-louis/feed,38.6270,-90.1994,St Louis,Local,General,huffpost
+HuffingtonPost (Baltimore),https://www.huffpost.com/topic/baltimore/feed,39.2904,-76.6122,Baltimore,Local,General,huffpost
+HuffingtonPost (Orlando),https://www.huffpost.com/topic/orlando/feed,28.5383,-81.3792,Orlando,Local,General,huffpost
+HuffingtonPost (Charlotte),https://www.huffpost.com/topic/charlotte/feed,35.2271,-80.8431,Charlotte,Local,General,huffpost
+HuffingtonPost (San Antonio),https://www.huffpost.com/topic/san-antonio/feed,29.4241,-98.4936,San Antonio,Local,General,huffpost
+HuffingtonPost (Sacramento),https://www.huffpost.com/topic/sacramento/feed,38.5816,-121.4944,Sacramento,Local,General,huffpost
+HuffingtonPost (Pittsburgh),https://www.huffpost.com/topic/pittsburgh/feed,40.4406,-79.9959,Pittsburgh,Local,General,huffpost
+HuffingtonPost (Las Vegas),https://www.huffpost.com/topic/las-vegas/feed,36.1699,-115.1398,Las Vegas,Local,General,huffpost
+HuffingtonPost (Austin),https://www.huffpost.com/topic/austin/feed,30.2672,-97.7431,Austin,Local,General,huffpost
+HuffingtonPost (Kansas),https://www.huffpost.com/topic/kansas/feed,39.0997,-94.5786,,Regional,General,huffpost
+HuffingtonPost (Cleveland),https://www.huffpost.com/topic/cleveland/feed,41.4993,-81.6944,Cleveland,Local,General,huffpost
+HuffingtonPost (Indianapolis),https://www.huffpost.com/topic/indianapolis/feed,39.7684,-86.1581,Indianapolis,Local,General,huffpost
+HuffingtonPost (San Jose),https://www.huffpost.com/topic/san-jose/feed,37.3382,-121.8863,San Jose,Local,General,huffpost
+HuffingtonPost (Nashville),https://www.huffpost.com/topic/nashville/feed,36.1627,-86.7816,Nashville,Local,General,huffpost
+HuffingtonPost (Rhode Island),https://www.huffpost.com/topic/rhode-island/feed,41.5801,-71.4774,,Regional,General,huffpost
+HuffingtonPost (Milwaukee),https://www.huffpost.com/topic/milwaukee/feed,43.0389,-87.9065,Milwaukee,Local,General,huffpost
+HuffingtonPost (Florida),https://www.huffpost.com/topic/florida/feed,27.6648,-81.5158,,Regional,General,huffpost
+HuffingtonPost (Oklahoma City),https://www.huffpost.com/topic/oklahoma-city/feed,35.4676,-97.5164,Oklahoma City,Local,General,huffpost
+HuffingtonPost (Memphis),https://www.huffpost.com/topic/memphis/feed,35.1495,-90.0490,Memphis,Local,General,huffpost
+HuffingtonPost (Louisville),https://www.huffpost.com/topic/louisville/feed,38.2527,-85.7585,Louisville,Local,General,huffpost
+HuffingtonPost (New Orleans),https://www.huffpost.com/topic/new-orleans/feed,29.9511,-90.0715,New Orleans,Local,General,huffpost
+HuffingtonPost (Salt Lake City),https://www.huffpost.com/topic/salt-lake-city/feed,40.7608,-111.8910,Salt Lake City,Local,General,huffpost
+HuffingtonPost (Buffalo),https://www.huffpost.com/topic/buffalo/feed,42.8864,-78.8784,Buffalo,Local,General,huffpost
+HuffingtonPost (Tucson),https://www.huffpost.com/topic/tucson/feed,32.2226,-110.9747,Tucson,Local,General,huffpost
+HuffingtonPost (El paso),https://www.huffpost.com/topic/el-paso/feed,31.7619,-106.4850,El Paso,Local,General,huffpost
+Reuters (Domestic News),http://feeds.reuters.com/Reuters/domesticNews,,,Nation,National,US,reuters
+Yahoo (Finance/Top Stories),http://finance.yahoo.com/rss/topstories,,,Nation,National,Finance,yahoo
+Yahoo (Finance/Most Viewed),http://finance.yahoo.com/rss/popularstories,,,Nation,National,Finance,yahoo
+LA Times (Business),https://www.latimes.com/business/rss2.0.xml#nt=1col-7030col1,34.0522,-118.2437,,Regional,Business,latimes
+LA Times (California),https://www.latimes.com/california/rss2.0.xml,34.0522,-118.2437,,Regional,General,latimes
+LA Times (Orange County),https://www.latimes.com/california/orange-county/rss2.0.xml,33.7175,-117.8311,,Regional,General,latimes
+LA Daily (Local),https://www.dailynews.com/feed/,34.0522,-118.2437,Los Angeles,Local,General,ladaily
+The Real Deal (Los Angeles),https://therealdeal.com/la/feed/,34.0522,-118.2437,Los Angeles,Local,"Real Estate, Retail",therealdeal
+Curbed (Los Angeles),https://la.curbed.com/rss/index.xml,34.0522,-118.2437,Los Angeles,Local,"Real Estate, Retail",curbed
+LA Biz News (Los Angeles),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3254?market=losangeles&selectortype=channel&selectorvalue=2,17,12,16",34.0522,-118.2437,Los Angeles,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Dallas),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3255?market=dallas&selectortype=channel&selectorvalue=2,17,12,16",32.7767,-96.7970,Dallas,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Milwaukee),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3257?market=milwaukee&selectortype=channel&selectorvalue=2,17,12,16",43.0389,-87.9065,Milwaukee,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Charlotte),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3258?market=charlotte&selectortype=channel&selectorvalue=2,17,12,16",35.2271,-80.8431,Charlotte,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Tampa),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3259?market=tampabay&selectortype=channel&selectorvalue=2,17,12,16",27.9506,-82.4572,Tampa,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Albuquerque),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3260?market=albuquerque&selectortype=channel&selectorvalue=2,17,12,16",35.0844,-106.6504,Albuquerque,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Chicago),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3261?market=chicago&selectortype=channel&selectorvalue=2,17,12,16",41.8781,-87.6298,Chicago,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Houston),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3263?market=houston&selectortype=channel&selectorvalue=2,17,12,16",29.7604,-95.3698,Houston,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Minneapolis),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3264?market=twincities&selectortype=channel&selectorvalue=2,17,12,16",44.9778,-93.2650,Minneapolis,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Raleigh),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3265?market=triangle&selectortype=channel&selectorvalue=2,17,12,16",35.7796,-78.6382,Raleigh,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (DC),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3266?market=washington&selectortype=channel&selectorvalue=2,17,12,16",38.9072,-77.0369,DC,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Atlanta),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3268?market=atlanta&selectortype=channel&selectorvalue=2,17,12,16",33.7490,-84.3880,Atlanta,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Cincinnati),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3269?market=cincinnati&selectortype=channel&selectorvalue=2,17,12,16",39.1031,-84.5120,Cincinnati,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Jacksonville),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3270?market=jacksonville&selectortype=channel&selectorvalue=2,17,12,16",30.3322,-81.6557,Jacksonville,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Nashville),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3271?market=nashville&selectortype=channel&selectorvalue=2,17,12,16",36.1627,-86.7816,Nashville,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Sacramento),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3272?market=sacramento&selectortype=channel&selectorvalue=2,17,12,16",38.5816,-121.4944,Sacramento,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Wichita),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3273?market=wichita&selectortype=channel&selectorvalue=2,17,12,16",37.6872,-97.3301,Wichita,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Austin),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3274?market=austin&selectortype=channel&selectorvalue=2,17,12,16",30.2672,-97.7431,Austin,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Columbus),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3275?market=columbus&selectortype=channel&selectorvalue=2,17,12,16",39.9612,-82.9988,Columbus,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Kansas City),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3276?market=kansascity&selectortype=channel&selectorvalue=2,17,12,16",39.0997,-94.5786,Kansas City,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (New York City),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3277?market=newyork&selectortype=channel&selectorvalue=2,17,12,16",40.7128,-74.0060,New York City,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (San Antonio),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3278?market=sanantonio&selectortype=channel&selectorvalue=2,17,12,16",29.4241,-98.4936,San Antonio,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Baltimore),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3279?market=baltimore&selectortype=channel&selectorvalue=2,17,12,16",39.2904,-76.6122,Baltirmore,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Orlando),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3281?market=orlando&selectortype=channel&selectorvalue=2,17,12,16",28.5383,-81.3792,Orlando,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (San Francisco),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3282?market=sanfrancisco&selectortype=channel&selectorvalue=2,17,12,16",37.7749,-122.4194,San Francisco,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Birmingham),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3283?market=birmingham&selectortype=channel&selectorvalue=2,17,12,16",52.4862,-1.8904,Birmingham,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Dayton),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3284?market=dayton&selectortype=channel&selectorvalue=2,17,12,16",39.7589,-84.1916,Dayton,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Louisville),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3285?market=louisville&selectortype=channel&selectorvalue=2,17,12,16",38.2527,-85.7585,Louisville,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Philadelphia),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3286?market=philadelphia&selectortype=channel&selectorvalue=2,17,12,16",39.9526,-75.1652,Philadelphia,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Seattle),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3287?market=seattle&selectortype=channel&selectorvalue=2,17,12,16",47.6062,-122.3321,Seattle,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Boston),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3288?market=boston&selectortype=channel&selectorvalue=2,17,12,16",42.3601,-71.0589,Boston,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Denver),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3289?market=denver&selectortype=channel&selectorvalue=2,17,12,16",39.7392,-104.9903,Denver,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Memphis),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3290?market=memphis&selectortype=channel&selectorvalue=2,17,12,16",35.1495,-90.0490,Memphis,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Phoenix),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3291?market=phoenix&selectortype=channel&selectorvalue=2,17,12,16",33.4484,-112.0740,Phoenix,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Silicon Valley),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3292?market=sanjose&selectortype=channel&selectorvalue=2,17,12,16",37.3875,-122.0575,Silicon Valley,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Buffalo),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3293?market=buffalo&selectortype=channel&selectorvalue=2,17,12,16",42.8864,-78.8784,Buffalo,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Greensboro),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3294?market=triad&selectortype=channel&selectorvalue=2,17,12,16",36.0726,-79.7920,Greensboro,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Miami),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3295?market=southflorida&selectortype=channel&selectorvalue=2,17,12,16",25.7617,-80.1918,Miami,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (Pittsburgh),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3296?market=pittsburgh&selectortype=channel&selectorvalue=2,17,12,16",40.4406,-79.9959,Pittsburgh,Local,"Real Estate, Retail, Travel",labiznews
+LA Biz News (St Louis),"https://rss.bizjournals.com/feed/c978145627afc34bb564a5b305ecc09bd0e153c8/3297?market=stlouis&selectortype=channel&selectorvalue=2,17,12,16",38.6270,-90.1994,St Louis,Local,"Real Estate, Retail, Travel",labiznews
+BisNow (Atlanta),https://www.bisnow.com/rss-feed/atlanta,33.7490,-84.3880,Atlanta,Local,Real Estate,bisnow
+BisNow (Birmingham),https://www.bisnow.com/rss-feed/birmingham,52.4862,-1.8904,Birmingham,Local,Real Estate,bisnow
+BisNow (Boston),https://www.bisnow.com/rss-feed/boston,42.3601,-71.0589,Boston,Local,Real Estate,bisnow
+BisNow (Chicago),https://www.bisnow.com/rss-feed/chicago,41.8781,-87.6298,Chicago,Local,Real Estate,bisnow
+BisNow (Dallas),https://www.bisnow.com/rss-feed/dallas-ft-worth,32.7767,-96.7970,Dallas,Local,Real Estate,bisnow
+BisNow (Denver),https://www.bisnow.com/rss-feed/denver,39.7392,-104.9903,Denver,Local,Real Estate,bisnow
+BisNow (Houston),https://www.bisnow.com/rss-feed/houston,29.7604,-95.3698,Houston,Local,Real Estate,bisnow
+BisNow (Los Angeles),https://www.bisnow.com/rss-feed/los-angeles,34.0522,-118.2437,Los Angeles,Local,Real Estate,bisnow
+BisNow (New Jersey),https://www.bisnow.com/rss-feed/new-jersey,49.2144,-2.1312,New Jersey,Regional,Real Estate,bisnow
+BisNow (New York),https://www.bisnow.com/rss-feed/new-york,40.7128,-74.0060,New York City,Local,Real Estate,bisnow
+BisNow (Oakland),https://www.bisnow.com/rss-feed/oakland,33.7175,-117.8311,Oakland,Local,Real Estate,bisnow
+BisNow (Orange County),https://www.bisnow.com/rss-feed/orange-county,33.7175,-117.8311,,Regional,Real Estate,bisnow
+BisNow (Philadelphia),https://www.bisnow.com/rss-feed/philadelphia,39.9526,-75.1652,Philadelphia,Local,Real Estate,bisnow
+BisNow (Pheonix),https://www.bisnow.com/rss-feed/phoenix,33.4484,-112.0740,Pheonix,Local,Real Estate,bisnow
+BisNow (San Francisco),https://www.bisnow.com/rss-feed/san-francisco,37.7749,-122.4194,San Francisco,Local,Real Estate,bisnow
+BisNow (Seattle),https://www.bisnow.com/rss-feed/seattle,47.6062,-122.3321,Seattle,Local,Real Estate,bisnow
+BisNow (Silicon Valley),https://www.bisnow.com/rss-feed/silicon-valley,37.3875,-122.0575,Silicon Valley,Local,Real Estate,bisnow
+BisNow (South Florida),https://www.bisnow.com/rss-feed/south-florida,26.3014,-80.6327,,Regional,Real Estate,bisnow
+BisNow (DC),https://www.bisnow.com/rss-feed/washington-dc,38.9072,-77.0369,DC,Local,Real Estate,bisnow
+LA Business Journal,https://labusinessjournal.com/rss/headlines/,34.0522,-118.2437,Los Angeles,Regional,Business,labusinessjournal
+San Diego Business Tribune (Business),https://www.sandiegouniontribune.com/business/rss2.0.xml,32.7157,-117.1611,San Diego,Local,General,Sandiegobusinesstribune
+Mercury News,https://www.mercurynews.com/feed/,37.7749,-122.4194,Bay Area,Regional,General,mercurynews
+Houston Chronicle (Real Estate),https://www.chron.com/rss/feed/Real-Estate-290.php,29.7604,-95.3698,Houston,Local,Real Estate,houstonchronicle
+Houston Chronicle (Economy),https://www.chron.com/rss/feed/Economy-292.php,29.7604,-95.3698,Houston,Local,Business,houstonchronicle
+Houston Chronicle (Business),https://www.chron.com/rss/feed/Business-287.php,29.7604,-95.3698,Houston,Local,Business,houstonchronicle
+Houston Chronicle (Local News),https://www.chron.com/rss/feed/News-270.php,29.7604,-95.3698,Houston,Local,General,houstonchronicle
+CNBC (Retail),https://www.cnbc.com/id/10000116/device/rss/rss.html,,,,National,Retail,cnbc
+CNBC (Economy),https://www.cnbc.com/id/20910258/device/rss/rss.html,,,,National,Business,cnbc
+CNBC (Business),https://www.cnbc.com/id/10001147/device/rss/rss.html,,,,National,Business,cnbc
+CNBC (Real Estate),https://www.cnbc.com/id/10000115/device/rss/rss.html,,,,National,Real Estate,cnbc
+CNBC (Small Business),https://www.cnbc.com/id/44877279/device/rss/rss.html,,,,National,Business,cnbc
+CNBC (Earnings),https://www.cnbc.com/id/15839135/device/rss/rss.html,,,,National,Business,cnbc
