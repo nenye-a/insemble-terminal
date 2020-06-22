@@ -24,7 +24,7 @@ import {
   FONT_SIZE_SMALL,
 } from '../../constants/theme';
 import { useAuth } from '../../context';
-import { getResultTitle } from '../../helpers';
+import { getResultTitle, useViewport } from '../../helpers';
 import { ComparationTagWithFill } from '../../types/types';
 import {
   ReviewTag,
@@ -104,7 +104,7 @@ export default function ResultTitle(props: Props) {
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
   let { isAuthenticated } = useAuth();
-
+  let { isDesktop } = useViewport();
   let refetchTerminalQueries = params.terminalId
     ? [
         {
@@ -182,8 +182,8 @@ export default function ResultTitle(props: Props) {
   };
 
   return (
-    <Container>
-      <Row>
+    <Container isDesktop={isDesktop}>
+      <Row flex>
         <Title noData={noData}>{title}</Title>
         {infoboxContent && (
           <Popover
@@ -220,7 +220,7 @@ export default function ResultTitle(props: Props) {
           </>
         )}
       </Row>
-      <Row>
+      <Row flex style={{ justifyContent: 'flex-end' }}>
         {formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
@@ -333,11 +333,15 @@ export default function ResultTitle(props: Props) {
   );
 }
 
+type ContainerProps = ViewProps & {
+  isDesktop: boolean;
+};
 type TitleProps = TextProps & {
   noData: boolean;
 };
-const Container = styled(View)`
-  padding: 8px 0;
+
+const Container = styled(View)<ContainerProps>`
+  padding: ${({ isDesktop }) => (isDesktop ? `8px 0` : `4px 12px`)};
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -367,6 +371,10 @@ const Touchable = styled(TouchableOpacity)`
 
 const CompareText = styled(Text)`
   color: ${THEME_COLOR};
+  max-width: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 `;
 
 const SubTitle = styled(Text)`

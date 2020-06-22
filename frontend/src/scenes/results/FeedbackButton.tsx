@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
-import { Button, Text } from '../../core-ui';
+import { Button, Text, View } from '../../core-ui';
 import { GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { useViewport } from '../../helpers';
 import { TableType } from '../../generated/globalTypes';
 
 import AddFeedbackModal from './AddFeedbackModal';
@@ -16,15 +17,19 @@ type Props = {
 export default function FeedbackButton(props: Props) {
   let { tableId, tableType } = props;
   let [modalVisible, setModalVisible] = useState(false);
+  let { isDesktop } = useViewport();
+
   return (
     <>
-      <FeedbackBtn
-        mode="transparent"
-        onPress={() => {
-          setModalVisible(true);
-        }}
-        text="Feedback"
-      />
+      <View style={!isDesktop ? { paddingRight: 12 } : undefined}>
+        <FeedbackBtn
+          mode="transparent"
+          onPress={() => {
+            setModalVisible(true);
+          }}
+          text="Feedback"
+        />
+      </View>
       <AddFeedbackModal
         visible={modalVisible}
         onClose={() => {

@@ -7,9 +7,10 @@ declare global {
   type TextProps = ComponentProps<typeof Text>;
   type ImageProps = ComponentProps<'img'>;
 
+  type WithViewport = { isDesktop: boolean };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   type ObjectKey<T = any> = { [key: string]: T };
 
-  export { ViewProps, TextProps, ImageProps, ObjectKey };
+  export { ViewProps, TextProps, ImageProps, ObjectKey, WithViewport };
 }
 export {};
