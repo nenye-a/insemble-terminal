@@ -44,6 +44,7 @@ export const allAccessRoutes = [
     showHeader: true,
     showSearchBar: true,
     exact: true,
+    readOnly: true,
   },
   {
     path: '/news/:newsId',

@@ -1,11 +1,7 @@
 import { COLORS } from '../constants/colors';
-import { ComparationTag } from '../types/types';
+import { ComparationTag, HasCompareId } from '../types/types';
 
 import generateRandomColor from './generateRandomColor';
-
-type HasCompareId = {
-  compareId: string;
-};
 
 export default function useColoredData<T, U>(
   data: Array<T> = [],

@@ -309,3 +309,37 @@ export const GET_OWNERSHIP_INFO_DATA = gql`
     }
   }
 `;
+
+export const GET_OPEN_NEWS_DATA = gql`
+  query GetOpenNewsData($openNewsId: String!) {
+    openNews(openNewsId: $openNewsId) {
+      id
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      polling
+      error
+      firstArticle {
+        title
+        source
+        published
+        link
+      }
+      data {
+        title
+        description
+        link
+        source
+        published
+        relevance
+      }
+    }
+  }
+`;

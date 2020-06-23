@@ -1,21 +1,38 @@
-import React, { ComponentProps } from 'react';
+import React, { ComponentProps, useEffect } from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
+import { useQuery } from '@apollo/react-hooks';
 
-import { Modal, Text, View, Divider, TouchableOpacity } from '../../core-ui';
+import {
+  Modal,
+  Text,
+  View,
+  Divider,
+  TouchableOpacity,
+  LoadingIndicator,
+} from '../../core-ui';
+import { ErrorComponent } from '../../components';
 import { getPublishedDate, useViewport } from '../../helpers';
 import {
   DEFAULT_BORDER_RADIUS,
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
 import { GRAY_TEXT, THEME_COLOR } from '../../constants/colors';
+import { GET_OPEN_NEWS_DATA } from '../../graphql/queries/server/results';
 import SvgArrowLeft from '../../components/icons/arrow-left';
+import {
+  GetOpenNewsData,
+  GetOpenNewsDataVariables,
+} from '../../generated/GetOpenNewsData';
+import NewsScene from '../news/NewsScene';
 
 type State = {
-  title: string;
-  source: string;
-  published: string;
-  link: string;
+  title?: string;
+  source?: string;
+  published?: string;
+  link?: string;
+  openNewsId?: string;
+  background?: any;
 };
 
 type Params = {
@@ -25,47 +42,111 @@ type Params = {
 export default function NewsPreview() {
   let { isDesktop } = useViewport();
   let history = useHistory<State>();
-  let {
-    title = '-',
-    source = '-',
-    published = '-',
-    link = '-',
-  } = history.location.state;
-
-  // TODO: get news detail by id.
-
+  let { newsId } = useParams<Params>();
+  let { data, loading: newsLoading, error, stopPolling } = useQuery<
+    GetOpenNewsData,
+    GetOpenNewsDataVariables
+  >(GET_OPEN_NEWS_DATA, {
+    variables: {
+      openNewsId: newsId,
+    },
+    skip: !!history.location.state,
+    pollInterval: 5000,
+  });
   let goBack = () => {
-    // TODO: check length. if it's the first state then push other scene
-
-    history.goBack();
+    if (data) {
+      history.push('/news', {
+        openNewsId: newsId,
+      });
+    } else {
+      history.goBack();
+    }
   };
+
+  let renderNewsModal = (
+    title: string,
+    source: string,
+    published: string,
+    link: string,
+  ) => {
+    return (
+      <>
+        <TitleContainer isDesktop={isDesktop}>
+          {!isDesktop && (
+            <TouchableOpacity onPress={goBack}>
+              <SvgArrowLeft style={{ marginRight: 8 }} />
+            </TouchableOpacity>
+          )}
+          <View flex>
+            <Text color={THEME_COLOR}>Article</Text>
+            <Title>{title}</Title>
+            <Row>
+              <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
+                {source}
+              </Text>
+              <PublishedDate>{getPublishedDate(published)}</PublishedDate>
+            </Row>
+          </View>
+        </TitleContainer>
+        <Divider width={12} />
+        <Iframe src={link} />
+      </>
+    );
+  };
+
+  useEffect(() => {
+    if (
+      (data?.openNews?.data || data?.openNews.error || error) &&
+      data?.openNews &&
+      !data.openNews.polling
+    ) {
+      stopPolling();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  if (history.location.state?.background) {
+    let {
+      title = '',
+      source = '',
+      published = '',
+      link = '',
+    } = history.location.state;
+    return (
+      <Container
+        visible={true}
+        hideCloseButton={true}
+        onClose={goBack}
+        isDesktop={isDesktop}
+      >
+        {renderNewsModal(title, source, published, link)}
+      </Container>
+    );
+  }
+
   return (
-    <Container
-      visible={true}
-      hideCloseButton={true}
-      onClose={goBack}
-      isDekstop={isDesktop}
-    >
-      <TitleContainer isDesktop={isDesktop}>
-        {!isDesktop && (
-          <TouchableOpacity onPress={goBack}>
-            <SvgArrowLeft style={{ marginRight: 8 }} />
-          </TouchableOpacity>
-        )}
-        <View flex>
-          <Text color={THEME_COLOR}>Article</Text>
-          <Title>{title}</Title>
-          <Row>
-            <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
-              {source}
-            </Text>
-            <PublishedDate>{getPublishedDate(published)}</PublishedDate>
-          </Row>
-        </View>
-      </TitleContainer>
-      <Divider width={12} />
-      <Iframe src={link} />
-    </Container>
+    <>
+      <NewsScene readOnly={true} {...(data && { openNewsId: newsId })} />
+      <Container
+        visible={true}
+        hideCloseButton={true}
+        onClose={goBack}
+        isDesktop={isDesktop}
+      >
+        {newsLoading || data?.openNews.polling ? (
+          <LoadingIndicator />
+        ) : data?.openNews.firstArticle ? (
+          renderNewsModal(
+            data.openNews.firstArticle.title,
+            data.openNews.firstArticle.source,
+            data.openNews.firstArticle.published,
+            data.openNews.firstArticle.link,
+          )
+        ) : error || data?.openNews.error ? (
+          <ErrorComponent text={error?.message || data?.openNews.error || ''} />
+        ) : null}
+      </Container>
+    </>
   );
 }
 

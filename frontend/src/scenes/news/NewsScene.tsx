@@ -2,27 +2,31 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
+import { useHistory } from 'react-router-dom';
 
 import { View, LoadingIndicator } from '../../core-ui';
-import { formatErrorMessage, useColoredData } from '../../helpers';
+import { formatErrorMessage, useViewport } from '../../helpers';
 import {
   EmptyDataComponent,
   ErrorComponent,
   PageTitle,
 } from '../../components';
-import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
-  GetNewsTable,
-  GetNewsTableVariables,
   GetNewsTable_newsTable_table_data as NewsData,
   GetNewsTable_newsTable_table_compareData as NewsCompareData,
 } from '../../generated/GetNewsTable';
-import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
+import { GET_OPEN_NEWS_DATA } from '../../graphql/queries/server/results';
 import { BACKGROUND_COLOR } from '../../constants/colors';
 import ResultTitle from '../results/ResultTitle';
 import NewsTable from '../results/NewsTable';
 import FeedbackButton from '../results/FeedbackButton';
-import LatestNewsResult from '../results/LatestNewsResult';
+import {
+  GetOpenNewsData,
+  GetOpenNewsDataVariables,
+} from '../../generated/GetOpenNewsData';
+import NewsTableMobile from '../results/NewsTableMobile';
+import { MergedNewsData } from '../../types/types';
+import { ReviewTag, TableType } from '../../generated/globalTypes';
 
 type Props = {
   businessTagId?: string;
@@ -30,6 +34,7 @@ type Props = {
   tableId?: string;
   pinTableId?: string;
   readOnly?: boolean;
+  openNewsId?: string;
 };
 
 type ColoredData = (NewsData | NewsCompareData) & {
@@ -38,72 +43,61 @@ type ColoredData = (NewsData | NewsCompareData) & {
 
 const POLL_INTERVAL = 5000;
 
+type State = {
+  openNewsId?: string;
+  background?: {
+    state?: {
+      openNewsId?: string;
+    };
+  };
+};
 export default function NewsScene(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
-  let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
-  let [prevTableId, setPrevTableId] = useState('');
+  let {
+    businessTagId,
+    locationTagId,
+    tableId,
+    pinTableId,
+    readOnly,
+    openNewsId: openNewsIdProp,
+  } = props;
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let alert = useAlert();
-
+  let { isDesktop } = useViewport();
+  let history = useHistory<State>();
+  let openNewsId =
+    openNewsIdProp ||
+    history.location.state?.openNewsId ||
+    history.location.state?.background?.state?.openNewsId ||
+    '';
+  console.log(openNewsIdProp, history.location.state, 'OPEN NEWS ID');
   let {
     data,
     loading: newsLoading,
     error,
-    refetch,
     startPolling,
     stopPolling,
-  } = useQuery<GetNewsTable, GetNewsTableVariables>(GET_NEWS_TABLE_DATA, {
+  } = useQuery<GetOpenNewsData, GetOpenNewsDataVariables>(GET_OPEN_NEWS_DATA, {
     variables: {
-      businessTagId,
-      locationTagId,
-      tableId,
+      openNewsId: openNewsId || '',
     },
+    skip: !openNewsId,
   });
-  let { data: coloredData, comparisonTags } = useColoredData<
-    NewsData,
-    NewsCompareData
-  >(
-    data?.newsTable.table?.data,
-    data?.newsTable.table?.compareData,
-    data?.newsTable.table?.comparationTags,
-    sortOrder,
-  );
-  let noData =
-    !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
-  let loading = newsLoading || data?.newsTable.polling;
+
+  let noData = !data?.openNews.data || data.openNews.data.length === 0;
+  let loading = newsLoading || data?.openNews.polling;
+  let now = Date.now();
+  let today =
+    (new Date(now).getMonth() + 1).toString() +
+    '/' +
+    new Date(now).getDate().toString();
+
   useEffect(() => {
     if (
-      (data?.newsTable.table?.data || data?.newsTable.error || error) &&
-      data?.newsTable &&
-      !data.newsTable.polling
+      (data?.openNews?.data || data?.openNews.error || error) &&
+      data?.openNews &&
+      !data.openNews.polling
     ) {
       stopPolling();
-      if (data.newsTable.table) {
-        let { compareData, comparationTags, id } = data.newsTable.table;
-        if (compareData.length !== comparationTags.length) {
-          let notIncluded = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
-            .map((item) => item.businessTag?.params);
-          if (notIncluded.length > 0) {
-            alert.show(
-              `No data available for ${notIncluded.join(
-                ', ',
-              )}. Please check your search and try again`,
-            );
-            if (prevTableId) {
-              refetch({
-                tableId: prevTableId,
-              });
-            }
-          }
-        } else {
-          setPrevData(coloredData);
-          setPrevTableId(id);
-        }
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
@@ -116,9 +110,56 @@ export default function NewsScene(props: Props) {
 
   return (
     <>
-      <PageTitle text="News" rightText="5/1" />
+      <PageTitle text="News" rightText={today} />
       <Container>
-        <LatestNewsResult />
+        <ResultTitle
+          title="Latest News"
+          noData={noData}
+          reviewTag={ReviewTag.NEWS}
+          tableId=""
+          tableType={TableType.NEWS}
+          readOnly={readOnly}
+        />
+        <View>
+          {loading && <LoadingIndicator mode="overlap" />}
+          {loading ? (
+            <View style={{ height: 90 }} />
+          ) : error || data?.openNews.error ? (
+            <ErrorComponent
+              text={formatErrorMessage(
+                error?.message || data?.openNews.error || '',
+              )}
+            />
+          ) : !loading &&
+            data?.openNews.data &&
+            data.openNews.data.length > 0 ? (
+            isDesktop ? (
+              <NewsTable
+                data={
+                  ((data?.openNews.data || []) as unknown) as Array<
+                    MergedNewsData
+                  >
+                }
+              />
+            ) : (
+              <NewsTableMobile
+                data={
+                  ((data?.openNews.data || []) as unknown) as Array<
+                    MergedNewsData
+                  >
+                }
+              />
+            )
+          ) : noData && !loading ? (
+            <EmptyDataComponent />
+          ) : null}
+        </View>
+        {/* {!readOnly && (
+          <FeedbackButton
+            tableId={data?.openNews.data?.id}
+            tableType={TableType.NEWS}
+          />
+        )} */}
       </Container>
     </>
   );
@@ -128,8 +169,4 @@ const Container = styled(View)`
   padding: 20px 15%;
   background-color: ${BACKGROUND_COLOR};
   min-height: 90vh;
-`;
-
-const TitleContainer = styled(View)`
-  padding: 20px 15%;
 `;
