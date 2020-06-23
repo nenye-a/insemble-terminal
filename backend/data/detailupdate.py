@@ -143,6 +143,7 @@ def update_last_update():
 
 def setup():
 
+    TEMP_DB.create_index([('marked', 1)])
     utils.DB_TERMINAL_PLACES.aggregate([
         {'$match': {
             '$or': [
@@ -150,6 +151,9 @@ def setup():
                 {'last_update': -1},
                 {'last_update': {'$exists': False}}
             ]
+        }},
+        {'$addFields': {
+            'marked': False
         }},
         {'$merge': "temp_places"}
     ])
