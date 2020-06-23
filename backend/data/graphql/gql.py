@@ -3,6 +3,7 @@ import time
 from decouple import config
 from search import SEARCH, GET_SEARCH_TAG
 from results import NEWS_TABLE
+from opennews import OPEN_NEWS_TABLE
 
 API_URI = config('API_URI')
 GQL_SESSION = requests.session()
@@ -19,6 +20,7 @@ def request(query, variables):
             'variables': variables
         }
     ).json()
+    print(result)
 
     return result
 
@@ -50,6 +52,17 @@ def news(business_tag_id=None, location_tag_id=None, table_id=None, poll=False):
     while result['data'] and poll and result['data']['newsTable']['polling']:
         time.sleep(1)
         print(result['data'])
-        print(business_tag_id, location_tag_id, table_id, poll)
         return news(table_id=result['data']['newsTable']['table']['id'], poll=poll)
+    return result
+
+
+def open_news(open_news_id, poll=False):
+    variables = {
+        'openNewsId': open_news_id
+    }
+    result = request(OPEN_NEWS_TABLE, variables)
+    while result['data'] and poll and result['data']['openNews']['polling']:
+        time.sleep(1)
+        print(result['data'])
+        return open_news(open_news_id, poll=poll)
     return result

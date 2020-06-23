@@ -6,6 +6,7 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import utils
 import re
+import time
 import json
 import datetime
 import pandas as pd
@@ -143,6 +144,7 @@ class NewsManager():
                 return
 
             locations = [parse_city(city['city']) for city in cities]
+            print(locations)
 
             organized_news = self.get_many_news(locations)
 
@@ -186,11 +188,12 @@ class NewsManager():
                 review_tag='NEWS',
                 location_tag={
                     'type': 'CITY',
-                    'params': city['name']
+                    'params': city['name'] + ', USA'
                 }
             )
             print(search_details)
             location_tag_id = search_details['data']['search']['locationTag']['id']
+            news_data = json.dumps(city['news'], default=date_converter)
             values = []
             for article in city['news']:
                 now = datetime.datetime.now()
@@ -205,7 +208,8 @@ class NewsManager():
                         if isinstance(article['published'], str)
                         else article['published'].__str__(),
                         'link': article['link']
-                    })
+                    }),
+                    'data': news_data
                 })
             ids = app_db.insert_many('OpenNews', values)
             for index, _id in enumerate(ids):
@@ -278,12 +282,16 @@ class NewsManager():
             })
         } for term in NEWS_TERMS] for location in locations if location]
 
+        print(len(location_queries))
+
         results = news_scraper.async_request(
             utils.flatten(location_queries),
             headers={"referer": "https://www.google.com/"},
             quality_proxy=True,
             timeout=10
         )
+        import pprint
+        pprint.pprint(results)
 
         if not results:
             results = []
@@ -480,6 +488,7 @@ class NewsManager():
         self.collection.create_index([('data_type', 1)])
         self.collection.create_index([('data_type', 1), ('city', 1)])
         self.collection.create_index([('activated', 1), ('data_type', 1)])
+        self.collection.create_index([('activated', 1), ('data_type', 1), ('links_processed', 1)])
         self.collection.create_index([('name', 1), ('data_type', 1)])
         self.collection.create_index([('content_generated', 1)])
         self.collection.create_index([('content_emailed', 1), ('content_generated', 1)])
@@ -536,10 +545,19 @@ def parse_city(location) -> dict:
     return result
 
 
+def date_converter(o):
+    if isinstance(o, datetime.datetime):
+        return o.__str__()
+
+
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Online', national_news=False)
+    my_generator = NewsManager('Online-2', national_news=False)
+    my_generator.generate(batch_size=8)
     # my_generator.generate(batch_size=15)
-    # my_generator = NewsManager('Online', national_news=False)
+    # my_generator.convert_links()
+
+    # print(my_generator.collection.count_documents({'activated': {'$exists': True}}))
+    # my_generator.activate_link('ckbrjp7bm000d1z35ltfgq9cs')
     # my_generator.convert_links()
     # my_generator.email()

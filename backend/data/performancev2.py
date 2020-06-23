@@ -572,6 +572,7 @@ def categorical_data(matching_places, data_name, *return_types):
             print(e)
         finally:
             if pool_exists:
+                pool.close()
                 pool.terminate()
 
     overall_details['overall']['name'] = utils.adjust_case(data_name)
