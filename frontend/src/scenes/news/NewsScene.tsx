@@ -109,7 +109,7 @@ export default function NewsScene(props: Props) {
         }
       />
       <PageTitle text="News" rightText={today} />
-      <Container>
+      <Container isDesktop={isDesktop}>
         <ResultTitle
           title="Latest News"
           noData={noData}
@@ -163,8 +163,8 @@ export default function NewsScene(props: Props) {
   );
 }
 
-const Container = styled(View)`
-  padding: 20px 15%;
+const Container = styled(View)<ViewProps & WithViewport>`
+  padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 0`)};
   background-color: ${BACKGROUND_COLOR};
   min-height: 90vh;
 `;

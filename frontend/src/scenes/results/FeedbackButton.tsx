@@ -12,10 +12,11 @@ import AddFeedbackModal from './AddFeedbackModal';
 type Props = {
   tableId?: string;
   tableType?: TableType;
+  title?: string;
 };
 
 export default function FeedbackButton(props: Props) {
-  let { tableId, tableType } = props;
+  let { tableId, tableType, title } = props;
   let [modalVisible, setModalVisible] = useState(false);
   let { isDesktop } = useViewport();
 
@@ -37,6 +38,7 @@ export default function FeedbackButton(props: Props) {
         }}
         tableId={tableId}
         tableType={tableType}
+        title={title}
       />
     </>
   );
