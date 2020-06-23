@@ -6,20 +6,26 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import utils
 import re
-import pandas as pd
+import json
 import datetime
+import pandas as pd
+import dateutil.parser as tparser
+from postgres import PostConnect
+from graphql import gql
 from fuzzywuzzy import process
 from rss import feeds
 from google import GoogleNewsScraper
 from billiard.pool import Pool
 
 from emailer import email_report
+from decouple import config
 
 '''
 Generates file of content the be delivered to users via email.
 '''
 
 NEWS_TERMS = ["retail news", "commercial real estate news", "closings", "openings"]
+LINK_HOST = config('API_URI') + 'news/'
 STORE_PATH = THIS_DIR + '/storage/'  # store will always be in this directory
 SOURCES_PATH = THIS_DIR + '/sources/'  # search here first for sources
 if not os.path.exists(STORE_PATH):
@@ -166,7 +172,58 @@ class NewsManager():
                 })
                 print('{} person/people updated with content.'.format(people_update.modified_count))
 
+    def convert_links(self):
+
+        app_db = PostConnect()
+
+        cities = self.collection.find({
+            'data_type': 'city',
+            'activated': {'$exists': False}
+        })
+
+        for city in cities:
+            search_details = gql.search(
+                review_tag='NEWS',
+                location_tag={
+                    'type': 'CITY',
+                    'params': city['name']
+                }
+            )
+            print(search_details)
+            location_tag_id = search_details['data']['search']['locationTag']['id']
+            values = []
+            for article in city['news']:
+                now = datetime.datetime.now()
+                values.append({
+                    'locationTag': location_tag_id,
+                    'createdAt': now,
+                    'updatedAt': now,
+                    'firstArticle': json.dumps({
+                        'title': article['title'],
+                        'source': article['source'],
+                        'published': tparser.parse(article['published']).__str__(),
+                        'link': article['link']
+                    })
+                })
+            ids = app_db.insert_many('OpenNews', values)
+            for index, _id in enumerate(ids):
+                city['news'][index]['link'] = LINK_HOST + _id
+
+            self.collection.update({
+                '_id': city['_id'],
+            }, {
+                '$set': {
+                    'news': city['news'],
+                    'activated': True
+                }
+            })
+
+            print('Links for {} ({}) have been converted.'.format(city['name'], city['_id']))
+
     def email(self):
+        """
+        Emails all the subscribed folks in the list with generated emails.
+        """
 
         people = self.collection.find({
             'content_generated': True,
@@ -175,7 +232,7 @@ class NewsManager():
         })
 
         for person in people:
-            content = self.collection.find_one({'name': person['city'], 'data_type': 'city'})
+            content = self.collection.find_one({'name': person['city'], 'data_type': 'city', 'activated': True})
             if not content:
                 print("No content available for {}. Moving on.".format(
                     person['email'] + str(person['_id'])
@@ -420,10 +477,12 @@ class NewsManager():
         )
         self.collection.create_index([('data_type', 1)])
         self.collection.create_index([('data_type', 1), ('city', 1)])
+        self.collection.create_index([('activated', 1), ('data_type', 1)])
         self.collection.create_index([('name', 1), ('data_type', 1)])
         self.collection.create_index([('content_generated', 1)])
         self.collection.create_index([('content_emailed', 1), ('content_generated', 1)])
-        self.collection.insert_many(self.source.to_dict(orient='records'))
+        if self.source:
+            self.collection.insert_many(self.source.to_dict(orient='records'), ordered=False)
 
     def _update_source(self):
         self.source.to_csv(self.path + '/source.csv')
@@ -477,7 +536,9 @@ def parse_city(location) -> dict:
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Online-2', national_news=False)
-    my_generator.generate(batch_size=15)
+    # my_generator = NewsManager('Online-2', national_news=False)
+    # my_generator.generate(batch_size=15)
+    my_generator = NewsManager('Online', national_news=False)
+    my_generator.convert_links()
 
     # my_generator.email()

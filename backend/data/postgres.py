@@ -103,18 +103,6 @@ class PostConnect(object):
         )
         return command, values
 
-    # def _insert_many_params(self, list_document):
-    #     values_list = []
-    #     positioner = None
-    #     for document in list_document:
-    #         document['id'] = cuid()
-    #         keys, values = zip(*document.items())
-    #         if not positioner:
-    #             positioner = tuple(r"%s" for value in values)
-    #         values_list.append(values)
-
-    #     return keys, positioner, values_list
-
     def _insert_many_params(self, table, list_document):
         values_list = []
         positioner = []
@@ -127,7 +115,7 @@ class PostConnect(object):
         positioner = ",".join(self._convert_iter(position) for position in positioner)
         command = 'INSERT INTO "{table}" {keys} VALUES {positioner}'.format(
             table=table,
-            keys=self._convert_iter(keys),
+            keys=self._convert_iter(keys, quotes=True),
             positioner=positioner
         )
         return command, values_list
@@ -160,10 +148,13 @@ class PostConnect(object):
             except (Exception, psycopg2.DatabaseError) as e:
                 print(e)
 
-    def _convert_iter(self, iterable):
+    def _convert_iter(self, iterable, quotes=False):
         string = ""
         for item in iterable:
-            string += str(item) + ", "
+            if quotes:
+                string += '"{}"'.format(item) + ", "
+            else:
+                string += str(item) + ", "
         string = string.strip(", ")
         return "({})".format(string)
 
