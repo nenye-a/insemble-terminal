@@ -48,9 +48,18 @@ export default function NewsTableMobile(props: Props) {
       </DataTable.HeaderRow>
       <DataTable.Body>
         {sortedData.map((row, index) => {
-          let { id, title = '', link = '', source = '', published, fill } = row;
+          let {
+            id: idProp,
+            title = '',
+            link = '',
+            source = '',
+            published,
+            fill,
+          } = row;
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
+          let id = idProp || index;
+
           return (
             <DataTable.Row
               key={index}

@@ -161,6 +161,7 @@ const Container = styled(Modal)<ContainerProps>`
   height: 80vh;
   border-radius: ${({ isDesktop }) =>
     isDesktop ? DEFAULT_BORDER_RADIUS : '2px'};
+  justify-content: center;
 `;
 
 const TitleContainer = styled(View)<TitleContainerProps>`
@@ -180,7 +181,7 @@ const Row = styled(View)`
 `;
 
 const Iframe = styled.iframe`
-  height: 60vh;
+  height: 100%;
 `;
 
 const PublishedDate = styled(Text)`
