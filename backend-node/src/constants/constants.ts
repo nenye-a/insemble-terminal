@@ -11,6 +11,7 @@ let SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@insemblegroup.com';
 const hostname =
   process.env.NODE_ENV === 'production' ? '0.0.0.0' : '127.0.0.1';
 const port = ((process.env.PORT as unknown) as number) || 4000;
+const TABLE_UPDATE_TIME = 15;
 
 export {
   HOST,
@@ -22,4 +23,5 @@ export {
   SUPPORT_EMAIL,
   hostname,
   port,
+  TABLE_UPDATE_TIME,
 };
