@@ -3,10 +3,10 @@ import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyNewsResponse, PyNewsData } from 'dataTypes';
-import { API_URI } from '../../constants/constants';
+import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
-import { todayMinOneH } from '../../helpers/todayMinOneH';
+import { todayMinXHour } from '../../helpers/todayMinXHour';
 
 let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
   _: Root,
@@ -77,7 +77,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         },
         data: {
           error: null,
-          updatedAt: todayMinOneH(),
+          updatedAt: todayMinXHour(1),
         },
       });
       return {
@@ -86,7 +86,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         polling: selectedNewsTable.polling,
       };
     }
-    let updateData = timeCheck(selectedNewsTable.updatedAt);
+    let updateData = timeCheck(selectedNewsTable.updatedAt, TABLE_UPDATE_TIME);
     if (updateData) {
       if (!selectedNewsTable.polling) {
         selectedNewsTable = await context.prisma.news.update({
@@ -224,7 +224,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               data: {
                 error: 'Failed to update News. Please try again.',
                 polling: false,
-                updatedAt: todayMinOneH(),
+                updatedAt: todayMinXHour(1),
               },
             });
           });
@@ -240,7 +240,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         locationTag: locationTag
           ? { connect: { id: locationTag.id } }
           : undefined,
-        updatedAt: todayMinOneH(),
+        updatedAt: todayMinXHour(1),
       },
       include: {
         locationTag: true,
@@ -303,7 +303,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
           data: {
             error: 'Failed to update News. Please try again.',
             polling: false,
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
         });
       });

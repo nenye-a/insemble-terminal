@@ -2,7 +2,7 @@ import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
 
 import { Context } from 'serverTypes';
 import { deleteComparisonResolver } from './deleteComparisonMutation';
-import { todayMinOneH } from '../../helpers/todayMinOneH';
+import { todayMinXHour } from '../../helpers/todayMinXHour';
 
 export let updateComparisonResolver: FieldResolver<
   'Mutation',
@@ -261,7 +261,7 @@ export let updateComparisonResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
           select: {
             id: true,
@@ -446,7 +446,7 @@ export let updateComparisonResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
           select: {
             id: true,
@@ -631,7 +631,7 @@ export let updateComparisonResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
           select: {
             id: true,
@@ -817,7 +817,7 @@ export let updateComparisonResolver: FieldResolver<
             comparationTags: {
               connect: connectNewCompIds,
             },
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
           select: {
             id: true,
