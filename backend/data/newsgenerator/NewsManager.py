@@ -6,7 +6,6 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import utils
 import re
-import time
 import json
 import datetime
 import pandas as pd
@@ -290,8 +289,6 @@ class NewsManager():
             quality_proxy=True,
             timeout=10
         )
-        import pprint
-        pprint.pprint(results)
 
         if not results:
             results = []
@@ -492,8 +489,11 @@ class NewsManager():
         self.collection.create_index([('name', 1), ('data_type', 1)])
         self.collection.create_index([('content_generated', 1)])
         self.collection.create_index([('content_emailed', 1), ('content_generated', 1)])
-        if self.source:
-            self.collection.insert_many(self.source.to_dict(orient='records'), ordered=False)
+        if self.source is not None:
+            try:
+                self.collection.insert_many(self.source.to_dict(orient='records'), ordered=False)
+            except Exception:
+                pass
 
     def _update_source(self):
         self.source.to_csv(self.path + '/source.csv')
@@ -552,12 +552,9 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Online-2', national_news=False)
-    my_generator.generate(batch_size=8)
-    # my_generator.generate(batch_size=15)
-    # my_generator.convert_links()
+    # my_generator = NewsManager('Online-2', national_news=False)
+    # my_generator.generate(batch_size=8)
 
-    # print(my_generator.collection.count_documents({'activated': {'$exists': True}}))
-    # my_generator.activate_link('ckbrjp7bm000d1z35ltfgq9cs')
-    # my_generator.convert_links()
-    # my_generator.email()
+    my_generator = NewsManager('Email-6/23', national_news=False)
+    # my_generator.generate(batch_size=10)
+    my_generator.convert_links()
