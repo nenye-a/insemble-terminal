@@ -181,6 +181,10 @@ export default function ResultTitle(props: Props) {
     alert.show('You need to sign in to access this feature');
   };
 
+  let showReadOnlyAlert = () => {
+    alert.show('This is a read-only page');
+  };
+
   return (
     <Container isDesktop={isDesktop}>
       <Row flex>
@@ -261,7 +265,11 @@ export default function ResultTitle(props: Props) {
                 ref={ref}
                 onPress={() => {
                   if (isAuthenticated) {
-                    setComparisonPopoverOpen(true);
+                    if (readOnly) {
+                      showReadOnlyAlert();
+                    } else {
+                      setComparisonPopoverOpen(true);
+                    }
                   } else {
                     showAuthAlert();
                   }
@@ -316,7 +324,11 @@ export default function ResultTitle(props: Props) {
                 ref={ref}
                 onPress={() => {
                   if (isAuthenticated) {
-                    setPinPopoverOpen(true);
+                    if (readOnly) {
+                      showReadOnlyAlert();
+                    } else {
+                      setPinPopoverOpen(true);
+                    }
                   } else {
                     showAuthAlert();
                   }

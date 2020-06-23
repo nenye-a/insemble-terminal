@@ -41,16 +41,16 @@ export const allAccessRoutes = [
   {
     path: '/news',
     component: NewsScene,
-    showHeader: true,
-    showSearchBar: true,
+    showHeader: false,
+    // showSearchBar: true,
     exact: true,
     readOnly: true,
   },
   {
     path: '/news/:newsId',
     component: NewsPreviewModal,
-    showHeader: true,
-    showSearchBar: true,
+    showHeader: false,
+    // showSearchBar: true,
   },
 ];
 

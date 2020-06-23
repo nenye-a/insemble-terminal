@@ -28,7 +28,7 @@ export default function NewsTable(props: Props) {
       type: 'date',
     },
   );
-
+  console.log(sortedData);
   return (
     <DataTable>
       <DataTable.HeaderRow>

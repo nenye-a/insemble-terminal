@@ -5,11 +5,12 @@ import { useAlert } from 'react-alert';
 import { useHistory } from 'react-router-dom';
 
 import { View, LoadingIndicator } from '../../core-ui';
-import { formatErrorMessage, useViewport } from '../../helpers';
+import { formatErrorMessage, useViewport, capitalize } from '../../helpers';
 import {
   EmptyDataComponent,
   ErrorComponent,
   PageTitle,
+  HeaderNavigationBar,
 } from '../../components';
 import {
   GetNewsTable_newsTable_table_data as NewsData,
@@ -25,7 +26,7 @@ import {
   GetOpenNewsDataVariables,
 } from '../../generated/GetOpenNewsData';
 import NewsTableMobile from '../results/NewsTableMobile';
-import { MergedNewsData } from '../../types/types';
+import { MergedNewsData, SearchTag } from '../../types/types';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 
 type Props = {
@@ -50,13 +51,14 @@ type State = {
       openNewsId?: string;
     };
   };
+  search?: SearchTag;
 };
 export default function NewsScene(props: Props) {
   let {
-    businessTagId,
-    locationTagId,
-    tableId,
-    pinTableId,
+    // businessTagId,
+    // locationTagId,
+    // tableId,
+    // pinTableId,
     readOnly,
     openNewsId: openNewsIdProp,
   } = props;
@@ -110,6 +112,23 @@ export default function NewsScene(props: Props) {
 
   return (
     <>
+      <HeaderNavigationBar
+        readOnly={readOnly}
+        showSearchBar={true}
+        onSearchPress={(search) => {
+          history.push('/results', { search });
+        }}
+        defaultReviewTag={capitalize(ReviewTag.NEWS)}
+        defaultBusinessTag={data?.openNews.businessTag}
+        defaultLocationTag={
+          data?.openNews.locationTag?.params
+            ? {
+                params: data?.openNews.locationTag?.params,
+                type: data?.openNews.locationTag.type,
+              }
+            : undefined
+        }
+      />
       <PageTitle text="News" rightText={today} />
       <Container>
         <ResultTitle
