@@ -99,7 +99,8 @@ def saved_update(query, update):
     )
     new = table.find_one(query)
     diff = utils.dictionary_diff(previous, new)
-    diff.pop('version'), diff.pop('last_update')
+    'version' in diff and diff.pop('version')
+    'last_update' in diff and diff.pop('last_update')
 
     if diff != {}:
         history_update = dict(diff, **{
@@ -153,7 +154,8 @@ def setup():
             ]
         }},
         {'$addFields': {
-            'marked': False
+            'marked': False,
+            'last_update': -1
         }},
         {'$merge': "temp_places"}
     ])
