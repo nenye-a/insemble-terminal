@@ -42,7 +42,7 @@ const RADIO_OPTIONS = [
 ];
 
 export default function AddFeedbackModal(props: Props) {
-  let { visible, onClose, tableId, tableType, title } = props;
+  let { visible, onClose, tableId, tableType, title: customFeed } = props;
   let { register, handleSubmit, reset } = useForm();
   let [selectedRadio, setSelectedRadio] = useState(RADIO_OPTIONS[0]);
   let [message, setMessage] = useState('');
@@ -64,6 +64,7 @@ export default function AddFeedbackModal(props: Props) {
         tableType,
         feedbackTitle: title,
         feedbackDetail: details,
+        customFeed,
       },
     });
   };

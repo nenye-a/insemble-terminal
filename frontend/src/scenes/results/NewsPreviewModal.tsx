@@ -22,19 +22,16 @@ type State = {
 export default function NewsPreview() {
   let { isDesktop } = useViewport();
   let history = useHistory<State>();
-
-  let goBack = () => {
-    history.goBack();
-  };
-
-  // if (true) {
   let {
     title = '',
     source = '',
     published = '',
     link = '',
   } = history.location.state;
-  console.log('masuk modal');
+  let goBack = () => {
+    history.goBack();
+  };
+
   return (
     <Container
       visible={true}
@@ -63,9 +60,6 @@ export default function NewsPreview() {
       <Iframe src={link} />
     </Container>
   );
-  // }
-
-  // return null;
 }
 
 type ContainerProps = ComponentProps<typeof Modal> & {

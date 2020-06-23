@@ -27,7 +27,6 @@ export default function NewsTable(props: Props) {
       type: 'date',
     },
   );
-  console.log(history, 'IN NEWS TABLE');
 
   return (
     <DataTable>
