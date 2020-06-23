@@ -3,10 +3,10 @@ import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyPerformanceResponse, PyPerformanceData } from 'dataTypes';
-import { API_URI } from '../../constants/constants';
+import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
-import { todayMinOneH } from '../../helpers/todayMinOneH';
+import { todayMinXHour } from '../../helpers/todayMinXHour';
 
 let performanceTableResolver: FieldResolver<
   'Query',
@@ -83,7 +83,7 @@ let performanceTableResolver: FieldResolver<
         },
         data: {
           error: null,
-          updatedAt: todayMinOneH(),
+          updatedAt: todayMinXHour(1),
         },
       });
       return {
@@ -92,7 +92,10 @@ let performanceTableResolver: FieldResolver<
         polling: selectedPerformanceTable.polling,
       };
     }
-    let updateData = timeCheck(selectedPerformanceTable.updatedAt);
+    let updateData = timeCheck(
+      selectedPerformanceTable.updatedAt,
+      TABLE_UPDATE_TIME,
+    );
     if (updateData) {
       if (!selectedPerformanceTable.polling) {
         selectedPerformanceTable = await context.prisma.performance.update({
@@ -251,7 +254,7 @@ let performanceTableResolver: FieldResolver<
               data: {
                 error: 'Failed to update Performance. Please try again.',
                 polling: false,
-                updatedAt: todayMinOneH(),
+                updatedAt: todayMinXHour(1),
               },
             });
           });
@@ -268,7 +271,7 @@ let performanceTableResolver: FieldResolver<
         locationTag: locationTag
           ? { connect: { id: locationTag.id } }
           : undefined,
-        updatedAt: todayMinOneH(),
+        updatedAt: todayMinXHour(1),
       },
       include: {
         locationTag: true,
@@ -345,7 +348,7 @@ let performanceTableResolver: FieldResolver<
           data: {
             error: 'Failed to update Performance. Please try again.',
             polling: false,
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
         });
       });
