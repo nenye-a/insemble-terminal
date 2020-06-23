@@ -35,20 +35,46 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
     });
     return selectedOpenNews;
   }
-
   let businessTag = selectedOpenNews.businessTag;
   let locationTag = selectedOpenNews.locationTag;
+  let existingOpenNews = await context.prisma.openNews.findMany({
+    where: {
+      businessTag: selectedOpenNews.businessTag,
+      locationTag: selectedOpenNews.locationTag,
+    },
+  });
+  let latestOpenNews = existingOpenNews.find(
+    (openNews) => !timeCheck(openNews.updatedAt, 300),
+  );
+  if (latestOpenNews) {
+    // Note: input the data if there is latestOpenNews
+    selectedOpenNews = await context.prisma.openNews.update({
+      where: { id: selectedOpenNews.id },
+      data: {
+        data: latestOpenNews.data,
+        updatedAt: latestOpenNews.updatedAt,
+      },
+      include: {
+        businessTag: true,
+        locationTag: true,
+      },
+    });
+  }
 
   if (!selectedOpenNews.polling) {
     let updateData = timeCheck(selectedOpenNews.updatedAt, 300); // Note: 300 minute (5 hour)
     if (updateData || !selectedOpenNews.data) {
-      selectedOpenNews = await context.prisma.openNews.update({
-        where: { id: openNewsId },
-        include: {
-          businessTag: true,
-          locationTag: true,
+      selectedOpenNews = {
+        ...selectedOpenNews,
+        polling: true,
+      };
+      await context.prisma.openNews.updateMany({
+        where: {
+          businessTag: selectedOpenNews.businessTag,
+          locationTag: selectedOpenNews.locationTag,
         },
         data: {
+          error: null,
           polling: true,
         },
       });
@@ -79,21 +105,28 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
             },
           );
           let stringifyNewsData = JSON.stringify(newsData);
-          await context.prisma.openNews.update({
-            where: { id: selectedOpenNews.id },
+          await context.prisma.openNews.updateMany({
+            where: {
+              businessTag: selectedOpenNews.businessTag,
+              locationTag: selectedOpenNews.locationTag,
+            },
             data: {
               data: stringifyNewsData,
+              error: null,
               polling: false,
             },
           });
         })
         .catch(async () => {
-          await context.prisma.openNews.update({
-            where: { id: selectedOpenNews.id },
+          await context.prisma.openNews.updateMany({
+            where: {
+              businessTag: selectedOpenNews.businessTag,
+              locationTag: selectedOpenNews.locationTag,
+            },
             data: {
               error: 'Failed to update News. Please try again.',
               polling: false,
-              updatedAt: todayMinXHour(1),
+              updatedAt: todayMinXHour(10),
             },
           });
         });
