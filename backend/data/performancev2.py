@@ -309,8 +309,8 @@ def aggregate_performance(name, location, scope):
     if not matching_places:
         return None
 
-    if scope == 'county':
-        data = categorical_data(matching_places, name, 'city')
+    if scope.lower() == 'county':
+        data = categorical_data(matching_places, name, 'by_city')
         data.pop('by_location')
         data['data'] = data['by_city']
     else:
