@@ -176,4 +176,13 @@ export type FirstArticle = {
   link: string;
 };
 
+export type OpenNewsData = {
+  title: string;
+  source: string;
+  description: string;
+  published: string;
+  relevance: number;
+  link: string;
+};
+
 export type AllTableType = PerformanceType | OwnershipType;

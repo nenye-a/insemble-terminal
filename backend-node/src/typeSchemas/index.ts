@@ -21,6 +21,7 @@ export * from './NewsTable';
 export * from './NewsData';
 export * from './CompareNewsData';
 export * from './OpenNews';
+export * from './OpenNewsData';
 export * from './Article';
 
 export * from './ActivityTable';

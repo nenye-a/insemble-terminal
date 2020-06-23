@@ -1,6 +1,6 @@
 import { objectType } from 'nexus';
 import { prisma } from '../prisma';
-import { FirstArticle } from 'dataTypes';
+import { FirstArticle, OpenNewsData } from 'dataTypes';
 
 export let OpenNews = objectType({
   name: 'OpenNews',
@@ -8,8 +8,8 @@ export let OpenNews = objectType({
     t.model.id();
     t.model.businessTag();
     t.model.locationTag();
-    t.boolean('polling');
-    t.string('error', { nullable: true });
+    t.model.polling();
+    t.model.error();
     t.field('firstArticle', {
       type: 'Article',
       resolve: async ({ id }) => {
@@ -20,13 +20,19 @@ export let OpenNews = objectType({
           openNews.firstArticle ||
             '{"title":"",source":"","published":"","link":""}',
         );
-        console.log(parseFirstArticle);
         return parseFirstArticle;
       },
     });
-    t.field('table', {
-      type: 'News',
-      nullable: true,
+    t.field('data', {
+      type: 'OpenNewsData',
+      list: true,
+      resolve: async ({ id }) => {
+        let openNews = await prisma.openNews.findOne({
+          where: { id },
+        });
+        let parseData: Array<OpenNewsData> = JSON.parse(openNews.data || '[]');
+        return parseData;
+      },
     });
   },
 });
