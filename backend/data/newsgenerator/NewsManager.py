@@ -178,7 +178,7 @@ class NewsManager():
 
         cities = self.collection.find({
             'data_type': 'city',
-            'activated': {'$exists': False}
+            'links_processed': {'$exists': False}
         })
 
         for city in cities:
@@ -201,7 +201,9 @@ class NewsManager():
                     'firstArticle': json.dumps({
                         'title': article['title'],
                         'source': article['source'],
-                        'published': tparser.parse(article['published']).__str__(),
+                        'published': tparser.parse(article['published']).__str__()
+                        if isinstance(article['published'], str)
+                        else article['published'].__str__(),
                         'link': article['link']
                     })
                 })
@@ -214,7 +216,7 @@ class NewsManager():
             }, {
                 '$set': {
                     'news': city['news'],
-                    'activated': True
+                    'links_processed': True
                 }
             })
 
@@ -536,9 +538,8 @@ def parse_city(location) -> dict:
 
 if __name__ == "__main__":
 
-    # my_generator = NewsManager('Online-2', national_news=False)
-    # my_generator.generate(batch_size=15)
     my_generator = NewsManager('Online', national_news=False)
-    my_generator.convert_links()
-
+    # my_generator.generate(batch_size=15)
+    # my_generator = NewsManager('Online', national_news=False)
+    # my_generator.convert_links()
     # my_generator.email()
