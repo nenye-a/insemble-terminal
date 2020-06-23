@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyCoverageResponse, PyCoverageData } from 'dataTypes';
-import { API_URI } from '../../constants/constants';
+import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 import { LocationTag, BusinessTag } from '@prisma/client';
@@ -72,7 +72,7 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
   let selectedCoverage;
   if (coverage.length) {
     selectedCoverage = coverage[0];
-    let updateData = timeCheck(selectedCoverage.updatedAt);
+    let updateData = timeCheck(selectedCoverage.updatedAt, TABLE_UPDATE_TIME);
     if (updateData) {
       try {
         let coverageUpdate = await getCoverageData(

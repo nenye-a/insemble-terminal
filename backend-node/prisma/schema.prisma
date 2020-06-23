@@ -224,6 +224,18 @@ model News {
   updatedAt       DateTime          @updatedAt
 }
 
+model OpenNews {
+  id           String       @default(cuid()) @id
+  firstArticle String
+  locationTag  LocationTag?
+  businessTag  BusinessTag?
+  data         String?
+  polling      Boolean      @default(false)
+  error        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
 model SearchLog {
   id          String       @default(cuid()) @id
   locationTag LocationTag?

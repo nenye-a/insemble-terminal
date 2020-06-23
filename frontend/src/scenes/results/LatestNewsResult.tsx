@@ -13,11 +13,12 @@ import {
   GetNewsTable_newsTable_table_compareData as NewsCompareData,
 } from '../../generated/GetNewsTable';
 import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage, useColoredData } from '../../helpers';
+import { formatErrorMessage, useColoredData, useViewport } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import NewsTable from './NewsTable';
 import FeedbackButton from './FeedbackButton';
+import NewsTableMobile from './NewsTableMobile';
 
 type Props = {
   businessTagId?: string;
@@ -39,6 +40,7 @@ export default function LatestNewsResult(props: Props) {
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let alert = useAlert();
+  let { isDesktop } = useViewport();
 
   let {
     data,
@@ -157,7 +159,11 @@ export default function LatestNewsResult(props: Props) {
             data?.newsTable.table &&
             data.newsTable.table.data.length > 0) ||
           prevData.length > 0 ? (
-          <NewsTable data={loading ? prevData : coloredData} />
+          isDesktop ? (
+            <NewsTable data={loading ? prevData : coloredData} />
+          ) : (
+            <NewsTableMobile data={loading ? prevData : coloredData} />
+          )
         ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : null}

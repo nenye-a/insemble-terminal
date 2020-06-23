@@ -7,6 +7,8 @@ import {
   EmailVerificationScene,
   LandingScene,
   LoginScene,
+  NewsScene,
+  NewsPreviewModal,
   ResultsScene,
   SignUpScene,
   TerminalDetailScene,
@@ -35,6 +37,24 @@ export const allAccessRoutes = [
     readOnly: true,
     showHeader: true,
     showSearchBar: true,
+  },
+  {
+    path: '/shared/:sharedTerminalId/news/:newsId',
+    component: NewsPreviewModal,
+    readOnly: true,
+    showHeader: true,
+    showSearchBar: true,
+  },
+  {
+    path: '/news/:openNewsId',
+    component: NewsScene,
+    showHeader: false,
+    exact: true,
+  },
+  {
+    path: '/news/:openNewsId/:newsId',
+    component: NewsPreviewModal,
+    showHeader: false,
   },
 ];
 
@@ -82,7 +102,13 @@ export const authenticatedRoutes: Array<RouteType> = [
   {
     path: '/results/:searchId',
     component: ResultsScene,
-    exact: false,
+    exact: true,
+    showHeader: false,
+    showSearchBar: true,
+  },
+  {
+    path: '/results/:searchId/news/:newsId',
+    component: NewsPreviewModal,
     showHeader: false,
     showSearchBar: true,
   },
@@ -95,6 +121,12 @@ export const authenticatedRoutes: Array<RouteType> = [
   {
     path: '/terminals/:terminalId',
     component: TerminalDetailScene,
+    showSearchBar: true,
+    exact: true,
+  },
+  {
+    path: '/terminals/:terminalId/news/:newsId',
+    component: NewsPreviewModal,
     showSearchBar: true,
   },
   { path: '/edit-profile', component: EditProfileScene },

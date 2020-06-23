@@ -23,11 +23,9 @@ import {
   FONT_WEIGHT_BOLD,
   FONT_SIZE_SMALL,
 } from '../../constants/theme';
+import { useAuth } from '../../context';
+import { getResultTitle, useViewport } from '../../helpers';
 import { ComparationTagWithFill } from '../../types/types';
-import SvgPin from '../../components/icons/pin';
-import SvgRoundAdd from '../../components/icons/round-add';
-import SvgRoundClose from '../../components/icons/round-close';
-import SvgClose from '../../components/icons/close';
 import {
   ReviewTag,
   LocationTagType,
@@ -40,8 +38,6 @@ import {
   UpdateComparison,
   UpdateComparisonVariables,
 } from '../../generated/UpdateComparison';
-import { getResultTitle } from '../../helpers';
-import SvgQuestionMark from '../../components/icons/question-mark';
 import {
   REMOVE_PINNED_TABLE,
   GET_TERMINAL,
@@ -51,6 +47,11 @@ import {
   RemovePinnedTable,
   RemovePinnedTableVariables,
 } from '../../generated/RemovePinnedTable';
+import SvgPin from '../../components/icons/pin';
+import SvgRoundAdd from '../../components/icons/round-add';
+import SvgRoundClose from '../../components/icons/round-close';
+import SvgClose from '../../components/icons/close';
+import SvgQuestionMark from '../../components/icons/question-mark';
 
 type Props = {
   title: string;
@@ -102,7 +103,8 @@ export default function ResultTitle(props: Props) {
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
-
+  let { isAuthenticated } = useAuth();
+  let { isDesktop } = useViewport();
   let refetchTerminalQueries = params.terminalId
     ? [
         {
@@ -175,9 +177,17 @@ export default function ResultTitle(props: Props) {
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
 
+  let showAuthAlert = () => {
+    alert.show('You need to sign in to access this feature');
+  };
+
+  let showReadOnlyAlert = () => {
+    alert.show('This is a read-only page');
+  };
+
   return (
-    <Container>
-      <Row>
+    <Container isDesktop={isDesktop}>
+      <Row flex>
         <Title noData={noData}>{title}</Title>
         {infoboxContent && (
           <Popover
@@ -214,7 +224,7 @@ export default function ResultTitle(props: Props) {
           </>
         )}
       </Row>
-      <Row>
+      <Row flex style={{ justifyContent: 'flex-end' }}>
         {formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
@@ -253,7 +263,17 @@ export default function ResultTitle(props: Props) {
             {(ref) => (
               <Touchable
                 ref={ref}
-                onPress={() => setComparisonPopoverOpen(true)}
+                onPress={() => {
+                  if (isAuthenticated) {
+                    if (readOnly) {
+                      showReadOnlyAlert();
+                    } else {
+                      setComparisonPopoverOpen(true);
+                    }
+                  } else {
+                    showAuthAlert();
+                  }
+                }}
                 disabled={noData}
               >
                 <SvgRoundAdd {...(noData && { fill: DISABLED_TEXT_COLOR })} />
@@ -302,7 +322,17 @@ export default function ResultTitle(props: Props) {
             {(ref) => (
               <Touchable
                 ref={ref}
-                onPress={() => setPinPopoverOpen(true)}
+                onPress={() => {
+                  if (isAuthenticated) {
+                    if (readOnly) {
+                      showReadOnlyAlert();
+                    } else {
+                      setPinPopoverOpen(true);
+                    }
+                  } else {
+                    showAuthAlert();
+                  }
+                }}
                 disabled={noData}
               >
                 <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
@@ -315,11 +345,15 @@ export default function ResultTitle(props: Props) {
   );
 }
 
+type ContainerProps = ViewProps & {
+  isDesktop: boolean;
+};
 type TitleProps = TextProps & {
   noData: boolean;
 };
-const Container = styled(View)`
-  padding: 8px 0;
+
+const Container = styled(View)<ContainerProps>`
+  padding: ${({ isDesktop }) => (isDesktop ? `8px 0` : `4px 12px`)};
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -349,6 +383,10 @@ const Touchable = styled(TouchableOpacity)`
 
 const CompareText = styled(Text)`
   color: ${THEME_COLOR};
+  max-width: 200px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 `;
 
 const SubTitle = styled(Text)`

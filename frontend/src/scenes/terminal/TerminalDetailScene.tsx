@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom';
 
 import { View, LoadingIndicator, Text } from '../../core-ui';
 import { PageTitle, ErrorComponent, SearchPlaceholder } from '../../components';
+import { useViewport } from '../../helpers';
 import { GetTerminal, GetTerminalVariables } from '../../generated/GetTerminal';
 import { GET_TERMINAL } from '../../graphql/queries/server/terminals';
 import {
@@ -30,6 +31,8 @@ export default function TerminalDetailScene() {
       },
     },
   );
+  let { isDesktop } = useViewport();
+
   return (
     <View>
       <PageTitle
@@ -37,7 +40,7 @@ export default function TerminalDetailScene() {
         showLocation={false}
         terminalId={params.terminalId}
       />
-      <ContentContainer>
+      <ContentContainer isDesktop={isDesktop}>
         {loading ? (
           <LoadingIndicator />
         ) : error ? (
@@ -67,8 +70,12 @@ export default function TerminalDetailScene() {
   );
 }
 
-const ContentContainer = styled(View)`
-  padding: 20px 15%;
+type ContentContainerProps = ViewProps & {
+  isDesktop: boolean;
+};
+
+const ContentContainer = styled(View)<ContentContainerProps>`
+  padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 0`)};
   background-color: ${BACKGROUND_COLOR};
   min-height: 90vh;
 `;

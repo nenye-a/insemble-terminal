@@ -3,7 +3,7 @@ import axios from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyOwnershipInfoResponse } from 'dataTypes';
-import { API_URI } from '../../constants/constants';
+import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 
@@ -59,7 +59,10 @@ let ownershipInfoTableResolver: FieldResolver<
   let selectedOwnershipInfoTable;
   if (ownershipInfo.length) {
     selectedOwnershipInfoTable = ownershipInfo[0];
-    let updateData = timeCheck(selectedOwnershipInfoTable.updatedAt);
+    let updateData = timeCheck(
+      selectedOwnershipInfoTable.updatedAt,
+      TABLE_UPDATE_TIME,
+    );
     if (updateData) {
       try {
         let ownershipInfoUpdate: PyOwnershipInfoResponse = (

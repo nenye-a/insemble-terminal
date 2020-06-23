@@ -27,3 +27,6 @@ matplotlib
 psycopg2
 fuzzywuzzy[speedup]
 sodapy
+yattag
+sendgrid
+feedparser

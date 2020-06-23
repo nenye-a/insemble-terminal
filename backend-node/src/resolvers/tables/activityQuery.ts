@@ -3,12 +3,12 @@ import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
 import { PyActivityData, PyActivityResponse } from 'dataTypes';
-import { API_URI } from '../../constants/constants';
+import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 import { LocationTag, BusinessTag } from '@prisma/client';
 import { objectToActivityGraph } from '../../helpers/objectToActivityGraph';
-import { todayMinOneH } from '../../helpers/todayMinOneH';
+import { todayMinXHour } from '../../helpers/todayMinXHour';
 
 let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
   _: Root,
@@ -85,7 +85,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         },
         data: {
           error: null,
-          updatedAt: todayMinOneH(),
+          updatedAt: todayMinXHour(1),
         },
       });
       return {
@@ -94,7 +94,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         polling: selectedActivity.polling,
       };
     }
-    let updateData = timeCheck(selectedActivity.updatedAt);
+    let updateData = timeCheck(selectedActivity.updatedAt, TABLE_UPDATE_TIME);
     if (updateData) {
       // update data (should be likely combined with if no table exists)
       if (!selectedActivity.polling) {
@@ -235,7 +235,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
               data: {
                 error: 'Failed to update Activity. Please try again.',
                 polling: false,
-                updatedAt: todayMinOneH(),
+                updatedAt: todayMinXHour(1),
               },
             });
           });
@@ -251,7 +251,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
         locationTag: locationTag
           ? { connect: { id: locationTag.id } }
           : undefined,
-        updatedAt: todayMinOneH(),
+        updatedAt: todayMinXHour(1),
       },
       include: {
         locationTag: true,
@@ -313,7 +313,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
           data: {
             error: 'Failed to update Activity. Please try again.',
             polling: false,
-            updatedAt: todayMinOneH(),
+            updatedAt: todayMinXHour(1),
           },
         });
       });

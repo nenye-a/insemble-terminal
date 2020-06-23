@@ -141,18 +141,27 @@ class PerformanceAPI(BasicAPI):
 
             # NO BUSINESS & LOCATION
             if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                if data_type == 'OVERALL':
+                    data_key = 'overall'
+                if data_type == 'ADDRESS':
+                    data_key = 'by_location'
+                elif data_type == 'BRAND':
+                    data_key = 'by_brand'
+                elif data_type == 'CATEGORY':
+                    data_key = 'by_category'
+                else:
+                    error = "{data_type} not supported for request Location Only requests.".format(
+                        data_type=data_type
+                    )
+                    return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+                return_type = data_key if data_key not in ['by_location', 'overall'] else None
                 raw_data = performancev2.category_performance(
-                    None, location['params'], location['locationType'])
-                if raw_data:
-                    if data_type == 'CATEGORY':
-                        data.extend(raw_data['by_category'])
-                    elif data_type == 'BRAND':
-                        data.extend(raw_data['by_brand'])
-                    else:
-                        error = "{data_type} not supported for request Location Only requests.".format(
-                            data_type=data_type
-                        )
-                        return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+                    None, location['params'], location['locationType'], return_type)
+                if data_type == 'OVERALL':
+                    raw_data and data.append(raw_data[data_key])
+                else:
+                    raw_data and data.extend(raw_data[data_key])
+
             else:
                 return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
@@ -176,12 +185,20 @@ class PerformanceAPI(BasicAPI):
                     return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
 
             # CITY & COUNTY + BUSINESS
-            elif location['locationType'] in ['CITY', 'COUNTY']:
+            elif location['locationType'] == 'CITY':
                 raw_data = performancev2.aggregate_performance(
                     business['params'], location['params'], location['locationType'])
                 if data_type == 'OVERALL':
                     raw_data and data.append(raw_data['overall'])
                 elif data_type == 'ADDRESS':
+                    raw_data and data.extend(raw_data['data'])
+
+            elif location['locationType'] == 'COUNTY':
+                raw_data = performancev2.aggregate_performance(
+                    business['params'], location['params'], location['locationType'])
+                if data_type == 'OVERALL':
+                    raw_data and data.append(raw_data['overall'])
+                elif data_type == 'CITY':
                     raw_data and data.extend(raw_data['data'])
 
             # OTHER SCOPES UNIMPLEMENTED

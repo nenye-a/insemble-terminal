@@ -37,3 +37,5 @@ export * from './license/licenseListQuery';
 
 export * from './contactUs/contactUsMutation';
 export * from './contactUs/feedbackMutation';
+
+export * from './openNews/openNewsQuery';

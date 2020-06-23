@@ -7,6 +7,8 @@ export { default as ContactUsScene } from './landing/ContactUsScene';
 export { default as LandingScene } from './landing/LandingScene';
 export { default as ActivationScene } from './license/ActivationScene';
 export { default as ManageTokenScene } from './license/ManageTokenScene';
+export { default as NewsScene } from './news/NewsScene';
+export { default as NewsPreviewModal } from './results/NewsPreviewModal';
 export { default as EditProfileScene } from './profile/EditProfileScene';
 export { default as ResultsScene } from './results/ResultsScene';
 export { default as TerminalDetailScene } from './terminal/TerminalDetailScene';
