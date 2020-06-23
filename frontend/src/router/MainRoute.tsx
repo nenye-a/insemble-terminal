@@ -81,7 +81,7 @@ function Routes() {
       {background && (
         <>
           <Route
-            path="/news/:openNewsId/news/:newsId"
+            path="/news/:openNewsId/:newsId"
             children={<NewsPreviewModal />}
           />
           <Route

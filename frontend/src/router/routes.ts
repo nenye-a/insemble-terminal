@@ -52,7 +52,7 @@ export const allAccessRoutes = [
     exact: true,
   },
   {
-    path: '/news/:openNewsId/news/:newsId',
+    path: '/news/:openNewsId/:newsId',
     component: NewsPreviewModal,
     showHeader: false,
   },

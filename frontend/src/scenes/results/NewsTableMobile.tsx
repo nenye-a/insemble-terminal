@@ -64,7 +64,11 @@ export default function NewsTableMobile(props: Props) {
             <DataTable.Row
               key={index}
               onPress={() => {
-                history.push(`${history.location.pathname}/news/${id}`, {
+                let path = history.location.pathname.includes('news')
+                  ? `${history.location.pathname}/${id}`
+                  : `${history.location.pathname}/news/${id}`;
+
+                history.push(path, {
                   title,
                   link,
                   source,
