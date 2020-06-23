@@ -15,19 +15,18 @@ import { GET_OPEN_NEWS_DATA } from '../../graphql/queries/server/results';
 import { BACKGROUND_COLOR } from '../../constants/colors';
 import ResultTitle from '../results/ResultTitle';
 import NewsTable from '../results/NewsTable';
+import NewsTableMobile from '../results/NewsTableMobile';
+import FeedbackButton from '../results/FeedbackButton';
 import {
   GetOpenNewsData,
   GetOpenNewsDataVariables,
 } from '../../generated/GetOpenNewsData';
-import NewsTableMobile from '../results/NewsTableMobile';
 import { MergedNewsData, SearchTag } from '../../types/types';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 import { useAuth } from '../../context';
-import FeedbackButton from '../results/FeedbackButton';
 
 type Props = {
   readOnly?: boolean;
-  // openNewsId?: string;
 };
 
 const POLL_INTERVAL = 5000;
