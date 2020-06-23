@@ -62,20 +62,13 @@ export default function NewsTable(props: Props) {
             <DataTable.Row
               key={index}
               onPress={() => {
-                history.push(`${history.location.pathname}/${id}`, {
+                history.push(`${history.location.pathname}/news/${id}`, {
                   title,
                   link,
                   source,
                   published,
                   background: history.location,
                 });
-                // history.push(`/news/${id}`, {
-                //   title,
-                //   link,
-                //   source,
-                //   published,
-                //   background: history.location,
-                // });
               }}
               style={{
                 backgroundColor: bgColor,

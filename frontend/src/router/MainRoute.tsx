@@ -78,7 +78,26 @@ function Routes() {
           : unAuthenticatedRoutes.map(mapFn)}
         <Route component={UserHomeScene} />
       </Switch>
-      {background && <Route path="/news/:id" children={<NewsPreviewModal />} />}
+      {background && (
+        <>
+          <Route
+            path="/news/:openNewsId/news/:newsId"
+            children={<NewsPreviewModal />}
+          />
+          <Route
+            path="/results/:searchId/:newsId"
+            children={<NewsPreviewModal />}
+          />
+          <Route
+            path="/terminals/:terminalId/news/:newsId"
+            children={<NewsPreviewModal />}
+          />
+          <Route
+            path="/shared/:sharedTerminalId/news/:newsId"
+            children={<NewsPreviewModal />}
+          />
+        </>
+      )}
     </>
   );
 }

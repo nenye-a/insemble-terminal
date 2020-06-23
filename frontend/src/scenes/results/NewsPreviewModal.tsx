@@ -27,44 +27,45 @@ export default function NewsPreview() {
     history.goBack();
   };
 
-  if (history.location.state?.background) {
-    let {
-      title = '',
-      source = '',
-      published = '',
-      link = '',
-    } = history.location.state;
-    return (
-      <Container
-        visible={true}
-        hideCloseButton={true}
-        onClose={goBack}
-        isDesktop={isDesktop}
-      >
-        <TitleContainer isDesktop={isDesktop}>
-          {!isDesktop && (
-            <TouchableOpacity onPress={goBack}>
-              <SvgArrowLeft style={{ marginRight: 8 }} />
-            </TouchableOpacity>
-          )}
-          <View flex>
-            <Text color={THEME_COLOR}>Article</Text>
-            <Title>{title}</Title>
-            <Row>
-              <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
-                {source}
-              </Text>
-              <PublishedDate>{getPublishedDate(published)}</PublishedDate>
-            </Row>
-          </View>
-        </TitleContainer>
-        <Divider width={12} />
-        <Iframe src={link} />
-      </Container>
-    );
-  }
+  // if (true) {
+  let {
+    title = '',
+    source = '',
+    published = '',
+    link = '',
+  } = history.location.state;
+  console.log('masuk modal');
+  return (
+    <Container
+      visible={true}
+      hideCloseButton={true}
+      onClose={goBack}
+      isDesktop={isDesktop}
+    >
+      <TitleContainer isDesktop={isDesktop}>
+        {!isDesktop && (
+          <TouchableOpacity onPress={goBack}>
+            <SvgArrowLeft style={{ marginRight: 8 }} />
+          </TouchableOpacity>
+        )}
+        <View flex>
+          <Text color={THEME_COLOR}>Article</Text>
+          <Title>{title}</Title>
+          <Row>
+            <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
+              {source}
+            </Text>
+            <PublishedDate>{getPublishedDate(published)}</PublishedDate>
+          </Row>
+        </View>
+      </TitleContainer>
+      <Divider width={12} />
+      <Iframe src={link} />
+    </Container>
+  );
+  // }
 
-  return null;
+  // return null;
 }
 
 type ContainerProps = ComponentProps<typeof Modal> & {

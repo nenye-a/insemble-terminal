@@ -70,7 +70,7 @@ export default function NewsScene(props: Props) {
     onCompleted: (data) => {
       if (data?.openNews.firstArticle) {
         let { title, source, published, link } = data.openNews.firstArticle;
-        history.push(`/news/${openNewsId}/main`, {
+        history.push(`/news/${openNewsId}/news/main`, {
           title,
           source,
           published,
