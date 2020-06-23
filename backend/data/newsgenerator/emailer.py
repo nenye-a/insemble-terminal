@@ -6,8 +6,6 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import ssl
 import email_builder
-import json
-import utils
 
 from decouple import config
 
