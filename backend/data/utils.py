@@ -5,6 +5,7 @@ import re
 import geopy.distance
 import random
 import urllib
+import pandas as pd
 import datetime as dt
 from fuzzywuzzy import fuzz
 
@@ -40,10 +41,15 @@ DB_REGIONS = SYSTEM_MONGO.get_collection(mongo.REGIONS)
 DB_MISC = SYSTEM_MONGO.get_collection(mongo.MISC)
 DB_LOG = SYSTEM_MONGO.get_collection(mongo.LOG)
 DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
+DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
+DB_UNSUBSCRIBED = SYSTEM_MONGO.get_collection(mongo.UNSUBSCRIBED)
+DB_FEEDS = SYSTEM_MONGO.get_collection(mongo.FEEDS)
 BWE = mongo.BulkWriteError
 
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
 DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
+
+STATE_DICT = pd.read_csv(THIS_DIR + '/util/stateabbreviations.csv').set_index("Code")
 
 
 def create_index(collection):
@@ -374,6 +380,7 @@ def extract_city(address):
     else:
         return match[0][0].strip()
 
+
 def extract_state(address):
     """
     Provided an address with the following ending:
@@ -385,6 +392,22 @@ def extract_state(address):
     except Exception:
         return None
 
+
+def state_code_to_name(state_code):
+    return STATE_DICT.loc[state_code]['State']
+
+
+def unsubscribe(email_list):
+
+    if isinstance(email_list, str):
+        email_list = [email_list]
+
+    email_list = [word.strip().lower() for word in email_list]
+    DB_UNSUBSCRIBED.update({'name': 'unsubscribed'}, {'$push': {
+        'unsubscribed': {
+            '$each': email_list
+        }
+    }})
 
 
 def dictionary_diff(previous, new, replaced=True):
@@ -514,6 +537,6 @@ if __name__ == "__main__":
     # test_snake_to_word()
     # test_round_object()
     # test_extract_city()
-    test_extract_state()
+    # test_extract_state()
     # test_chunks()
     # test_dictionary_diff()
