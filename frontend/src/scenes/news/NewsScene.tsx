@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { formatErrorMessage, useViewport, capitalize } from '../../helpers';
@@ -27,7 +27,7 @@ import FeedbackButton from '../results/FeedbackButton';
 
 type Props = {
   readOnly?: boolean;
-  openNewsId?: string;
+  // openNewsId?: string;
 };
 
 const POLL_INTERVAL = 5000;
@@ -40,17 +40,22 @@ type State = {
     };
   };
   search?: SearchTag;
+  title?: string;
+  source?: string;
+  published?: string;
+  link?: string;
+};
+
+type Params = {
+  openNewsId: string;
 };
 export default function NewsScene(props: Props) {
-  let { readOnly, openNewsId: openNewsIdProp } = props;
+  let { readOnly } = props;
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
   let history = useHistory<State>();
-  let openNewsId =
-    openNewsIdProp ||
-    history.location.state?.openNewsId ||
-    history.location.state?.background?.state?.openNewsId ||
-    '';
+  let { openNewsId } = useParams<Params>();
+
   let {
     data,
     loading: newsLoading,
@@ -62,6 +67,18 @@ export default function NewsScene(props: Props) {
       openNewsId: openNewsId || '',
     },
     skip: !openNewsId,
+    onCompleted: (data) => {
+      if (data?.openNews.firstArticle) {
+        let { title, source, published, link } = data.openNews.firstArticle;
+        history.push(`/news/${openNewsId}/main`, {
+          title,
+          source,
+          published,
+          link,
+          background: history.location,
+        });
+      }
+    },
   });
 
   let noData = !data?.openNews.data || data.openNews.data.length === 0;

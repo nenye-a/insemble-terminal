@@ -27,6 +27,7 @@ export default function NewsTable(props: Props) {
       type: 'date',
     },
   );
+  console.log(history, 'IN NEWS TABLE');
 
   return (
     <DataTable>
@@ -61,13 +62,20 @@ export default function NewsTable(props: Props) {
             <DataTable.Row
               key={index}
               onPress={() => {
-                history.push(`/news/${id}`, {
+                history.push(`${history.location.pathname}/${id}`, {
                   title,
                   link,
                   source,
                   published,
                   background: history.location,
                 });
+                // history.push(`/news/${id}`, {
+                //   title,
+                //   link,
+                //   source,
+                //   published,
+                //   background: history.location,
+                // });
               }}
               style={{
                 backgroundColor: bgColor,
