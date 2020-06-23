@@ -105,12 +105,14 @@ export const GET_NEWS_TABLE_DATA = gql`
           ...ComparationTagFragment
         }
         data {
+          id
           title
           link
           source
           published
         }
         compareData {
+          id
           title
           link
           source
@@ -303,6 +305,40 @@ export const GET_OWNERSHIP_INFO_DATA = gql`
         phone
         website
         lastUpdate
+      }
+    }
+  }
+`;
+
+export const GET_OPEN_NEWS_DATA = gql`
+  query GetOpenNewsData($openNewsId: String!) {
+    openNews(openNewsId: $openNewsId) {
+      id
+      businessTag {
+        id
+        params
+        type
+      }
+      locationTag {
+        id
+        params
+        type
+      }
+      polling
+      error
+      firstArticle {
+        title
+        source
+        published
+        link
+      }
+      data {
+        title
+        description
+        link
+        source
+        published
+        relevance
       }
     }
   }

@@ -5,12 +5,13 @@ import {
   Switch,
   Route,
   useHistory,
+  useLocation,
 } from 'react-router-dom';
 
 import { View } from '../core-ui';
 import { Footer, HeaderNavigationBar } from '../components';
 import { useAuth } from '../context';
-import { UserHomeScene } from '../scenes';
+import { UserHomeScene, NewsPreviewModal } from '../scenes';
 
 import {
   authenticatedRoutes,
@@ -19,6 +20,11 @@ import {
   RouteType,
   authenticatedAdminRoutes,
 } from './routes';
+
+type State = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  background: any;
+};
 
 export default function MainRoute() {
   return (
@@ -30,6 +36,9 @@ export default function MainRoute() {
 
 function Routes() {
   let { isAuthenticated, user } = useAuth();
+  let location = useLocation<State>();
+  let background = location.state && location.state.background;
+
   let mapFn = (
     {
       component,
@@ -58,16 +67,38 @@ function Routes() {
     );
   };
   return (
-    <Switch>
-      {isAuthenticated
-        ? user?.license
-          ? user?.role === 'ADMIN'
-            ? authenticatedAdminRoutes.map(mapFn)
-            : authenticatedRoutes.map(mapFn)
-          : authenticatedUnactiveRoutes.map(mapFn)
-        : unAuthenticatedRoutes.map(mapFn)}
-      <Route component={UserHomeScene} />
-    </Switch>
+    <>
+      <Switch location={background || location}>
+        {isAuthenticated
+          ? user?.license
+            ? user?.role === 'ADMIN'
+              ? authenticatedAdminRoutes.map(mapFn)
+              : authenticatedRoutes.map(mapFn)
+            : authenticatedUnactiveRoutes.map(mapFn)
+          : unAuthenticatedRoutes.map(mapFn)}
+        <Route component={UserHomeScene} />
+      </Switch>
+      {background && (
+        <>
+          <Route
+            path="/news/:openNewsId/:newsId"
+            children={<NewsPreviewModal />}
+          />
+          <Route
+            path="/results/:searchId/:newsId"
+            children={<NewsPreviewModal />}
+          />
+          <Route
+            path="/terminals/:terminalId/news/:newsId"
+            children={<NewsPreviewModal />}
+          />
+          <Route
+            path="/shared/:sharedTerminalId/news/:newsId"
+            children={<NewsPreviewModal />}
+          />
+        </>
+      )}
+    </>
   );
 }
 

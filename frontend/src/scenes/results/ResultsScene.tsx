@@ -30,7 +30,7 @@ import {
   BusinessTagResult,
   LocationTag,
 } from '../../types/types';
-import { getResultQueries, capitalize } from '../../helpers';
+import { getResultQueries, capitalize, useViewport } from '../../helpers';
 import {
   GetSearchTag,
   GetSearchTagVariables,
@@ -90,6 +90,7 @@ export default function ResultsScene() {
     setSelectedSearchTagWithIds,
   ] = useState<SearchTagWithIds | null>(null);
   let [resultQueries, setResultQueries] = useState<Array<ResultQuery>>([]);
+  let { isDesktop } = useViewport();
 
   let loading = submitSearchLoading || getSearchTagLoading;
   let onSubmit = ({
@@ -238,7 +239,7 @@ export default function ResultsScene() {
             businessTag={selectedSearchTagWithIds.businessTag}
             locationTag={selectedSearchTagWithIds.locationTag}
           />
-          <Container>
+          <Container isDesktop={isDesktop}>
             {resultQueries.map(({ reviewTag, type }, idx) => {
               let key = `${reviewTag}-${type}-${idx}`;
               let props = {
@@ -356,8 +357,8 @@ export default function ResultsScene() {
   );
 }
 
-const Container = styled(View)`
-  padding: 20px 15%;
+const Container = styled(View)<ViewProps & { isDesktop: boolean }>`
+  padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 0`)};
   background-color: ${BACKGROUND_COLOR};
   min-height: 90vh;
 `;

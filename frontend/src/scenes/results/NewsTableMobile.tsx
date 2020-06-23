@@ -1,6 +1,8 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import styled from 'styled-components';
 
+import { Text, View } from '../../core-ui';
 import { DataTable } from '../../components';
 import {
   getPublishedDate,
@@ -9,13 +11,14 @@ import {
   getTextColor,
 } from '../../helpers';
 import { Direction, MergedNewsData } from '../../types/types';
-import { WHITE } from '../../constants/colors';
+import { WHITE, GRAY_TEXT } from '../../constants/colors';
+import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 
 type Props = {
   data: Array<MergedNewsData>;
 };
 
-export default function NewsTable(props: Props) {
+export default function NewsTableMobile(props: Props) {
   let { data } = props;
   let history = useHistory();
 
@@ -31,8 +34,7 @@ export default function NewsTable(props: Props) {
   return (
     <DataTable>
       <DataTable.HeaderRow>
-        <DataTable.HeaderCell width={500}>Top News</DataTable.HeaderCell>
-        <DataTable.HeaderCell>Source</DataTable.HeaderCell>
+        <DataTable.HeaderCell width={500}>Latest News</DataTable.HeaderCell>
         <DataTable.HeaderCell
           align="right"
           onClick={() => {
@@ -57,6 +59,7 @@ export default function NewsTable(props: Props) {
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
           let id = idProp || index;
+
           return (
             <DataTable.Row
               key={index}
@@ -64,6 +67,7 @@ export default function NewsTable(props: Props) {
                 let path = history.location.pathname.includes('news')
                   ? `${history.location.pathname}/${id}`
                   : `${history.location.pathname}/news/${id}`;
+
                 history.push(path, {
                   title,
                   link,
@@ -86,10 +90,10 @@ export default function NewsTable(props: Props) {
                   color: textColor,
                 }}
               >
-                {title}
-              </DataTable.Cell>
-              <DataTable.Cell style={{ color: textColor }}>
-                {source}
+                <View>
+                  <SourceText>{title}</SourceText>
+                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>{source}</Text>
+                </View>
               </DataTable.Cell>
               <DataTable.Cell style={{ color: textColor }} align="right">
                 {getPublishedDate(published)}
@@ -101,3 +105,8 @@ export default function NewsTable(props: Props) {
     </DataTable>
   );
 }
+
+const SourceText = styled(Text)`
+  margin-bottom: 8px;
+  color: ${GRAY_TEXT};
+`;

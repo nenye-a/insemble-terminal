@@ -8,22 +8,25 @@ import View from './View';
 type Props = ViewProps & {
   mode?: 'horizontal' | 'vertical';
   color?: string;
+  width?: number;
 };
 
 export default function Divider(props: Props) {
-  let { mode = 'horizontal', color, ...otherProps } = props;
+  let { mode = 'horizontal', color, width = 1, ...otherProps } = props;
 
-  return <StyledDivider mode={mode} color={color} {...otherProps} />;
+  return (
+    <StyledDivider mode={mode} color={color} width={width} {...otherProps} />
+  );
 }
 
 const StyledDivider = styled(View)<Props>`
-  ${({ mode }) =>
+  ${({ mode, width }) =>
     mode === 'horizontal'
       ? css`
-          height: 1px;
+          height: ${width}px;
         `
       : css`
-          width: 1px;
+          width: ${width}px;
         `}
         background-color: ${({ color }) => color || THEME_COLOR}
 `;

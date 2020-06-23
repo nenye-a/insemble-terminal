@@ -9,6 +9,7 @@ import {
   ErrorComponent,
   EmptyDataComponent,
 } from '../../components';
+import { useViewport } from '../../helpers';
 import { GET_SHARED_TERMINAL } from '../../graphql/queries/server/terminals';
 import { BACKGROUND_COLOR } from '../../constants/colors';
 import {
@@ -32,10 +33,12 @@ export default function SharedTerminalDetailScene() {
       sharedTerminalId: params.sharedTerminalId,
     },
   });
+
+  let { isDesktop } = useViewport();
   return (
     <View>
       <PageTitle text={data?.sharedTerminal?.name || ''} showLocation={false} />
-      <ContentContainer>
+      <ContentContainer isDesktop={isDesktop}>
         {loading ? (
           <LoadingIndicator />
         ) : error ? (
@@ -54,8 +57,12 @@ export default function SharedTerminalDetailScene() {
   );
 }
 
-const ContentContainer = styled(View)`
-  padding: 20px 15%;
+type ContainerProps = ViewProps & {
+  isDesktop: boolean;
+};
+
+const ContentContainer = styled(View)<ContainerProps>`
+  padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 0`)};
   background-color: ${BACKGROUND_COLOR};
   min-height: 90vh;
 `;

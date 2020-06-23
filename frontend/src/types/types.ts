@@ -101,3 +101,7 @@ export type MergedActivityData = (ActivityData | ActivityCompareData) &
   WithFillAndComparison;
 export type MergedCoverageData = (CoverageData | CoverageCompareData) &
   WithFillAndComparison;
+
+export type HasCompareId = {
+  compareId: string;
+};

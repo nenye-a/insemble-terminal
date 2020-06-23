@@ -5,8 +5,12 @@ import Popover from 'react-tiny-popover';
 import { Text, View, TouchableOpacity } from '../core-ui';
 import { ReviewTag, LocationTagType } from '../generated/globalTypes';
 import { THEME_COLOR, WHITE } from '../constants/colors';
-import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../constants/theme';
-import { getResultTitle } from '../helpers';
+import {
+  FONT_SIZE_XLARGE,
+  FONT_SIZE_MEDIUM,
+  FONT_WEIGHT_MEDIUM,
+} from '../constants/theme';
+import { getResultTitle, useViewport } from '../helpers';
 import { BusinessTagResult, LocationTag } from '../types/types';
 import ManageTerminalModal from '../scenes/terminal/ManageTerminalModal';
 
@@ -21,6 +25,7 @@ type Props = {
   text?: string;
   showLocation?: boolean;
   terminalId?: string;
+  rightText?: string;
 };
 
 export default function PageTitle(props: Props) {
@@ -31,10 +36,13 @@ export default function PageTitle(props: Props) {
     text,
     showLocation = true,
     terminalId,
+    rightText,
   } = props;
 
   let [sharePopoverVisible, setSharePopoverVisible] = useState(false);
   let [editTerminalVisible, setEditTerminalVisible] = useState(false);
+
+  let { isDesktop } = useViewport();
 
   let resultTitle = getResultTitle({
     reviewTag,
@@ -54,7 +62,7 @@ export default function PageTitle(props: Props) {
   );
 
   return (
-    <TitleContainer>
+    <TitleContainer isDesktop={isDesktop}>
       <ManageTerminalModal
         mode="edit"
         visible={editTerminalVisible}
@@ -63,7 +71,7 @@ export default function PageTitle(props: Props) {
         }}
         terminalId={terminalId}
       />
-      <Title>{text ? text : resultTitle}</Title>
+      <Title isDesktop={isDesktop}>{text ? text : resultTitle}</Title>
       {!!terminalId && (
         <Row>
           <Touchable
@@ -89,25 +97,28 @@ export default function PageTitle(props: Props) {
           </Popover>
         </Row>
       )}
-      {showLocation &&
-        (locationTag?.type === LocationTagType.NATION || !locationTag) && (
-          <PurpleText>All United States</PurpleText>
-        )}
+      {rightText ? (
+        <PurpleText>{rightText}</PurpleText>
+      ) : showLocation &&
+        (locationTag?.type === LocationTagType.NATION || !locationTag) ? (
+        <PurpleText>All United States</PurpleText>
+      ) : null}
     </TitleContainer>
   );
 }
 
-const Title = styled(Text)`
+const Title = styled(Text)<TextProps & WithViewport>`
   color: ${THEME_COLOR};
-  font-size: ${FONT_SIZE_XLARGE};
+  font-size: ${({ isDesktop }) =>
+    isDesktop ? FONT_SIZE_XLARGE : FONT_SIZE_MEDIUM};
 `;
 
-const TitleContainer = styled(View)`
+const TitleContainer = styled(View)<ViewProps & WithViewport>`
   background-color: ${WHITE};
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 25px 15%;
+  padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 18px`)};
 `;
 
 const PurpleText = styled(Text)`
