@@ -8,7 +8,7 @@ import { AllTableType } from 'dataTypes';
 
 export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
   _,
-  { feedbackTitle, feedbackDetail, tableType, tableId },
+  { feedbackTitle, feedbackDetail, tableType, tableId, customFeed },
   context: Context,
 ) => {
   let user = await context.prisma.user.findOne({
@@ -20,7 +20,7 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
     throw new Error('User not found');
   }
 
-  let feed = 'General';
+  let feed = customFeed ? customFeed : 'General';
   if (tableType && tableId) {
     let table;
     let type: undefined | AllTableType;
@@ -128,6 +128,7 @@ export let feedback = mutationField('feedback', {
   args: {
     feedbackTitle: stringArg({ required: true }),
     feedbackDetail: stringArg(),
+    customFeed: stringArg(),
     tableType: arg({ type: 'TableType' }),
     tableId: stringArg(),
   },
