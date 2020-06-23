@@ -103,15 +103,42 @@ class PostConnect(object):
         )
         return command, values
 
+    # def _insert_many_params(self, list_document):
+    #     values_list = []
+    #     positioner = None
+    #     for document in list_document:
+    #         document['id'] = cuid()
+    #         keys, values = zip(*document.items())
+    #         if not positioner:
+    #             positioner = tuple(r"%s" for value in values)
+    #         values_list.append(values)
+
+    #     return keys, positioner, values_list
+
+    def _insert_many_params(self, table, list_document):
+        values_list = []
+        positioner = []
+        for document in list_document:
+            document['id'] = cuid()
+            keys, values = zip(*document.items())
+            positioner.append(tuple(r"%s" for value in values))
+            values_list.extend(values)
+
+        positioner = ",".join(self._convert_iter(position) for position in positioner)
+        command = 'INSERT INTO "{table}" {keys} VALUES {positioner}'.format(
+            table=table,
+            keys=self._convert_iter(keys),
+            positioner=positioner
+        )
+        return command, values_list
+
     def insert_many(self, table, list_document):
+        self._check_table(table)
+        command, values = self._insert_many_params(table, list_document)
         with self.get_cursor() as cursor:
-            ids = []
-            for document in list_document:
-                command, values = self._insert_params(table, document)
-                cursor.execute(command, values)
-                ids.append(document['id'])
+            cursor.execute(command, values)
         self.commit()
-        return ids
+        return [document["id"] for document in list_document]
 
     def delete(self, table, query):
         self._check_table(table)
@@ -155,12 +182,8 @@ class PostConnect(object):
         self.connection.commit()
 
 
-# h = PostConnect()
-# h.list_tables(True)
-# print(h.insert("BusinessTag", {"params": "Hello", "type": "Business"}))
-# print(h.insert_many("BusinessTag", [{"params": "Hello", "type": "Business"}, {
-#       "params": "Hello", "type": "Business"}, {"params": "Hello", "type": "Business"}]))
-# j = h.find("BusinessTag")
-# print(j)
-# print(h.find_one("BusinessTag"))
-# print(j[0]['id'])
+if __name__ == "__main__":
+
+    h = PostConnect()
+    print(h.insert_many("BusinessTag", [{"params": "Hello23", "type": "BUSINESS"}, {
+        "params": "Hello25", "type": "BUSINESS"}, {"params": "Hello31", "type": "BUSINESS"}]))
