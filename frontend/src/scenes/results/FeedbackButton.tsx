@@ -11,7 +11,7 @@ import AddFeedbackModal from './AddFeedbackModal';
 
 type Props = {
   tableId?: string;
-  tableType: TableType;
+  tableType?: TableType;
 };
 
 export default function FeedbackButton(props: Props) {

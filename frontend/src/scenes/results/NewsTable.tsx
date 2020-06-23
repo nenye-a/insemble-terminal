@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 
 import { DataTable } from '../../components';
 import {
@@ -18,7 +18,6 @@ type Props = {
 export default function NewsTable(props: Props) {
   let { data } = props;
   let history = useHistory();
-  // let location = useLocation();
 
   let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
     data,
@@ -28,7 +27,7 @@ export default function NewsTable(props: Props) {
       type: 'date',
     },
   );
-  console.log(sortedData);
+
   return (
     <DataTable>
       <DataTable.HeaderRow>

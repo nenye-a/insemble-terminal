@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
-import { useAlert } from 'react-alert';
 import { useHistory } from 'react-router-dom';
 
 import { View, LoadingIndicator } from '../../core-ui';
@@ -12,15 +11,10 @@ import {
   PageTitle,
   HeaderNavigationBar,
 } from '../../components';
-import {
-  GetNewsTable_newsTable_table_data as NewsData,
-  GetNewsTable_newsTable_table_compareData as NewsCompareData,
-} from '../../generated/GetNewsTable';
 import { GET_OPEN_NEWS_DATA } from '../../graphql/queries/server/results';
 import { BACKGROUND_COLOR } from '../../constants/colors';
 import ResultTitle from '../results/ResultTitle';
 import NewsTable from '../results/NewsTable';
-import FeedbackButton from '../results/FeedbackButton';
 import {
   GetOpenNewsData,
   GetOpenNewsDataVariables,
@@ -28,18 +22,12 @@ import {
 import NewsTableMobile from '../results/NewsTableMobile';
 import { MergedNewsData, SearchTag } from '../../types/types';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
+import { useAuth } from '../../context';
+import FeedbackButton from '../results/FeedbackButton';
 
 type Props = {
-  businessTagId?: string;
-  locationTagId?: string;
-  tableId?: string;
-  pinTableId?: string;
   readOnly?: boolean;
   openNewsId?: string;
-};
-
-type ColoredData = (NewsData | NewsCompareData) & {
-  isComparison: boolean;
 };
 
 const POLL_INTERVAL = 5000;
@@ -54,16 +42,8 @@ type State = {
   search?: SearchTag;
 };
 export default function NewsScene(props: Props) {
-  let {
-    // businessTagId,
-    // locationTagId,
-    // tableId,
-    // pinTableId,
-    readOnly,
-    openNewsId: openNewsIdProp,
-  } = props;
-  let [sortOrder, setSortOrder] = useState<Array<string>>([]);
-  let alert = useAlert();
+  let { readOnly, openNewsId: openNewsIdProp } = props;
+  let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
   let history = useHistory<State>();
   let openNewsId =
@@ -71,7 +51,6 @@ export default function NewsScene(props: Props) {
     history.location.state?.openNewsId ||
     history.location.state?.background?.state?.openNewsId ||
     '';
-  console.log(openNewsIdProp, history.location.state, 'OPEN NEWS ID');
   let {
     data,
     loading: newsLoading,
@@ -173,12 +152,12 @@ export default function NewsScene(props: Props) {
             <EmptyDataComponent />
           ) : null}
         </View>
-        {/* {!readOnly && (
+        {isAuthenticated && (
           <FeedbackButton
-            tableId={data?.openNews.data?.id}
+            tableId={data?.openNews.id || ''}
             tableType={TableType.NEWS}
           />
-        )} */}
+        )}
       </Container>
     </>
   );

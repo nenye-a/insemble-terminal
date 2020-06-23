@@ -32,7 +32,7 @@ type State = {
   published?: string;
   link?: string;
   openNewsId?: string;
-  background?: any;
+  background?: ObjectKey;
 };
 
 type Params = {
