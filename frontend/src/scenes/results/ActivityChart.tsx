@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
 import { View, Text } from '../../core-ui';
 import {
@@ -16,7 +16,7 @@ import {
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
 import { MergedActivityData } from '../../types/types';
-import { generateRandomColor } from '../../helpers';
+import { generateRandomColor, useViewport } from '../../helpers';
 
 type Props = {
   data: Array<MergedActivityData>;
@@ -29,14 +29,25 @@ export default function ActivityChart(props: Props) {
   let { data } = props;
   let lineChartRef = useRef<HTMLDivElement | null>(null);
   let [chartWidth, setChartWidth] = useState(700);
+  let { isDesktop } = useViewport();
 
   let formattedData = [...data].map((item) => [...item.activityData]);
-
   let { tooltipData, lineChartData } = prepareLineChartData(
     formattedData,
     'name',
     'amount',
     'business',
+  );
+
+  let legendContent = (
+    <LegendContainer isDesktop={isDesktop}>
+      {tooltipData.map((legend, idx) => (
+        <Row style={{ alignItems: 'baseline' }} key={idx}>
+          <Circle style={{ borderColor: legend.fill }} />
+          <Text>{legend.label.replace('(', '\n(')}</Text>
+        </Row>
+      ))}
+    </LegendContainer>
   );
 
   let lines = [];
@@ -78,9 +89,10 @@ export default function ActivityChart(props: Props) {
 
   return (
     <Container>
-      <ChartTitle>Customer Activity Index</ChartTitle>
-      <Row>
+      <ChartTitle isDesktop={isDesktop}>Customer Activity Index</ChartTitle>
+      <ContentContainer isDesktop={isDesktop}>
         <View flex ref={lineChartRef}>
+          {!isDesktop && legendContent}
           <LineChart
             height={200}
             width={chartWidth}
@@ -93,7 +105,12 @@ export default function ActivityChart(props: Props) {
               tickFormatter={(val) => val.toLowerCase().replace('m', '')}
               interval={1}
             />
-            <YAxis axisLine={false} tickLine={false} tick={textStyle} />
+            <YAxis
+              axisLine={false}
+              tickLine={false}
+              tick={textStyle}
+              width={25}
+            />
             <Tooltip
               wrapperStyle={textStyle}
               itemSorter={(item1, item2) =>
@@ -103,16 +120,8 @@ export default function ActivityChart(props: Props) {
             {lines}
           </LineChart>
         </View>
-
-        <LegendContainer>
-          {tooltipData.map((legend, idx) => (
-            <Row style={{ alignItems: 'baseline' }} key={idx}>
-              <Circle style={{ borderColor: legend.fill }} />
-              <Text>{legend.label.replace('(', '\n(')}</Text>
-            </Row>
-          ))}
-        </LegendContainer>
-      </Row>
+        {isDesktop && legendContent}
+      </ContentContainer>
     </Container>
   );
 }
@@ -156,7 +165,7 @@ function prepareLineChartData(
 
 const Container = styled(View)`
   background-color: ${WHITE};
-  padding: 24px 8px;
+  padding: 24px 12px;
   box-shadow: ${SHADOW_COLOR};
 `;
 
@@ -164,16 +173,44 @@ const Row = styled(View)`
   flex-direction: row;
 `;
 
-const ChartTitle = styled(Text)`
+const ContentContainer = styled(View)<ViewProps & WithViewport>`
+  ${(props) =>
+    props.isDesktop
+      ? css`
+          flex-direction: row;
+          padding: 0 16px;
+        `
+      : css`
+          flex-direction: column;
+        `}
+`;
+const ChartTitle = styled(Text)<TextProps & WithViewport>`
   font-size: ${FONT_SIZE_LARGE};
   font-weight: ${FONT_WEIGHT_MEDIUM};
-  padding-left: 60px;
   padding-bottom: 28px;
+  ${(props) =>
+    props.isDesktop &&
+    css`
+      padding-left: 40px;
+    `}
 `;
 
-const LegendContainer = styled(View)`
-  padding-left: 24px;
-  width: 200px;
+const LegendContainer = styled(View)<ViewProps & WithViewport>`
+  ${({ isDesktop }) =>
+    isDesktop
+      ? css`
+          padding-left: 24px;
+          width: 200px;
+          height: 200px;
+          overflow-y: scroll;
+        `
+      : css`
+          width: 100%;
+          overflow-x: scroll;
+          flex-direction: row;
+          margin-bottom: 12px;
+          padding-bottom: 12px;
+        `}
 `;
 
 const Circle = styled(View)`
