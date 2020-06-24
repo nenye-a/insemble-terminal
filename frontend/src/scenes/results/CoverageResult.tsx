@@ -16,6 +16,7 @@ import {
   GetCoverageVariables,
   GetCoverage_coverageTable_data as CoverageData,
   GetCoverage_coverageTable_compareData as CoverageCompareData,
+  GetCoverage_coverageTable_comparationTags as ComparationTags,
 } from '../../generated/GetCoverage';
 import { GET_COVERAGE_DATA } from '../../graphql/queries/server/results';
 
@@ -76,17 +77,13 @@ export default function CoverageResult(props: Props) {
       if (data?.coverageTable) {
         let { compareData, comparationTags, id } = data.coverageTable;
         if (compareData.length !== comparationTags.length) {
+          let notIncludedFilterFn = (tag: ComparationTags) =>
+            !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.businessTag?.params);
           let notIncludedTagId = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.id);
           if (notIncluded.length > 0) {
             let newSortOrder = sortOrder.filter((item) => {

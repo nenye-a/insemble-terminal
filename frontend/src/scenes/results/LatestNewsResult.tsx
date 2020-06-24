@@ -11,6 +11,7 @@ import {
   GetNewsTableVariables,
   GetNewsTable_newsTable_table_data as NewsData,
   GetNewsTable_newsTable_table_compareData as NewsCompareData,
+  GetNewsTable_newsTable_table_comparationTags as ComparationTags,
 } from '../../generated/GetNewsTable';
 import { GET_NEWS_TABLE_DATA } from '../../graphql/queries/server/results';
 import { formatErrorMessage, useColoredData } from '../../helpers';
@@ -76,17 +77,13 @@ export default function LatestNewsResult(props: Props) {
       if (data.newsTable.table) {
         let { compareData, comparationTags, id } = data.newsTable.table;
         if (compareData.length !== comparationTags.length) {
+          let notIncludedFilterFn = (tag: ComparationTags) =>
+            !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.businessTag?.params);
           let notIncludedTagId = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.id);
           if (notIncluded.length > 0) {
             let newSortOrder = sortOrder.filter((item) => {
