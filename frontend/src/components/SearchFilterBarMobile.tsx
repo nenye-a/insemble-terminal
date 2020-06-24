@@ -45,12 +45,12 @@ import {
   GetBusinessTag,
   GetBusinessTag_businessTags as BusinessTag,
 } from '../generated/GetBusinessTag';
+import { REVIEW_TAG_OPTIONS } from '../constants/app';
 import { GET_BUSINESS_TAG } from '../graphql/queries/server/tags';
 
 import PillSelector from './PillSelector';
 import LocationInput from './LocationInput';
 import SvgSearch from './icons/search';
-import { REVIEW_TAG_OPTIONS } from '../constants/app';
 
 type SelectedBusiness = BusinessTagResult | BusinessTag | string;
 
@@ -61,6 +61,7 @@ type Props = {
   defaultLocationTag?: LocationTagInput;
   disableAll?: boolean;
   disableReviewTag?: boolean;
+  focus?: boolean;
 };
 
 export default function SearchFilterBarMobile(props: Props) {
@@ -71,6 +72,7 @@ export default function SearchFilterBarMobile(props: Props) {
     defaultLocationTag,
     disableAll = false,
     disableReviewTag = false,
+    focus = false,
   } = props;
   let alert = useAlert();
 
@@ -120,7 +122,7 @@ export default function SearchFilterBarMobile(props: Props) {
         <LoadingIndicator />
       ) : businessTagData ? (
         <>
-          <SearchContainer>
+          <SearchContainer focus={focus}>
             <Popover
               isOpen={dataTypeFilterVisible}
               content={
@@ -146,6 +148,7 @@ export default function SearchFilterBarMobile(props: Props) {
                   onPress={() =>
                     setDataTypeFilterVisible(!dataTypeFilterVisible)
                   }
+                  focus={focus}
                 >
                   {selectedDataType ? (
                     <Pill disabled={disableAll || disableReviewTag}>
@@ -159,20 +162,7 @@ export default function SearchFilterBarMobile(props: Props) {
                 </DataFilterContainer>
               )}
             </Popover>
-
-            {/* {dataTypeFilterVisible && (
-                <PillSelector
-                  options={REVIEW_TAG_OPTIONS}
-                  style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
-                  selectedOptions={[selectedDataType]}
-                  onSelect={setSelectedDataType}
-                  onUnselect={() => {
-                    setSelectedDataType('');
-                  }}
-                  onClickAway={() => setDataTypeFilterVisible(false)}
-                />
-              )} */}
-            <SpacedText>of</SpacedText>
+            {focus && <SpacedText>of</SpacedText>}
             <Dropdown<SelectedBusiness | null>
               selectedOption={selectedBusiness}
               onOptionSelected={setSelectedBusiness}
@@ -199,7 +189,7 @@ export default function SearchFilterBarMobile(props: Props) {
                 return null;
               }}
             />
-            <SpacedText>in</SpacedText>
+            {focus && <SpacedText>in</SpacedText>}
             <SearchLocationInput
               placeholder="Any Location"
               onPlaceSelected={(place) => {
@@ -215,56 +205,60 @@ export default function SearchFilterBarMobile(props: Props) {
               disabled={disableAll}
               defaultValue={defaultLocationTag?.params}
             />
-            <Button
-              text="Search"
-              icon={
-                <SvgSearch
-                  fill={WHITE}
-                  style={{ marginLeft: 4 }}
-                  width={17}
-                  height={17}
-                />
-              }
-              onPress={() => {
-                if (isAuthenticated && !!user?.license) {
-                  let isValid = isSearchCombinationValid(
-                    selectedDataType,
-                    selectedBusiness,
-                    selectedPlace,
-                  );
-                  if (isValid) {
-                    onSearchPress &&
-                      onSearchPress({
-                        reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
-                        businessTag:
-                          typeof selectedBusiness === 'string'
-                            ? {
-                                type: BusinessTagType.BUSINESS,
-                                params: selectedBusiness,
-                              }
-                            : undefined,
-                        businessTagWithId:
-                          selectedBusiness &&
-                          typeof selectedBusiness !== 'string' &&
-                          selectedBusiness?.id
-                            ? selectedBusiness
-                            : undefined,
-                        locationTag: selectedPlace ? selectedPlace : undefined,
-                      });
-                  } else {
-                    alert.show(
-                      'Search combination is not valid. Please try again.',
-                    );
-                  }
-                } else {
-                  history.push('/contact-us');
+            {focus && (
+              <Button
+                text="Search"
+                icon={
+                  <SvgSearch
+                    fill={WHITE}
+                    style={{ marginLeft: 4 }}
+                    width={17}
+                    height={17}
+                  />
                 }
-              }}
-              stopPropagation={true}
-              disabled={disableAll}
-              style={{ marginTop: 20 }}
-              textProps={{ fontSize: FONT_SIZE_NORMAL }}
-            />
+                onPress={() => {
+                  if (isAuthenticated && !!user?.license) {
+                    let isValid = isSearchCombinationValid(
+                      selectedDataType,
+                      selectedBusiness,
+                      selectedPlace,
+                    );
+                    if (isValid) {
+                      onSearchPress &&
+                        onSearchPress({
+                          reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                          businessTag:
+                            typeof selectedBusiness === 'string'
+                              ? {
+                                  type: BusinessTagType.BUSINESS,
+                                  params: selectedBusiness,
+                                }
+                              : undefined,
+                          businessTagWithId:
+                            selectedBusiness &&
+                            typeof selectedBusiness !== 'string' &&
+                            selectedBusiness?.id
+                              ? selectedBusiness
+                              : undefined,
+                          locationTag: selectedPlace
+                            ? selectedPlace
+                            : undefined,
+                        });
+                    } else {
+                      alert.show(
+                        'Search combination is not valid. Please try again.',
+                      );
+                    }
+                  } else {
+                    history.push('/contact-us');
+                  }
+                }}
+                stopPropagation={true}
+                disabled={disableAll}
+                style={{ marginTop: 20 }}
+                textProps={{ fontSize: FONT_SIZE_NORMAL }}
+              />
+            )}
           </SearchContainer>
         </>
       ) : null}
@@ -276,9 +270,16 @@ type TagTypeProps = TextProps & {
   tagType: BusinessTagType;
 };
 
-const SearchContainer = styled(View)`
-  /* flex-direction: row; */
-  /* align-items: center; */
+const SearchContainer = styled(View)<ViewProps & { focus: boolean }>`
+  ${(props) =>
+    props.focus
+      ? css`
+          flex-direction: column;
+        `
+      : css`
+          flex-direction: row;
+          align-items: center;
+        `}
   width: 100%;
   padding: 0 8px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
@@ -286,9 +287,15 @@ const SearchContainer = styled(View)`
 `;
 
 const DataFilterContainer = styled(TouchableOpacity)`
-  /*  if focus: height: 42, width: 100% */
-  height: 42px;
-  width: 100%;
+  ${(props: { focus: boolean }) =>
+    props.focus
+      ? css`
+          height: 42px;
+          width: 100%;
+        `
+      : css`
+          height: 36px;
+        `}
   flex: 0.5;
   align-items: center;
   justify-content: center;
@@ -299,7 +306,10 @@ const DataFilterContainer = styled(TouchableOpacity)`
 const SearchLocationInput = styled(LocationInput)`
   border: none;
   background-color: transparent;
-  /* margin-top: 8px; */
+  margin-left: 8px;
+  margin-right: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
   &::placeholder {
     text-align: center;
   }

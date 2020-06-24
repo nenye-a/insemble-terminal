@@ -126,8 +126,7 @@ export default function LocationInput(props: Props) {
               color: WHITE,
               caretColor: 'transparent',
               height: 28,
-              marginTop: 4,
-              marginBottom: 4,
+              margin: 4,
             }
           : undefined
       }
