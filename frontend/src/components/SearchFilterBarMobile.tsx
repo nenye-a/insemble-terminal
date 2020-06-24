@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
-import { useHistory, withRouter } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useAlert } from 'react-alert';
 import Popover from 'react-tiny-popover';
 
@@ -32,7 +32,6 @@ import {
   GRAY_TEXT,
   LIGHTER_GRAY,
   WHITE,
-  GRAY,
 } from '../constants/colors';
 import { useAuth } from '../context';
 import { SearchTag, BusinessTagResult } from '../types/types';

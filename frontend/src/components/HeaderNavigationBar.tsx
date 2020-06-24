@@ -48,6 +48,7 @@ export default function HeaderNavigationBar(props: Props) {
   useEffect(() => {
     let handleScroll = () => {
       if (isFocus) {
+        // should change the search bar to not focus mode when scrolling
         setIsFocus(false);
       }
     };
