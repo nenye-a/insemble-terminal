@@ -19,9 +19,9 @@ export default function ReadOnlyBanner() {
           contact the Insemble team.
         </PurpleLink>
       </Text>
-      <ReadOnlyBadge>
+      {/* <ReadOnlyBadge>
         <Text fontWeight={FONT_WEIGHT_MEDIUM}>Read Only</Text>
-      </ReadOnlyBadge>
+      </ReadOnlyBadge> */}
     </Container>
   );
 }
@@ -32,15 +32,15 @@ const Container = styled(View)`
   padding: 8px 40px;
   background-color: ${THEME_COLOR};
   align-items: center;
-  justify-content: space-between;
+  justify-content: left;
 `;
 
-const ReadOnlyBadge = styled(View)`
-  padding: 8px 24px;
-  height: 33px;
-  border-radius: 15px;
-  background-color: ${LIGHT_PURPLE};
-`;
+// const ReadOnlyBadge = styled(View)`
+//   padding: 8px 24px;
+//   height: 33px;
+//   border-radius: 15px;
+//   background-color: ${LIGHT_PURPLE};
+// `;
 
 const PurpleLink = styled(Link)`
   color: #c9cbff;
