@@ -267,7 +267,7 @@ if __name__ == "__main__":
     def test_pin_table():
         result = pin_table(
             'ckbsmp5200548bq357sq1bpvk',
-            'ckbsm0qai0335bq357ipl833f',
+            'ckbszdo8p1441bq35m812w1hg',
             'PERFORMANCE'
         )
         print(result)
@@ -284,8 +284,13 @@ if __name__ == "__main__":
         result = get_terminal_info('ckbsmp5200548bq357sq1bpvk')
         print(result)
 
-    # test_pin_table()
+    def test_search():
+        print(search(business_tag=business))
+
+    test_pin_table()
     # test_get_terminal()
     # test_share_terminal()
     # test_get_shared_terminal()
-    test_get_terminal_info()
+    # test_get_terminal_info()
+    # test_search()
+    # print(get_performance('ADDRESS', table_id='ckbsm0qai0335bq357ipl833f'))
