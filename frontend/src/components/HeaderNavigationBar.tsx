@@ -9,6 +9,7 @@ import {
   DARK_TEXT_COLOR,
 } from '../constants/colors';
 import { useAuth } from '../context';
+import { useViewport } from '../helpers';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import { LocationTagInput } from '../generated/globalTypes';
 import { SearchTag, BusinessTagResult } from '../types/types';
@@ -17,6 +18,7 @@ import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 import ReadOnlyBanner from './ReadOnlyBanner';
+import SearchFilterBarMobile from './SearchFilterBarMobile';
 
 type Props = {
   mode?: 'default' | 'transparent';
@@ -40,6 +42,7 @@ export default function HeaderNavigationBar(props: Props) {
   } = props;
   let history = useHistory();
   let { isAuthenticated } = useAuth();
+  let { isDesktop } = useViewport();
   return (
     <Container mode={mode}>
       {readOnly && <ReadOnlyBanner />}
@@ -51,7 +54,7 @@ export default function HeaderNavigationBar(props: Props) {
         >
           <InsembleLogo color="purple" />
         </TouchableOpacity>
-        {showSearchBar ? (
+        {showSearchBar && isDesktop ? (
           <SearchContainer flex>
             <SearchFilterBar
               onSearchPress={onSearchPress}
@@ -95,6 +98,16 @@ export default function HeaderNavigationBar(props: Props) {
           </RowEnd>
         )}
       </Row>
+      {!isDesktop && (
+        <SearchBarMobileContainer>
+          <SearchFilterBarMobile
+            onSearchPress={onSearchPress}
+            defaultReviewTag={defaultReviewTag}
+            defaultBusinessTag={defaultBusinessTag}
+            defaultLocationTag={defaultLocationTag}
+          />
+        </SearchBarMobileContainer>
+      )}
     </Container>
   );
 }
@@ -139,4 +152,9 @@ const Row = styled(View)`
   flex-direction: row;
   align-items: center;
   padding: 12px 32px;
+`;
+
+const SearchBarMobileContainer = styled(View)`
+  padding: 20px 12px;
+  background-color: ${WHITE};
 `;

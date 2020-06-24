@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
+import { useHistory, withRouter } from 'react-router-dom';
 import { useAlert } from 'react-alert';
 import Popover from 'react-tiny-popover';
 
@@ -12,13 +12,18 @@ import {
   Pill,
   Dropdown,
   LoadingIndicator,
+  Button,
 } from '../core-ui';
 import {
   parsePlaceType,
   isSearchCombinationValid,
   capitalize,
 } from '../helpers';
-import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import {
+  DEFAULT_BORDER_RADIUS,
+  FONT_WEIGHT_MEDIUM,
+  FONT_SIZE_NORMAL,
+} from '../constants/theme';
 import {
   BACKGROUND_COLOR,
   MUTED_TEXT_COLOR,
@@ -26,8 +31,9 @@ import {
   DARK_TEXT_COLOR,
   GRAY_TEXT,
   LIGHTER_GRAY,
+  WHITE,
+  GRAY,
 } from '../constants/colors';
-import { REVIEW_TAG_OPTIONS } from '../constants/app';
 import { useAuth } from '../context';
 import { SearchTag, BusinessTagResult } from '../types/types';
 import {
@@ -44,6 +50,7 @@ import { GET_BUSINESS_TAG } from '../graphql/queries/server/tags';
 import PillSelector from './PillSelector';
 import LocationInput from './LocationInput';
 import SvgSearch from './icons/search';
+import { REVIEW_TAG_OPTIONS } from '../constants/app';
 
 type SelectedBusiness = BusinessTagResult | BusinessTag | string;
 
@@ -56,7 +63,7 @@ type Props = {
   disableReviewTag?: boolean;
 };
 
-export default function SearchFilterBar(props: Props) {
+export default function SearchFilterBarMobile(props: Props) {
   let {
     onSearchPress,
     defaultReviewTag,
@@ -146,13 +153,25 @@ export default function SearchFilterBar(props: Props) {
                     </Pill>
                   ) : (
                     <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
-                      Search for data
+                      Search data
                     </Text>
                   )}
                 </DataFilterContainer>
               )}
             </Popover>
 
+            {/* {dataTypeFilterVisible && (
+                <PillSelector
+                  options={REVIEW_TAG_OPTIONS}
+                  style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
+                  selectedOptions={[selectedDataType]}
+                  onSelect={setSelectedDataType}
+                  onUnselect={() => {
+                    setSelectedDataType('');
+                  }}
+                  onClickAway={() => setDataTypeFilterVisible(false)}
+                />
+              )} */}
             <SpacedText>of</SpacedText>
             <Dropdown<SelectedBusiness | null>
               selectedOption={selectedBusiness}
@@ -196,9 +215,16 @@ export default function SearchFilterBar(props: Props) {
               disabled={disableAll}
               defaultValue={defaultLocationTag?.params}
             />
-            <TouchableOpacity
+            <Button
               text="Search"
-              forwardedAs="button"
+              icon={
+                <SvgSearch
+                  fill={WHITE}
+                  style={{ marginLeft: 4 }}
+                  width={17}
+                  height={17}
+                />
+              }
               onPress={() => {
                 if (isAuthenticated && !!user?.license) {
                   let isValid = isSearchCombinationValid(
@@ -236,9 +262,9 @@ export default function SearchFilterBar(props: Props) {
               }}
               stopPropagation={true}
               disabled={disableAll}
-            >
-              <SvgSearch />
-            </TouchableOpacity>
+              style={{ marginTop: 20 }}
+              textProps={{ fontSize: FONT_SIZE_NORMAL }}
+            />
           </SearchContainer>
         </>
       ) : null}
@@ -251,25 +277,29 @@ type TagTypeProps = TextProps & {
 };
 
 const SearchContainer = styled(View)`
-  flex-direction: row;
-  align-items: center;
+  /* flex-direction: row; */
+  /* align-items: center; */
   width: 100%;
-  height: 42px;
   padding: 0 8px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${WHITE};
 `;
 
 const DataFilterContainer = styled(TouchableOpacity)`
-  height: 36px;
+  /*  if focus: height: 42, width: 100% */
+  height: 42px;
+  width: 100%;
   flex: 0.5;
   align-items: center;
   justify-content: center;
+  background-color: ${BACKGROUND_COLOR};
+  padding: 8px;
 `;
 
 const SearchLocationInput = styled(LocationInput)`
   border: none;
   background-color: transparent;
+  /* margin-top: 8px; */
   &::placeholder {
     text-align: center;
   }
@@ -277,8 +307,10 @@ const SearchLocationInput = styled(LocationInput)`
 
 const SpacedText = styled(Text)`
   padding: 0 8px;
+  margin: 4px 0;
   color: ${MUTED_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
+  text-align: center;
 `;
 
 const Row = styled(View)`

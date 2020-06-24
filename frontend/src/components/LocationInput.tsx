@@ -7,11 +7,18 @@ import React, {
   RefObject,
   CSSProperties,
 } from 'react';
+import styled from 'styled-components';
 
 import { TextInput } from '../core-ui';
 import { useGoogleMaps } from '../helpers';
-import { DEFAULT_BORDER_RADIUS } from '../constants/theme';
-import { THEME_COLOR, WHITE, DISABLED_PILL_COLOR } from '../constants/colors';
+import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import {
+  THEME_COLOR,
+  WHITE,
+  DISABLED_PILL_COLOR,
+  BACKGROUND_COLOR,
+  GRAY_TEXT,
+} from '../constants/colors';
 
 type PlaceResult = google.maps.places.PlaceResult;
 type InputProps = ComponentProps<'input'>;
@@ -94,7 +101,7 @@ export default function LocationInput(props: Props) {
     return null;
   }
   return (
-    <TextInput
+    <InputBox
       ref={inputRef}
       placeholder={placeholder}
       onSubmit={submitHandler}
@@ -103,6 +110,8 @@ export default function LocationInput(props: Props) {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: BACKGROUND_COLOR,
+        ...containerStyle,
       }}
       disabled={disabled}
       style={
@@ -117,6 +126,8 @@ export default function LocationInput(props: Props) {
               color: WHITE,
               caretColor: 'transparent',
               height: 28,
+              marginTop: 4,
+              marginBottom: 4,
             }
           : undefined
       }
@@ -137,3 +148,11 @@ export default function LocationInput(props: Props) {
     />
   );
 }
+
+const InputBox = styled(TextInput)`
+  &::placeholder {
+    text-align: center;
+    font-weight: ${FONT_WEIGHT_MEDIUM};
+    color: ${GRAY_TEXT};
+  }
+`;
