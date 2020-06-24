@@ -338,10 +338,11 @@ def generate_stat_html(list_ratios=None):
     return stat_html
 
 
-def generate_email_html(header_html, entries_html, graph_html, stat_html):
+def generate_email_html(header_html, entries_html, graph_html, stat_html, update):
     """Provided requisite component emails, will return complete html, and store a generated file for debugging"""
 
-    with open(THIS_DIR + '/templates/base.html', 'r') as base_html_file:
+    template = '/templates/base-update.html' if update else '/templates/base.html'
+    with open(THIS_DIR + template, 'r') as base_html_file:
         base_html = ""
         for line in base_html_file:
             base_html = base_html + line.strip()
@@ -356,7 +357,7 @@ def generate_email_html(header_html, entries_html, graph_html, stat_html):
     return base_html
 
 
-def generate_email_report_html(header_text, linear_entries=None, grid_entries=None, graph_urls=None, stats=[]):
+def generate_email_report_html(header_text, linear_entries=None, grid_entries=None, graph_urls=None, stats=[], update=False):
     """
     Provided details to build news email, will generate all the html required to send.
 
@@ -377,7 +378,7 @@ def generate_email_report_html(header_text, linear_entries=None, grid_entries=No
     entries_html = generate_news_entries_html(linear_entries, grid_entries)
     graph_html = generate_graph_entry(graph_urls)
     stat_html = generate_stat_html(stats)
-    return generate_email_html(header_html, entries_html, graph_html, stat_html)
+    return generate_email_html(header_html, entries_html, graph_html, stat_html, update)
 
 
 # TESTS:

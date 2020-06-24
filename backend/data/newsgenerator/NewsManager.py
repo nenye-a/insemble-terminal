@@ -229,7 +229,7 @@ class NewsManager():
 
             print('Links for {} ({}) have been converted.'.format(city['name'], city['_id']))
 
-    def email(self, enforce_conversion=True):
+    def email(self, enforce_conversion=True, update=False):
         """
         Emails all the subscribed folks in the list with generated emails.
         """
@@ -265,7 +265,8 @@ class NewsManager():
                     person['parsed_city']
                 ),
                 linear_entries=content['news'][:3],
-                grid_entries=content['news'][3:7]
+                grid_entries=content['news'][3:7],
+                update=update
             )
             self.collection.update_one({
                 '_id': person['_id']
@@ -542,27 +543,31 @@ def parse_city(location) -> dict:
     if not isinstance(location, str):
         return None
 
-    if "," in location:
-        location = location.split(",")
-        remaining_details = location[1].strip().split(" ")
-        result['city'] = location[0]  # the first item in the list is the city
-        result['state'] = remaining_details[0]
-        result['zipcode'] = remaining_details[1].split("-")[0]  # remove any trailing zip code details
-    else:
-        # if not in regular format, just do this based off the zip code
-        num_match = re.findall(r'\d{5}(?:[-\s]\d{4})?', location)
-        if not num_match:
-            raise Exception('Invalid Location: {}'.format(location))
+    try:
+        if "," in location:
+            location = location.split(",")
+            remaining_details = location[1].strip().split(" ")
+            result['city'] = location[0]  # the first item in the list is the city
+            result['state'] = remaining_details[0]
+            result['zipcode'] = remaining_details[1].split("-")[0]  # remove any trailing zip code details
+        else:
+            # if not in regular format, just do this based off the zip code
+            num_match = re.findall(r'\d{5}(?:[-\s]\d{4})?', location)
+            if not num_match:
+                raise Exception('Invalid Location: {}'.format(location))
+                return None
 
-        result["zipcode"] = int(num_match[0].split("-")[0])
+            result["zipcode"] = int(num_match[0].split("-")[0])
 
-        if 'city' not in location:
-            zipcode = utils.DB_ZIPS.find_one({"ZipCode": int(result['zipcode'])})
-            if zipcode:
-                result['city'] = zipcode['City']
-                result['state'] = zipcode['State']
-
-    return result
+            if 'city' not in location:
+                zipcode = utils.DB_ZIPS.find_one({"ZipCode": int(result['zipcode'])})
+                if zipcode:
+                    result['city'] = zipcode['City']
+                    result['state'] = zipcode['State']
+        return result
+    except IndexError as e:
+        print(e)
+        return None
 
 
 def date_converter(o):
@@ -572,8 +577,11 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-6/24', 'terminal_sources.csv', national_news=False)
+    my_generator = NewsManager('Official-6/24', national_news=False)
     my_generator.generate()
+    # print(my_generator.collection.count_documents({
+    #     'data_type': 'city'
+    # }))
 
     # my_generator = NewsManager('Email-Test', 'test_source_nenye.csv', national_news=False)
     # my_generator = NewsManager('Email-Test-2', 'test_source_nenye.csv', national_news=False, regional_news=False)
@@ -581,4 +589,4 @@ if __name__ == "__main__":
     # my_generator = NewsManager('Email-Test', national_news=False)
     # my_generator.generate(batch_size=10)
     # my_generator.convert_links()
-    # my_generator.email()
+    # my_generator.email(update=True)
