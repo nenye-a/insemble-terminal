@@ -15,7 +15,7 @@ import {
 } from '../../generated/GetOwnershipInfoData';
 import { GET_OWNERSHIP_INFO_DATA } from '../../graphql/queries/server/results';
 import { WHITE } from '../../constants/colors';
-import { formatErrorMessage } from '../../helpers';
+import { formatErrorMessage, useViewport } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import OwnershipInformationCard from './OwnershipInformationCard';
@@ -56,8 +56,10 @@ export default function OwnershipInformationResult(props: Props) {
     !data?.ownershipInfoTable.data ||
     Object.keys(data?.ownershipInfoTable.data).length === 0;
 
+  let { isDesktop } = useViewport();
+
   return (
-    <Container>
+    <Container isDesktop={isDesktop}>
       <ResultTitle
         title={title}
         noData={noData}
@@ -113,7 +115,7 @@ export default function OwnershipInformationResult(props: Props) {
   );
 }
 
-const Container = styled(View)`
+const Container = styled(View)<ViewProps & WithViewport>`
   padding: 20px 0;
-  width: 600px;
+  width: ${(props) => (props.isDesktop ? '600px' : '100%')};
 `;

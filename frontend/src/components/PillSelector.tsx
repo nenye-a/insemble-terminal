@@ -1,8 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { ClickAway, View, Pill } from '../core-ui';
+import { View, Pill } from '../core-ui';
 import { WHITE, SHADOW_COLOR } from '../constants/colors';
+import { DEFAULT_BORDER_RADIUS } from '../constants/theme';
+import { useViewport } from '../helpers';
 
 type Props<T> = ViewProps & {
   options: Array<T>;
@@ -10,7 +12,6 @@ type Props<T> = ViewProps & {
   selectedOptions: Array<T>;
   onSelect?: (selectedOption: T) => void;
   onUnselect?: (selectedOption: T) => void;
-  onClickAway: () => void;
 };
 
 const defaultOptionExtractor = (item: unknown) => String(item);
@@ -23,45 +24,40 @@ export default function PillSelector<T>(props: Props<T>) {
     style,
     onSelect,
     onUnselect,
-    onClickAway,
   } = props;
+  let { isDesktop } = useViewport();
   return (
-    <ClickAway onClickAway={onClickAway}>
-      <Container style={style}>
-        <SelectionWrapper>
-          {options.map((option: T, index: number) => {
-            let label = optionExtractor(option);
-            let isSelected = selectedOptions.includes(option);
-            return (
-              <SelectionPill
-                key={index}
-                onPress={() => {
-                  if (isSelected) {
-                    onUnselect && onUnselect(option);
-                  } else {
-                    onSelect && onSelect(option);
-                  }
-                }}
-                style={{ margin: 4 }}
-              >
-                {label}
-              </SelectionPill>
-            );
-          })}
-        </SelectionWrapper>
-      </Container>
-    </ClickAway>
+    <Container style={style} isDesktop={isDesktop}>
+      {options.map((option: T, index: number) => {
+        let label = optionExtractor(option);
+        let isSelected = selectedOptions.includes(option);
+        return (
+          <SelectionPill
+            key={index}
+            onPress={() => {
+              if (isSelected) {
+                onUnselect && onUnselect(option);
+              } else {
+                onSelect && onSelect(option);
+              }
+            }}
+            style={{ margin: 4 }}
+          >
+            {label}
+          </SelectionPill>
+        );
+      })}
+    </Container>
   );
 }
 
-const Container = styled(View)`
+const Container = styled(View)<ViewProps & WithViewport>`
   background-color: ${WHITE};
   padding: 8px;
   box-shadow: ${SHADOW_COLOR};
-`;
-const SelectionWrapper = styled(View)`
+  border-radius: ${DEFAULT_BORDER_RADIUS};
   flex-flow: row wrap;
-  width: 454px;
+  width: ${(props) => (props.isDesktop ? '454px' : '85vw')};
 `;
 
 const SelectionPill = styled(Pill)`

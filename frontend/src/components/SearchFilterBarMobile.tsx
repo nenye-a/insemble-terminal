@@ -12,13 +12,18 @@ import {
   Pill,
   Dropdown,
   LoadingIndicator,
+  Button,
 } from '../core-ui';
 import {
   parsePlaceType,
   isSearchCombinationValid,
   capitalize,
 } from '../helpers';
-import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import {
+  DEFAULT_BORDER_RADIUS,
+  FONT_WEIGHT_MEDIUM,
+  FONT_SIZE_NORMAL,
+} from '../constants/theme';
 import {
   BACKGROUND_COLOR,
   MUTED_TEXT_COLOR,
@@ -26,8 +31,8 @@ import {
   DARK_TEXT_COLOR,
   GRAY_TEXT,
   LIGHTER_GRAY,
+  WHITE,
 } from '../constants/colors';
-import { REVIEW_TAG_OPTIONS } from '../constants/app';
 import { useAuth } from '../context';
 import { SearchTag, BusinessTagResult } from '../types/types';
 import {
@@ -39,6 +44,7 @@ import {
   GetBusinessTag,
   GetBusinessTag_businessTags as BusinessTag,
 } from '../generated/GetBusinessTag';
+import { REVIEW_TAG_OPTIONS } from '../constants/app';
 import { GET_BUSINESS_TAG } from '../graphql/queries/server/tags';
 
 import PillSelector from './PillSelector';
@@ -54,9 +60,10 @@ type Props = {
   defaultLocationTag?: LocationTagInput;
   disableAll?: boolean;
   disableReviewTag?: boolean;
+  focus?: boolean;
 };
 
-export default function SearchFilterBar(props: Props) {
+export default function SearchFilterBarMobile(props: Props) {
   let {
     onSearchPress,
     defaultReviewTag,
@@ -64,6 +71,7 @@ export default function SearchFilterBar(props: Props) {
     defaultLocationTag,
     disableAll = false,
     disableReviewTag = false,
+    focus = false,
   } = props;
   let alert = useAlert();
 
@@ -112,93 +120,94 @@ export default function SearchFilterBar(props: Props) {
       {businessTagLoading ? (
         <LoadingIndicator />
       ) : businessTagData ? (
-        <>
-          <SearchContainer>
-            <Popover
-              isOpen={dataTypeFilterVisible}
-              content={
-                <PillSelector
-                  options={REVIEW_TAG_OPTIONS}
-                  style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
-                  selectedOptions={[selectedDataType]}
-                  onSelect={setSelectedDataType}
-                  onUnselect={() => {
-                    setSelectedDataType('');
-                  }}
-                  onClickAway={() => setDataTypeFilterVisible(false)}
+        <SearchContainer focus={focus}>
+          <Popover
+            isOpen={dataTypeFilterVisible}
+            content={
+              <PillSelector
+                options={REVIEW_TAG_OPTIONS}
+                style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
+                selectedOptions={[selectedDataType]}
+                onSelect={setSelectedDataType}
+                onUnselect={() => {
+                  setSelectedDataType('');
+                }}
+                onClickAway={() => setDataTypeFilterVisible(false)}
+              />
+            }
+            position={['bottom']}
+            onClickOutside={() => setDataTypeFilterVisible(false)}
+            align="start"
+          >
+            {(ref) => (
+              <DataFilterContainer
+                ref={ref}
+                disabled={disableAll || disableReviewTag}
+                onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
+                focus={focus}
+              >
+                {selectedDataType ? (
+                  <Pill disabled={disableAll || disableReviewTag}>
+                    {selectedDataType}
+                  </Pill>
+                ) : (
+                  <ReviewTagPlaceholder>Search data</ReviewTagPlaceholder>
+                )}
+              </DataFilterContainer>
+            )}
+          </Popover>
+          {focus ? <SpacedText>of</SpacedText> : <Spacing />}
+          <Dropdown<SelectedBusiness | null>
+            selectedOption={selectedBusiness}
+            onOptionSelected={setSelectedBusiness}
+            options={businessTagData.businessTags}
+            placeholder="Any business/category"
+            optionExtractor={(item) => {
+              if (typeof item === 'string') {
+                return item;
+              }
+              return item?.params || '';
+            }}
+            disabled={disableAll}
+            renderCustomList={(item: SelectedBusiness | null) => {
+              if (item && typeof item !== 'string') {
+                return (
+                  <Row>
+                    <Text>{item.params}</Text>
+                    <TagType type={item.type}>{capitalize(item.type)}</TagType>
+                  </Row>
+                );
+              }
+              return null;
+            }}
+          />
+          {focus ? <SpacedText>in</SpacedText> : <Spacing />}
+          <SearchLocationInput
+            placeholder="Any Location"
+            onPlaceSelected={(place) => {
+              if (place?.address) {
+                setSelectedPlace({
+                  params: place.address,
+                  type: parsePlaceType(place.placeType),
+                });
+              } else {
+                setSelectedPlace(null);
+              }
+            }}
+            disabled={disableAll}
+            defaultValue={defaultLocationTag?.params}
+          />
+          {focus && (
+            <Button
+              text="Search"
+              icon={
+                <SvgSearch
+                  fill={WHITE}
+                  style={{ marginLeft: 4 }}
+                  width={17}
+                  height={17}
                 />
               }
-              position={['bottom']}
-              onClickOutside={() => setDataTypeFilterVisible(false)}
-              align="start"
-            >
-              {(ref) => (
-                <DataFilterContainer
-                  ref={ref}
-                  disabled={disableAll || disableReviewTag}
-                  onPress={() =>
-                    setDataTypeFilterVisible(!dataTypeFilterVisible)
-                  }
-                >
-                  {selectedDataType ? (
-                    <Pill disabled={disableAll || disableReviewTag}>
-                      {selectedDataType}
-                    </Pill>
-                  ) : (
-                    <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
-                      Search for data
-                    </Text>
-                  )}
-                </DataFilterContainer>
-              )}
-            </Popover>
-
-            <SpacedText>of</SpacedText>
-            <Dropdown<SelectedBusiness | null>
-              selectedOption={selectedBusiness}
-              onOptionSelected={setSelectedBusiness}
-              options={businessTagData.businessTags}
-              placeholder="Any business/category"
-              optionExtractor={(item) => {
-                if (typeof item === 'string') {
-                  return item;
-                }
-                return item?.params || '';
-              }}
-              disabled={disableAll}
-              renderCustomList={(item: SelectedBusiness | null) => {
-                if (item && typeof item !== 'string') {
-                  return (
-                    <Row>
-                      <Text>{item.params}</Text>
-                      <TagType type={item.type}>
-                        {capitalize(item.type)}
-                      </TagType>
-                    </Row>
-                  );
-                }
-                return null;
-              }}
-            />
-            <SpacedText>in</SpacedText>
-            <SearchLocationInput
-              placeholder="Any Location"
-              onPlaceSelected={(place) => {
-                if (place?.address) {
-                  setSelectedPlace({
-                    params: place.address,
-                    type: parsePlaceType(place.placeType),
-                  });
-                } else {
-                  setSelectedPlace(null);
-                }
-              }}
-              disabled={disableAll}
-              defaultValue={defaultLocationTag?.params}
-            />
-            <TouchableOpacity
-              text="Search"
-              forwardedAs="button"
               onPress={() => {
                 if (isAuthenticated && !!user?.license) {
                   let isValid = isSearchCombinationValid(
@@ -236,11 +245,11 @@ export default function SearchFilterBar(props: Props) {
               }}
               stopPropagation={true}
               disabled={disableAll}
-            >
-              <SvgSearch />
-            </TouchableOpacity>
-          </SearchContainer>
-        </>
+              style={{ marginTop: 20 }}
+              textProps={{ fontSize: FONT_SIZE_NORMAL }}
+            />
+          )}
+        </SearchContainer>
       ) : null}
     </View>
   );
@@ -250,26 +259,46 @@ type TagTypeProps = TextProps & {
   tagType: BusinessTagType;
 };
 
-const SearchContainer = styled(View)`
-  flex-direction: row;
-  align-items: center;
+const SearchContainer = styled(View)<ViewProps & { focus: boolean }>`
+  ${(props) =>
+    props.focus
+      ? css`
+          flex-direction: column;
+        `
+      : css`
+          flex-direction: row;
+          align-items: center;
+        `}
   width: 100%;
-  height: 42px;
   padding: 0 8px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
-  background-color: ${BACKGROUND_COLOR};
+  background-color: ${WHITE};
 `;
 
 const DataFilterContainer = styled(TouchableOpacity)`
-  height: 36px;
+  ${(props: { focus: boolean }) =>
+    props.focus
+      ? css`
+          height: 42px;
+          width: 100%;
+        `
+      : css`
+          height: 36px;
+        `}
   flex: 0.5;
   align-items: center;
   justify-content: center;
+  background-color: ${BACKGROUND_COLOR};
+  padding: 8px;
 `;
 
 const SearchLocationInput = styled(LocationInput)`
   border: none;
   background-color: transparent;
+  margin-left: 8px;
+  margin-right: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
   &::placeholder {
     text-align: center;
   }
@@ -277,8 +306,16 @@ const SearchLocationInput = styled(LocationInput)`
 
 const SpacedText = styled(Text)`
   padding: 0 8px;
+  margin: 4px 0;
   color: ${MUTED_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
+  text-align: center;
+`;
+
+const Spacing = styled(View)`
+  width: 8px;
+  height: 36px;
+  background-color: ${BACKGROUND_COLOR};
 `;
 
 const Row = styled(View)`
@@ -306,4 +343,12 @@ const TagType = styled(Text)<TagTypeProps>`
           background-color: ${LIGHTER_GRAY};
           color: ${GRAY_TEXT};
         `}
+`;
+
+const ReviewTagPlaceholder = styled(Text)`
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  color: ${GRAY_TEXT};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
 `;

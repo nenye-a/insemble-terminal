@@ -61,7 +61,6 @@ export default function Button(props: Props) {
         <LoadingIndicator color={mode === 'primary' ? 'white' : 'purple'} />
       ) : (
         <>
-          {icon}
           <Text
             as="span"
             color="white"
@@ -71,6 +70,7 @@ export default function Button(props: Props) {
           >
             {text}
           </Text>
+          {icon}
         </>
       )}
     </Container>

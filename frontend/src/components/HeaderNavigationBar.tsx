@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { TouchableOpacity, View, Button } from '../core-ui';
+import { TouchableOpacity, View, Button, ClickAway } from '../core-ui';
 import {
   WHITE,
   HEADER_SHADOW_COLOR,
   DARK_TEXT_COLOR,
 } from '../constants/colors';
 import { useAuth } from '../context';
+import { useViewport } from '../helpers';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import { LocationTagInput } from '../generated/globalTypes';
 import { SearchTag, BusinessTagResult } from '../types/types';
@@ -17,6 +18,7 @@ import InsembleLogo from './InsembleLogo';
 import SearchFilterBar from './SearchFilterBar';
 import ProfileMenuDropdown from './ProfileMenuDropdown';
 import ReadOnlyBanner from './ReadOnlyBanner';
+import SearchFilterBarMobile from './SearchFilterBarMobile';
 
 type Props = {
   mode?: 'default' | 'transparent';
@@ -40,6 +42,22 @@ export default function HeaderNavigationBar(props: Props) {
   } = props;
   let history = useHistory();
   let { isAuthenticated } = useAuth();
+  let { isDesktop } = useViewport();
+  let [isFocus, setIsFocus] = useState(false);
+
+  useEffect(() => {
+    let handleScroll = () => {
+      if (isFocus) {
+        // should change the search bar to not focus mode when scrolling
+        setIsFocus(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isFocus]);
+
   return (
     <Container mode={mode}>
       {readOnly && <ReadOnlyBanner />}
@@ -51,7 +69,7 @@ export default function HeaderNavigationBar(props: Props) {
         >
           <InsembleLogo color="purple" />
         </TouchableOpacity>
-        {showSearchBar ? (
+        {showSearchBar && isDesktop ? (
           <SearchContainer flex>
             <SearchFilterBar
               onSearchPress={onSearchPress}
@@ -95,6 +113,33 @@ export default function HeaderNavigationBar(props: Props) {
           </RowEnd>
         )}
       </Row>
+      {showSearchBar && !isDesktop && (
+        <SearchBarMobileContainer
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFocus(true);
+          }}
+        >
+          <ClickAway
+            onClickAway={() => {
+              setIsFocus(false);
+            }}
+          >
+            <SearchFilterBarMobile
+              focus={isFocus}
+              onSearchPress={(value) => {
+                if (onSearchPress) {
+                  onSearchPress(value);
+                  setIsFocus(false);
+                }
+              }}
+              defaultReviewTag={defaultReviewTag}
+              defaultBusinessTag={defaultBusinessTag}
+              defaultLocationTag={defaultLocationTag}
+            />
+          </ClickAway>
+        </SearchBarMobileContainer>
+      )}
     </Container>
   );
 }
@@ -139,4 +184,9 @@ const Row = styled(View)`
   flex-direction: row;
   align-items: center;
   padding: 12px 32px;
+`;
+
+const SearchBarMobileContainer = styled(View)`
+  padding: 20px 12px;
+  background-color: ${WHITE};
 `;

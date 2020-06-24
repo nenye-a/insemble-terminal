@@ -9,6 +9,7 @@ import {
   useGoogleMaps,
   formatErrorMessage,
   useColoredData,
+  useViewport,
 } from '../../helpers';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
@@ -44,6 +45,7 @@ export default function CoverageResult(props: Props) {
 
   let alert = useAlert();
   let { isLoading } = useGoogleMaps();
+  let { isDesktop } = useViewport();
   let { loading: coverageLoading, data, error, refetch } = useQuery<
     GetCoverage,
     GetCoverageVariables
@@ -70,6 +72,14 @@ export default function CoverageResult(props: Props) {
     !data?.coverageTable.data || data?.coverageTable.data.length === 0;
 
   let loading = isLoading || coverageLoading;
+
+  let content = [
+    <CoverageTable
+      key="coverage-table"
+      data={loading ? prevData : coloredData}
+    />,
+    <CoverageMap key="coverage-map" data={loading ? prevData : coloredData} />,
+  ];
 
   useEffect(() => {
     if (!coverageLoading) {
@@ -102,6 +112,7 @@ export default function CoverageResult(props: Props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, coverageLoading, error]);
+
   return (
     <View>
       <ResultTitle
@@ -142,9 +153,8 @@ export default function CoverageResult(props: Props) {
         ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : (!loading && !noData) || prevData.length > 0 ? (
-          <ContentContainer>
-            <CoverageTable data={loading ? prevData : coloredData} />
-            <CoverageMap data={loading ? prevData : coloredData} />
+          <ContentContainer isDesktop={isDesktop}>
+            {isDesktop ? content : content.reverse()}
           </ContentContainer>
         ) : null}
       </View>
@@ -158,7 +168,7 @@ export default function CoverageResult(props: Props) {
   );
 }
 
-const ContentContainer = styled(View)`
-  flex-direction: row;
+const ContentContainer = styled(View)<ViewProps & WithViewport>`
+  flex-direction: ${(props) => (props.isDesktop ? 'row' : 'column')};
   height: 340px;
 `;

@@ -34,7 +34,7 @@ export default function NewsTableMobile(props: Props) {
   return (
     <DataTable>
       <DataTable.HeaderRow>
-        <DataTable.HeaderCell width={500}>Latest News</DataTable.HeaderCell>
+        <DataTable.HeaderCell>Latest News</DataTable.HeaderCell>
         <DataTable.HeaderCell
           align="right"
           onClick={() => {
@@ -42,6 +42,7 @@ export default function NewsTableMobile(props: Props) {
           }}
           name="published"
           sortConfig={sortConfig}
+          width={100}
         >
           Post Date
         </DataTable.HeaderCell>
@@ -81,7 +82,6 @@ export default function NewsTableMobile(props: Props) {
               }}
             >
               <DataTable.Cell
-                width={500}
                 style={{
                   textOverflow: 'ellipsis',
                   overflow: 'hidden',
@@ -95,7 +95,11 @@ export default function NewsTableMobile(props: Props) {
                   <Text fontWeight={FONT_WEIGHT_MEDIUM}>{source}</Text>
                 </View>
               </DataTable.Cell>
-              <DataTable.Cell style={{ color: textColor }} align="right">
+              <DataTable.Cell
+                width={100}
+                style={{ color: textColor }}
+                align="right"
+              >
                 {getPublishedDate(published)}
               </DataTable.Cell>
             </DataTable.Row>
