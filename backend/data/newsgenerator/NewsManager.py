@@ -116,7 +116,7 @@ class NewsManager():
         self.national_news = feeds.get_national_news() if national_news else None
         self.regional_news = regional_news
 
-    def generate(self, batch_size=100):
+    def generate(self, batch_size=30):
         """
         Generate new news content from source list. Assumes source list has the following columnts:
         "City" (containing the city inforamtion) & content_generated (determining whether we have content or not)
@@ -255,6 +255,8 @@ class NewsManager():
                 temp_timezone = pytz.UTC.localize(
                     news['published']).astimezone(pytz.timezone("America/Los_Angeles"))
                 news['published'] = temp_timezone.strftime("%a %b %d") + " (PT)"
+                news['title'] = utils.format_punct(news['title'])
+                news['description'] = utils.format_punct(news['description'])
 
             email = person['email']
             email_report(
@@ -575,8 +577,8 @@ if __name__ == "__main__":
 
     # my_generator = NewsManager('Email-Test', 'test_source_nenye.csv', national_news=False)
     # my_generator = NewsManager('Email-Test-2', 'test_source_nenye.csv', national_news=False, regional_news=False)
-    my_generator = NewsManager('Email-Test-4', national_news=False)
+    # my_generator = NewsManager('Email-Test-4', national_news=False)
     # my_generator = NewsManager('Email-Test', national_news=False)
     # my_generator.generate(batch_size=10)
     # my_generator.convert_links()
-    my_generator.email()
+    # my_generator.email()
