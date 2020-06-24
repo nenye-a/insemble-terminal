@@ -103,7 +103,7 @@ class NewsManager():
             except FileNotFoundError:
                 self.source = pd.read_csv(source_path)
 
-            self._format_source()
+            self.source = self._format_source(self.source)
             self._create_collection()
             self.add_to_map(self.name, self.path)  # only add after everything is complete
         else:
@@ -456,30 +456,32 @@ class NewsManager():
     def _update_map():
         NewsManager.FILE_MAP.to_csv(STORE_PATH + 'map.csv')
 
-    def _format_source(self):
+    def _format_source(self, update_source):
         email_index = 'email'
         city_index = 'city'
 
-        current_email_index = process.extractOne('email', self.source.columns)[0]
-        current_city_index = process.extractOne('city', self.source.columns)[0]
+        current_email_index = process.extractOne('email', update_source.columns)[0]
+        current_city_index = process.extractOne('city', update_source.columns)[0]
 
-        self.source.rename(columns={current_email_index: email_index,
-                                    current_city_index: city_index},
-                           inplace=True)
+        update_source.rename(columns={current_email_index: email_index,
+                                      current_city_index: city_index},
+                             inplace=True)
 
-        self.source.drop_duplicates(email_index, keep='first', inplace=True)
-        self.source = self.source[self.source[email_index].notna()]
-        self.source = self.source[self.source[city_index].notna()]
+        update_source.drop_duplicates(email_index, keep='first', inplace=True)
+        update_source = update_source[update_source[email_index].notna()]
+        update_source = update_source[update_source[city_index].notna()]
 
-        self.source.loc[:, email_index] = self.source.loc[:, email_index].apply(
+        update_source.loc[:, email_index] = update_source.loc[:, email_index].apply(
             lambda email: email.lower() if isinstance(email, str) else None
         )
-        self.source.loc[:, city_index] = self.source.loc[:, city_index].apply(NewsManager.format_city)
-        self.source = self.source[~self.source[email_index].isin(self.unsubscribed)]
+        update_source.loc[:, city_index] = update_source.loc[:, city_index].apply(NewsManager.format_city)
+        update_source = update_source[~update_source[email_index].isin(self.unsubscribed)]
 
-        self.source["content_generated"] = False
-        self.source["content_emailed"] = False
-        self.source['data_type'] = 'contact'
+        update_source["content_generated"] = False
+        update_source["content_emailed"] = False
+        update_source['data_type'] = 'contact'
+
+        return update_source
 
     @staticmethod
     def format_city(city_string):
@@ -505,6 +507,7 @@ class NewsManager():
         )
         self.collection.create_index([('data_type', 1)])
         self.collection.create_index([('data_type', 1), ('city', 1)])
+        self.collection.create_index([('data_type', 1), ('parsed_city', 1)])
         self.collection.create_index([('activated', 1), ('data_type', 1)])
         self.collection.create_index([('activated', 1), ('data_type', 1), ('links_processed', 1)])
         self.collection.create_index([('name', 1), ('data_type', 1)])
@@ -516,11 +519,41 @@ class NewsManager():
             except Exception:
                 pass
 
-    def _update_source(self):
-        self.source.to_csv(self.path + '/source.csv')
+    def add_to_source(self, csv_path):
+        """
+        Adds csv of items to source.
+        """
+        try:
+            source = pd.read_csv(SOURCES_PATH + csv_path)
+        except FileNotFoundError:
+            source = pd.read_csv(csv_path)
 
-    def _update_content(self):
-        self.content.to_csv(self.path + '/content.csv')
+        source = self._format_source(source)
+        try:
+            self.collection.insert_many(source.to_dict(orient='records'), ordered=False)
+            self._update_contact_cities()
+        except Exception:
+            pass
+
+    def _update_contact_cities(self):
+        cities = list(self.collection.find({'data_type': 'city'}))
+        modified_count = 0
+        for city in cities:
+            res = self.collection.update_many({
+                'content_generated': False,
+                'data_type': 'contact',
+                'city': {'$regex': r'^' + city['name']}
+            }, {
+                '$set': {
+                    'content_generated': True,
+                    'parsed_city': city['name']
+                }
+            })
+
+            modified_count += res.modified_count
+            print(modified_count)
+
+        return modified_count
 
 
 def parse_city(location) -> dict:
@@ -554,7 +587,7 @@ def parse_city(location) -> dict:
             # if not in regular format, just do this based off the zip code
             num_match = re.findall(r'\d{5}(?:[-\s]\d{4})?', location)
             if not num_match:
-                raise Exception('Invalid Location: {}'.format(location))
+                print('Invalid Location: {}'.format(location))
                 return None
 
             result["zipcode"] = int(num_match[0].split("-")[0])
@@ -578,12 +611,15 @@ def date_converter(o):
 if __name__ == "__main__":
 
     my_generator = NewsManager('Official-6/24', national_news=False)
-    my_generator.generate()
-    # print(my_generator.collection.count_documents({
-    #     'data_type': 'city'
-    # }))
+    # my_generator.generate()
+    print(my_generator.collection.count_documents({
+        # 'data_type': 'city'
+        # 'content_generated': True
+    }))
 
-    # my_generator = NewsManager('Email-Test', 'test_source_nenye.csv', national_news=False)
+    # my_generator = NewsManager('Email-Test', national_news=False)
+    # my_generator.add_to_source('terminal_sources_official.csv')
+
     # my_generator = NewsManager('Email-Test-2', 'test_source_nenye.csv', national_news=False, regional_news=False)
     # my_generator = NewsManager('Email-Test-4', national_news=False)
     # my_generator = NewsManager('Email-Test', national_news=False)
