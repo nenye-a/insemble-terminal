@@ -7,9 +7,10 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 import utils
 import re
 import json
-import datetime
+import datetime as dt
 import pandas as pd
 import dateutil.parser as tparser
+import pytz
 from postgres import PostConnect
 from graphql import gql
 from fuzzywuzzy import process
@@ -67,7 +68,8 @@ class NewsManager():
         'unemployment': 4.2
     }
 
-    def __init__(self, name, source_path=None, scorer=None, national_news=True):
+    def __init__(self, name, source_path=None, scorer=None,
+                 regional_news=True, national_news=True):
         """
         Class will collect, store, and manage different runs to collect news content from source path.
 
@@ -89,7 +91,7 @@ class NewsManager():
                 raise FileExistsError('Generator with name: {} already exists. '
                                       'Rename generator or remove source_path'.format(self.name))
 
-            date_list = datetime.datetime.now().replace(microsecond=0).ctime().split(' ')
+            date_list = dt.datetime.utcnow().replace(microsecond=0).ctime().split(' ')
             date = "{month}-{day}-{year}".format(
                 month=date_list[1], day=date_list[2], year=date_list[-1]
             )
@@ -112,6 +114,7 @@ class NewsManager():
             self.collection = self._get_news_collection(self.path)
 
         self.national_news = feeds.get_national_news() if national_news else None
+        self.regional_news = regional_news
 
     def generate(self, batch_size=100):
         """
@@ -123,7 +126,7 @@ class NewsManager():
 
             cities = list(self.collection.aggregate([
                 {'$match': {
-                    'content_generated': "No"
+                    'content_generated': False
                 }},
                 {'$group': {
                     '_id': '$city',
@@ -143,9 +146,9 @@ class NewsManager():
                 return
 
             locations = [parse_city(city['city']) for city in cities]
-            print(locations)
 
             organized_news = self.get_many_news(locations)
+            print(organized_news)
 
             for city, news in organized_news.items():
                 city_update = self.collection.update_one({
@@ -168,7 +171,7 @@ class NewsManager():
                 }, {
                     '$set': {
                         'content_generated': True,
-                        'city': city
+                        'parsed_city': city
                     }
                 })
                 print('{} person/people updated with content.'.format(people_update.modified_count))
@@ -191,11 +194,11 @@ class NewsManager():
                 }
             )
             print(search_details)
-            location_tag_id = search_details['data']['search']['locationTag']['id']
+            location_tag_id = search_details['locationTag']['id']
             news_data = json.dumps(city['news'], default=date_converter)
             values = []
             for article in city['news']:
-                now = datetime.datetime.now()
+                now = dt.datetime.utcnow()
                 values.append({
                     'locationTag': location_tag_id,
                     'createdAt': now,
@@ -203,15 +206,16 @@ class NewsManager():
                     'firstArticle': json.dumps({
                         'title': article['title'],
                         'source': article['source'],
-                        'published': tparser.parse(article['published']).__str__()
+                        'published': str(tparser.parse(article['published']))
                         if isinstance(article['published'], str)
-                        else article['published'].__str__(),
+                        else str(article['published']),
                         'link': article['link']
                     }),
                     'data': news_data
                 })
             ids = app_db.insert_many('OpenNews', values)
             for index, _id in enumerate(ids):
+                city['news'][index]['old_link'] = city['news'][index]['link']
                 city['news'][index]['link'] = LINK_HOST + _id
 
             self.collection.update({
@@ -225,30 +229,38 @@ class NewsManager():
 
             print('Links for {} ({}) have been converted.'.format(city['name'], city['_id']))
 
-    def email(self):
+    def email(self, enforce_conversion=True):
         """
         Emails all the subscribed folks in the list with generated emails.
         """
 
         people = self.collection.find({
             'content_generated': True,
-            'content_emailed': "No",
+            'content_emailed': False,
             'email': {'$nin': self.unsubscribed}
         })
 
         for person in people:
-            content = self.collection.find_one({'name': person['city'], 'data_type': 'city', 'activated': True})
+            query = {'name': person['parsed_city'], 'data_type': 'city'}
+            if enforce_conversion:
+                query.update({'links_processed': True})
+            content = self.collection.find_one(query)
             if not content:
                 print("No content available for {}. Moving on.".format(
                     person['email'] + str(person['_id'])
                 ))
                 continue
 
+            for news in content['news']:
+                temp_timezone = pytz.UTC.localize(
+                    news['published']).astimezone(pytz.timezone("America/Los_Angeles"))
+                news['published'] = temp_timezone.strftime("%a %b %d") + " (PT)"
+
             email = person['email']
             email_report(
                 to_email=email,
-                header_text="Insemble Terminal, including {} News Report".format(
-                    person['city']
+                header_text="{} News Report".format(
+                    person['parsed_city']
                 ),
                 linear_entries=content['news'][:3],
                 grid_entries=content['news'][3:7]
@@ -281,8 +293,6 @@ class NewsManager():
             })
         } for term in NEWS_TERMS] for location in locations if location]
 
-        print(len(location_queries))
-
         results = news_scraper.async_request(
             utils.flatten(location_queries),
             headers={"referer": "https://www.google.com/"},
@@ -305,10 +315,10 @@ class NewsManager():
 
         regional_news = None
         try:
-
             my_pool = Pool(min(len(locations), 20))
             print('Getting Regional Relevance...')
-            regional_news = utils.flatten(my_pool.map(NewsManager.relevant_regional_news, locations))
+            if self.regional_news:
+                regional_news = utils.flatten(my_pool.map(NewsManager.relevant_regional_news, locations))
             print('Getting National Relevance...')
             if self.national_news:
                 national_news = utils.flatten(my_pool.map(NewsManager.relevant_national_news, locations))
@@ -319,15 +329,17 @@ class NewsManager():
             print(e)
         finally:
             try:
+                my_pool.close()
                 my_pool.terminate()
             except Exception:
                 pass
 
         final_news = {}
-        for key in set(list(regional_news.keys()) + list(google_news.keys()) +
+        for key in set(list(google_news.keys()) +
+                       list(regional_news.keys() if self.regional_news else []) +
                        list(national_news.keys() if self.national_news else [])):
             final_news[key] = NewsManager.most_relevant(
-                regional_news.get(key, []),
+                regional_news.get(key, []) if self.regional_news else [],
                 national_news.get(key, []) if self.national_news else [],
                 google_news.get(key, [])
             )
@@ -342,7 +354,8 @@ class NewsManager():
                 city=location['city'],
                 state=location['state']
             ): NewsManager.add_news_relevance(news, location)}
-        except Exception:
+        except Exception as e:
+            print(e)
             return {}
 
     @staticmethod
@@ -378,11 +391,16 @@ class NewsManager():
                     most_relevant_news.append(news)
                     existing_titles.add(news['title'])
 
-        return sorted(most_relevant_news, key=lambda news: news['relevance'], reverse=True)[:10]
+        return sorted(most_relevant_news, key=lambda news: news['relevance'], reverse=True)[:30]
 
     @staticmethod
     def add_news_relevance(news_list, location, multiplier=1):
-        for news in news_list:
+        pruned_news = utils.remove_old_items(
+            news_list,
+            time_key='published',
+            date=dt.datetime.utcnow() - dt.timedelta(weeks=1)
+        )
+        for news in pruned_news:
             if news['title']:
                 if news['description']:
                     text = news['title'] + " " + news["description"]
@@ -393,15 +411,15 @@ class NewsManager():
             else:
                 news['relevance'] = 0
         # return sorted list of news with relevance
-        return sorted(news_list, key=lambda news: news['relevance'], reverse=True)
+        return sorted(pruned_news, key=lambda news: news['relevance'], reverse=True)
 
     @staticmethod
     def determine_relevance(text, location):
-        """Determine relevanve of an article for a user"""
+        """Determine relevance of an article for a user"""
         # get the scorer for word relevance
         location_scorer = {
             str(location['zipcode']): 7,
-            location['city']: 4,
+            location['city']: 6,
             utils.state_code_to_name(location['state']): 2
         }
         this_scorer = NewsManager.DEFAULT_SCORER.copy()
@@ -456,8 +474,8 @@ class NewsManager():
         self.source.loc[:, city_index] = self.source.loc[:, city_index].apply(NewsManager.format_city)
         self.source = self.source[~self.source[email_index].isin(self.unsubscribed)]
 
-        self.source["content_generated"] = "No"
-        self.source["content_emailed"] = "No"
+        self.source["content_generated"] = False
+        self.source["content_emailed"] = False
         self.source['data_type'] = 'contact'
 
     @staticmethod
@@ -546,15 +564,19 @@ def parse_city(location) -> dict:
 
 
 def date_converter(o):
-    if isinstance(o, datetime.datetime):
-        return o.__str__()
+    if isinstance(o, dt.datetime):
+        return str(o)
 
 
 if __name__ == "__main__":
 
-    # my_generator = NewsManager('Online-2', national_news=False)
-    # my_generator.generate(batch_size=8)
+    my_generator = NewsManager('Official-6/24', 'terminal_sources.csv', national_news=False)
+    my_generator.generate()
 
-    my_generator = NewsManager('Email-6/23', national_news=False)
+    # my_generator = NewsManager('Email-Test', 'test_source_nenye.csv', national_news=False)
+    # my_generator = NewsManager('Email-Test-2', 'test_source_nenye.csv', national_news=False, regional_news=False)
+    my_generator = NewsManager('Email-Test-4', national_news=False)
+    # my_generator = NewsManager('Email-Test', national_news=False)
     # my_generator.generate(batch_size=10)
-    my_generator.convert_links()
+    # my_generator.convert_links()
+    my_generator.email()

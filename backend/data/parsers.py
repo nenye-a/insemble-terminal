@@ -1,11 +1,9 @@
 import datetime as dt
-import pytz
 import ast
 import re
 import utils
 import dateutil.parser as tparser
 from fuzzywuzzy import process
-from bs4 import BeautifulSoup
 
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
@@ -243,7 +241,7 @@ def google_detail_parser(response):
         "other_platform_ratings": other_platform_ratings,
         "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
         "self_description": self_description,
-        "time_of_scrape": dt.datetime.now()
+        "time_of_scrape": dt.datetime.utcnow()
     }
 
     return store
@@ -371,7 +369,7 @@ def google_company_parser(response):
         "num_employees": num_employees,
         "parents": parents,
         "subsidiaries": subsidiaries,
-        "time_of_scrape": dt.datetime.now()
+        "time_of_scrape": dt.datetime.utcnow()
     }
 
     return company
@@ -397,7 +395,7 @@ def opentable_parser(response):
             "neighborhood": str neighborhood,
             "dist_from_query": str dist_from_query,
             "bookings": int bookings,
-            "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+            "time_of_scrape": dt.datetime.utcnow().strftime("%m-%d-%Y_%H:%M:%S")
         }
 
     """
@@ -489,7 +487,7 @@ def opentable_parser(response):
         "neighborhood": neighborhood,
         "dist_from_query": dist_from_query,
         "bookings": bookings,
-        "time_of_scrape": dt.datetime.now()
+        "time_of_scrape": dt.datetime.utcnow()
     }
 
     return store
@@ -515,7 +513,7 @@ def opentable_parser_all(response):
             "neighborhood": str neighborhood,
             "dist_from_query": str dist_from_query,
             "bookings": int bookings,
-            "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+            "time_of_scrape": dt.datetime.utcnow().strftime("%m-%d-%Y_%H:%M:%S")
         }
     ]
 
@@ -612,7 +610,7 @@ def opentable_parser_all(response):
             "neighborhood": neighborhood,
             "dist_from_query": dist_from_query,
             "bookings": bookings,
-            "time_of_scrape": dt.datetime.now()
+            "time_of_scrape": dt.datetime.utcnow()
         })
 
     return stores
@@ -640,7 +638,7 @@ def google_news_parser(response):
     TITLELINK_NARROW_LINK_RX = r'http[\s\w\=\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
 
     titlelinks = {re.findall(TITLELINK_NARROW_TITLE_RX, tlinktext)[0]:
-                      re.search(TITLELINK_NARROW_LINK_RX, tlinktext).group() if 'http' in tlinktext else None for tlinktext in re.findall(TITLELINK_LOCATOR_RX, stew)}
+                  re.search(TITLELINK_NARROW_LINK_RX, tlinktext).group() if 'http' in tlinktext else None for tlinktext in re.findall(TITLELINK_LOCATOR_RX, stew)}
 
     results = []
     for match in re.finditer(NEWS_LOCATOR_RX, stew):
@@ -683,7 +681,8 @@ def google_news_parser(response):
             "description": description,
         }
         results.append(item)
-    return remove_old_news(results)
+    # return remove_old_news(results)
+    return results
 
 
 def california_entity_parser(response):
@@ -731,19 +730,6 @@ def california_entity_parser(response):
         businesses.append(entry)
 
     return businesses
-
-
-def remove_old_news(news_list, date=None):
-    cleaned_list = []
-    if not date:
-        date = dt.datetime.utcnow() - dt.timedelta(weeks=10)
-
-    for news in news_list:
-        published_date = news['published'].astimezone(pytz.utc).replace(tzinfo=None)
-        if published_date > date:
-            cleaned_list.append(news)
-
-    return cleaned_list
 
 
 # def google_nearby_parser(response):

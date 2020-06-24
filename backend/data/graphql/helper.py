@@ -156,7 +156,7 @@ def create_shared_report(*table_tuples, terminal_id=None, name=None, description
 
     if not terminal_id:
         terminal_id_list = gql.create_terminal(
-            name if name else 'Custom Report ' + str(dt.datetime.now().replace(microsecond=0)).split(' ')[0],
+            name if name else 'Custom Report ' + str(dt.datetime.utcnow().replace(microsecond=0)).split(' ')[0],
             description
         )
         terminal_id = terminal_id_list[-1]['id']

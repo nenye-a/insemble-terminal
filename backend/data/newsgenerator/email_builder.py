@@ -263,7 +263,7 @@ def generate_news_entries_html(linear_entries=None, grid_entries=None):
             linear_news_entry(
                 title=entry['title'],
                 description=entry['description'],
-                photo=entry['image'],
+                photo=entry['image'] if 'image' in entry else None,
                 link=entry['link'],
                 post_date=entry['published'],
                 source=entry['source']

@@ -541,7 +541,7 @@ class InfoAPI(BasicAPI):
                     'headquarters': '-',
                     'phone': '-',
                     'website': '-',
-                    'last_update': dt.datetime.now()
+                    'last_update': dt.datetime.utcnow()
                 }
                 data = row
 

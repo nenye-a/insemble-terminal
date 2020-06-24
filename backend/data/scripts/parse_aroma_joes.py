@@ -66,7 +66,7 @@ def locations():
                 'state': meta['state'],
                 'city': utils.adjust_case(meta['city']),
                 'version': 0,
-                'last_update': dt.datetime.now(),
+                'last_update': dt.datetime.utcnow(),
                 'location': meta['location'],
                 'google_details': data
             }

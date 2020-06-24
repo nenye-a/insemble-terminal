@@ -70,9 +70,11 @@ def get_many_google_details(places, projection=None):
     detailer = GoogleDetails('GOOGLE DETAILS')
     return detailer.many_google_details(places, projection=projection)
 
+
 def get_company(name, projection=None):
     company_scraper = GoogleCompany('GOOGLE COMPANY')
     return company_scraper.get_details(name, projection=projection)
+
 
 def get_news(query, num_retries=None):
     news_scraper = GoogleNewsScraper('NEWS SCRAPER')
@@ -478,6 +480,7 @@ class GoogleCompany(GenericScraper):
             if not utils.fuzzy_match(meta['name'], result['name']):
                 return None
         return result
+
 
 class GoogleNewsScraper(GenericScraper):
 
