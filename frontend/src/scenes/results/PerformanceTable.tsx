@@ -162,7 +162,7 @@ export default function PerformanceTable(props: Props) {
           <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
           <TouchableOpacity
             onPress={() => {
-              return setHeaderIndex(headerIndex - 1);
+              setHeaderIndex(headerIndex - 1);
             }}
             disabled={firstIndex}
           >
