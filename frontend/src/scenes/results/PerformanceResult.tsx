@@ -10,6 +10,7 @@ import {
   GetPerformanceTableVariables,
   GetPerformanceTable_performanceTable_table_data as PerformanceData,
   GetPerformanceTable_performanceTable_table_compareData as PerformanceCompareData,
+  GetPerformanceTable_performanceTable_table_comparationTags as ComparationTags,
 } from '../../generated/GetPerformanceTable';
 import {
   PerformanceTableType,
@@ -118,13 +119,19 @@ export default function PerformanceResult(props: Props) {
       if (data.performanceTable.table) {
         let { compareData, comparationTags, id } = data.performanceTable.table;
         if (compareData.length !== comparationTags.length) {
+          let notIncludedFilterFn = (tag: ComparationTags) =>
+            !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.businessTag?.params);
+          let notIncludedTagId = comparationTags
+            .filter(notIncludedFilterFn)
+            .map((item) => item.id);
           if (notIncluded.length > 0) {
+            let newSortOrder = sortOrder.filter((item) => {
+              return !notIncludedTagId.includes(item);
+            });
+            setSortOrder(newSortOrder);
             alert.show(
               `No data available for ${notIncluded.join(
                 ', ',
