@@ -112,7 +112,7 @@ export default function HeaderNavigationBar(props: Props) {
           </RowEnd>
         )}
       </Row>
-      {!isDesktop && (
+      {showSearchBar && !isDesktop && (
         <SearchBarMobileContainer
           onClick={(e) => {
             e.stopPropagation();

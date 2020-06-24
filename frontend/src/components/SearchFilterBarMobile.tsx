@@ -157,7 +157,7 @@ export default function SearchFilterBarMobile(props: Props) {
               </DataFilterContainer>
             )}
           </Popover>
-          {focus && <SpacedText>of</SpacedText>}
+          {focus ? <SpacedText>of</SpacedText> : <Spacing />}
           <Dropdown<SelectedBusiness | null>
             selectedOption={selectedBusiness}
             onOptionSelected={setSelectedBusiness}
@@ -182,7 +182,7 @@ export default function SearchFilterBarMobile(props: Props) {
               return null;
             }}
           />
-          {focus && <SpacedText>in</SpacedText>}
+          {focus ? <SpacedText>in</SpacedText> : <Spacing />}
           <SearchLocationInput
             placeholder="Any Location"
             onPlaceSelected={(place) => {
@@ -311,6 +311,12 @@ const SpacedText = styled(Text)`
   color: ${MUTED_TEXT_COLOR};
   font-weight: ${FONT_WEIGHT_MEDIUM};
   text-align: center;
+`;
+
+const Spacing = styled(View)`
+  width: 8px;
+  height: 36px;
+  background-color: ${BACKGROUND_COLOR};
 `;
 
 const Row = styled(View)`

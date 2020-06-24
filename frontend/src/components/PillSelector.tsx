@@ -57,7 +57,7 @@ const Container = styled(View)<ViewProps & WithViewport>`
   box-shadow: ${SHADOW_COLOR};
   border-radius: ${DEFAULT_BORDER_RADIUS};
   flex-flow: row wrap;
-  width: ${(props) => (props.isDesktop ? '454px' : '90vw')};
+  width: ${(props) => (props.isDesktop ? '454px' : '85vw')};
 `;
 
 const SelectionPill = styled(Pill)`
