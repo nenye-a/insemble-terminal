@@ -22,7 +22,7 @@ const SvgArrowLeft = (props: SVGProps<SVGSVGElement>) => (
         data-name="Path 3918"
         d="M17.831,3.033a1.4,1.4,0,0,0-1.977,0l-9.28,9.28a1.112,1.112,0,0,0,0,1.575l9.28,9.28a1.4,1.4,0,0,0,1.977-1.977l-8.085-8.1,8.1-8.1A1.392,1.392,0,0,0,17.831,3.033Z"
         transform="translate(6.729 -2.694)"
-        fill="#4b4b4b"
+        fill="currentColor"
       />
     </g>
   </svg>
