@@ -532,11 +532,13 @@ class NewsManager():
         try:
             self.collection.insert_many(source.to_dict(orient='records'), ordered=False)
             self._update_contact_cities()
-        except Exception:
-            pass
+        except utils.BWE as bwe:
+            if bwe.details['nInserted'] > 0:
+                self._update_contact_cities()
 
     def _update_contact_cities(self):
         cities = list(self.collection.find({'data_type': 'city'}))
+        count = 0
         modified_count = 0
         for city in cities:
             res = self.collection.update_many({
@@ -551,7 +553,9 @@ class NewsManager():
             })
 
             modified_count += res.modified_count
-            print(modified_count)
+            count += 1
+            if count % 100 == 0:
+                print('Total Modified So Far:', modified_count)
 
         return modified_count
 
@@ -613,12 +617,13 @@ if __name__ == "__main__":
     my_generator = NewsManager('Official-6/24', national_news=False)
     # my_generator.generate()
     print(my_generator.collection.count_documents({
-        # 'data_type': 'city'
+        'data_type': 'contact'
         # 'content_generated': True
     }))
 
     # my_generator = NewsManager('Email-Test', national_news=False)
-    # my_generator.add_to_source('terminal_sources_official.csv')
+    # my_generator.add_to_source('terminal_sources.csv')
+    my_generator._update_contact_cities()
 
     # my_generator = NewsManager('Email-Test-2', 'test_source_nenye.csv', national_news=False, regional_news=False)
     # my_generator = NewsManager('Email-Test-4', national_news=False)
