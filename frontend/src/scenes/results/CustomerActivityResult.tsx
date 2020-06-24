@@ -81,7 +81,17 @@ export default function CustomerActivityResult(props: Props) {
                 !compareData.map((item) => item.compareId).includes(tag.id),
             )
             .map((item) => item.businessTag?.params);
+          let notIncludedTagId = comparationTags
+            .filter(
+              (tag) =>
+                !compareData.map((item) => item.compareId).includes(tag.id),
+            )
+            .map((item) => item.id);
           if (notIncluded.length > 0) {
+            let newSortOrder = sortOrder.filter((item) => {
+              return !notIncludedTagId.includes(item);
+            });
+            setSortOrder(newSortOrder);
             alert.show(
               `No data available for ${notIncluded.join(
                 ', ',
