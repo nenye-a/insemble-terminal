@@ -21,6 +21,8 @@ import {
   LocationTagType,
   BusinessTagType,
 } from '../../generated/globalTypes';
+import SvgArrowLeft from '../../components/icons/arrow-left';
+import SvgArrowRight from '../../components/icons/arrow-right';
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
@@ -160,31 +162,31 @@ export default function PerformanceTable(props: Props) {
       {mobile ? (
         <DataTable.HeaderRow>
           <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
-          <TouchableOpacity
+          <Navigator
             onPress={() => {
               setHeaderIndex(headerIndex - 1);
             }}
             disabled={firstIndex}
           >
-            {firstIndex ? (
-              <DisabledText>{'◀'}</DisabledText>
-            ) : (
-              <WhiteText>{'◀'}</WhiteText>
-            )}
-          </TouchableOpacity>
+            <SvgArrowLeft
+              width={14}
+              height={14}
+              style={{ color: firstIndex ? GRAY_TEXT : WHITE }}
+            />
+          </Navigator>
           {headerCells[headerIndex]}
-          <TouchableOpacity
+          <Navigator
             onPress={() => {
               setHeaderIndex(headerIndex + 1);
             }}
             disabled={lastIndex}
           >
-            {lastIndex ? (
-              <DisabledText>{'▶︎'}</DisabledText>
-            ) : (
-              <WhiteText>{'▶︎'}</WhiteText>
-            )}
-          </TouchableOpacity>
+            <SvgArrowRight
+              width={14}
+              height={14}
+              style={{ color: lastIndex ? GRAY_TEXT : WHITE }}
+            />
+          </Navigator>
         </DataTable.HeaderRow>
       ) : (
         <DataTable.HeaderRow>
@@ -377,12 +379,6 @@ const Times = styled(Text)`
   color: ${GRAY_TEXT};
 `;
 
-const WhiteText = styled(Text)`
-  color: ${WHITE};
-  line-height: 1.7;
-`;
-
-const DisabledText = styled(Text)`
-  color: ${GRAY_TEXT};
-  line-height: 1.7;
+const Navigator = styled(TouchableOpacity)`
+  margin: 0 4px;
 `;

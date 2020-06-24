@@ -20,7 +20,7 @@ import {
   BusinessTagType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage, useColoredData } from '../../helpers';
+import { formatErrorMessage, useColoredData, useViewport } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -68,6 +68,8 @@ export default function PerformanceResult(props: Props) {
   let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
+
+  let { isDesktop } = useViewport();
   let {
     data,
     loading: performanceLoading,
@@ -217,6 +219,7 @@ export default function PerformanceResult(props: Props) {
             headerTitle={headerTitle}
             onPerformanceRowPress={onPerformanceRowPress}
             performanceType={performanceType}
+            mobile={!isDesktop}
           />
         ) : noData && !loading ? (
           <EmptyDataComponent />
