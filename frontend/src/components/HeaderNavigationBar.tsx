@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { TouchableOpacity, View, Button } from '../core-ui';
+import { TouchableOpacity, View, Button, ClickAway } from '../core-ui';
 import {
   WHITE,
   HEADER_SHADOW_COLOR,
@@ -43,6 +43,20 @@ export default function HeaderNavigationBar(props: Props) {
   let history = useHistory();
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
+  let [isFocus, setIsFocus] = useState(false);
+
+  useEffect(() => {
+    let handleScroll = () => {
+      if (isFocus) {
+        setIsFocus(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [isFocus]);
+
   return (
     <Container mode={mode}>
       {readOnly && <ReadOnlyBanner />}
@@ -99,13 +113,30 @@ export default function HeaderNavigationBar(props: Props) {
         )}
       </Row>
       {!isDesktop && (
-        <SearchBarMobileContainer>
-          <SearchFilterBarMobile
-            onSearchPress={onSearchPress}
-            defaultReviewTag={defaultReviewTag}
-            defaultBusinessTag={defaultBusinessTag}
-            defaultLocationTag={defaultLocationTag}
-          />
+        <SearchBarMobileContainer
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFocus(true);
+          }}
+        >
+          <ClickAway
+            onClickAway={() => {
+              setIsFocus(false);
+            }}
+          >
+            <SearchFilterBarMobile
+              focus={isFocus}
+              onSearchPress={(value) => {
+                if (onSearchPress) {
+                  onSearchPress(value);
+                  setIsFocus(false);
+                }
+              }}
+              defaultReviewTag={defaultReviewTag}
+              defaultBusinessTag={defaultBusinessTag}
+              defaultLocationTag={defaultLocationTag}
+            />
+          </ClickAway>
         </SearchBarMobileContainer>
       )}
     </Container>

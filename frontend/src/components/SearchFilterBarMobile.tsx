@@ -121,146 +121,136 @@ export default function SearchFilterBarMobile(props: Props) {
       {businessTagLoading ? (
         <LoadingIndicator />
       ) : businessTagData ? (
-        <>
-          <SearchContainer focus={focus}>
-            <Popover
-              isOpen={dataTypeFilterVisible}
-              content={
-                <PillSelector
-                  options={REVIEW_TAG_OPTIONS}
-                  style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
-                  selectedOptions={[selectedDataType]}
-                  onSelect={setSelectedDataType}
-                  onUnselect={() => {
-                    setSelectedDataType('');
-                  }}
-                  onClickAway={() => setDataTypeFilterVisible(false)}
+        <SearchContainer focus={focus}>
+          <Popover
+            isOpen={dataTypeFilterVisible}
+            content={
+              <PillSelector
+                options={REVIEW_TAG_OPTIONS}
+                style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
+                selectedOptions={[selectedDataType]}
+                onSelect={setSelectedDataType}
+                onUnselect={() => {
+                  setSelectedDataType('');
+                }}
+                onClickAway={() => setDataTypeFilterVisible(false)}
+              />
+            }
+            position={['bottom']}
+            onClickOutside={() => setDataTypeFilterVisible(false)}
+            align="start"
+          >
+            {(ref) => (
+              <DataFilterContainer
+                ref={ref}
+                disabled={disableAll || disableReviewTag}
+                onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
+                focus={focus}
+              >
+                {selectedDataType ? (
+                  <Pill disabled={disableAll || disableReviewTag}>
+                    {selectedDataType}
+                  </Pill>
+                ) : (
+                  <ReviewTagPlaceholder>Search data</ReviewTagPlaceholder>
+                )}
+              </DataFilterContainer>
+            )}
+          </Popover>
+          {focus && <SpacedText>of</SpacedText>}
+          <Dropdown<SelectedBusiness | null>
+            selectedOption={selectedBusiness}
+            onOptionSelected={setSelectedBusiness}
+            options={businessTagData.businessTags}
+            placeholder="Any business/category"
+            optionExtractor={(item) => {
+              if (typeof item === 'string') {
+                return item;
+              }
+              return item?.params || '';
+            }}
+            disabled={disableAll}
+            renderCustomList={(item: SelectedBusiness | null) => {
+              if (item && typeof item !== 'string') {
+                return (
+                  <Row>
+                    <Text>{item.params}</Text>
+                    <TagType type={item.type}>{capitalize(item.type)}</TagType>
+                  </Row>
+                );
+              }
+              return null;
+            }}
+          />
+          {focus && <SpacedText>in</SpacedText>}
+          <SearchLocationInput
+            placeholder="Any Location"
+            onPlaceSelected={(place) => {
+              if (place?.address) {
+                setSelectedPlace({
+                  params: place.address,
+                  type: parsePlaceType(place.placeType),
+                });
+              } else {
+                setSelectedPlace(null);
+              }
+            }}
+            disabled={disableAll}
+            defaultValue={defaultLocationTag?.params}
+          />
+          {focus && (
+            <Button
+              text="Search"
+              icon={
+                <SvgSearch
+                  fill={WHITE}
+                  style={{ marginLeft: 4 }}
+                  width={17}
+                  height={17}
                 />
               }
-              position={['bottom']}
-              onClickOutside={() => setDataTypeFilterVisible(false)}
-              align="start"
-            >
-              {(ref) => (
-                <DataFilterContainer
-                  ref={ref}
-                  disabled={disableAll || disableReviewTag}
-                  onPress={() =>
-                    setDataTypeFilterVisible(!dataTypeFilterVisible)
-                  }
-                  focus={focus}
-                >
-                  {selectedDataType ? (
-                    <Pill disabled={disableAll || disableReviewTag}>
-                      {selectedDataType}
-                    </Pill>
-                  ) : (
-                    <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
-                      Search data
-                    </Text>
-                  )}
-                </DataFilterContainer>
-              )}
-            </Popover>
-            {focus && <SpacedText>of</SpacedText>}
-            <Dropdown<SelectedBusiness | null>
-              selectedOption={selectedBusiness}
-              onOptionSelected={setSelectedBusiness}
-              options={businessTagData.businessTags}
-              placeholder="Any business/category"
-              optionExtractor={(item) => {
-                if (typeof item === 'string') {
-                  return item;
-                }
-                return item?.params || '';
-              }}
-              disabled={disableAll}
-              renderCustomList={(item: SelectedBusiness | null) => {
-                if (item && typeof item !== 'string') {
-                  return (
-                    <Row>
-                      <Text>{item.params}</Text>
-                      <TagType type={item.type}>
-                        {capitalize(item.type)}
-                      </TagType>
-                    </Row>
+              onPress={() => {
+                if (isAuthenticated && !!user?.license) {
+                  let isValid = isSearchCombinationValid(
+                    selectedDataType,
+                    selectedBusiness,
+                    selectedPlace,
                   );
-                }
-                return null;
-              }}
-            />
-            {focus && <SpacedText>in</SpacedText>}
-            <SearchLocationInput
-              placeholder="Any Location"
-              onPlaceSelected={(place) => {
-                if (place?.address) {
-                  setSelectedPlace({
-                    params: place.address,
-                    type: parsePlaceType(place.placeType),
-                  });
-                } else {
-                  setSelectedPlace(null);
-                }
-              }}
-              disabled={disableAll}
-              defaultValue={defaultLocationTag?.params}
-            />
-            {focus && (
-              <Button
-                text="Search"
-                icon={
-                  <SvgSearch
-                    fill={WHITE}
-                    style={{ marginLeft: 4 }}
-                    width={17}
-                    height={17}
-                  />
-                }
-                onPress={() => {
-                  if (isAuthenticated && !!user?.license) {
-                    let isValid = isSearchCombinationValid(
-                      selectedDataType,
-                      selectedBusiness,
-                      selectedPlace,
-                    );
-                    if (isValid) {
-                      onSearchPress &&
-                        onSearchPress({
-                          reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
-                          businessTag:
-                            typeof selectedBusiness === 'string'
-                              ? {
-                                  type: BusinessTagType.BUSINESS,
-                                  params: selectedBusiness,
-                                }
-                              : undefined,
-                          businessTagWithId:
-                            selectedBusiness &&
-                            typeof selectedBusiness !== 'string' &&
-                            selectedBusiness?.id
-                              ? selectedBusiness
-                              : undefined,
-                          locationTag: selectedPlace
-                            ? selectedPlace
+                  if (isValid) {
+                    onSearchPress &&
+                      onSearchPress({
+                        reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+                        businessTag:
+                          typeof selectedBusiness === 'string'
+                            ? {
+                                type: BusinessTagType.BUSINESS,
+                                params: selectedBusiness,
+                              }
                             : undefined,
-                        });
-                    } else {
-                      alert.show(
-                        'Search combination is not valid. Please try again.',
-                      );
-                    }
+                        businessTagWithId:
+                          selectedBusiness &&
+                          typeof selectedBusiness !== 'string' &&
+                          selectedBusiness?.id
+                            ? selectedBusiness
+                            : undefined,
+                        locationTag: selectedPlace ? selectedPlace : undefined,
+                      });
                   } else {
-                    history.push('/contact-us');
+                    alert.show(
+                      'Search combination is not valid. Please try again.',
+                    );
                   }
-                }}
-                stopPropagation={true}
-                disabled={disableAll}
-                style={{ marginTop: 20 }}
-                textProps={{ fontSize: FONT_SIZE_NORMAL }}
-              />
-            )}
-          </SearchContainer>
-        </>
+                } else {
+                  history.push('/contact-us');
+                }
+              }}
+              stopPropagation={true}
+              disabled={disableAll}
+              style={{ marginTop: 20 }}
+              textProps={{ fontSize: FONT_SIZE_NORMAL }}
+            />
+          )}
+        </SearchContainer>
       ) : null}
     </View>
   );
@@ -348,4 +338,12 @@ const TagType = styled(Text)<TagTypeProps>`
           background-color: ${LIGHTER_GRAY};
           color: ${GRAY_TEXT};
         `}
+`;
+
+const ReviewTagPlaceholder = styled(Text)`
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  color: ${GRAY_TEXT};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
 `;
