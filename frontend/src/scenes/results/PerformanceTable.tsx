@@ -73,6 +73,7 @@ export default function PerformanceTable(props: Props) {
       }}
       sortConfig={sortConfig}
       name="customerVolumeIndex"
+      key={0}
     >
       Volume IDX
     </DataTable.HeaderCell>,
@@ -84,6 +85,7 @@ export default function PerformanceTable(props: Props) {
       }}
       sortConfig={sortConfig}
       name="localRetailIndex"
+      key={1}
     >
       Retail IDX
     </DataTable.HeaderCell>,
@@ -95,6 +97,7 @@ export default function PerformanceTable(props: Props) {
       }}
       sortConfig={sortConfig}
       name="localCategoryIndex"
+      key={2}
     >
       Category IDX
     </DataTable.HeaderCell>,
@@ -106,6 +109,7 @@ export default function PerformanceTable(props: Props) {
       }}
       sortConfig={sortConfig}
       name="nationalIndex"
+      key={3}
     >
       Brand IDX
     </DataTable.HeaderCell>,
@@ -117,6 +121,7 @@ export default function PerformanceTable(props: Props) {
       }}
       sortConfig={sortConfig}
       name="avgRating"
+      key={4}
     >
       Rating
     </DataTable.HeaderCell>,
@@ -128,6 +133,7 @@ export default function PerformanceTable(props: Props) {
       }}
       sortConfig={sortConfig}
       name="numReview"
+      key={5}
     >
       # Reviews
     </DataTable.HeaderCell>,
@@ -142,6 +148,7 @@ export default function PerformanceTable(props: Props) {
         }}
         sortConfig={sortConfig}
         name="numLocation"
+        key={6}
       >
         # Locations
       </DataTable.HeaderCell>,
@@ -207,6 +214,7 @@ export default function PerformanceTable(props: Props) {
               width={mobile ? 120 : 90}
               align="right"
               style={{ color: textColor }}
+              key={0}
             >
               {customerVolumeIndex ? Number(customerVolumeIndex) / 100 : '-'}
               {!!customerVolumeIndex && <Times>x</Times>}
@@ -215,6 +223,7 @@ export default function PerformanceTable(props: Props) {
               width={mobile ? 120 : 90}
               align="right"
               style={{ color: textColor }}
+              key={1}
             >
               {isNull(localRetailIndex) ? '-' : Number(localRetailIndex) / 100}
               {!isNull(localRetailIndex) && <Times>x</Times>}
@@ -223,6 +232,7 @@ export default function PerformanceTable(props: Props) {
               width={mobile ? 120 : 100}
               align="right"
               style={{ color: textColor }}
+              key={2}
             >
               {isNull(localCategoryIndex)
                 ? '-'
@@ -233,6 +243,7 @@ export default function PerformanceTable(props: Props) {
               width={mobile ? 120 : 90}
               align="right"
               style={{ color: textColor }}
+              key={3}
             >
               {isNull(nationalIndex) ? '-' : Number(nationalIndex) / 100}
               {!isNull(nationalIndex) && <Times>x</Times>}
@@ -241,6 +252,7 @@ export default function PerformanceTable(props: Props) {
               width={mobile ? 120 : 90}
               align="right"
               style={{ color: textColor }}
+              key={4}
             >
               {formatNullData(avgRating)}
             </DataTable.Cell>,
@@ -248,6 +260,7 @@ export default function PerformanceTable(props: Props) {
               width={mobile ? 120 : 90}
               align="right"
               style={{ color: textColor }}
+              key={5}
             >
               {formatNullData(numReview)}
             </DataTable.Cell>,
@@ -256,6 +269,7 @@ export default function PerformanceTable(props: Props) {
                 width={mobile ? 120 : 90}
                 align="right"
                 style={{ color: textColor }}
+                key={6}
               >
                 {formatNullData(numLocation)}
               </DataTable.Cell>
