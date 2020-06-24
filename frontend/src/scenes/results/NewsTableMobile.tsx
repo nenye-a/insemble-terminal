@@ -91,8 +91,8 @@ export default function NewsTableMobile(props: Props) {
                 }}
               >
                 <View>
-                  <SourceText>{title}</SourceText>
-                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>{source}</Text>
+                  <SourceText>{source}</SourceText>
+                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>{title}</Text>
                 </View>
               </DataTable.Cell>
               <DataTable.Cell

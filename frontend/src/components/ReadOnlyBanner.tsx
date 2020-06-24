@@ -2,8 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { View, Text, Link } from '../core-ui';
-import { THEME_COLOR, WHITE, LIGHT_PURPLE } from '../constants/colors';
-import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import { THEME_COLOR, WHITE } from '../constants/colors';
+import { FONT_WEIGHT_BOLD } from '../constants/theme';
 
 export default function ReadOnlyBanner() {
   return (
@@ -19,9 +19,6 @@ export default function ReadOnlyBanner() {
           contact the Insemble team.
         </PurpleLink>
       </Text>
-      <ReadOnlyBadge>
-        <Text fontWeight={FONT_WEIGHT_MEDIUM}>Read Only</Text>
-      </ReadOnlyBadge>
     </Container>
   );
 }
@@ -32,14 +29,7 @@ const Container = styled(View)`
   padding: 8px 40px;
   background-color: ${THEME_COLOR};
   align-items: center;
-  justify-content: space-between;
-`;
-
-const ReadOnlyBadge = styled(View)`
-  padding: 8px 24px;
-  height: 33px;
-  border-radius: 15px;
-  background-color: ${LIGHT_PURPLE};
+  justify-content: left;
 `;
 
 const PurpleLink = styled(Link)`
