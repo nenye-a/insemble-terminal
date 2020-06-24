@@ -34,6 +34,11 @@ export let deleteTerminalResolver: FieldResolver<
   if (selectedTerminal.user.id !== user.id) {
     throw new Error('This is not your terminal.');
   }
+  await context.prisma.sharedTerminal.deleteMany({
+    where: {
+      terminal: { id: terminalId },
+    },
+  });
 
   await context.prisma.terminal.delete({
     where: {

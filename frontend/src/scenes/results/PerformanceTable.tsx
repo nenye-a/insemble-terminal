@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
 
-import { View, Text, Card } from '../../core-ui';
+import { View, Text, Card, TouchableOpacity } from '../../core-ui';
 import { DataTable } from '../../components';
 import {
   GetPerformanceTable_performanceTable_table_data as PerformanceTableData,
@@ -21,6 +21,8 @@ import {
   LocationTagType,
   BusinessTagType,
 } from '../../generated/globalTypes';
+import SvgArrowLeft from '../../components/icons/arrow-left';
+import SvgArrowRight from '../../components/icons/arrow-right';
 
 type MergedPerformanceTableData = (
   | PerformanceTableData
@@ -41,6 +43,7 @@ type Props = {
     locationType?: LocationTagType;
     businessType?: BusinessTagType;
   }) => void;
+  mobile?: boolean;
   performanceType: PerformanceTableType;
 };
 
@@ -51,8 +54,10 @@ export default function PerformanceTable(props: Props) {
     headerTitle = 'Company',
     onPerformanceRowPress,
     performanceType,
+    mobile = false,
   } = props;
   let [infoboxVisible, setInfoboxVisible] = useState(false);
+  let [headerIndex, setHeaderIndex] = useState(0);
 
   let { sortedData, requestSort, sortConfig } = useSortableData<
     MergedPerformanceTableData
@@ -61,91 +66,135 @@ export default function PerformanceTable(props: Props) {
     direction: Direction.DESCENDING,
   });
 
+  let headerCells = [
+    <DataTable.HeaderCell
+      width={mobile ? 120 : 90}
+      align="right"
+      onClick={() => {
+        requestSort('customerVolumeIndex');
+      }}
+      sortConfig={sortConfig}
+      name="customerVolumeIndex"
+      key={0}
+    >
+      Volume IDX
+    </DataTable.HeaderCell>,
+    <DataTable.HeaderCell
+      width={mobile ? 120 : 90}
+      align="right"
+      onClick={() => {
+        requestSort('localRetailIndex');
+      }}
+      sortConfig={sortConfig}
+      name="localRetailIndex"
+      key={1}
+    >
+      Retail IDX
+    </DataTable.HeaderCell>,
+    <DataTable.HeaderCell
+      width={mobile ? 120 : 90}
+      align="right"
+      onClick={() => {
+        requestSort('localCategoryIndex');
+      }}
+      sortConfig={sortConfig}
+      name="localCategoryIndex"
+      key={2}
+    >
+      Category IDX
+    </DataTable.HeaderCell>,
+    <DataTable.HeaderCell
+      width={mobile ? 120 : 100}
+      align="right"
+      onClick={() => {
+        requestSort('nationalIndex');
+      }}
+      sortConfig={sortConfig}
+      name="nationalIndex"
+      key={3}
+    >
+      Brand IDX
+    </DataTable.HeaderCell>,
+    <DataTable.HeaderCell
+      width={mobile ? 120 : 90}
+      align="right"
+      onClick={() => {
+        requestSort('avgRating');
+      }}
+      sortConfig={sortConfig}
+      name="avgRating"
+      key={4}
+    >
+      Rating
+    </DataTable.HeaderCell>,
+    <DataTable.HeaderCell
+      width={mobile ? 120 : 90}
+      align="right"
+      onClick={() => {
+        requestSort('numReview');
+      }}
+      sortConfig={sortConfig}
+      name="numReview"
+      key={5}
+    >
+      # Reviews
+    </DataTable.HeaderCell>,
+  ];
+  showNumLocation &&
+    headerCells.push(
+      <DataTable.HeaderCell
+        width={mobile ? 120 : 90}
+        align="right"
+        onClick={() => {
+          requestSort('numLocation');
+        }}
+        sortConfig={sortConfig}
+        name="numLocation"
+        key={6}
+      >
+        # Locations
+      </DataTable.HeaderCell>,
+    );
+  let firstIndex = headerIndex === 0;
+  let lastIndex = headerIndex === headerCells.length - 1;
   return (
     <DataTable>
-      <DataTable.HeaderRow>
-        <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
-        <DataTable.HeaderCell
-          width={90}
-          align="right"
-          onClick={() => {
-            requestSort('customerVolumeIndex');
-          }}
-          sortConfig={sortConfig}
-          name="customerVolumeIndex"
-        >
-          Volume IDX
-        </DataTable.HeaderCell>
-        {/* TODO: change data */}
-        <DataTable.HeaderCell
-          width={90}
-          align="right"
-          onClick={() => {
-            requestSort('localRetailIndex');
-          }}
-          sortConfig={sortConfig}
-          name="localRetailIndex"
-        >
-          Retail IDX
-        </DataTable.HeaderCell>
-        <DataTable.HeaderCell
-          width={100}
-          align="right"
-          onClick={() => {
-            requestSort('localCategoryIndex');
-          }}
-          sortConfig={sortConfig}
-          name="localCategoryIndex"
-        >
-          Category IDX
-        </DataTable.HeaderCell>
-        <DataTable.HeaderCell
-          width={90}
-          align="right"
-          onClick={() => {
-            requestSort('nationalIndex');
-          }}
-          sortConfig={sortConfig}
-          name="nationalIndex"
-        >
-          Brand IDX
-        </DataTable.HeaderCell>
-        <DataTable.HeaderCell
-          width={90}
-          align="right"
-          onClick={() => {
-            requestSort('avgRating');
-          }}
-          sortConfig={sortConfig}
-          name="avgRating"
-        >
-          Rating
-        </DataTable.HeaderCell>
-        <DataTable.HeaderCell
-          width={90}
-          align="right"
-          onClick={() => {
-            requestSort('numReview');
-          }}
-          sortConfig={sortConfig}
-          name="numReview"
-        >
-          # Reviews
-        </DataTable.HeaderCell>
-        {showNumLocation && (
-          <DataTable.HeaderCell
-            width={90}
-            align="right"
-            onClick={() => {
-              requestSort('numLocation');
+      {mobile ? (
+        <DataTable.HeaderRow>
+          <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
+          <Navigator
+            onPress={() => {
+              setHeaderIndex(headerIndex - 1);
             }}
-            sortConfig={sortConfig}
-            name="numLocation"
+            disabled={firstIndex}
           >
-            # Locations
-          </DataTable.HeaderCell>
-        )}
-      </DataTable.HeaderRow>
+            <SvgArrowLeft
+              width={14}
+              height={14}
+              style={{ color: firstIndex ? GRAY_TEXT : WHITE }}
+            />
+          </Navigator>
+          {headerCells[headerIndex]}
+          <Navigator
+            onPress={() => {
+              setHeaderIndex(headerIndex + 1);
+            }}
+            disabled={lastIndex}
+          >
+            <SvgArrowRight
+              width={14}
+              height={14}
+              style={{ color: lastIndex ? GRAY_TEXT : WHITE }}
+            />
+          </Navigator>
+        </DataTable.HeaderRow>
+      ) : (
+        <DataTable.HeaderRow>
+          <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
+          {headerCells}
+        </DataTable.HeaderRow>
+      )}
+
       <DataTable.Body>
         {sortedData.map((row, index) => {
           let {
@@ -162,6 +211,72 @@ export default function PerformanceTable(props: Props) {
           } = row;
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
+          let tableCells = [
+            <DataTable.Cell
+              width={mobile ? 120 : 90}
+              align="right"
+              style={{ color: textColor }}
+              key={0}
+            >
+              {customerVolumeIndex ? Number(customerVolumeIndex) / 100 : '-'}
+              {!!customerVolumeIndex && <Times>x</Times>}
+            </DataTable.Cell>,
+            <DataTable.Cell
+              width={mobile ? 120 : 90}
+              align="right"
+              style={{ color: textColor }}
+              key={1}
+            >
+              {isNull(localRetailIndex) ? '-' : Number(localRetailIndex) / 100}
+              {!isNull(localRetailIndex) && <Times>x</Times>}
+            </DataTable.Cell>,
+            <DataTable.Cell
+              width={mobile ? 120 : 100}
+              align="right"
+              style={{ color: textColor }}
+              key={2}
+            >
+              {isNull(localCategoryIndex)
+                ? '-'
+                : Number(localCategoryIndex) / 100}
+              {!isNull(localCategoryIndex) && <Times>x</Times>}
+            </DataTable.Cell>,
+            <DataTable.Cell
+              width={mobile ? 120 : 90}
+              align="right"
+              style={{ color: textColor }}
+              key={3}
+            >
+              {isNull(nationalIndex) ? '-' : Number(nationalIndex) / 100}
+              {!isNull(nationalIndex) && <Times>x</Times>}
+            </DataTable.Cell>,
+            <DataTable.Cell
+              width={mobile ? 120 : 90}
+              align="right"
+              style={{ color: textColor }}
+              key={4}
+            >
+              {formatNullData(avgRating)}
+            </DataTable.Cell>,
+            <DataTable.Cell
+              width={mobile ? 120 : 90}
+              align="right"
+              style={{ color: textColor }}
+              key={5}
+            >
+              {formatNullData(numReview)}
+            </DataTable.Cell>,
+            showNumLocation && (
+              <DataTable.Cell
+                width={mobile ? 120 : 90}
+                align="right"
+                style={{ color: textColor }}
+                key={6}
+              >
+                {formatNullData(numLocation)}
+              </DataTable.Cell>
+            ),
+          ];
           let tableRow = (
             <DataTable.Row
               key={index}
@@ -187,65 +302,7 @@ export default function PerformanceTable(props: Props) {
               <DataTable.Cell style={{ color: textColor }}>
                 {hasAsterisk ? `${name}*` : name}
               </DataTable.Cell>
-              <DataTable.Cell
-                width={90}
-                align="right"
-                style={{ color: textColor }}
-              >
-                {customerVolumeIndex ? Number(customerVolumeIndex) / 100 : '-'}
-                {!!customerVolumeIndex && <Times>x</Times>}
-              </DataTable.Cell>
-              <DataTable.Cell
-                width={90}
-                align="right"
-                style={{ color: textColor }}
-              >
-                {isNull(localRetailIndex)
-                  ? '-'
-                  : Number(localRetailIndex) / 100}
-                {!isNull(localRetailIndex) && <Times>x</Times>}
-              </DataTable.Cell>
-              <DataTable.Cell
-                width={100}
-                align="right"
-                style={{ color: textColor }}
-              >
-                {isNull(localCategoryIndex)
-                  ? '-'
-                  : Number(localCategoryIndex) / 100}
-                {!isNull(localCategoryIndex) && <Times>x</Times>}
-              </DataTable.Cell>
-              <DataTable.Cell
-                width={90}
-                align="right"
-                style={{ color: textColor }}
-              >
-                {isNull(nationalIndex) ? '-' : Number(nationalIndex) / 100}
-                {!isNull(nationalIndex) && <Times>x</Times>}
-              </DataTable.Cell>
-              <DataTable.Cell
-                width={90}
-                align="right"
-                style={{ color: textColor }}
-              >
-                {formatNullData(avgRating)}
-              </DataTable.Cell>
-              <DataTable.Cell
-                width={90}
-                align="right"
-                style={{ color: textColor }}
-              >
-                {formatNullData(numReview)}
-              </DataTable.Cell>
-              {showNumLocation && (
-                <DataTable.Cell
-                  width={90}
-                  align="right"
-                  style={{ color: textColor }}
-                >
-                  {formatNullData(numLocation)}
-                </DataTable.Cell>
-              )}
+              {mobile ? tableCells[headerIndex] : tableCells}
             </DataTable.Row>
           );
           if (hasAsterisk) {
@@ -320,4 +377,8 @@ const Times = styled(Text)`
   padding-left: 2px;
   font-weight: ${FONT_WEIGHT_MEDIUM};
   color: ${GRAY_TEXT};
+`;
+
+const Navigator = styled(TouchableOpacity)`
+  margin: 0 4px;
 `;

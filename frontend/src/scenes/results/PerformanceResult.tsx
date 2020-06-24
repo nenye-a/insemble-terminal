@@ -10,6 +10,7 @@ import {
   GetPerformanceTableVariables,
   GetPerformanceTable_performanceTable_table_data as PerformanceData,
   GetPerformanceTable_performanceTable_table_compareData as PerformanceCompareData,
+  GetPerformanceTable_performanceTable_table_comparationTags as ComparationTags,
 } from '../../generated/GetPerformanceTable';
 import {
   PerformanceTableType,
@@ -19,7 +20,7 @@ import {
   BusinessTagType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage, useColoredData } from '../../helpers';
+import { formatErrorMessage, useColoredData, useViewport } from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -67,6 +68,8 @@ export default function PerformanceResult(props: Props) {
   let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
+
+  let { isDesktop } = useViewport();
   let {
     data,
     loading: performanceLoading,
@@ -118,13 +121,19 @@ export default function PerformanceResult(props: Props) {
       if (data.performanceTable.table) {
         let { compareData, comparationTags, id } = data.performanceTable.table;
         if (compareData.length !== comparationTags.length) {
+          let notIncludedFilterFn = (tag: ComparationTags) =>
+            !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.businessTag?.params);
+          let notIncludedTagId = comparationTags
+            .filter(notIncludedFilterFn)
+            .map((item) => item.id);
           if (notIncluded.length > 0) {
+            let newSortOrder = sortOrder.filter((item) => {
+              return !notIncludedTagId.includes(item);
+            });
+            setSortOrder(newSortOrder);
             alert.show(
               `No data available for ${notIncluded.join(
                 ', ',
@@ -210,6 +219,7 @@ export default function PerformanceResult(props: Props) {
             headerTitle={headerTitle}
             onPerformanceRowPress={onPerformanceRowPress}
             performanceType={performanceType}
+            mobile={!isDesktop}
           />
         ) : noData && !loading ? (
           <EmptyDataComponent />

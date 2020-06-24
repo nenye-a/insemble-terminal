@@ -4,6 +4,7 @@ import { useQuery } from '@apollo/react-hooks';
 
 import { View, Text, TextInput, Button, LoadingIndicator } from '../../core-ui';
 import { PageTitle, ErrorComponent } from '../../components';
+import { useViewport } from '../../helpers';
 import { THEME_COLOR, GRAY } from '../../constants/colors';
 import {
   FONT_SIZE_LARGE,
@@ -23,7 +24,7 @@ export default function TerminalHomeScene() {
   let [addModalVisible, setAddModalVisible] = useState(false);
   let [searchTerminal, setSearchTerminal] = useState('');
   let { loading, data, error } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
-
+  let { isDesktop } = useViewport();
   let listData: Array<UserTerminal> = [];
   if (data?.userTerminals) {
     listData = data.userTerminals.filter(({ name }) =>
@@ -43,7 +44,7 @@ export default function TerminalHomeScene() {
         onClose={() => setAddModalVisible(false)}
       />
       <PageTitle text="Personal Terminals" showLocation={false} />
-      <ContentContainer>
+      <ContentContainer isDesktop={isDesktop}>
         <TitleContainer>
           <Title>All Terminals</Title>
           <Row>
@@ -94,17 +95,19 @@ export default function TerminalHomeScene() {
   );
 }
 
-const ContentContainer = styled(View)`
-  padding: 25px 15%;
+const ContentContainer = styled(View)<ViewProps & WithViewport>`
+  padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 18px`)};
 `;
 const TitleContainer = styled(View)`
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
 `;
 const Title = styled(Text)`
   color: ${THEME_COLOR};
   font-size: ${FONT_SIZE_LARGE};
   font-weight: ${FONT_WEIGHT_BOLD};
+  margin-bottom: 8px;
 `;
 const CardContainer = styled(View)`
   flex-flow: row wrap;

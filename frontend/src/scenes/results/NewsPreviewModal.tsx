@@ -2,14 +2,20 @@ import React, { ComponentProps } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { Modal, Text, View, Divider, TouchableOpacity } from '../../core-ui';
+import {
+  Modal,
+  Text,
+  View,
+  Divider,
+  TouchableOpacity,
+  Button,
+} from '../../core-ui';
 import { getPublishedDate, useViewport } from '../../helpers';
 import {
   DEFAULT_BORDER_RADIUS,
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
-import { GRAY_TEXT, THEME_COLOR } from '../../constants/colors';
-import SvgArrowLeft from '../../components/icons/arrow-left';
+import { GRAY_TEXT, THEME_COLOR, WHITE } from '../../constants/colors';
 
 type State = {
   title?: string;
@@ -32,32 +38,55 @@ export default function NewsPreview() {
     history.goBack();
   };
 
+  let websiteButton = (
+    <Button
+      mode="withShadow"
+      shape="round"
+      text="See on Website"
+      onPress={() => {
+        window.open(link);
+      }}
+      href={link}
+    />
+  );
   return (
     <Container
       visible={true}
       hideCloseButton={true}
       onClose={goBack}
       isDesktop={isDesktop}
+      {...(isDesktop && {
+        overlayStyle: {
+          alignItems: 'flex-end',
+        },
+      })}
     >
-      <TitleContainer isDesktop={isDesktop}>
-        {!isDesktop && (
-          <TouchableOpacity onPress={goBack}>
-            <SvgArrowLeft style={{ marginRight: 8 }} />
-          </TouchableOpacity>
-        )}
-        <View flex>
-          <Text color={THEME_COLOR}>Article</Text>
-          <Title>{title}</Title>
-          <Row>
-            <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
-              {source}
-            </Text>
-            <PublishedDate>{getPublishedDate(published)}</PublishedDate>
-          </Row>
-        </View>
-      </TitleContainer>
-      <Divider width={12} />
+      <BackButtonContainer onPress={goBack}>
+        <Text color={WHITE}>Return to News</Text>
+      </BackButtonContainer>
+      {isDesktop && (
+        <>
+          <TitleContainer isDesktop={isDesktop}>
+            <View flex>
+              <Text color={THEME_COLOR}>Article</Text>
+              <Title>{title}</Title>
+              <Row>
+                <Text color={GRAY_TEXT} fontWeight={FONT_WEIGHT_MEDIUM}>
+                  {source}
+                </Text>
+                <PublishedDate>{getPublishedDate(published)}</PublishedDate>
+              </Row>
+            </View>
+            {websiteButton}
+          </TitleContainer>
+          <Divider width={12} />
+        </>
+      )}
+
       <Iframe src={link} />
+      {!isDesktop && (
+        <GoToWebButtonContainer>{websiteButton}</GoToWebButtonContainer>
+      )}
     </Container>
   );
 }
@@ -69,8 +98,8 @@ type ContainerProps = ComponentProps<typeof Modal> & {
 type TitleContainerProps = ViewProps & { isDesktop: boolean };
 
 const Container = styled(Modal)<ContainerProps>`
-  width: ${({ isDesktop }) => (isDesktop ? '750px' : '100%')};
-  height: 80vh;
+  width: ${({ isDesktop }) => (isDesktop ? '70%' : '100%')};
+  height: ${({ isDesktop }) => (isDesktop ? '100vh' : '80vh')};
   border-radius: ${({ isDesktop }) =>
     isDesktop ? DEFAULT_BORDER_RADIUS : '2px'};
   justify-content: center;
@@ -100,4 +129,19 @@ const PublishedDate = styled(Text)`
   margin-left: 45px;
   color: ${GRAY_TEXT};
   font-weight: ${FONT_WEIGHT_MEDIUM};
+`;
+
+const BackButtonContainer = styled(TouchableOpacity)`
+  height: 26px;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+  background-color: ${THEME_COLOR};
+`;
+
+const GoToWebButtonContainer = styled(View)`
+  justify-content: center;
+  align-items: center;
+  padding-top: 8px;
+  padding-bottom: 40px;
 `;

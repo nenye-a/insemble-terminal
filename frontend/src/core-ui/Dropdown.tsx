@@ -9,8 +9,14 @@ import {
   SHADOW_COLOR,
   THEME_COLOR,
   DISABLED_PILL_COLOR,
+  GRAY_TEXT,
 } from '../constants/colors';
-import { FONT_SIZE_NORMAL, DEFAULT_BORDER_RADIUS } from '../constants/theme';
+import {
+  FONT_SIZE_NORMAL,
+  DEFAULT_BORDER_RADIUS,
+  FONT_WEIGHT_MEDIUM,
+} from '../constants/theme';
+import { useViewport } from '../helpers';
 
 import TextInput from './TextInput';
 import TouchableOpacity from './TouchableOpacity';
@@ -43,6 +49,8 @@ export default function Dropdown<T>(props: Props<T>) {
   let [inputValue, setInputValue] = useState(
     optionExtractor(selectedOption) || '',
   );
+
+  let { isDesktop } = useViewport();
 
   let {
     isOpen,
@@ -84,6 +92,7 @@ export default function Dropdown<T>(props: Props<T>) {
       {...getComboboxProps()}
       onPress={openMenu}
       disabled={disabled}
+      style={{ zIndex: 9999 }}
     >
       <InputContainer
         {...getInputProps({
@@ -110,19 +119,20 @@ export default function Dropdown<T>(props: Props<T>) {
             backgroundColor: disabled ? DISABLED_PILL_COLOR : THEME_COLOR,
             minWidth: 40,
             maxWidth: 200,
-            padding: 8,
             color: WHITE,
             textAlign: 'center',
             height: 28,
+            margin: 4,
           },
         })}
         containerStyle={{
           flex: 1,
           justifyContent: 'center',
           alignItems: 'center',
+          backgroundColor: BACKGROUND_COLOR,
         }}
       />
-      <ListContainer {...getMenuProps()}>
+      <ListContainer {...getMenuProps()} isDesktop={isDesktop}>
         {isOpen
           ? inputItems.map((item, index) => (
               <OptionList
@@ -136,6 +146,7 @@ export default function Dropdown<T>(props: Props<T>) {
                       highlightedIndex === index ? HIGHLIGHTED_DROPDOWN : WHITE,
                   },
                 })}
+                isDesktop={isDesktop}
               >
                 {renderCustomList ? (
                   renderCustomList(item)
@@ -160,20 +171,22 @@ const ListContainer = styled.ul`
   margin-top: 40px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
   box-shadow: ${SHADOW_COLOR};
-  overflow: hidden;
   max-height: 300px;
   overflow-y: scroll;
+  ${(props: WithViewport) =>
+    !props.isDesktop &&
+    css`
+      width: 100%;
+    `};
 `;
 const OptionList = styled.li`
   height: 36px;
   display: flex;
   list-style: none;
   align-items: center;
-  padding: 8px 18px;
   font-family: 'Avenir';
   font-size: ${FONT_SIZE_NORMAL};
-  min-width: 400px;
-  max-width: 500px;
+  width: ${(props: WithViewport) => (props.isDesktop ? '500px' : '100%')};
 `;
 const InputContainer = styled(TextInput)<InputContainerProps>`
   border: none;
@@ -189,5 +202,7 @@ const InputContainer = styled(TextInput)<InputContainerProps>`
     `}
   &::placeholder {
     text-align: center;
+    font-weight: ${FONT_WEIGHT_MEDIUM};
+    color: ${GRAY_TEXT};
   }
 `;

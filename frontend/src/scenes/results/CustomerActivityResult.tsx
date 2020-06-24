@@ -11,6 +11,7 @@ import {
   GetActivityVariables,
   GetActivity_activityTable_table_data as ActivityData,
   GetActivity_activityTable_table_compareData as ActivityCompareData,
+  GetActivity_activityTable_table_comparationTags as ComparationTags,
 } from '../../generated/GetActivity';
 import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
 import { formatErrorMessage, useColoredData } from '../../helpers';
@@ -75,13 +76,19 @@ export default function CustomerActivityResult(props: Props) {
       if (data.activityTable.table) {
         let { compareData, comparationTags, id } = data.activityTable.table;
         if (compareData.length !== comparationTags.length) {
+          let notIncludedFilterFn = (tag: ComparationTags) =>
+            !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
-            .filter(
-              (tag) =>
-                !compareData.map((item) => item.compareId).includes(tag.id),
-            )
+            .filter(notIncludedFilterFn)
             .map((item) => item.businessTag?.params);
+          let notIncludedTagId = comparationTags
+            .filter(notIncludedFilterFn)
+            .map((item) => item.id);
           if (notIncluded.length > 0) {
+            let newSortOrder = sortOrder.filter((item) => {
+              return !notIncludedTagId.includes(item);
+            });
+            setSortOrder(newSortOrder);
             alert.show(
               `No data available for ${notIncluded.join(
                 ', ',

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import React, { ComponentProps, useState, useEffect } from 'react';
+import styled, { css } from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
 
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
 } from '../../core-ui';
 import { Popup } from '../../components';
+import { useViewport } from '../../helpers';
 import {
   SHADOW_COLOR,
   MUTED_TEXT_COLOR,
@@ -47,6 +48,8 @@ export default function TerminalCard(props: Props) {
     ...otherProps
   } = props;
   let [deletePopupVisible, setDeletePopupVisible] = useState(false);
+  let { isDesktop } = useViewport();
+
   let [deleteTerminal, { data, loading }] = useMutation<
     DeleteTerminal,
     DeleteTerminalVariables
@@ -87,6 +90,7 @@ export default function TerminalCard(props: Props) {
         loading={loading}
       />
       <Container
+        isDesktop={isDesktop}
         onPress={() => {
           history.push(`/terminals/${id}`);
         }}
@@ -121,16 +125,27 @@ export default function TerminalCard(props: Props) {
   );
 }
 
-const Container = styled(TouchableOpacity)`
+type ContainerProps = ComponentProps<typeof TouchableOpacity> & {
+  isDesktop: boolean;
+};
+
+const Container = styled(TouchableOpacity)<ContainerProps>`
   padding: 14px 20px;
   background-color: ${WHITE};
   box-shadow: ${SHADOW_COLOR};
   height: 180px;
   margin: 20px 60px 20px 0;
-  width: calc(50% - 30px);
-  &:nth-child(2n) {
-    margin-right: 0;
-  }
+  ${(props) =>
+    props.isDesktop
+      ? css`
+          width: calc(50% - 30px);
+          &:nth-child(2n) {
+            margin-right: 0;
+          }
+        `
+      : css`
+          width: 100%;
+        `}
 `;
 
 const TitleContainer = styled(View)`
