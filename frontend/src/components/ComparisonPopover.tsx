@@ -148,8 +148,8 @@ export default function ComparisonPopover(props: Props) {
         }
       } else if (comparationTags.length < sortOrder.length) {
         // remove comparison
-        newSortOrder = sortOrder.filter(
-          (item) => !comparationTags.map((tag) => tag.id).includes(item),
+        newSortOrder = sortOrder.filter((item) =>
+          comparationTags.map((tag) => tag.id).includes(item),
         );
         onSortOrderChange(newSortOrder);
       }
