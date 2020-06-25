@@ -83,6 +83,7 @@ export type PyCoverageLocations = {
   lat: number;
   lng: number;
   name: string;
+  rating: number;
   address: string;
   num_reviews: number;
 };
@@ -147,6 +148,7 @@ export type LocationPin = {
   lat: number;
   lng: number;
   name?: string;
+  rating?: number;
   address?: string;
   numReviews?: number;
 };
