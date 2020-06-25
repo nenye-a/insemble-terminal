@@ -615,19 +615,8 @@ def date_converter(o):
 if __name__ == "__main__":
 
     my_generator = NewsManager('Official-6/24', national_news=False)
-    # my_generator.generate()
     print(my_generator.collection.count_documents({
-        'data_type': 'contact'
+        # 'data_type': 'contact'
         # 'content_generated': True
     }))
-
-    # my_generator = NewsManager('Email-Test', national_news=False)
-    # my_generator.add_to_source('terminal_sources.csv')
     my_generator._update_contact_cities()
-
-    # my_generator = NewsManager('Email-Test-2', 'test_source_nenye.csv', national_news=False, regional_news=False)
-    # my_generator = NewsManager('Email-Test-4', national_news=False)
-    # my_generator = NewsManager('Email-Test', national_news=False)
-    # my_generator.generate(batch_size=10)
-    # my_generator.convert_links()
-    # my_generator.email(update=True)
