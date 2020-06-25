@@ -176,14 +176,14 @@ class NewsManager():
                 })
                 print('{} person/people updated with content.'.format(people_update.modified_count))
 
-    def convert_links(self):
+    def convert_links(self, old_link=False):
 
         app_db = PostConnect()
 
-        cities = self.collection.find({
-            'data_type': 'city',
-            'links_processed': {'$exists': False}
-        })
+        query = {'data_type': 'city'}
+        if not old_link:
+            query.update({'links_processed': {'$exists': False}})
+        cities = self.collection.find(query)
 
         for city in cities:
             search_details = gql.search(
@@ -195,6 +195,9 @@ class NewsManager():
             )
             print(search_details)
             location_tag_id = search_details['locationTag']['id']
+            if old_link:
+                for article in city['news']:
+                    article['link'] = article['old_link']
             news_data = json.dumps(city['news'], default=date_converter)
             values = []
             for article in city['news']:
@@ -206,9 +209,9 @@ class NewsManager():
                     'firstArticle': json.dumps({
                         'title': article['title'],
                         'source': article['source'],
-                        'published': str(tparser.parse(article['published']))
+                        'published': tparser.parse(article['published']).isoformat()
                         if isinstance(article['published'], str)
-                        else str(article['published']),
+                        else article['published'].isoformat(),
                         'link': article['link']
                     }),
                     'data': news_data
@@ -609,14 +612,22 @@ def parse_city(location) -> dict:
 
 def date_converter(o):
     if isinstance(o, dt.datetime):
-        return str(o)
+        return o.isoformat()
 
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-6/24', national_news=False)
-    print(my_generator.collection.count_documents({
-        # 'data_type': 'contact'
-        # 'content_generated': True
-    }))
-    my_generator._update_contact_cities()
+    # my_generator = NewsManager('Official-6/24', national_news=False)
+    # print(my_generator.collection.count_documents({
+    #     # 'data_type': 'contact'
+    #     # 'content_generated': True
+    # }))
+    # my_generator._update_contact_cities()
+
+    my_generator = NewsManager('Test-5', national_news=False)
+    # my_generator.generate()
+    my_generator.convert_links(old_link=True)
+    # print(my_generator.collection.count_documents({
+    #     # 'data_type': 'contact'
+    #     # 'content_generated': True
+    # }))
