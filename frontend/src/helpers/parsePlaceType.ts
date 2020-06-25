@@ -10,7 +10,8 @@ export default function parsePlaceType(placeTypes: Array<string>) {
       return LocationTagType.COUNTY;
     } else if (
       placeTypes.includes('administrative_area_level_3') ||
-      placeTypes.includes('locality')
+      placeTypes.includes('locality') ||
+      placeTypes.includes('neighborhood')
     ) {
       return LocationTagType.CITY;
     } else if (
