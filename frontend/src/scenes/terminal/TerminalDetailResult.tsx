@@ -31,9 +31,9 @@ export default function TerminalDataResult(props: Props) {
     if (locationType) {
       history.push('/results', {
         search: {
-          businessTag: comparisonTag
-            ? comparisonTag.businessTag
-            : prevTag?.businessTag,
+          businessTagWithId: comparisonTag
+            ? comparisonTag.businessTag?.id
+            : prevTag?.businessTag?.id,
           locationTag: {
             params: name,
             type: locationType,

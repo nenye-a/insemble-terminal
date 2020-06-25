@@ -237,6 +237,7 @@ export default function PerformanceResult(props: Props) {
                 businessTag: {
                   params: data.performanceTable.table.businessTag.params,
                   type: data.performanceTable.table.businessTag.type,
+                  id: data.performanceTable.table.businessTag.id,
                 },
               })}
             {...(isTerminalScene &&

@@ -49,6 +49,7 @@ type Props = {
   businessTag?: {
     type: BusinessType;
     params: string;
+    id: string;
   };
   locationTag?: { type: LocationTagType; params: string };
   inTerminal?: boolean;
@@ -235,6 +236,7 @@ type TableRowProps = {
   businessTag?: {
     type: BusinessType;
     params: string;
+    id: string;
   };
   locationTag?: { type: LocationTagType; params: string };
   inTerminal?: boolean;

@@ -118,6 +118,7 @@ export type PerformanceRowPressParam = {
     businessTag?: {
       type: BusinessType;
       params: string;
+      id: string;
     };
   };
   comparisonTag?: {
