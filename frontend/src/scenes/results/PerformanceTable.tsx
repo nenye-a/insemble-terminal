@@ -68,7 +68,6 @@ export default function PerformanceTable(props: Props) {
     inTerminal,
     comparisonTags,
   } = props;
-  let [infoboxVisible, setInfoboxVisible] = useState(false);
   let [headerIndex, setHeaderIndex] = useState(0);
 
   let { sortedData, requestSort, sortConfig } = useSortableData<
@@ -209,180 +208,223 @@ export default function PerformanceTable(props: Props) {
 
       <DataTable.Body>
         {sortedData.map((row, index) => {
-          let {
-            name = '-',
-            avgRating = '-',
-            numLocation = '-',
-            numReview = '-',
-            customerVolumeIndex = '-',
-            localCategoryIndex = '-',
-            localRetailIndex = '-',
-            nationalIndex = '-',
-            hasAsterisk,
-            fill,
-            isComparison,
-          } = row;
-          let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
-          let textColor = getTextColor(bgColor);
-          let tableCells = [
-            <DataTable.Cell
-              width={mobile ? 120 : 90}
-              align="right"
-              style={{ color: textColor }}
-              key={0}
-            >
-              {customerVolumeIndex ? Number(customerVolumeIndex) / 100 : '-'}
-              {!!customerVolumeIndex && <Times>x</Times>}
-            </DataTable.Cell>,
-            <DataTable.Cell
-              width={mobile ? 120 : 90}
-              align="right"
-              style={{ color: textColor }}
-              key={1}
-            >
-              {isNull(localRetailIndex) ? '-' : Number(localRetailIndex) / 100}
-              {!isNull(localRetailIndex) && <Times>x</Times>}
-            </DataTable.Cell>,
-            <DataTable.Cell
-              width={mobile ? 120 : 100}
-              align="right"
-              style={{ color: textColor }}
-              key={2}
-            >
-              {isNull(localCategoryIndex)
-                ? '-'
-                : Number(localCategoryIndex) / 100}
-              {!isNull(localCategoryIndex) && <Times>x</Times>}
-            </DataTable.Cell>,
-            <DataTable.Cell
-              width={mobile ? 120 : 90}
-              align="right"
-              style={{ color: textColor }}
-              key={3}
-            >
-              {isNull(nationalIndex) ? '-' : Number(nationalIndex) / 100}
-              {!isNull(nationalIndex) && <Times>x</Times>}
-            </DataTable.Cell>,
-            <DataTable.Cell
-              width={mobile ? 120 : 90}
-              align="right"
-              style={{ color: textColor }}
-              key={4}
-            >
-              {formatNullData(avgRating)}
-            </DataTable.Cell>,
-            <DataTable.Cell
-              width={mobile ? 120 : 90}
-              align="right"
-              style={{ color: textColor }}
-              key={5}
-            >
-              {formatNullData(numReview)}
-            </DataTable.Cell>,
-            showNumLocation && (
-              <DataTable.Cell
-                width={mobile ? 120 : 90}
-                align="right"
-                style={{ color: textColor }}
-                key={6}
-              >
-                {formatNullData(numLocation)}
-              </DataTable.Cell>
-            ),
-          ];
-          let tableRow = (
-            <DataTable.Row
+          return (
+            <TableRow
+              datum={row}
+              mobile={mobile}
               key={index}
-              style={{
-                backgroundColor: bgColor,
-              }}
-              onPress={() => {
-                let comparePrevTag;
-                if (isComparison && comparisonTags) {
-                  let compareLocationAndBusinessTag = comparisonTags.find(
-                    (tag) => tag.fill === fill,
-                  );
-                  if (compareLocationAndBusinessTag) {
-                    let {
-                      businessTag: compareBusinessTag,
-                      locationTag: compareLocationTag,
-                    } = compareLocationAndBusinessTag;
-                    comparePrevTag = {
-                      businessTag: compareBusinessTag,
-                      locationTag: compareLocationTag,
-                    };
-                  }
-                }
-                if (onPerformanceRowPress) {
-                  let newSearchTag = getPerformanceNewSearchTag(
-                    performanceType,
-                  );
-                  if (Object.keys(newSearchTag).length > 0) {
-                    if (inTerminal) {
-                      onPerformanceRowPress({
-                        newTag: { name, ...newSearchTag },
-                        prevTag: {
-                          locationTag,
-                          businessTag,
-                        },
-                        ...(isComparison && {
-                          comparisonTag: comparePrevTag,
-                        }),
-                      });
-                    } else {
-                      onPerformanceRowPress({
-                        newTag: {
-                          name,
-                          ...newSearchTag,
-                        },
-                        comparisonTag: comparePrevTag,
-                        ...(isComparison && {
-                          comparisonTag: comparePrevTag,
-                        }),
-                      });
-                    }
-                  }
-                }
-              }}
-            >
-              <DataTable.Cell style={{ color: textColor }}>
-                {hasAsterisk ? `${name}*` : name}
-              </DataTable.Cell>
-              {mobile ? tableCells[headerIndex] : tableCells}
-            </DataTable.Row>
+              showNumLocation={showNumLocation}
+              businessTag={businessTag}
+              locationTag={locationTag}
+              inTerminal={inTerminal}
+              comparisonTags={comparisonTags}
+              onPerformanceRowPress={onPerformanceRowPress}
+              performanceType={performanceType}
+              headerIndex={headerIndex}
+            />
           );
-          if (hasAsterisk) {
-            return (
-              <Popover
-                isOpen={infoboxVisible}
-                content={ConfidencePopover}
-                position={['bottom']}
-                onClickOutside={() => setInfoboxVisible(false)}
-                align="start"
-                padding={-5}
-              >
-                {(ref) => (
-                  <View
-                    ref={ref}
-                    onMouseEnter={() => {
-                      setInfoboxVisible(true);
-                    }}
-                    onMouseLeave={() => {
-                      setInfoboxVisible(false);
-                    }}
-                  >
-                    {tableRow}
-                  </View>
-                )}
-              </Popover>
-            );
-          }
-
-          return tableRow;
         })}
       </DataTable.Body>
     </DataTable>
   );
+}
+
+type TableRowProps = {
+  datum: MergedPerformanceTableData;
+  mobile: boolean;
+  businessTag?: {
+    type: BusinessType;
+    params: string;
+  };
+  locationTag?: { type: LocationTagType; params: string };
+  inTerminal?: boolean;
+  comparisonTags?: Array<ComparationTagWithFill>;
+  showNumLocation: boolean;
+  onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
+  performanceType: PerformanceTableType;
+  headerIndex: number;
+};
+
+function TableRow(props: TableRowProps) {
+  let [infoboxVisible, setInfoboxVisible] = useState(false);
+  let {
+    datum,
+    mobile,
+    businessTag,
+    locationTag,
+    inTerminal,
+    comparisonTags,
+    showNumLocation,
+    onPerformanceRowPress,
+    performanceType,
+    headerIndex,
+  } = props;
+
+  let {
+    name = '-',
+    avgRating = '-',
+    numLocation = '-',
+    numReview = '-',
+    customerVolumeIndex = '-',
+    localCategoryIndex = '-',
+    localRetailIndex = '-',
+    nationalIndex = '-',
+    hasAsterisk,
+    fill,
+    isComparison,
+  } = datum;
+  let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
+  let textColor = getTextColor(bgColor);
+  let tableCells = [
+    <DataTable.Cell
+      width={mobile ? 120 : 90}
+      align="right"
+      style={{ color: textColor }}
+      key={0}
+    >
+      {customerVolumeIndex ? Number(customerVolumeIndex) / 100 : '-'}
+      {!!customerVolumeIndex && <Times>x</Times>}
+    </DataTable.Cell>,
+    <DataTable.Cell
+      width={mobile ? 120 : 90}
+      align="right"
+      style={{ color: textColor }}
+      key={1}
+    >
+      {isNull(localRetailIndex) ? '-' : Number(localRetailIndex) / 100}
+      {!isNull(localRetailIndex) && <Times>x</Times>}
+    </DataTable.Cell>,
+    <DataTable.Cell
+      width={mobile ? 120 : 100}
+      align="right"
+      style={{ color: textColor }}
+      key={2}
+    >
+      {isNull(localCategoryIndex) ? '-' : Number(localCategoryIndex) / 100}
+      {!isNull(localCategoryIndex) && <Times>x</Times>}
+    </DataTable.Cell>,
+    <DataTable.Cell
+      width={mobile ? 120 : 90}
+      align="right"
+      style={{ color: textColor }}
+      key={3}
+    >
+      {isNull(nationalIndex) ? '-' : Number(nationalIndex) / 100}
+      {!isNull(nationalIndex) && <Times>x</Times>}
+    </DataTable.Cell>,
+    <DataTable.Cell
+      width={mobile ? 120 : 90}
+      align="right"
+      style={{ color: textColor }}
+      key={4}
+    >
+      {formatNullData(avgRating)}
+    </DataTable.Cell>,
+    <DataTable.Cell
+      width={mobile ? 120 : 90}
+      align="right"
+      style={{ color: textColor }}
+      key={5}
+    >
+      {formatNullData(numReview)}
+    </DataTable.Cell>,
+    showNumLocation && (
+      <DataTable.Cell
+        width={mobile ? 120 : 90}
+        align="right"
+        style={{ color: textColor }}
+        key={6}
+      >
+        {formatNullData(numLocation)}
+      </DataTable.Cell>
+    ),
+  ];
+  let tableRow = (
+    <DataTable.Row
+      style={{
+        backgroundColor: bgColor,
+      }}
+      onPress={() => {
+        let comparePrevTag;
+        if (isComparison && comparisonTags) {
+          let compareLocationAndBusinessTag = comparisonTags.find(
+            (tag) => tag.fill === fill,
+          );
+          if (compareLocationAndBusinessTag) {
+            let {
+              businessTag: compareBusinessTag,
+              locationTag: compareLocationTag,
+            } = compareLocationAndBusinessTag;
+            comparePrevTag = {
+              businessTag: compareBusinessTag,
+              locationTag: compareLocationTag,
+            };
+          }
+        }
+        if (onPerformanceRowPress) {
+          let newSearchTag = getPerformanceNewSearchTag(performanceType);
+          if (Object.keys(newSearchTag).length > 0) {
+            if (inTerminal) {
+              onPerformanceRowPress({
+                newTag: { name, ...newSearchTag },
+                prevTag: {
+                  locationTag,
+                  businessTag,
+                },
+                ...(isComparison && {
+                  comparisonTag: comparePrevTag,
+                }),
+              });
+            } else {
+              onPerformanceRowPress({
+                newTag: {
+                  name,
+                  ...newSearchTag,
+                },
+                comparisonTag: comparePrevTag,
+                ...(isComparison && {
+                  comparisonTag: comparePrevTag,
+                }),
+              });
+            }
+          }
+        }
+      }}
+    >
+      <DataTable.Cell style={{ color: textColor }}>
+        {hasAsterisk ? `${name}*` : name}
+      </DataTable.Cell>
+      {mobile ? tableCells[headerIndex] : tableCells}
+    </DataTable.Row>
+  );
+  if (hasAsterisk) {
+    return (
+      <Popover
+        isOpen={infoboxVisible}
+        content={ConfidencePopover}
+        position={['bottom']}
+        onClickOutside={() => setInfoboxVisible(false)}
+        align="start"
+        padding={-5}
+      >
+        {(ref) => (
+          <View
+            ref={ref}
+            onMouseEnter={() => {
+              setInfoboxVisible(true);
+            }}
+            onMouseLeave={() => {
+              setInfoboxVisible(false);
+            }}
+          >
+            {tableRow}
+          </View>
+        )}
+      </Popover>
+    );
+  }
+
+  return tableRow;
 }
 
 function formatNullData(value: string | number | null) {
