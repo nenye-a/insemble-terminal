@@ -7,6 +7,7 @@ import preprocess
 import utils
 import google
 import requests
+from graphql import helper
 from decouple import config
 
 SEARCH_RADIUS = 10000  # meters
@@ -72,14 +73,16 @@ def personal_reports(csv_filename):
         query_list = logic_handler(company, address, city, type)
 
         # TODO add result query to mongo for that (company, address, city, type)
-        all_queries.append(query_list)
-        print("{},{},{},{} Queries ----".format(company, address, city, type), query_list)
+        if query_list:
+            # create personal terminals
+            print(name, type, company)
+            print(query_list)
+            print(helper.create_shared_report(*query_list, name="{}' report for {}".format(name, company), description="{}: Generated report for {} related retail near {}, {}".format(type, company, address, city)))
 
-    print(all_queries)
+        print("{},{},{},{} Queries ----".format(company, address, city, type), query_list)
 
 def logic_handler(company, address, city, type):
     # decides what to do given business details
-    # TODO handle none cases, including no lat lng found
     matches = None
     query_list = []
     type = type.lower()
@@ -151,16 +154,34 @@ def logic_handler(company, address, city, type):
 
         # add to query list
         print("Adding desired tenant queries")
-        print(base_brand)
-        print(comparison_brand)
-        print(category)
-        print(closest_county)
-        query_list.append(['ACTIVITY', base_brand['name'], base_brand['address']])
-        if comparison_brand: query_list.append(['ACTIVITY', comparison_brand['name'], comparison_brand['address']])
-        query_list.append(['ACTIVITY', category, closest_county])
-        query_list.append(['PERFORMANCE', base_brand['name'], base_brand['address']])
-        if comparison_brand: query_list.append(['PERFORMANCE', comparison_brand['name'], comparison_brand['address']])
-        query_list.append(['PERFORMANCE', category, closest_county])
+        # print(base_brand)
+        # print(comparison_brand)
+        # print(category)
+        # print(closest_county)
+
+        searches1 = []
+        searches1.append({
+            'location_tag': {'type': 'ADDRESS', 'params': base_brand['address']},
+            'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
+        })
+        if comparison_brand: searches1.append({
+            'location_tag': {'type': 'ADDRESS', 'params': comparison_brand['address']},
+            'business_tag': {'type': 'BUSINESS', 'params': comparison_brand['name']}
+        })
+        searches1.append({
+            'location_tag': {'type': 'COUNTY', 'params': closest_county.replace(" -",",")},
+            'business_tag': {'type': 'CATEGORY', 'params': category}
+        })
+
+        query_list.append(("ACTIVITY", {"searches": searches1}))
+        query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
+
+        # query_list.append(['ACTIVITY', base_brand['name'], base_brand['address']])
+        # if comparison_brand: query_list.append(['ACTIVITY', comparison_brand['name'], comparison_brand['address']])
+        # query_list.append(['ACTIVITY', category, closest_county])
+        # query_list.append(['PERFORMANCE', base_brand['name'], base_brand['address']])
+        # if comparison_brand: query_list.append(['PERFORMANCE', comparison_brand['name'], comparison_brand['address']])
+        # query_list.append(['PERFORMANCE', category, closest_county])
 
         return query_list
 
@@ -192,18 +213,36 @@ def logic_handler(company, address, city, type):
 
         # add to query list
         print("Adding desired tenant queries")
-        print(base_brand)
-        query_list.append(['ACTIVITY', comp_brand['name'], comp_brand['address']])
-        query_list.append(['ACTIVITY', comp_brand['name'], comp_brand_county])
-        query_list.append(['ACTIVITY', comp_brand['type'], comp_brand_county])
-        query_list.append(['PERFORMANCE', comp_brand['name'], comp_brand['address']])
-        query_list.append(['PERFORMANCE', comp_brand['name'], comp_brand_county])
-        query_list.append(['PERFORMANCE', comp_brand['type'], comp_brand_county])
+        # print(base_brand)
+        searches1 = []
+        searches2 = []
+        searches1.append({
+                'location_tag': {'type': 'ADDRESS', 'params': comp_brand['address']},
+                'business_tag': {'type': 'BUSINESS', 'params': comp_brand['name']}
+            })
+        searches1.append({
+            'location_tag': {'type': 'COUNTY', 'params': comp_brand_county.replace(" -",",")},
+            'business_tag': {'type': 'BUSINESS', 'params': comp_brand['name']}
+        })
+        searches1.append({
+            'location_tag': {'type': 'COUNTY', 'params': comp_brand_county.replace(" -",",")},
+            'business_tag': {'type': 'CATEGORY', 'params': comp_brand['type']}
+        })
 
-        # TODO: allow for break in performance tables
+        # query_list.append(['PERFORMANCE', comp_brand['name'], comp_brand['address']])
+        # query_list.append(['PERFORMANCE', comp_brand['name'], comp_brand_county])
+        # query_list.append(['PERFORMANCE', comp_brand['type'], comp_brand_county])
 
         for item in nearby_brands:
-            query_list.append(['PERFORMANCE', item['name'], item['address']])
+            # searches2.append(['PERFORMANCE', item['name'], item['address']])
+            searches2.append({
+                'location_tag': {'type': 'ADDRESS', 'params': item['address']},
+                'business_tag': {'type': 'BUSINESS', 'params': item['name']}
+            })
+
+        query_list.append(("ACTIVITY", {"searches": searches1}))
+        query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
+        query_list.append(("PERFORMANCE", {"searches": searches2, "performance_type": "OVERALL"}))
 
         return query_list
 
@@ -296,6 +335,6 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = "/Users/colin/Downloads/icsc_emails_short_owner.csv"
+    filename = "/Users/colin/Downloads/icsc_emails_short_retailer_owner.csv"
     personal_reports(filename)
 
