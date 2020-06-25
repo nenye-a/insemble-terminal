@@ -3,6 +3,7 @@ export { default as copyToClipboard } from './copyToClipboard';
 export { default as formatGraphQLError } from './formatGraphQLError';
 export { default as formatErrorMessage } from './formatErrorMessage';
 export { default as generateRandomColor } from './generateRandomColor';
+export { default as getPerformanceNewSearchTag } from './getPerformanceNewSearchTag';
 export { default as getPublishedDate } from './getPublishedDate';
 export { default as getResultQueries } from './getResultQueries';
 export { default as getResultTitle } from './getResultTitle';

@@ -17,7 +17,7 @@ from sendgrid.helpers.mail import Mail
 SENDGRID_KEY = config('SENDGRID_KEY')
 
 
-def email_report(to_email, header_text, linear_entries, grid_entries=None, custom_graph_url=None, statistics=[]):
+def email_report(to_email, header_text, linear_entries, grid_entries=None, custom_graph_url=None, statistics=[], update=False):
 
     # graph_url = trend_analyzer.generate_operating_graph()['plot_url']
     # graph_url = graph_url + '.png' if '.png' not in graph_url else graph_url  # add .png to links if not in the link
@@ -34,7 +34,8 @@ def email_report(to_email, header_text, linear_entries, grid_entries=None, custo
         linear_entries=linear_entries,
         grid_entries=grid_entries,
         graph_urls=graph_urls,
-        stats=statistics
+        stats=statistics,
+        update=update
     )
     send_email('news@insemblegroup.com', to_email, header_text, email_html)
 

@@ -86,7 +86,7 @@ def saved_update(query, update):
 
     table = utils.DB_TERMINAL_PLACES
     history = utils.DB_PLACES_HISTORY
-    update_time = dt.datetime.now()
+    update_time = dt.datetime.utcnow()
 
     update['$set'] = dict(update.get('$set', {}),
                           **{'last_update': update_time})
@@ -123,7 +123,7 @@ def saved_update(query, update):
 
 def check_recency():
 
-    twoweeks = dt.datetime.now() - dt.timedelta(weeks=2)
+    twoweeks = dt.datetime.utcnow() - dt.timedelta(weeks=2)
     print("Not updated in last 2 weeks:", utils.DB_TERMINAL_PLACES.count_documents(
         {'last_update': {'$lt': twoweeks}}
     ))
@@ -148,7 +148,7 @@ def setup():
     utils.DB_TERMINAL_PLACES.aggregate([
         {'$match': {
             '$or': [
-                {'last_update': {'$lt': dt.datetime.now() - dt.timedelta(weeks=1.5)}},
+                {'last_update': {'$lt': dt.datetime.utcnow() - dt.timedelta(weeks=1.5)}},
                 {'last_update': -1},
                 {'last_update': {'$exists': False}}
             ]

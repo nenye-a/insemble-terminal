@@ -212,6 +212,8 @@ export const GET_COVERAGE_DATA = gql`
             lng
             name
             address
+            rating
+            numReviews
           }
         }
       }
@@ -227,6 +229,8 @@ export const GET_COVERAGE_DATA = gql`
             lng
             name
             address
+            rating
+            numReviews
           }
         }
         compareId

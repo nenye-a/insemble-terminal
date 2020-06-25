@@ -309,7 +309,7 @@ class AcitivtyAPI(BasicAPI):
                 params: string
             }
             business: {
-                businessType: 'BUSINESS' <- supported | -> unsupported ['CATEGORY']
+                businessType: 'BUSINESS', 'CATEGORY'
                 params: string
             }
         }
@@ -369,8 +369,17 @@ class AcitivtyAPI(BasicAPI):
             else:
                 return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
         elif business['businessType'] == 'CATEGORY':
-            error = "'CATEGORY' not supported for activity requests"
-            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
+
+            # ADDRESS & CITY & COUNTY + CATEGORY
+            if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
+                row = activity.category_activity(
+                    business['params'], location['params'], location['locationType'])
+                if row:
+                    data.append(row)
+
+            # OTHER SCOPES UNIMPLEMENTED
+            else:
+                return Response({'status_detail': ['Unimplemented']}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
         now = dt.datetime.utcnow()
         return Response({
@@ -541,7 +550,7 @@ class InfoAPI(BasicAPI):
                     'headquarters': '-',
                     'phone': '-',
                     'website': '-',
-                    'last_update': dt.datetime.now()
+                    'last_update': dt.datetime.utcnow()
                 }
                 data = row
 
