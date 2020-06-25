@@ -617,17 +617,18 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    # my_generator = NewsManager('Official-6/24', national_news=False)
+    my_generator = NewsManager('Official-6/25', 'terminal_sources.csv', national_news=False)
+    my_generator.generate()
     # print(my_generator.collection.count_documents({
     #     # 'data_type': 'contact'
     #     # 'content_generated': True
     # }))
     # my_generator._update_contact_cities()
 
-    my_generator = NewsManager('Test-5', national_news=False)
-    # my_generator.generate()
-    my_generator.convert_links(old_link=True)
-    # print(my_generator.collection.count_documents({
+    test_generator = NewsManager('Test-5', national_news=False)
+    # test_generator.generate()
+    test_generator.convert_links(old_link=True)
+    # print(test_generator.collection.count_documents({
     #     # 'data_type': 'contact'
     #     # 'content_generated': True
     # }))
