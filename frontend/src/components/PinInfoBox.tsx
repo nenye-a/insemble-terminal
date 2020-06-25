@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import InfoBox from 'react-google-maps/lib/components/addons/InfoBox';
+import styled from 'styled-components';
 
 import { Card, View, Text } from '../core-ui';
-import styled from 'styled-components';
 import { THEME_COLOR } from '../constants/colors';
 import { FONT_SIZE_SMALL } from '../constants/theme';
 

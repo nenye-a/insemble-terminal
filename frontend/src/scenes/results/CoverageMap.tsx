@@ -96,7 +96,7 @@ function CoverageMap(props: Props) {
                   rating={rating || 0}
                   markerPosition={latLng}
                   onClose={closePinInfo}
-                ></PinInfoBox>
+                />
               </Marker>
             );
           });
