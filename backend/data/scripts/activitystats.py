@@ -103,6 +103,11 @@ def update_activity(query=None):
     utils.DB_TERMINAL_PLACES.aggregate(pipeline, allowDiskUse=True)
 
 
+def revise_activity():
+    # Make revisions for the activity of places.
+    pass
+
+
 def merge_activity():
 
     temp_db = utils.SYSTEM_MONGO.get_collection("terminal.activity-levels")
@@ -456,4 +461,6 @@ def get_one_mile():
 if __name__ == "__main__":
     # stats_by_key('city')
     # get_one_mile()
+    # update_activity()
+    # merge_activity()
     pass

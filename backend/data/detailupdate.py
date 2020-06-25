@@ -108,7 +108,7 @@ def saved_update(query, update):
             "revised_time": update_time,
         })
 
-        history.update_one({'place_id': previous['_id']}, {
+        history.update_one({'_id': previous['_id']}, {
             '$push': {
                 'revisions': {
                     '$each': [history_update],
@@ -116,7 +116,7 @@ def saved_update(query, update):
                 }
             },
             '$setOnInsert': {
-                'place_id': previous['_id']
+                '_id': previous['_id']
             }
         }, upsert=True)
 

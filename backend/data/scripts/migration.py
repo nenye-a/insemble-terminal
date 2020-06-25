@@ -235,7 +235,72 @@ def delete_failures():
     })
 
 
+# def modify_revisions():
+
+#     utils.DB_PLACES_HISTORY.aggregate([
+#         {'$project': {
+#             '_id': "$place_id",
+#             'revisions': 1
+#         }},
+#         {'$merge': "temp_revisions"}
+#     ])
+
+def check_revisions():
+    import pprint
+
+    items = list(utils.DB_PLACES_HISTORY.aggregate([
+        {'$unwind': {
+            'path': '$revisions'
+        }},
+        {'$group': {
+            '_id': "$_id",
+            'first': {
+                '$first': "$revisions"
+            },
+            'last': {
+                '$last': "$revisions"
+            }
+        }},
+        {"$addFields": {
+            "first.version": 1,
+            "last.version": 0
+        }},
+        {"$project": {
+            "revisions": [
+                "$first", "$last"
+            ]
+        }},
+        # {"$merge": "temp_revisions"}
+    ], allowDiskUse=True))
+
+    pprint.pprint(items)
+
+
+def store_old_values():
+    import pprint
+
+    pprint.pprint(list(utils.DB_TERMINAL_PLACES.aggregate([
+        {'$project': {
+            'activity_history_temp': {
+                'activity_volume': "$activity_volume",
+                "avg_activity": "$avg_activity",
+                'local_retail_volume': "$local_retail_volume",
+                'brand_volume': "$brand_volume",
+                'local_category_volume': "$local_category_volume",
+                'revised_date': "$last_update"
+            }
+        }},
+        {'$addFields': {
+            'activity_history_temp.local_retail_volume_radius': 1,
+            'activity_history_temp.local_category_volume_radius': 3,
+        }},
+        {'$merge': 'places_history'}
+    ])))
+
+
 if __name__ == "__main__":
+    # check_revisions()
+    store_old_values()
     # migrate_terminal()
     # add_city()
     # import_LA()
@@ -246,6 +311,6 @@ if __name__ == "__main__":
     # TEST_DB.delete_many({})
     # adjust_names()
     # pass_names()
-    fix_blank_names()
+    # fix_blank_names()
     # delete_failures()
     pass
