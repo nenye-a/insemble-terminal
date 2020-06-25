@@ -1,7 +1,11 @@
-export default function getPublishedDate(date: string, now = Date.now()) {
+export default function getPublishedDate(
+  date: string,
+  now = Date.now(),
+  needParsing = true,
+) {
   if (date) {
     // to handle the Safari invalid date
-    let dateParamString = date.replace(/-/g, '/');
+    let dateParamString = needParsing ? date.replace(/-/g, '/') : date;
     let dateNow = new Date(now);
     let dateParam = new Date(dateParamString);
 
