@@ -118,7 +118,9 @@ export default function ResultsScene() {
     if (locationType) {
       onSubmit({
         reviewTag: undefined,
-        businessTagWithId: selectedSearchTagWithIds?.businessTag
+        businessTagWithId: params.comparisonTag
+          ? params.comparisonTag.businessTag
+          : selectedSearchTagWithIds?.businessTag
           ? selectedSearchTagWithIds.businessTag
           : null,
         locationTag: {
@@ -133,7 +135,9 @@ export default function ResultsScene() {
           params: name,
           type: businessType,
         },
-        locationTag: selectedSearchTagWithIds?.locationTag,
+        locationTag: params.comparisonTag
+          ? params.comparisonTag.locationTag
+          : selectedSearchTagWithIds?.locationTag,
       });
     }
   };

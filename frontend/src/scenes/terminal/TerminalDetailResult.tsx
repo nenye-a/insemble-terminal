@@ -26,12 +26,14 @@ export default function TerminalDataResult(props: Props) {
   let history = useHistory();
 
   let onPerformanceRowPress = (params: PerformanceRowPressParam) => {
-    let { newTag, prevTag } = params;
+    let { newTag, prevTag, comparisonTag } = params;
     let { name, locationType, businessType } = newTag;
     if (locationType) {
       history.push('/results', {
         search: {
-          businessTagWithId: prevTag?.businessTag,
+          businessTagWithId: comparisonTag
+            ? comparisonTag.businessTag
+            : prevTag?.businessTag,
           locationTag: {
             params: name,
             type: locationType,
@@ -45,7 +47,9 @@ export default function TerminalDataResult(props: Props) {
             params: name,
             type: businessType,
           },
-          locationTag: prevTag?.locationTag,
+          locationTag: comparisonTag
+            ? comparisonTag.locationTag
+            : prevTag?.locationTag,
         },
       });
     }

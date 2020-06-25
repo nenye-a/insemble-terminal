@@ -218,6 +218,7 @@ export default function PerformanceResult(props: Props) {
             onPerformanceRowPress={onPerformanceRowPress}
             performanceType={performanceType}
             mobile={!isDesktop}
+            comparisonTags={comparisonTags}
             inTerminal={isTerminalScene}
             /**
              * will be used when user is on other scene than results scene (terminal)

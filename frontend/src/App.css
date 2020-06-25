@@ -18,6 +18,12 @@ html {
   }
 }
 
+@media all and (min-width: 768px) {
+  .pac-container {
+    width: 400px !important;
+  }
+}
+
 .pac-item {
   display: flex;
   padding: 0 8px;

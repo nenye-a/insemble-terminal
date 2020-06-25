@@ -120,4 +120,8 @@ export type PerformanceRowPressParam = {
       params: string;
     };
   };
+  comparisonTag?: {
+    locationTag: LocationTag;
+    businessTag: BusinessTagResult;
+  };
 };

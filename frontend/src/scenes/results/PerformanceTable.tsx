@@ -15,7 +15,11 @@ import {
   getTextColor,
   getPerformanceNewSearchTag,
 } from '../../helpers';
-import { Direction, PerformanceRowPressParam } from '../../types/types';
+import {
+  Direction,
+  PerformanceRowPressParam,
+  ComparationTagWithFill,
+} from '../../types/types';
 import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import {
@@ -49,6 +53,7 @@ type Props = {
   };
   locationTag?: { type: LocationTagType; params: string };
   inTerminal?: boolean;
+  comparisonTags?: Array<ComparationTagWithFill>;
 };
 
 export default function PerformanceTable(props: Props) {
@@ -62,6 +67,7 @@ export default function PerformanceTable(props: Props) {
     businessTag,
     locationTag,
     inTerminal,
+    comparisonTags,
   } = props;
   let [infoboxVisible, setInfoboxVisible] = useState(false);
   let [headerIndex, setHeaderIndex] = useState(0);
@@ -215,6 +221,7 @@ export default function PerformanceTable(props: Props) {
             nationalIndex = '-',
             hasAsterisk,
             fill,
+            isComparison,
           } = row;
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
@@ -291,6 +298,22 @@ export default function PerformanceTable(props: Props) {
                 backgroundColor: bgColor,
               }}
               onPress={() => {
+                let comparePrevTag;
+                if (isComparison && comparisonTags) {
+                  let compareLocationAndBusinessTag = comparisonTags.find(
+                    (tag) => tag.fill === fill,
+                  );
+                  if (compareLocationAndBusinessTag) {
+                    let {
+                      businessTag: compareBusinessTag,
+                      locationTag: compareLocationTag,
+                    } = compareLocationAndBusinessTag;
+                    comparePrevTag = {
+                      businessTag: compareBusinessTag,
+                      locationTag: compareLocationTag,
+                    };
+                  }
+                }
                 if (onPerformanceRowPress) {
                   let newSearchTag = getPerformanceNewSearchTag(
                     performanceType,
@@ -303,6 +326,9 @@ export default function PerformanceTable(props: Props) {
                           locationTag,
                           businessTag,
                         },
+                        ...(isComparison && {
+                          comparisonTag: comparePrevTag,
+                        }),
                       });
                     } else {
                       onPerformanceRowPress({
@@ -310,6 +336,10 @@ export default function PerformanceTable(props: Props) {
                           name,
                           ...newSearchTag,
                         },
+                        comparisonTag: comparePrevTag,
+                        ...(isComparison && {
+                          comparisonTag: comparePrevTag,
+                        }),
                       });
                     }
                   }
