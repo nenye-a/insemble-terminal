@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
+import { useHistory } from 'react-router-dom';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
+import { formatErrorMessage, useColoredData, useViewport } from '../../helpers';
 import {
   GetPerformanceTable,
   GetPerformanceTableVariables,
@@ -16,11 +18,9 @@ import {
   PerformanceTableType,
   ReviewTag,
   TableType,
-  LocationTagType,
-  BusinessTagType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage, useColoredData, useViewport } from '../../helpers';
+import { PerformanceRowPressParam } from '../../types/types';
 
 import ResultTitle from './ResultTitle';
 import PerformanceTable from './PerformanceTable';
@@ -37,11 +37,7 @@ type Props = {
   headerTitle?: string;
   pinTableId?: string;
   readOnly?: boolean;
-  onPerformanceRowPress?: (param: {
-    name: string;
-    locationType?: LocationTagType;
-    businessType?: BusinessTagType;
-  }) => void;
+  onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
 };
 
 type Data = (PerformanceData | PerformanceCompareData) & {
@@ -68,6 +64,8 @@ export default function PerformanceResult(props: Props) {
   let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
+  let history = useHistory();
+  let isTerminalScene = history.location.pathname.includes('terminal');
 
   let { isDesktop } = useViewport();
   let {
@@ -220,6 +218,27 @@ export default function PerformanceResult(props: Props) {
             onPerformanceRowPress={onPerformanceRowPress}
             performanceType={performanceType}
             mobile={!isDesktop}
+            inTerminal={isTerminalScene}
+            /**
+             * will be used when user is on other scene than results scene (terminal)
+             * to get the business/location tag when user clicking on table row.
+             * the location/businessTag will be passed ro '/results' as state
+             */
+
+            {...(isTerminalScene &&
+              data?.performanceTable.table?.businessTag && {
+                businessTag: {
+                  params: data.performanceTable.table.businessTag.params,
+                  type: data.performanceTable.table.businessTag.type,
+                },
+              })}
+            {...(isTerminalScene &&
+              data?.performanceTable.table?.locationTag && {
+                locationTag: {
+                  params: data.performanceTable.table.locationTag.params,
+                  type: data.performanceTable.table.locationTag.type,
+                },
+              })}
           />
         ) : noData && !loading ? (
           <EmptyDataComponent />

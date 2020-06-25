@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
+import { useHistory } from 'react-router-dom';
 
 import { View, Text, Card, TouchableOpacity } from '../../core-ui';
 import { DataTable } from '../../components';
@@ -12,14 +13,15 @@ import {
   useSortableData,
   lightenOrDarkenColor,
   getTextColor,
+  getPerformanceNewSearchTag,
 } from '../../helpers';
-import { Direction } from '../../types/types';
+import { Direction, PerformanceRowPressParam } from '../../types/types';
 import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import {
   PerformanceTableType,
   LocationTagType,
-  BusinessTagType,
+  BusinessType,
 } from '../../generated/globalTypes';
 import SvgArrowLeft from '../../components/icons/arrow-left';
 import SvgArrowRight from '../../components/icons/arrow-right';
@@ -38,13 +40,15 @@ type Props = {
   compareData?: Array<PerformanceTableCompareData>;
   showNumLocation?: boolean;
   headerTitle?: string;
-  onPerformanceRowPress?: (param: {
-    name: string;
-    locationType?: LocationTagType;
-    businessType?: BusinessTagType;
-  }) => void;
+  onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
   mobile?: boolean;
   performanceType: PerformanceTableType;
+  businessTag?: {
+    type: BusinessType;
+    params: string;
+  };
+  locationTag?: { type: LocationTagType; params: string };
+  inTerminal?: boolean;
 };
 
 export default function PerformanceTable(props: Props) {
@@ -55,6 +59,9 @@ export default function PerformanceTable(props: Props) {
     onPerformanceRowPress,
     performanceType,
     mobile = false,
+    businessTag,
+    locationTag,
+    inTerminal,
   } = props;
   let [infoboxVisible, setInfoboxVisible] = useState(false);
   let [headerIndex, setHeaderIndex] = useState(0);
@@ -285,16 +292,26 @@ export default function PerformanceTable(props: Props) {
               }}
               onPress={() => {
                 if (onPerformanceRowPress) {
-                  if (performanceType === PerformanceTableType.CITY) {
-                    onPerformanceRowPress({
-                      name,
-                      locationType: LocationTagType.ADDRESS,
-                    });
-                  } else if (performanceType === PerformanceTableType.ADDRESS) {
-                    onPerformanceRowPress({
-                      name,
-                      locationType: LocationTagType.ADDRESS,
-                    });
+                  let newSearchTag = getPerformanceNewSearchTag(
+                    performanceType,
+                  );
+                  if (Object.keys(newSearchTag).length > 0) {
+                    if (inTerminal) {
+                      onPerformanceRowPress({
+                        newTag: { name, ...newSearchTag },
+                        prevTag: {
+                          locationTag,
+                          businessTag,
+                        },
+                      });
+                    } else {
+                      onPerformanceRowPress({
+                        newTag: {
+                          name,
+                          ...newSearchTag,
+                        },
+                      });
+                    }
                   }
                 }
               }}

@@ -20,8 +20,6 @@ import {
   PerformanceTableType,
   ReviewTag,
   OwnershipType as GeneratedOwnershipType,
-  LocationTagType,
-  BusinessTagType,
 } from '../../generated/globalTypes';
 import {
   ResultQuery,
@@ -29,6 +27,7 @@ import {
   SearchTag,
   BusinessTagResult,
   LocationTag,
+  PerformanceRowPressParam,
 } from '../../types/types';
 import { getResultQueries, capitalize, useViewport } from '../../helpers';
 import {
@@ -114,12 +113,8 @@ export default function ResultsScene() {
     });
   };
 
-  let onPerformanceRowPress = (params: {
-    name: string;
-    locationType?: LocationTagType;
-    businessType?: BusinessTagType;
-  }) => {
-    let { name, locationType, businessType } = params;
+  let onPerformanceRowPress = (params: PerformanceRowPressParam) => {
+    let { name, locationType, businessType } = params.newTag;
     if (locationType) {
       onSubmit({
         reviewTag: undefined,
@@ -263,7 +258,7 @@ export default function ResultsScene() {
                       title="By Location"
                       performanceType={type}
                       showNumLocation={false}
-                      headerTitle="By Address"
+                      headerTitle="Address"
                       onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );
@@ -273,6 +268,7 @@ export default function ResultsScene() {
                       {...props}
                       title="By Brand"
                       performanceType={type}
+                      onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );
                 } else if (type === PerformanceTableType.CATEGORY) {
@@ -281,6 +277,8 @@ export default function ResultsScene() {
                       {...props}
                       title="By Category"
                       performanceType={type}
+                      headerTitle="Category"
+                      onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );
                 } else if (type === PerformanceTableType.STATE) {
@@ -289,6 +287,8 @@ export default function ResultsScene() {
                       {...props}
                       title="By State"
                       performanceType={type}
+                      headerTitle="State"
+                      onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );
                 } else if (type === PerformanceTableType.CITY) {
@@ -297,6 +297,7 @@ export default function ResultsScene() {
                       {...props}
                       title="By City"
                       performanceType={type}
+                      headerTitle="City"
                       onPerformanceRowPress={onPerformanceRowPress}
                     />
                   );

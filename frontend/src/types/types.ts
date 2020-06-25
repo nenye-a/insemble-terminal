@@ -4,6 +4,7 @@ import {
   BusinessType,
   BusinessTagInput,
   LocationTagInput,
+  BusinessTagType,
 } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
 import {
@@ -104,4 +105,19 @@ export type MergedCoverageData = (CoverageData | CoverageCompareData) &
 
 export type HasCompareId = {
   compareId: string;
+};
+
+export type PerformanceRowPressParam = {
+  newTag: {
+    name: string;
+    locationType?: LocationTagType;
+    businessType?: BusinessTagType;
+  };
+  prevTag?: {
+    locationTag?: { type: LocationTagType; params: string };
+    businessTag?: {
+      type: BusinessType;
+      params: string;
+    };
+  };
 };
