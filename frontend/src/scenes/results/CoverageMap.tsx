@@ -1,17 +1,24 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY, THEME_COLOR } from '../../constants/colors';
 import { MergedCoverageData, LocationLatLng } from '../../types/types';
+import { GetCoverage_coverageTable_data_coverageData as CoverageBusiness } from '../../generated/GetCoverage';
+import { PinInfoBox } from '../../components';
+
+type LatLng = google.maps.LatLng;
 
 type Props = {
   data: Array<MergedCoverageData>;
+  selectedBusiness?: CoverageBusiness;
 };
 
 function CoverageMap(props: Props) {
-  let { data, ...otherProps } = props;
+  let { data, selectedBusiness, ...otherProps } = props;
   let mapRef = useRef<GoogleMap | null>(null);
+  let [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
+  let [selectedPinLatLng, setSelectedPinLatLng] = useState<LatLng | null>(null);
   let flatLocations = getFlatLocations(data);
   let latArr = flatLocations.map(({ lat }) => lat);
   let lngArr = flatLocations.map(({ lng }) => lng);
@@ -19,6 +26,14 @@ function CoverageMap(props: Props) {
   let defaultCenter = {
     lat: latArr.reduce((a, b) => a + b, 0) / flatLocations.length,
     lng: lngArr.reduce((a, b) => a + b, 0) / flatLocations.length,
+  };
+
+  let onLocationMarkerClick = (latLng: LatLng) => {
+    // so only 1 InfoBox will be opened
+    if (markerPosition) {
+      setMarkerPosition(null);
+    }
+    setSelectedPinLatLng(latLng);
   };
 
   useEffect(() => {
@@ -30,6 +45,10 @@ function CoverageMap(props: Props) {
     }
   }, [flatLocations]);
 
+  let closePinInfo = () => {
+    setSelectedPinLatLng(null);
+  };
+
   return (
     <GoogleMap
       ref={mapRef}
@@ -39,19 +58,48 @@ function CoverageMap(props: Props) {
         streetViewControl: false,
       }}
       defaultCenter={defaultCenter}
-      zoom={10}
+      zoom={0}
+      onClick={closePinInfo}
+      onMouseOut={closePinInfo}
       {...otherProps}
     >
       {data.map((item) => {
         return item.coverageData.map((covData) => {
           let { locations } = covData;
-          return locations.map(({ lat, lng }, index) => (
-            <Marker
-              key={`marker-${item.name}-${index}`}
-              position={{ lat, lng }}
-              icon={pinSymbol(item.fill || THEME_COLOR)}
-            />
-          ));
+          let businessSelected = covData === selectedBusiness;
+          let pinOpacity = businessSelected ? 1 : 0;
+          return locations.map((location, index) => {
+            let { lat, lng, address, name, numReviews, rating } = location;
+            let pinColor = item.fill || THEME_COLOR;
+            let previewVisible = selectedPinLatLng
+              ? selectedPinLatLng.lat() === Number(lat) &&
+                selectedPinLatLng.lng() === Number(lng)
+              : false;
+            let latLng = new google.maps.LatLng(Number(lat), Number(lng));
+            return (
+              <Marker
+                key={`marker-${item.name}-${index}`}
+                position={{ lat, lng }}
+                icon={pinSymbol(pinColor)}
+                onClick={() => {
+                  onLocationMarkerClick(latLng);
+                  // e.stop(); // TODO: handle if click, not zoom back to default zoom. Stop doesn't work..
+                }}
+                opacity={selectedBusiness ? pinOpacity : 0.5} // NOTE: I don't know if I input 1 it won't change opacity
+                zIndex={selectedBusiness ? (businessSelected ? 100 : 0) : 1}
+              >
+                <PinInfoBox
+                  visible={previewVisible}
+                  address={address || '-'}
+                  name={name || '-'}
+                  numReview={numReviews || 0}
+                  rating={rating || 0}
+                  markerPosition={latLng}
+                  onClose={closePinInfo}
+                ></PinInfoBox>
+              </Marker>
+            );
+          });
         });
       })}
     </GoogleMap>
