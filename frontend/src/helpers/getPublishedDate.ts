@@ -1,7 +1,10 @@
 export default function getPublishedDate(date: string, now = Date.now()) {
   if (date) {
+    // to handle the Safari invalid date
+    let dateParamString = date.replace(/-/g, '/');
     let dateNow = new Date(now);
-    let dateParam = new Date(date);
+    let dateParam = new Date(dateParamString);
+
     let difference =
       Number(dateNow) -
       Number(dateNow.getTimezoneOffset() * 60 * 1000) -
