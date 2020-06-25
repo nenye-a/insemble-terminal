@@ -34,7 +34,7 @@ def pull_proxies(https=False, us_only=False):
     """
 
     global LAST_PROXY_REQUEST_TIME, CURRENT_PROXIES
-    time_since_query = datetime.now() - LAST_PROXY_REQUEST_TIME if LAST_PROXY_REQUEST_TIME else None
+    time_since_query = datetime.utcnow() - LAST_PROXY_REQUEST_TIME if LAST_PROXY_REQUEST_TIME else None
     if time_since_query and time_since_query.seconds < 600:
         return CURRENT_PROXIES
     else:
@@ -56,7 +56,7 @@ def pull_proxies(https=False, us_only=False):
         list_ip_ports = [(elem[0].text, elem[1].text) for elem in list_td]
         list_proxies = ['http://' + ':'.join(elem) for elem in list_ip_ports]
         CURRENT_PROXIES = list_proxies
-        LAST_PROXY_REQUEST_TIME = datetime.now()
+        LAST_PROXY_REQUEST_TIME = datetime.utcnow()
         return list_proxies
 
 

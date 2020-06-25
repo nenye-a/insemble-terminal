@@ -42,7 +42,7 @@ def activity_statistics(num_results=50):
 
 def generate_dataframe(results):
 
-    time = dt.datetime.now().replace(microsecond=0).isoformat()
+    time = dt.datetime.utcnow().replace(microsecond=0).isoformat()
 
     result_dataframe = pd.DataFrame(results)
     result_dataframe = result_dataframe.set_index('url')

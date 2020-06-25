@@ -16,6 +16,7 @@ import {
   GetCoverage,
   GetCoverageVariables,
   GetCoverage_coverageTable_data as CoverageData,
+  GetCoverage_coverageTable_data_coverageData as CoverageBusiness,
   GetCoverage_coverageTable_compareData as CoverageCompareData,
   GetCoverage_coverageTable_comparationTags as ComparationTags,
 } from '../../generated/GetCoverage';
@@ -42,6 +43,7 @@ export default function CoverageResult(props: Props) {
   let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
+  let [selectedBusiness, setSelectedBusiness] = useState<CoverageBusiness>();
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
 
   let alert = useAlert();
@@ -78,8 +80,13 @@ export default function CoverageResult(props: Props) {
     <CoverageTable
       key="coverage-table"
       data={loading ? prevData : coloredData}
+      hoverFunction={setSelectedBusiness}
     />,
-    <CoverageMap key="coverage-map" data={loading ? prevData : coloredData} />,
+    <CoverageMap
+      key="coverage-map"
+      data={loading ? prevData : coloredData}
+      selectedBusiness={selectedBusiness}
+    />,
   ];
 
   useEffect(() => {

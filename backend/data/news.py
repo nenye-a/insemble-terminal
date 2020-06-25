@@ -1,6 +1,6 @@
 import google
 import utils
-import time
+import datetime as dt
 from fuzzywuzzy import process
 
 '''
@@ -43,6 +43,8 @@ NEWS_TERMS = ["retail news", "commercial real estate news", "closings", "opening
 
 def news(business=None, location=None):
 
+    now = dt.datetime.utcnow()
+
     if business and location:
         news = google.get_many_news([business + " " + location, business], num_retries=2)
     elif business:
@@ -53,6 +55,12 @@ def news(business=None, location=None):
         news = google.get_many_news(news_search_terms, num_retries=1)
     else:
         news = google.get_many_news(NEWS_TERMS, num_retries=1)
+
+    news = utils.remove_old_items(
+        items=news,
+        time_key='published',
+        date=now - dt.timedelta(weeks=10)
+    )
 
     news_with_relevance = add_news_relevance(news, business, location)
     relevant_news = most_relevant(news_with_relevance)
@@ -114,7 +122,7 @@ def most_relevant(*news_lists):
                 most_relevant_news.append(news)
                 existing_titles.add(news['title'])
 
-    return sorted(most_relevant_news, key=lambda news: news['relevance'], reverse=True)[:20]
+    return sorted(most_relevant_news, key=lambda news: news['relevance'], reverse=True)[:30]
 
 
 if __name__ == "__main__":

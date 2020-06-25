@@ -12,7 +12,7 @@ import datetime as dt
 from locations import divide_region
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
-RUN_TIME = dt.datetime.now()
+RUN_TIME = dt.datetime.utcnow()
 
 SEARCH_TERMS = ["restaurants", "stores", "shops", "coffee shop", "cafe", "auto shop",
                 "bars", "arcade", "gym", "medical", "dentist", "shipping", "barber shop",
@@ -330,7 +330,7 @@ def _timed_refresh():
     """Refreshes scraper after a specified amount of time"""
     minutes = 10
     seconds = minutes * 60
-    if (dt.datetime.now() - RUN_TIME).seconds > seconds:
+    if (dt.datetime.utcnow() - RUN_TIME).seconds > seconds:
         utils.restart_program()
 
 

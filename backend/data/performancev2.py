@@ -313,10 +313,15 @@ def aggregate_performance(name, location, scope):
         data = categorical_data(matching_places, name, 'by_city')
         data.pop('by_location')
         data['data'] = data['by_city']
+        for item in data['data']:
+            item['name'] = '{} ({})'.format(item['name'], name)
     else:
         data = combine_parse_details(matching_places)
         if data['overall']['name'] is None:
             data['overall']['name'] = name
+
+        if location:
+            data['overall']['name'] = '{} ({})'.format(data['overall']['name'], location.split(',')[0])
 
     return data
 
@@ -378,7 +383,23 @@ def category_performance(category, location, scope, return_type=None):
 
     if return_type:
         return_type = return_type.lower()
-    return categorical_data(matching_places, data_name, return_type)
+
+    data = categorical_data(matching_places, data_name, return_type)
+
+    if category and return_type == 'by_city':
+        for item in data['by_city']:
+            item['name'] = '{} ({})'.format(item['name'], category)
+    if location:
+        if return_type == 'by_brand':
+            for item in data['by_brand']:
+                item['name'] = '{} ({})'.format(item['name'], location.split(',')[0])
+        if return_type == 'by_category':
+            for item in data['by_category']:
+                item['name'] = '{} ({})'.format(item['name'], location.split(',')[0])
+        if category:
+            data['overall']['name'] = '{} ({})'.format(data['overall']['name'], location.split(',')[0])
+
+    return data
 
 
 def parse_details(details):
@@ -541,6 +562,7 @@ def split_list(item, data_type):
         result = combine_parse_details(location_list, forced_name=category)['overall']
     elif data_type == 'city':
         city, location_list = item
+        city = '{}, {}'.format(city, location_list[0]['state'])
         result = combine_parse_details(location_list, forced_name=city)['overall']
     else:
         return None

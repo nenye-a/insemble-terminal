@@ -1,5 +1,7 @@
 import utils
 import performance
+import google
+import time
 
 
 '''
@@ -85,6 +87,67 @@ def aggregate_activity(name, location, scope):
     }
 
 
+def category_activity(category, location, scope):
+
+    if scope.lower() == 'address':
+        retries, backoff = 0, 1
+        coordinates = None
+        while not coordinates or retries > 5:
+            try:
+                coordinates = utils.to_geojson(google.get_lat_lng(location))
+            except Exception:
+                retries += 1
+                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
+                time.sleep(1 + backoff)
+                backoff += 1
+
+        query = {
+            'location': {'$near': {'$geometry': coordinates,
+                                   '$maxDistance': utils.miles_to_meters(0.5)}},
+            'google_details': {'$exists': True}
+        }
+        if category:
+            query['type'] = utils.adjust_case(category)
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
+    elif scope.lower() == 'city':
+        location_list = [word.strip() for word in location.split(',')]
+        query = {
+            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': location_list[1].upper(),
+            'google_details': {'$exists': True}
+        }
+        if category:
+            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
+    elif scope.lower() == 'county':
+        location_list = [word.strip() for word in location.split(',')]
+        region = utils.DB_REGIONS.find_one({
+            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
+            'state': location_list[1].upper(),
+            'type': 'county'
+        })
+        if not region:
+            return None
+        query = {
+            'location': {'$geoWithin': {'$geometry': region['geometry']}},
+            'google_details': {'$exists': True}
+        }
+        if category:
+            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
+        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
+    else:
+        return None
+
+    if not matching_places:
+        return None
+
+    return {
+        'name': category,
+        'location': location,
+        'activity': combine_avg_activity(matching_places)
+    }
+
+
 def combine_avg_activity(list_places):
 
     list_activity = [place['google_details']['activity'] for place in list_places]
@@ -114,6 +177,8 @@ def package_activity(avg_activity_per_hour):
 
 
 if __name__ == "__main__":
+    import pprint
+
     def test_avg_hourly_activity():
         place = list(utils.DB_TERMINAL_PLACES.aggregate([
             {'$match': {
@@ -132,12 +197,16 @@ if __name__ == "__main__":
 
     def test_activity():
         print(activity("Starbucks", "3900 Cross Creek Rd"))
-        # print(activity("Starbucks", "3900 Cross Creek Rd"))
 
     def test_aggregate_activity():
         print(aggregate_activity("Starbucks", "Los Angeles, CA, USA", "City"), "\n")
         # print(aggregate_activity("Starbucks", "Los Angeles Count, CA, USA", "County"))
 
+    def test_category_activity():
+        # pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
+        pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
+
     # test_activity()
-    test_aggregate_activity()
+    # test_aggregate_activity()
+    test_category_activity()
     # test_avg_hourly_activity()

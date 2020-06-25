@@ -7,6 +7,7 @@ import random
 import urllib
 import pandas as pd
 import datetime as dt
+import pytz
 from fuzzywuzzy import fuzz
 
 import mongo
@@ -26,6 +27,8 @@ ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
 AMPERSAND = '\\\\u0026'
 AMPERSAND2 = '&amp;'
 APOSTROPHE = '&#39;'
+LEFT_QUOTE = '&#8220;'
+RIGHT_QUOTE = '&#8221;'
 SPACE = '\xa0'
 
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
@@ -313,7 +316,10 @@ def format_search(name, address):
 
 
 def format_punct(text):
-    return text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&").replace(APOSTROPHE, "'").replace(SPACE, " ")
+    text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
+    text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
+    text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
+    return text
 
 
 def get_alternative_source(key, preffered_dict, default_dict):
@@ -460,6 +466,31 @@ def restart_program():
 
     python = sys.executable
     os.execl(python, python, *sys.argv)
+
+
+def remove_old_items(items, time_key, date=None):
+    """
+    Given a list of items objects that have a published key (as a datetime),
+    and a date of removal, will return a list of items that are more recent
+    than these dates.
+
+    items - list of objects.
+    time_key - key in object that contains datetime.
+    date - date that serves as cut off. By default, it's 10 weeks in the past.
+    """
+    utc = pytz.UTC
+
+    recent_items = []
+    if not date:
+        print('Here')
+        date = dt.datetime.now() - dt.timedelta(weeks=10)
+
+    for item in items:
+        published_date = item[time_key]
+        if published_date.replace(tzinfo=utc) > date.replace(tzinfo=utc):
+            recent_items.append(item)
+
+    return recent_items
 
 
 if __name__ == "__main__":

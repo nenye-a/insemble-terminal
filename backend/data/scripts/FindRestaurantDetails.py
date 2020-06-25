@@ -139,7 +139,7 @@ def parse_opentable_result(response):
         "neighborhood": str neighborhood,
         "dist_from_query": str dist_from_query,
         "bookings": int bookings,
-        "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        "time_of_scrape": dt.datetime.utcnow().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
     """
@@ -214,7 +214,7 @@ def parse_opentable_result(response):
         "neighborhood": neighborhood,
         "dist_from_query": dist_from_query,
         "bookings": get_one_int_from_str(bookings),
-        "time_of_scrape": dt.datetime.now().strftime("%m-%d-%Y_%H:%M:%S")
+        "time_of_scrape": dt.datetime.utcnow().strftime("%m-%d-%Y_%H:%M:%S")
     }
 
     return store
@@ -223,7 +223,7 @@ def parse_opentable_result(response):
 
 
 def today_formatted():
-    return dt.datetime.now().strftime("%Y-%m-%d")
+    return dt.datetime.utcnow().strftime("%Y-%m-%d")
 
 
 def format_search(name, address):
