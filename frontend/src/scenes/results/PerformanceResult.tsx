@@ -215,7 +215,13 @@ export default function PerformanceResult(props: Props) {
             data={loading ? prevData : dataWithAsterisk}
             showNumLocation={showNumLocation}
             headerTitle={headerTitle}
-            onPerformanceRowPress={onPerformanceRowPress}
+            onPerformanceRowPress={(param) => {
+              if (!readOnly) {
+                onPerformanceRowPress && onPerformanceRowPress(param);
+              } else {
+                history.push('/contact-us');
+              }
+            }}
             performanceType={performanceType}
             mobile={!isDesktop}
             comparisonTags={comparisonTags}

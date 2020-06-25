@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
 
 import { View, Text, Card, TouchableOpacity } from '../../core-ui';
 import { DataTable } from '../../components';
