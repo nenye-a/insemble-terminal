@@ -65,18 +65,16 @@ export default function PinInfoBox(props: Props) {
       }}
     >
       <Container>
-        <ContentContainer>
-          <LeftColumn>
-            {leftText.map((line, i) => (
-              <SmallText key={i}>{line}</SmallText>
-            ))}
-          </LeftColumn>
-          <RightColumn>
-            {rightText.map((line, i) => (
-              <RightColumnText key={i}>{line}</RightColumnText>
-            ))}
-          </RightColumn>
-        </ContentContainer>
+        <LeftColumn>
+          {leftText.map((line, i) => (
+            <SmallText key={i}>{line}</SmallText>
+          ))}
+        </LeftColumn>
+        <RightColumn>
+          {rightText.map((line, i) => (
+            <RightColumnText key={i}>{line}</RightColumnText>
+          ))}
+        </RightColumn>
       </Container>
     </InfoBox>
   ) : null;
@@ -85,12 +83,9 @@ export default function PinInfoBox(props: Props) {
 const Container = styled(Card)`
   min-width: 300px;
   height: auto;
-`;
-const ContentContainer = styled(View)`
   flex: 1;
-  min-width: 300px;
   flex-direction: row;
-  padding: 0 10px 0 5px;
+  padding: 10px 20px 20px 10px;
 `;
 
 const LeftColumn = styled(View)`
