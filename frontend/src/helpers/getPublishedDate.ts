@@ -1,5 +1,8 @@
 export default function getPublishedDate(date: string, now = new Date()) {
   if (date) {
+    // Force recognition of dates as UTC time. (Chrome interprets as local time otherwise.)
+    date = date.split('Z')[0].concat('+00:00');
+
     let dateParam = new Date(date);
     let dateNow = new Date(now);
     let difference = Number(dateNow) - Number(dateParam);
