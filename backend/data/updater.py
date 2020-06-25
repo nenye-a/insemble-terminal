@@ -10,7 +10,7 @@ import searcher
 import datetime as dt
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
-RUN_TIME = dt.datetime.now()
+RUN_TIME = dt.datetime.utcnow()
 
 UPDATE_TERMS = searcher.SEARCH_TERMS[:-2]  # for not we don't need to update barber shop or salon
 
@@ -81,7 +81,7 @@ def update_locations(batch_size=100):
 def clean(results_list):
     for item in results_list:
         item['name'] = item['name'].strip().split(" at ")[0]
-        now = dt.datetime.now()
+        now = dt.datetime.utcnow()
         item['last_update'] = now
 
 

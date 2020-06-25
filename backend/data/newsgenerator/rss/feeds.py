@@ -134,38 +134,37 @@ def latest_news(feed_list, date=None):
     By default, will provide news from the past week.
     """
 
-    if not date:
-        date = datetime.datetime.utcnow() - datetime.timedelta(weeks=1)
+    # if not date:
+    #     date = datetime.datetime.utcnow() - datetime.timedelta(weeks=1)
 
     news = []
     for feed in feed_list:
         parsed_feed = feedparser.parse(feed['Link'])
         for entry in parsed_feed.entries:
-            # TODO: fix it so that differing structure works out
             if 'published' not in entry or 'link' not in entry:
                 continue
 
-            published_datetime = tparser.parse(entry.published).astimezone(pytz.utc).replace(tzinfo=None)
-            if published_datetime > date:
+            published_datetime = tparser.parse(entry.published)
+            # if published_datetime > date:
 
-                # grab any images if there are any
-                image = ""
-                if 'links' in entry:
-                    for link in entry.links:
-                        if "image" in link['type']:
-                            image = link['href']
-                            break
-                if image == "" and 'media_content' in entry:
-                    image = entry.media_content[0]['url']
+            # grab any images if there are any
+            image = ""
+            if 'links' in entry:
+                for link in entry.links:
+                    if "image" in link['type']:
+                        image = link['href']
+                        break
+            if image == "" and 'media_content' in entry:
+                image = entry.media_content[0]['url']
 
-                news.append({
-                    'title': entry.get('title', 'Untitled'),
-                    'description': utils.remove_html_tags(entry.get('summary', 'No description')),
-                    'link': entry.link,
-                    'image': image,
-                    'source': feed['Feed'],
-                    'published': published_datetime.ctime()
-                })
+            news.append({
+                'title': entry.get('title', 'Untitled'),
+                'description': utils.remove_html_tags(entry.get('summary', 'No description')),
+                'link': entry.link,
+                'image': image,
+                'source': feed['Feed'],
+                'published': published_datetime
+            })
 
     return news
 
