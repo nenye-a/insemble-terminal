@@ -7,6 +7,7 @@ export let CoverageLocation = objectType({
     t.float('lng');
     t.string('name', { nullable: true });
     t.string('address', { nullable: true });
+    t.float('rating', { nullable: true });
     t.float('numReviews', { nullable: true });
   },
 });
