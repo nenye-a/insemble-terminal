@@ -364,9 +364,11 @@ function TableRow(props: TableRowProps) {
         if (onPerformanceRowPress) {
           let newSearchTag = getPerformanceNewSearchTag(performanceType);
           if (Object.keys(newSearchTag).length > 0) {
+            let paranthesesRegex = /\([^\(]+\)$/g;
+            let nameWithoutParentheses = name.replace(paranthesesRegex, '');
             if (inTerminal) {
               onPerformanceRowPress({
-                newTag: { name, ...newSearchTag },
+                newTag: { name: nameWithoutParentheses, ...newSearchTag },
                 prevTag: {
                   locationTag,
                   businessTag,
@@ -378,7 +380,7 @@ function TableRow(props: TableRowProps) {
             } else {
               onPerformanceRowPress({
                 newTag: {
-                  name,
+                  name: nameWithoutParentheses,
                   ...newSearchTag,
                 },
                 comparisonTag: comparePrevTag,
