@@ -138,6 +138,18 @@ def create_index(collection):
         DB_MISC.create_index([('name', 1)], unique=True)
 
 
+def db_index(collection, *indices, **kwargs):
+    """
+    Provided a collection object and a list of index strings, will create indexes.
+    supports both compound and singular indexes. supports all native pymongo
+    keyword arguments (i.e. unique, partialFilterExpression, background, sparse, etc.)
+    """
+    index_request = []
+    for index in indices:
+        index_request.append((index, 1))
+    collection.create_index(index_request, **kwargs)
+
+
 def meters_to_miles(meters):
     return meters / MILES_TO_METERS_FACTOR
 
@@ -508,7 +520,7 @@ def remove_name_ats(name):
 
 def inbool(item: dict, key: str):
     """Will check if key id in dict and contains a valid item"""
-    return key in item and item[key]
+    return item and key in item and item[key]
 
 
 if __name__ == "__main__":
