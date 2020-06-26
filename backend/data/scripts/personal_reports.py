@@ -77,7 +77,7 @@ def personal_reports(csv_filename):
             # create personal terminals
             print(name, type, company)
             print(query_list)
-            print(helper.create_shared_report(*query_list, name="{}' report for {}".format(name, company), description="{}: Generated report for {} related retail near {}, {}".format(type, company, address, city)))
+            print(helper.create_shared_report(*query_list, name="{}'s report for {}".format(name, company), description="{}: Generated report for {} related retail near {}, {}".format(type, company, address, city)))
 
         print("{},{},{},{} Queries ----".format(company, address, city, type), query_list)
 
