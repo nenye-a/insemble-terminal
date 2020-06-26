@@ -60,244 +60,6 @@ def performancev2(name, address):
     details = parse_details(place)
     return details
 
-    # return {
-    #     'name': details['name'],
-    #     'address': details['address'],
-    #     'customerVolumeIndex': round(BASELINE * volume / ALL_RETAIL_VOLUME) if ALL_RETAIL_VOLUME else None,
-    #     'localRetailIndex': None,
-    #     'localCategoryIndex': None,
-    #     'nationalIndex': None,
-    #     'avgRating': details['rating'],
-    #     'avgReviews': details['num_reviews'],
-    #     'numLocations': None,
-    #     'numNearby': None
-    # }
-
-
-def get_local_retail_volume(locations, radius, retail_type=None):
-    """
-    Gets the avg volume of retail for a certain radius for a certain retail type (if specified)
-
-    Parameters
-    -----------
-    location - dict:
-        contains "_id" (string) ,"location" (point geoJson)
-    radius - int:
-        distance from point in miles.
-    retail_type - string:
-        type of retail locations to be evaluated (all retail types included by default)
-    return - dict:
-        dictionary of locations to volume of specified retail in the vicinity
-    """
-
-    print("building pipelines")
-    location_pipelines = {location['_id']: build_proximity_query(location, radius, retail_type) for location in locations}
-    print("running mongo queries")
-    results = {}
-    for obj in location_pipelines:
-        performance = list(utils.DB_TERMINAL_PLACES.aggregate(location_pipelines[obj]))
-        if len(performance) != 0:
-            results[obj] = list(utils.DB_TERMINAL_PLACES.aggregate(location_pipelines[obj]))[0]["avg_total_volume"]
-        else:
-            results[obj] = None
-    return results
-
-
-def build_proximity_query(location, radius, retail_type=None):
-    """
-    Builds aggregation pipeline to get locations from database that are within
-    the specified radius of the provided location.
-
-    Parameters
-    -----------
-    location - dict:
-        contains "location" (point geoJson)
-    radius - int:
-        distance from point in miles.
-    retail_type - string:
-        type of retail locations to be evaluated (all retail types included by default)
-    """
-
-    radius = utils.miles_to_meters(radius)
-    pipeline = []
-
-    query = {'type': retail_type} if retail_type else {}
-
-    # get items that are within this location.
-    pipeline.append({
-        '$geoNear': {
-            'near': location['location'],
-            'distanceField': "distance",
-            'maxDistance': radius,
-            'query': query,
-            'key': "location"
-        }
-    })
-
-    # reduce space needed by disk by projecting
-    pipeline.append({'$project': {'activity_volume': 1, 'avg_activity': 1}})
-
-    # pipeline to seperate items by those that have activity and those that don't.
-    pipeline.extend([
-        {
-            '$set': {
-                'has_activity': {'$cond': [{'$eq': ['$avg_activity', -1]}, -1, 1]}
-            }
-        },
-        {
-            '$bucket': {
-                'groupBy': '$has_activity',
-                'boundaries': [
-                    -1, 0, 2
-                ],
-                'default': 'other',
-                'output': {
-                    'cum_total_volume': {'$sum': '$activity_volume'},
-                    'cum_avg_activity': {'$sum': '$avg_activity'},
-                    'count': {'$sum': 1}
-                }
-            }
-        }
-    ])
-
-    # finally average and return
-    pipeline.extend([
-        {
-            '$set': {
-                'avg_total_volume': {'$divide': ['$cum_total_volume', '$count']},
-                'avg_activity': {'$divide': ['$cum_avg_activity', '$count']}
-            }
-        },
-        {
-            '$group': {
-                '_id': '',
-                'avg_total_volume': {'$max': '$avg_total_volume'},
-                'avg_activity': {'$max': '$avg_activity'},
-                'count': {'$sum': '$count'}
-            }
-        }
-    ])
-
-    return pipeline
-
-
-def build_brand_query(brand):
-    """
-    Builds aggregation pipeline to get locations from database that are of the specified brand.
-
-    """
-
-    pipeline = []
-
-    # get items for this brand
-    # TODO: improve the way we search brands so we can pick up "The Home Depot"
-    pipeline.append({
-        '$match': {
-            'name': {"$regex": r"^" + utils.adjust_case(brand[:10]), "$options": "i"},
-        }
-    })
-
-    # reduce space needed by disk by projecting
-    pipeline.append({'$project': {'activity_volume': 1, 'avg_activity': 1}})
-
-    # pipeline to seperate items by those that have activity and those that don't.
-    pipeline.extend([
-        {
-            '$set': {
-                'has_activity': {'$cond': [{'$eq': ['$avg_activity', -1]}, -1, 1]}
-            }
-        },
-        {
-            '$bucket': {
-                'groupBy': '$has_activity',
-                'boundaries': [
-                    -1, 0, 2
-                ],
-                'default': 'other',
-                'output': {
-                    'cum_total_volume': {'$sum': '$activity_volume'},
-                    'cum_avg_activity': {'$sum': '$avg_activity'},
-                    'count': {'$sum': 1}
-                }
-            }
-        }
-    ])
-
-    # finally average and return
-    pipeline.extend([
-        {
-            '$set': {
-                'avg_total_volume': {'$divide': ['$cum_total_volume', '$count']},
-                'avg_activity': {'$divide': ['$cum_avg_activity', '$count']}
-            }
-        },
-        {
-            '$group': {
-                '_id': '',
-                'avg_total_volume': {'$max': '$avg_total_volume'},
-                'avg_activity': {'$max': '$avg_activity'},
-                'count': {'$sum': '$count'}
-            }
-        }
-    ])
-
-    return pipeline
-
-
-def build_all_query():
-    """
-    Builds aggregation pipeline to get locations from database that are of the specified brand.
-
-    """
-
-    pipeline = []
-
-    # reduce space needed by disk by projecting
-    pipeline.append({'$project': {'activity_volume': 1, 'avg_activity': 1}})
-
-    # pipeline to seperate items by those that have activity and those that don't.
-    pipeline.extend([
-        {
-            '$set': {
-                'has_activity': {'$cond': [{'$eq': ['$avg_activity', -1]}, -1, 1]}
-            }
-        },
-        {
-            '$bucket': {
-                'groupBy': '$has_activity',
-                'boundaries': [
-                    -1, 0, 2
-                ],
-                'default': 'other',
-                'output': {
-                    'cum_total_volume': {'$sum': '$activity_volume'},
-                    'cum_avg_activity': {'$sum': '$avg_activity'},
-                    'count': {'$sum': 1}
-                }
-            }
-        }
-    ])
-
-    # finally average and return
-    pipeline.extend([
-        {
-            '$set': {
-                'avg_total_volume': {'$divide': ['$cum_total_volume', '$count']},
-                'avg_activity': {'$divide': ['$cum_avg_activity', '$count']}
-            }
-        },
-        {
-            '$group': {
-                '_id': '',
-                'avg_total_volume': {'$max': '$avg_total_volume'},
-                'avg_activity': {'$max': '$avg_activity'},
-                'count': {'$sum': '$count'}
-            }
-        }
-    ])
-
-    return pipeline
-
 
 def aggregate_performance(name, location, scope):
 
@@ -517,7 +279,8 @@ def combine_parse_details(list_places, forced_name=None,
         corrected_name = default_name
 
     return {
-        # TODO: confidence level for overall comparison if a certain percentage of addresses have low confidence
+        # TODO: confidence level for overall comparison if a
+        # certain percentageof addresses have low confidence
         'overall': {
             'name': corrected_name if not forced_name else forced_name,
 
@@ -709,53 +472,7 @@ def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
     return nearby_places
 
 
-def add_stats():
-    avg_total_volume = list(utils.DB_TERMINAL_PLACES.aggregate(build_all_query()))[0]['avg_total_volume']
-    utils.DB_STATS.insert({
-        'stat_name': 'activity_stats',
-        'avg_total_volume': avg_total_volume,
-    })
-
-
 if __name__ == "__main__":
-
-    def test_build_proximity_query():
-        place = utils.DB_TERMINAL_PLACES.find_one({})
-        pipeline = build_proximity_query(place, 10, "Convenience Store")
-        print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-
-    def test_build_brand_query():
-        place = utils.DB_TERMINAL_PLACES.find_one({})
-        pipeline = build_brand_query(place['name'])
-        print(place['name'], list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-        pipeline = build_brand_query("Chipotle")
-        print("Chipotle", list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-
-    def test_build_all_query():
-        start = time.time()
-        pipeline = build_all_query()
-        print(list(utils.DB_TERMINAL_PLACES.aggregate(pipeline)))
-        print(time.time() - start)
-
-    def test_get_local_retail_volume():
-        size = 10
-        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate(
-            [{"$sample": {"size": size}}]) if 'location' in location]
-        start = time.time()
-        print(get_local_retail_volume(random_locations, 1))
-        print("size: {}, time: {}".format(size, time.time() - start))
-        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate(
-            [{"$sample": {"size": size}}]) if 'location' in location]
-        start = time.time()
-        query = "Convenience Store"
-        print(get_local_retail_volume(random_locations, 3, query))
-        print("query: {}, size: {}, time: {}".format(query, size, time.time() - start))
-        random_locations = [location for location in utils.DB_TERMINAL_PLACES.aggregate(
-            [{"$sample": {"size": size}}]) if 'location' in location]
-        start = time.time()
-        query = "Japanese Restaurant"
-        print(get_local_retail_volume(random_locations, 3, query))
-        print("query: {}, size: {}, time: {}".format(query, size, time.time() - start))
 
     def test_performance():
         name = "Atlanta Breakfast Club"
@@ -784,12 +501,6 @@ if __name__ == "__main__":
         # print(performance['by_location'])
         print(performance)
 
-    def test_get_immediate_vicinity_volume():
-        size = 1000
-        start = time.time()
-        [print(time.time() - start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
-         for location in utils.DB_TERMINAL_PLACES.aggregate([{"$sample": {"size": size}}]) if 'location' in location]
-
     def test_get_details():
         # NOTE: Before firing this test, make sure to turn off update.
         name = "TGI Fridays"
@@ -797,11 +508,3 @@ if __name__ == "__main__":
         print(get_details(name, address))
 
     test_performance()
-    # test_build_proximity_query()
-    # test_get_local_retail_volume()
-    # test_build_brand_query()
-    # test_build_all_query()
-    # test_performance()
-    # test_aggregate_performance()
-    # test_category_performance()
-    # test_category_performance_higher_scope()
