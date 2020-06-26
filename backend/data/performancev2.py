@@ -507,4 +507,15 @@ if __name__ == "__main__":
         address = "4701 Firestone Blvd, South Gate, CA 90280"
         print(get_details(name, address))
 
+    def test_compile_details(burner=None):
+        from bson import ObjectId
+
+        place = utils.DB_TERMINAL_PLACES.find_one({'_id': ObjectId("5eca2c36eabaf79dfe0825f1")})
+        total_volume = compile_details(place['location'], 1)
+        total_volume_category = compile_details(place['location'], 3, place['type'])
+        assert abs(total_volume - place['local_retail_volume']) < .5
+        assert abs(total_volume_category - place['local_category_volume']) < .5
+        print('Success')
+        return(1)
+
     test_performance()
