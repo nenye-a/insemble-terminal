@@ -316,10 +316,14 @@ def format_search(name, address):
 
 
 def format_punct(text):
-    text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
-    text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
-    text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
-    return text
+    try:
+        text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
+        text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
+        text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
+        return text
+    except Exception as e:
+        print(e)
+        return text
 
 
 def get_alternative_source(key, preffered_dict, default_dict):
