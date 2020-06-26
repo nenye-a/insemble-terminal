@@ -1,4 +1,5 @@
 import React from 'react';
+import { useHistory } from 'react-router-dom';
 
 import { View } from '../../core-ui';
 import { GetTerminal_terminal_pinnedFeeds as PinnedFeeds } from '../../generated/GetTerminal';
@@ -13,6 +14,7 @@ import CustomerActivityResult from '../results/CustomerActivityResult';
 import CoverageResult from '../results/CoverageResult';
 import ContactsResult from '../results/ContactsResult';
 import OwnershipInformationResult from '../results/OwnershipInformationResult';
+import { PerformanceRowPressParam } from '../../types/types';
 
 type Props = {
   data: Array<PinnedFeeds>;
@@ -21,6 +23,37 @@ type Props = {
 
 export default function TerminalDataResult(props: Props) {
   let { data, readOnly } = props;
+  let history = useHistory();
+
+  let onPerformanceRowPress = (params: PerformanceRowPressParam) => {
+    let { newTag, prevTag, comparisonTag } = params;
+    let { name, locationType, businessType } = newTag;
+    if (locationType) {
+      history.push('/results', {
+        search: {
+          businessTagWithId: comparisonTag
+            ? comparisonTag.businessTag?.id
+            : prevTag?.businessTag?.id,
+          locationTag: {
+            params: name,
+            type: locationType,
+          },
+        },
+      });
+    } else if (businessType) {
+      history.push('/results', {
+        search: {
+          businessTag: {
+            params: name,
+            type: businessType,
+          },
+          locationTag: comparisonTag
+            ? comparisonTag.locationTag
+            : prevTag?.locationTag,
+        },
+      });
+    }
+  };
   return (
     <View>
       {data.map(
@@ -47,6 +80,7 @@ export default function TerminalDataResult(props: Props) {
                   {...props}
                   title="Overall Performance"
                   performanceType={performanceTableType}
+                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.BRAND) {
@@ -55,6 +89,7 @@ export default function TerminalDataResult(props: Props) {
                   {...props}
                   title="By Brand"
                   performanceType={performanceTableType}
+                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.CATEGORY) {
@@ -63,6 +98,8 @@ export default function TerminalDataResult(props: Props) {
                   {...props}
                   title="By Category"
                   performanceType={performanceTableType}
+                  headerTitle="Category"
+                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.ADDRESS) {
@@ -72,7 +109,8 @@ export default function TerminalDataResult(props: Props) {
                   title="By Location"
                   performanceType={performanceTableType}
                   showNumLocation={false}
-                  headerTitle="By Address"
+                  headerTitle="Address"
+                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.STATE) {
@@ -81,6 +119,8 @@ export default function TerminalDataResult(props: Props) {
                   {...props}
                   title="By State"
                   performanceType={performanceTableType}
+                  headerTitle="State"
+                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             } else if (performanceTableType === PerformanceTableType.CITY) {
@@ -89,6 +129,8 @@ export default function TerminalDataResult(props: Props) {
                   {...props}
                   title="By City"
                   performanceType={performanceTableType}
+                  headerTitle="City"
+                  onPerformanceRowPress={onPerformanceRowPress}
                 />
               );
             }

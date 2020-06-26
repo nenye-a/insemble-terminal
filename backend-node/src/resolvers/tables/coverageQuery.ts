@@ -179,11 +179,12 @@ const convertCoverage = (
       let insertCoverage = coverage.map(
         ({ business_name, num_locations, locations }) => {
           let insertLocations = locations.map(
-            ({ lat, lng, name, address, num_reviews }) => {
+            ({ lat, lng, name, address, num_reviews, rating }) => {
               return {
                 lat,
                 lng,
                 name,
+                rating,
                 address,
                 numReviews: num_reviews,
               };

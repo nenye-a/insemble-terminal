@@ -176,16 +176,19 @@ class NewsManager():
                 })
                 print('{} person/people updated with content.'.format(people_update.modified_count))
 
-    def convert_links(self):
+    def convert_links(self, old_link=False):
 
         app_db = PostConnect()
 
-        cities = self.collection.find({
-            'data_type': 'city',
-            'links_processed': {'$exists': False}
-        })
+        query = {'data_type': 'city'}
+        if not old_link:
+            query.update({'links_processed': {'$exists': False}})
+        cities = self.collection.find(query)
 
         for city in cities:
+            if not city['news']:
+                continue
+
             search_details = gql.search(
                 review_tag='NEWS',
                 location_tag={
@@ -193,8 +196,18 @@ class NewsManager():
                     'params': city['name'] + ', USA'
                 }
             )
-            print(search_details)
+            new_news = []
+            # Remove unsavory news.
+            for article in city['news']:
+                if 'costar.com' in article['link']:
+                    continue
+                new_news.append(article)
+            city['news'] = new_news
+
             location_tag_id = search_details['locationTag']['id']
+            if old_link:
+                for article in city['news']:
+                    article['link'] = article['old_link']
             news_data = json.dumps(city['news'], default=date_converter)
             values = []
             for article in city['news']:
@@ -206,9 +219,9 @@ class NewsManager():
                     'firstArticle': json.dumps({
                         'title': article['title'],
                         'source': article['source'],
-                        'published': str(tparser.parse(article['published']))
+                        'published': tparser.parse(article['published']).isoformat()
                         if isinstance(article['published'], str)
-                        else str(article['published']),
+                        else article['published'].isoformat(),
                         'link': article['link']
                     }),
                     'data': news_data
@@ -218,7 +231,7 @@ class NewsManager():
                 city['news'][index]['old_link'] = city['news'][index]['link']
                 city['news'][index]['link'] = LINK_HOST + _id
 
-            self.collection.update({
+            self.collection.update_one({
                 '_id': city['_id'],
             }, {
                 '$set': {
@@ -245,18 +258,22 @@ class NewsManager():
             if enforce_conversion:
                 query.update({'links_processed': True})
             content = self.collection.find_one(query)
-            if not content:
+            if not content or not content['news']:
                 print("No content available for {}. Moving on.".format(
                     person['email'] + str(person['_id'])
                 ))
                 continue
 
+            news_list = []
             for news in content['news']:
                 temp_timezone = pytz.UTC.localize(
                     news['published']).astimezone(pytz.timezone("America/Los_Angeles"))
                 news['published'] = temp_timezone.strftime("%a %b %d") + " (PT)"
                 news['title'] = utils.format_punct(news['title'])
                 news['description'] = utils.format_punct(news['description'])
+                if not news['title'] or not news['description']:
+                    continue
+                news_list.append(news)
 
             email = person['email']
             email_report(
@@ -264,8 +281,8 @@ class NewsManager():
                 header_text="{} News Report".format(
                     person['parsed_city']
                 ),
-                linear_entries=content['news'][:3],
-                grid_entries=content['news'][3:7],
+                linear_entries=news_list[:3],
+                grid_entries=news_list[3:7],
                 update=update
             )
             self.collection.update_one({
@@ -609,14 +626,29 @@ def parse_city(location) -> dict:
 
 def date_converter(o):
     if isinstance(o, dt.datetime):
-        return str(o)
+        return o.isoformat()
 
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-6/24', national_news=False)
-    print(my_generator.collection.count_documents({
-        # 'data_type': 'contact'
-        # 'content_generated': True
-    }))
-    my_generator._update_contact_cities()
+    my_generator = NewsManager('Official-6/25', national_news=False)
+    # my_generator.convert_links()
+
+    # my_generator.generate()
+    # print(my_generator.collection.count_documents({
+    #     # 'data_type': 'contact',
+    #     # 'content_generated': True
+    #     # 'links_processed': True,
+    #     'data_type': 'city',
+    # }))
+    my_generator.email(update=True)
+    # my_generator._update_contact_cities()
+
+    # test_generator = NewsManager('Test-5', national_news=False)
+    # test_generator.generate()
+    # test_generator.convert_links(old_link=True)
+    # test_generator.email(update=True)
+    # print(test_generator.collection.count_documents({
+    #     # 'data_type': 'contact'
+    #     # 'content_generated': True
+    # }))
