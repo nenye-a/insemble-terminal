@@ -30,3 +30,4 @@ sodapy
 yattag
 sendgrid
 feedparser
+pdfminer.six
