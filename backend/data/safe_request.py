@@ -3,6 +3,7 @@ from requests.packages.urllib3.util.retry import Retry
 from bson import ObjectId
 
 import utils
+import mongo
 import requests
 
 
@@ -15,7 +16,7 @@ if this call has been made previously.
 
 
 API_KEY_MASK = 'API_KEY_MASK'
-DB_REQUESTS = utils.SYSTEM_MONGO.get_collection('requests')
+DB_REQUESTS = mongo.Connect().get_collection('requests')
 
 # executable request method
 

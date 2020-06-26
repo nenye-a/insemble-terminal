@@ -1,5 +1,7 @@
 import os
 import sys
+import time
+import pymongo.errors as mongoerrors
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(THIS_DIR)
 sys.path.extend([THIS_DIR, BASE_DIR])
@@ -7,10 +9,31 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 import pdfminer.high_level as pdf_hl
 import re
 import string
+from billiard.pool import Pool
 
 import utils
+import contact as contact_funcs
 
 DB_DOMAINS = utils.SYSTEM_MONGO.get_collection("contacts.domains")
+DB_DOMAINS.create_index([('domain', 1)], unique=True)
+
+
+def parse_icsc(collection_name, filename=None):
+
+    if not collection_exists(collection_name):
+        if filename:
+            setup(collection_name, filename)
+        else:
+            print('Needs file name to start collecting.')
+            return None
+    else:
+        if filename:
+            print('Collection "{}" already exists. Ignoring provided file: {}.'.format(
+                collection_name, filename
+            ))
+
+    get_contacts_domains(collection_name)
+    get_contacts_emails(collection_name)
 
 
 def setup(collection_name, filename):
@@ -25,7 +48,7 @@ def setup(collection_name, filename):
 
     if collection_exists(collection_name):
         input('\nCollection "{}" already exists! Are you sure you want to replace '
-              'this collection? Note that this is irreversible... Press any key '
+              'this collection? Note that this is irreversible... Press "Enter" '
               'to proceed or "ctrl+C" to quit.\n'.format(collection_name))
 
         print('Okay, proceeding...')
@@ -37,8 +60,13 @@ def setup(collection_name, filename):
     contacts = filter(None, [contact_block_to_dict(block) for block in blocks])
 
     collection.create_index([('first_name', 1), ('last_name', 1)])
-    collection.create_index([('email', 1)])
+    collection.create_index([('email', 1)], unique=True,
+                            partialFilterExpression={'email': {'$exists': True}}),
+    collection.create_index([('domain', 1)])
+    collection.create_index([('company', 1)])
     collection.insert_many(contacts)
+
+    prune_bad_apples(collection_name)
 
     return collection
 
@@ -54,19 +82,140 @@ def get_contacts_collection(collection_name):
     return utils.SYSTEM_MONGO.get_collection(collection_string)
 
 
-def get_emails(collection_name, key_csv=None):
+def prune_bad_apples(collection_name):
+    collection = get_contacts_collection(collection_name)
+    deleted = collection.delete_many({
+        'company': {
+            '$regex': (
+                r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
+                r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
+                r'(?:size( ?)zeus)|(?:buxton)'
+            ),
+            '$options': "i"
+        }
+    })
 
-    if not collection_exists(collection_name):
-        collection = setup(collection_name)
-    else:
-        collection = get_contacts_collection(collection_name)
+    print("Deleted {} bad apples.".format(deleted.deleted_count))
 
 
-# def get_contacts(starter_file=None, new_file):
-#     """
-#     Gets all the contacts within a pdf file of contacts (formatted ICSC style),
-#     stores them in the database, and obtains their emails.
-#     """
+def get_contacts_domains(collection_name, batchsize=100):
+
+    collection = get_contacts_collection(collection_name)
+
+    while True:
+
+        contacts = list(collection.aggregate([
+            {'$match': {
+                'domain': {'$exists': False}
+            }},
+            {'$sample': {
+                'size': batchsize
+            }}
+        ]))
+
+        if len(contacts) == 0:
+            print('Already all have domains.')
+            break
+
+        pool_exists = False
+        try:
+            domain_pool, pool_exists = Pool(min(20, len(contacts))), True
+            contacts = domain_pool.map(pull_domain, contacts)
+            for contact in contacts:
+                collection.update_one({'_id': contact['_id']}, {
+                    '$set': contact
+                })
+                print('Updated {} from {} with domian {} ({})'.format(
+                    contact['first_name'],
+                    contact['company'],
+                    contact['domain'],
+                    contact['_id']
+                ))
+                if contact['domain']:
+                    DB_DOMAINS.update_one({'domain': contact['domain']}, {
+                        '$addToSet': {'companies': contact['company']},
+                        '$setOnInsert': {'domain': contact['domain']}
+                    }, upsert=True)
+        except Exception as e:
+            print(e)
+        finally:
+            if pool_exists:
+                domain_pool.close()
+                domain_pool.terminate()
+
+
+def pull_domain(contact):
+
+    domain = contact_funcs.get_domain(contact['company'])
+    contact['domain'] = domain
+    print("Got domain for {}".format(contact["first_name"]))
+    time.sleep(2)
+    return contact
+
+
+def pull_email(contact):
+    try:
+
+        email = contact_funcs.get_email(
+            contact['first_name'],
+            contact['last_name'],
+            contact['domain']
+        )
+        print(email)
+        contact['email'] = email.lower().strip() if email else None
+    except Exception:
+        contact['email'] = None
+
+    print("Got Email for {}".format(contact["first_name"]))
+    time.sleep(2)
+    return contact
+
+
+def get_contacts_emails(collection_name, batchsize=150):
+
+    collection = get_contacts_collection(collection_name)
+
+    while True:
+
+        contacts = list(collection.aggregate([
+            {'$match': {
+                'domain': {'$ne': None},
+                'email': {'$exists': False}
+            }},
+            {'$sample': {
+                'size': batchsize
+            }}
+        ]))
+
+        if len(contacts) == 0:
+            print('Already have all the contact emails.')
+            break
+
+        pool_exists = False
+        try:
+            email_pool, pool_exists = Pool(min(20, len(contacts))), True
+            print(contacts)
+            contacts = email_pool.map(pull_email, contacts)
+            for contact in contacts:
+                try:
+                    collection.update_one({'_id': contact['_id']}, {
+                        '$set': contact
+                    })
+                    print('Updated {} from {} with email {} ({})'.format(
+                        contact['first_name'],
+                        contact['company'],
+                        contact['email'],
+                        contact['_id']
+                    ))
+                except mongoerrors.DuplicateKeyError:
+                    print('User with the same email already exists.')
+                    continue
+        except Exception as e:
+            print(e)
+        finally:
+            if pool_exists:
+                email_pool.close()
+                email_pool.terminate()
 
 
 def separate_contact_blocks(filename):
@@ -164,15 +313,83 @@ def contact_block_to_dict(block):
     elif len(block) > 0:
         contact_dict['company'] = block.pop()
 
+    contact_dict['company'] = parse_company(contact_dict['company'])
     return contact_dict
 
 
 def split_name(name):
     first = name.split(",")[0].split(" ")[0]
-    if bool(re.match("[A-Z]\.", first)):
+    if bool(re.match(r"[A-Z]\.", first)):
         first = name.split(",")[0].split(" ")[1]
     last = name.split(",")[0].split(" ")[-1]
     return first, last
+
+
+def parse_company(company_name):
+    """Make company names more friendly."""
+
+    if company_name.isupper() and len(company_name) <= 4:
+        # Likely an acronym (Thisnk CBRE or JLL)
+        return company_name
+
+    # Remove any conjoined names.
+    new_company_name = company_name.lower().split('|')[0]
+
+    list_unfriendly_words = [' incorporated', ' inc', ' corporation', ' corp',
+                             ' pc', ' p.c', ' ltd', ' llc', ' c/o', ' cwi',
+                             ' p. a', ' llp']
+    unfriendly_chars = '.,~( '
+    conjunctions = [' and ', ' but ', ' or ', ' of ', ' to ',
+                    'at ']
+    for item in list_unfriendly_words:
+        new_company_name = new_company_name.replace(item, '')
+    new_company_name = new_company_name.strip(unfriendly_chars)
+
+    # Only adjust case of businesses with more than 4 characters.
+    # This is to prevent lowering business acronyms which tend to be
+    # 3 characters or less.
+    new_company_name = utils.adjust_case(new_company_name)
+    for conjunction in conjunctions:
+        new_company_name = new_company_name.replace(
+            utils.adjust_case(conjunction),
+            conjunction
+        )
+    new_company_name = word_capitalizer(new_company_name, company_name)
+
+    return new_company_name if new_company_name else company_name
+
+
+def word_capitalizer(canvas, old_word):
+    """Provided a word canvas, will return old_word"""
+    canvas_list = canvas.split(" ")
+    old_word_list = old_word.split(" ")
+
+    for word in canvas_list:
+        if word.upper() in old_word_list:
+            canvas = canvas.replace(word, word.upper())
+
+    return canvas
+
+
+def print_collection_companes(collection_name):
+
+    business_names = list(get_contacts_collection(collection_name).aggregate(
+        [
+            {'$group': {
+                '_id': '$company',
+                'count': {
+                    '$sum': 1
+                }
+            }},
+            {'$sort': {
+                'count': -1
+            }}
+        ]
+    ))
+
+    import pandas as pd
+    df = pd.DataFrame(business_names)
+    df.to_csv(THIS_DIR + '/files/business_names.csv')
 
 
 if __name__ == "__main__":
@@ -189,6 +406,8 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
+    parse_icsc('contacts_collection1')
+
     # test_contact_block_to_dict()
     # print(separate_contact_blocks(THIS_DIR + '/files/2020MA_Attendees.pdf'))
-    setup('contacts_collection1', THIS_DIR + '/files/2020MA_Attendees.pdf')
+    # setup('contacts_collection1', THIS_DIR + '/files/2020MA_Attendees.pdf')

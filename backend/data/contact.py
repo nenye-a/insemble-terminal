@@ -273,7 +273,9 @@ def get_email(first, last, domain):
         api_field='api_key'
     )
 
-    if response and utils.inbool(response, 'data'):
+    print(response)
+
+    if utils.inbool(response, 'data') and utils.inbool(response['data'], 'email'):
         return response['data']['email']
     else:
         print("Could not resolve email for {first} {last} @ {domain}. "
