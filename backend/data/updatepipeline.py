@@ -8,7 +8,7 @@ import datetime as dt
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 
 
-def setup(query={}, update_all=True):
+def setup(query={'activity_volume': {'$ne': -1}}, update_all=True):
 
     if not update_all:
         query.update({
@@ -17,7 +17,6 @@ def setup(query={}, update_all=True):
                 {'local_retail_volume': {'$exists': False}}
             ],
             'activity': {'$ne': []},
-            'activity_volume': {'$ne': -1}
         })
 
     utils.SYSTEM_MONGO.get_collection("terminal.temp_volume_places").create_index(
