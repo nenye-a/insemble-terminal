@@ -8,31 +8,44 @@ import datetime as dt
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 
 
-def setup(query={}):
+def setup(query={}, update_all=True):
 
-    query.update({
-        '$or': [
-            {'local_retail_volume': {'$eq': -1}},
-            {'local_retail_volume': {'$exists': False}}
-        ],
-        'activity': {'$ne': []},
-        'activity_volume': {'$ne': -1}
-    })
+    if not update_all:
+        query.update({
+            '$or': [
+                {'local_retail_volume': {'$eq': -1}},
+                {'local_retail_volume': {'$exists': False}}
+            ],
+            'activity': {'$ne': []},
+            'activity_volume': {'$ne': -1}
+        })
 
+    utils.SYSTEM_MONGO.get_collection("terminal.temp_volume_places").create_index(
+        [('marked', 1)]
+    )
     utils.DB_TERMINAL_PLACES.aggregate([
         {
             '$match': query
         },
         {
-            '$set': {
-                'local_retail_volume': -2,
-                'local_category_volume': -2
+            '$addFields': {
+                'marked': -1
             }
         },
         {
             "$merge": "temp_volume_places"
         }
     ])
+
+
+def clear_marks():
+
+    utils.SYSTEM_MONGO.get_collection("terminal.temp_volume_places").update_many(
+        {'marked': {'$ne': -1}},
+        {'$set': {
+            'marked': -1
+        }}
+    )
 
 
 def setup_confidence(query={}):
@@ -66,6 +79,8 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
         raise Exception('Update type: \'{}\' is not either \'volume\' '
                         'or \'confidence\'. Please retry.'.format(update_type))
 
+    # run_id = random.randint(0, 10000)
+    # query = {'marked': -1}
     query = {}
     additional_query and query.update(additional_query)
 
@@ -81,8 +96,10 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
         pipeline.append({'$sample': size})
 
         places = list(temp_db.aggregate(pipeline))
-
         id_list = [place['_id'] for place in places]
+        # temp_db.update_many({'_id': {'$in': id_list}}, {'$set': {
+        #     'marked': run_id
+        # }})
 
         if len(places) == 0:
             if wait:
@@ -161,4 +178,5 @@ def merge_update():
 
 if __name__ == "__main__":
     # setup_confidence()
-    proximity_update('confidence', wait=False)
+    # proximity_update('confidence', wait=False)
+    proximity_update('volume', wait=False)

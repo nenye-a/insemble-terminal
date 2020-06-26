@@ -185,17 +185,21 @@ def adjust_names():
 def pass_names():
 
     places = list(utils.DB_TERMINAL_PLACES.find({
-        'name': {'$regex': r' at '}
+        'name': {'$regex': r' at ', '$options': "i"}
     }, {
         'name': 1, '_id': 1
     }))
 
     for place in places:
+        if " at " in place['name']:
+            new_name = place['name'].split(" at ")[0]
+        elif " At " in place['name']:
+            new_name = place['name'].split(" At ")[0]
         try:
             utils.DB_TERMINAL_PLACES.update_one({
                 '_id': place['_id']
             }, {'$set': {
-                'name': place['name'].split(" at ")[0],
+                'name': new_name,
                 'previous_name': place['name']
             }})
             print('Updated succesfully ({})'.format(place['_id']))
@@ -299,18 +303,9 @@ def store_old_values():
 
 
 if __name__ == "__main__":
-    # check_revisions()
-    store_old_values()
-    # migrate_terminal()
-    # add_city()
-    # import_LA()
-    # add_city_fast()
-    # add_state_fast()
-    # add_state_to_county()
-    # test_db()
-    # TEST_DB.delete_many({})
-    # adjust_names()
     # pass_names()
-    # fix_blank_names()
-    # delete_failures()
+    # print(utils.DB_TERMINAL_PLACES.find_one({
+    #     'name': {'$regex': r' at ', '$options': "i"}
+    # }))
+
     pass
