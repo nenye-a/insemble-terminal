@@ -58,6 +58,7 @@ def performancev2(name, address):
         return None
 
     details = parse_details(place)
+    details['name'] = '{} ({})'.format(details['name'], address)
     return details
 
 
