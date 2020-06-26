@@ -316,10 +316,14 @@ def format_search(name, address):
 
 
 def format_punct(text):
-    text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
-    text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
-    text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
-    return text
+    try:
+        text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
+        text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
+        text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
+        return text
+    except Exception as e:
+        print(e)
+        return text
 
 
 def get_alternative_source(key, preffered_dict, default_dict):
@@ -491,6 +495,20 @@ def remove_old_items(items, time_key, date=None):
             recent_items.append(item)
 
     return recent_items
+
+
+def remove_name_ats(name):
+    new_name = None
+    while " at " in name:
+        new_name = name.split(" at ")[0]
+    while " At " in name:
+        new_name = name.split(" At ")[0]
+    return new_name or name
+
+
+def inbool(item: dict, key: str):
+    """Will check if key id in dict and contains a valid item"""
+    return key in item and item[key]
 
 
 if __name__ == "__main__":

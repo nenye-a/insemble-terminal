@@ -14,8 +14,6 @@ def activity(name, address):
     Provided a name and an address, will determine the activity details.
     """
 
-    # NOTE: Currently checks database for result first. Might want to grab results
-    # Adhoc, if the latest is required.
     place = utils.DB_TERMINAL_PLACES.find_one({
         '$text': {'$search': name},
         'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
