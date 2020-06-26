@@ -107,6 +107,12 @@ def logic_handler(company, address, city, contact_type):
     coords = (coords['lat'], coords['lng'])
     location = utils.to_geojson(coords)
 
+    print('\nDETAILS')
+    print(address)
+    print(company)
+    print(coords)
+    print()
+
     # if type retailer
     if 'retailer' in contact_type:
 
@@ -144,12 +150,13 @@ def logic_handler(company, address, city, contact_type):
         print("Found matches. Getting the closest match with activity...")
         base_brand = first_with_activity(matches)
 
+        location = base_brand['location']
         # find nearby competitive retail site
         print("Finding a nearby competitive retail site.")
         comparison_brand = find_nearby_competitor_with_activity(base_brand['name'], base_brand['type'], location)
         category = base_brand['type']
         closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-            "$near": {"$geometry": location, "$maxDistance": 1}}}))[0]['name']  # TODO: may need to error check if counties are blank
+            "$near": {"$geometry": location, "$maxDistance": 1000}}}))[0]['name']  # TODO: may need to error check if counties are blank
 
         # add to query list
         print("Adding desired tenant queries")
@@ -206,7 +213,7 @@ def logic_handler(company, address, city, contact_type):
 
         comp_brand = most_likely_chain(nearby_brands)
         comp_brand_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-            "$near": {"$geometry": comp_brand['location'], "$maxDistance": 1}}}))[0][
+            "$near": {"$geometry": comp_brand['location'], "$maxDistance": 1000}}}))[0][
             'name']  # TODO: may need to error check if counties are blank
 
         # TODO: if no retail is found in the near vicinity, choose retail in the closest MSA
@@ -343,4 +350,5 @@ if __name__ == "__main__":
 
     # test_find_competitor_with_activity()
     filename = THIS_DIR + '/files/icsc_emails_short_retailer_owner.csv'
+    # filename = THIS_DIR + '/files/test_emails.csv'
     personal_reports(filename)
