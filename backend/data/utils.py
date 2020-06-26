@@ -497,6 +497,20 @@ def remove_old_items(items, time_key, date=None):
     return recent_items
 
 
+def remove_name_ats(name):
+    new_name = None
+    while " at " in name:
+        new_name = name.split(" at ")[0]
+    while " At " in name:
+        new_name = name.split(" At ")[0]
+    return new_name or name
+
+
+def inbool(item: dict, key: str):
+    """Will check if key id in dict and contains a valid item"""
+    return key in item and item[key]
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():

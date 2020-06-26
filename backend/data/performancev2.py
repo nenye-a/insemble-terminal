@@ -2,6 +2,7 @@ import time
 import google
 import performance
 import utils
+import datetime as dt
 from billiard.pool import Pool
 from functools import partial
 
@@ -15,6 +16,8 @@ LOCAL_RETAIL_RADIUS = 1  # miles
 LOCAL_CATEGORY_RADIUS = 3  # miles
 LOW_CONFIDENCE_VICINITY = 0.01  # miles
 BASELINE = 100  # baseline for index
+ALL_RETAIL_VOLUME = utils.DB_STATS.find_one(
+    {'stat_name': 'activity_stats'})['avg_total_volume']
 
 
 def performancev2(name, address):
@@ -41,15 +44,34 @@ def performancev2(name, address):
 
     """
 
-    place_details = get_details(name, address)
-    if place_details:
-        try:
-            place_details["location"] = utils.to_geojson(google.get_lat_lng(address))
-            return parse_details(place_details)
-        except:
-            return None
-    else:
+    place = utils.DB_TERMINAL_PLACES.find_one({
+        '$text': {'$search': name},
+        'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
+        'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
+        'google_details.activity': {'$ne': None}
+    })
+
+    if not place:
+        place = get_details(name, address)
+
+    if not place:
         return None
+
+    details = parse_details(place)
+    return details
+
+    # return {
+    #     'name': details['name'],
+    #     'address': details['address'],
+    #     'customerVolumeIndex': round(BASELINE * volume / ALL_RETAIL_VOLUME) if ALL_RETAIL_VOLUME else None,
+    #     'localRetailIndex': None,
+    #     'localCategoryIndex': None,
+    #     'nationalIndex': None,
+    #     'avgRating': details['rating'],
+    #     'avgReviews': details['num_reviews'],
+    #     'numLocations': None,
+    #     'numNearby': None
+    # }
 
 
 def get_local_retail_volume(locations, radius, retail_type=None):
@@ -402,49 +424,49 @@ def category_performance(category, location, scope, return_type=None):
     return data
 
 
-def parse_details(details):
+def parse_details(place):
+    """
+    Parse details of this place into desired format for website.
+    TODO: we should likely exclude the place from being included
+    in the averages it is compared to in each index. i.e. the
+    brand index, local index, and category index should not include
+    the location in question.
+    """
 
-    volume = total_volume(details['activity'])
+    volume = 0
+    if 'activity_volume' in place and place['activity_volume'] > 0:
+        volume = place['activity_volume']
 
-    place = utils.DB_TERMINAL_PLACES.find_one({
-        '$text': {'$search': details['name']},
-        'name': {"$regex": r"^" + utils.adjust_case(details['name']), "$options": "i"},
-        'address': {"$regex": r'^' + utils.adjust_case(details['address'][:10]), "$options": "i"},
-        'google_details.activity': {'$ne': None}
-    })
+    details = {
+        'name': place['name'],
+        'address': place['address'],
+        'customerVolumeIndex': round(BASELINE * volume / ALL_RETAIL_VOLUME)
+        if ALL_RETAIL_VOLUME else None,
 
-    all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
+        'localRetailIndex': round(BASELINE * volume / place['local_retail_volume'])
+        if (volume > 0 and 'local_retail_volume' in place and place['local_retail_volume'] > 0)
+        else None,
 
-    if place:
+        'localCategoryIndex': round(BASELINE * volume / place['local_category_volume'])
+        if (volume > 0 and 'local_category_volume' in place and place['local_category_volume'] > 0)
+        else None,
 
-        # TODO: should we filter results to exclude itself? should always have something of the same category in search
+        'nationalIndex': round(BASELINE * volume / place['brand_volume'])
+        if (volume > 0 and 'brand_volume' in place and place['brand_volume'] > 0) else None,
 
-        # TODO: check to make sure local_retail_volume and local_category_volume aren't 0
-        return {
-            'name': details['name'],
-            'address': details['address'],
-            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
-            'localRetailIndex': round(BASELINE * volume / place['local_retail_volume']) if (volume != 0 and 'local_retail_volume' in place and place['local_retail_volume'] != -1) else None,
-            'localCategoryIndex': round(BASELINE * volume / place['local_category_volume']) if (volume != 0 and 'local_category_volume' in place and place['local_category_volume'] != -1) else None,
-            'nationalIndex': round(BASELINE * volume / place['brand_volume']) if (volume != 0 and 'brand_volume' in place and place['brand_volume'] != -1) else None,
-            'avgRating': details['rating'],
-            'avgReviews': details['num_reviews'],
-            'numLocations': None,
-            'numNearby': place['num_nearby'] if 'num_nearby' in place else None
-        }
-    else:
-        return {
-            'name': details['name'],
-            'address': details['address'],
-            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume) if all_retail_volume else None,
-            'localRetailIndex': None,
-            'localCategoryIndex': None,
-            'nationalIndex': None,
-            'avgRating': details['rating'],
-            'avgReviews': details['num_reviews'],
-            'numLocations': None,
-            'numNearby': None
-        }
+        'avgRating': place['google_details']['rating']
+        if 'rating' in place['google_details'] else None,
+
+        'avgReviews': place['google_details']['num_reviews']
+        if 'num_reviews' in place['google_details'] else None,
+
+        'numNearby': place['num_nearby']
+        if 'num_nearby' in place else None,
+
+        'numLocations': None
+    }
+
+    return details
 
 
 def combine_parse_details(list_places, forced_name=None,
@@ -462,40 +484,10 @@ def combine_parse_details(list_places, forced_name=None,
     num_rating_sum, num_rating_count = 0, 0
     corrected_name = None
 
-    all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
-
     for place in list_places:
 
-        volume = 0
-        if 'activity_volume' in place and place['activity_volume'] > 0:
-            volume = place['activity_volume']
+        details = parse_details(place)
 
-        details = {
-            'name': place['name'],
-            'address': place['address'],
-            'customerVolumeIndex': round(BASELINE * volume / all_retail_volume)
-            if all_retail_volume else None,
-
-            'localRetailIndex': round(BASELINE * volume / place['local_retail_volume'])
-            if (volume > 0 and 'local_retail_volume' in place and place['local_retail_volume'] > 0) else None,
-
-            'localCategoryIndex': round(BASELINE * volume / place['local_category_volume'])
-            if (volume > 0 and 'local_category_volume' in place and place['local_category_volume'] > 0) else None,
-
-            'nationalIndex': round(BASELINE * volume / place['brand_volume'])
-            if (volume > 0 and 'brand_volume' in place and place['brand_volume'] > 0) else None,
-
-            'avgRating': place['google_details']['rating']
-            if 'rating' in place['google_details'] else None,
-
-            'avgReviews': place['google_details']['num_reviews']
-            if 'num_reviews' in place['google_details'] else None,
-
-            'numNearby': place['num_nearby']
-            if 'num_nearby' in place else None,
-
-            'numLocations': None
-        }
         if not corrected_name or len(details['name']) < len(corrected_name):
             corrected_name = details['name']
 
@@ -610,23 +602,55 @@ def categorical_data(matching_places, data_name, *return_types):
 
 
 def get_details(name, address):
-    projection = 'name,address,rating,num_reviews,activity,type'
-    try:
-        google_details = google.get_google_details(
-            name, address, projection
-        ) or {}
 
-        return google_details
-    except Exception:
-        return None
+    details = google.get_google_details(
+        name, address
+    )
 
+    location = utils.to_geojson(google.get_lat_lng(address))
 
-def scale(value, volume_type):
-    """scale volume details"""
-    if volume_type == 'total':
-        return utils.translate(value, 0, 5500, 0, 100)
-    if volume_type == 'avg':
-        return utils.translate(value, 0, 60, 0, 100)
+    if details:
+
+        retail_type = None
+        if utils.inbool(details, 'type'):
+            retail_type = utils.adjust_case(details['type'].split(" in ")[0])
+
+        place = {
+            'name': utils.remove_name_ats(details['name']),
+            'address': details['address'],
+            'city': utils.extract_city(details['address']),
+            'state': utils.extract_state(details['address']),
+            'location': location,
+            'type': retail_type,
+
+            'activity_volume': total_volume(details['activity'])
+            if details['activity'] else -1,
+
+            'avg_activity': avg_hourly_volume(details['activity'])
+            if details['activity'] else -1,
+
+            'local_retail_volume': local_retail_volume(location)
+            if location else -1,
+
+            'local_category_volume': local_category_volume(location, retail_type)
+            if location else -1,
+
+            'num_nearby': len(get_nearby(location, 0.01)),
+
+            'version': 0,
+            'last_update': dt.datetime.utcnow(),
+            'google_details': details
+        }
+
+        try:
+            utils.DB_TERMINAL_PLACES.insert_one(place)
+            print("Inserted {} ({}) into the database.".format(
+                place['name'], place['address']
+            ))
+        except Exception:
+            pass
+
+        return place
 
 
 def total_volume(week_activity):
@@ -639,9 +663,50 @@ def total_volume(week_activity):
 def avg_hourly_volume(week_activity):
     """Find the average hourly volume"""
 
-    volume = utils.flatten(week_activity)
-    volume.remove(0)
-    return sum(volume) / len(volume) if len(volume) > 0 else None
+    activity = [hour for hour in utils.flatten(week_activity) if hour > 0]
+    return sum(activity) / len(activity) if len(activity) > 0 else None
+
+
+def local_retail_volume(geo_json_point):
+    """Find the retail activity in the general location."""
+    return compile_details(geo_json_point, LOCAL_RETAIL_RADIUS)
+
+
+def local_category_volume(geo_json_point, retail_type):
+    """Fund the category activity in the general location."""
+    return compile_details(geo_json_point, LOCAL_CATEGORY_RADIUS, retail_type)
+
+
+def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
+
+    nearby_places = get_nearby(geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
+    volume_array = [place['activity_volume'] for place in nearby_places
+                    if 'activity_volume' in place and place['activity_volume'] > 0]
+    total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
+
+    return total_volume
+
+
+def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
+
+    if not terminal_db:
+        terminal_db = utils.DB_TERMINAL_PLACES
+
+    query = {}
+    if retail_type:
+        query['type'] = retail_type
+    query.update({
+        'location': {
+            '$near': {
+                '$geometry': geo_point,
+                '$maxDistance': utils.miles_to_meters(radius)
+            }
+        },
+    })
+
+    nearby_places = list(terminal_db.find(query))
+
+    return nearby_places
 
 
 def add_stats():
@@ -696,6 +761,9 @@ if __name__ == "__main__":
         name = "Atlanta Breakfast Club"
         address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
         print(performancev2(name, address))
+        name = "TGI Fridays"
+        address = "4701 Firestone Blvd, South Gate, CA 90280"
+        print(performancev2(name, address))
 
     def test_aggregate_performance():
         # performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
@@ -722,6 +790,13 @@ if __name__ == "__main__":
         [print(time.time() - start, list(utils.DB_TERMINAL_PLACES.aggregate(build_proximity_query(location, 0.01))))
          for location in utils.DB_TERMINAL_PLACES.aggregate([{"$sample": {"size": size}}]) if 'location' in location]
 
+    def test_get_details():
+        # NOTE: Before firing this test, make sure to turn off update.
+        name = "TGI Fridays"
+        address = "4701 Firestone Blvd, South Gate, CA 90280"
+        print(get_details(name, address))
+
+    test_performance()
     # test_build_proximity_query()
     # test_get_local_retail_volume()
     # test_build_brand_query()
@@ -729,4 +804,4 @@ if __name__ == "__main__":
     # test_performance()
     # test_aggregate_performance()
     # test_category_performance()
-    test_category_performance_higher_scope()
+    # test_category_performance_higher_scope()
