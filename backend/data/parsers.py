@@ -5,11 +5,10 @@ import utils
 import dateutil.parser as tparser
 from fuzzywuzzy import process
 
-REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
-REGEX_20_HOURS = r'\[(?:\d+\,){19}\d+\]'
-REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
-# REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
-# AMPERSAND = '\\\\u0026'
+REGEX_18_HOURS = r'\d\d?\,\[(?:\d+\,){17}\d+\]'
+REGEX_20_HOURS = r'\d\d?\,\[(?:\d+\,){19}\d+\]'
+REGEX_22_HOURS = r'\d\d?\,\[(?:\d+\,){21}\d+\]'
+REGEX_24_HOURS = r'\d\d?\,\[(?:\d+\,){23}\d+\]'
 
 
 def google_detail_parser(response):
@@ -213,12 +212,17 @@ def google_detail_parser(response):
         self_description = None
 
     try:
-        # find the 18 or 24 hour activity distribution,depending on which is present
-        data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, stew)]
-        if len(data) == 0:
-            data = [ast.literal_eval(item) for item in re.findall(REGEX_20_HOURS, stew)]
-            if len(data) == 0:
-                data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, stew)]
+        # find the 18, 20, 22 or 24 hour activity distribution,depending on which is present
+        data = []
+        hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_18_HOURS, stew)]
+        if hour_list: data.append(hour_list)
+        hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_20_HOURS, stew)]
+        if hour_list: data.append(hour_list)
+        hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_22_HOURS, stew)]
+        if hour_list: data.append(hour_list)
+        hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_24_HOURS, stew)]
+        if hour_list: data.append(hour_list)
+
         activity = data
     except Exception:
         activity = None
