@@ -1,6 +1,7 @@
 import google
 import entity
 import utils
+import mongo
 import clearbit
 import safe_request
 from decouple import config
@@ -323,10 +324,22 @@ def get_emails(domain):
         return None
 
 
-def get_domain(business_name):
+def get_domain(business_name, in_parallel=False):
     """
     Gets the domain url for a particular business name
     """
+
+    if in_parallel:
+        collection = mongo.Connect().get_collection(mongo.DOMAINS)
+    else:
+        collection = utils.DB_DOMAINS
+
+    domain = collection.find_one({
+        # TODO: handle if multiple domains are linked to this company
+        'companies': {'$regex': business_name, '$options': "i"}
+    })
+    if domain:
+        return domain['domain']
 
     clearbit.key = CLEAR_KEY
     response = clearbit.NameToDomain.find(name=business_name)

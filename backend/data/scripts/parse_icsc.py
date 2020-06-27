@@ -9,20 +9,26 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 import pdfminer.high_level as pdf_hl
 import re
 import string
+import pandas as pd
 from billiard.pool import Pool
+from fuzzywuzzy import fuzz
 
 import utils
 import contact as contact_funcs
 
 DB_DOMAINS = utils.SYSTEM_MONGO.get_collection("contacts.domains")
 DB_DOMAINS.create_index([('domain', 1)], unique=True)
+DB_DOMAINS.create_index([('companies', 1)])
+MAIN_PATH = THIS_DIR + '/files/contact_related'
+SEARCH_PATHS = ['', MAIN_PATH, THIS_DIR + '/files/', THIS_DIR,
+                BASE_DIR + '/newsgenerator/sources/']
 
 
-def parse_icsc(collection_name, filename=None):
+def parse_pdf_contacts(collection_name, filename=None):
 
     if not collection_exists(collection_name):
         if filename:
-            setup(collection_name, filename)
+            insert_from_pdf(collection_name, filename)
         else:
             print('Needs file name to start collecting.')
             return None
@@ -36,7 +42,7 @@ def parse_icsc(collection_name, filename=None):
     get_contacts_emails(collection_name)
 
 
-def setup(collection_name, filename):
+def insert_from_pdf(collection_name, pdf, replace=False):
     """
     Set up mongodb collection of all users in an ICSC styled pdf.
     If collection with the same name already exists, it will delete
@@ -46,35 +52,61 @@ def setup(collection_name, filename):
     All collections are maintained in the "contacts" database.
     """
 
-    if collection_exists(collection_name):
-        input('\nCollection "{}" already exists! Are you sure you want to replace '
-              'this collection? Note that this is irreversible... Press "Enter" '
-              'to proceed or "ctrl+C" to quit.\n'.format(collection_name))
-
-        print('Okay, proceeding...')
+    replace and drop_collection(collection_name)
 
     collection = get_contacts_collection(collection_name)
-    collection.drop()  # drop collection if it exists
+    blocks = separate_contact_blocks(pdf)
+    contacts = list(filter(None, [contact_block_to_dict(block) for block in blocks]))
 
-    blocks = separate_contact_blocks(filename)
-    contacts = filter(None, [contact_block_to_dict(block) for block in blocks])
+    create_collection_indices(collection_name)
 
-    collection.create_index([('first_name', 1), ('last_name', 1)])
-    collection.create_index([('email', 1)], unique=True,
-                            partialFilterExpression={'email': {'$exists': True}}),
-    collection.create_index([('domain', 1)])
-    collection.create_index([('company', 1)])
-    collection.insert_many(contacts)
+    try:
+        collection.insert_many(contacts, ordered=False)
+        number_inserted = len(contacts)
+    except utils.BWE as bwe:
+        number_inserted = bwe.details['nInserted']
+    print('Successfully inserted {} contacts into database'.format(number_inserted))
 
     prune_bad_apples(collection_name)
 
     return collection
 
 
+def create_collection_indices(collection_name):
+
+    collection = get_contacts_collection(collection_name)
+    collection.create_index([('first_name', 1), ('last_name', 1)])
+    collection.create_index(
+        [('first_name', 1), ('last_name', 1), ('company', 1)],
+        unique=True,
+        partialFilterExpression={
+            'first_name': {'$exists': True},
+            'last_name': {'$exists': True},
+            'company': {'$exists': True},
+        })
+    collection.create_index([('email', 1)], unique=True,
+                            partialFilterExpression={'email': {'$exists': True}}),
+    collection.create_index([('domain', 1)])
+    collection.create_index([('company', 1)])
+    collection.create_index([('domain_processed', 1)])
+    collection.create_index([('email_processed', 1)])
+
+
 def collection_exists(collection_name):
 
     contacts_db = utils.SYSTEM_MONGO.get_collection("contacts")
     return collection_name in contacts_db.list_collection_names()
+
+
+def drop_collection(collection_name):
+
+    if collection_exists(collection_name):
+        input('\nCollection "{}" already exists! Are you sure you want to replace '
+              'this collection? Note that this is irreversible... Press "Enter" '
+              'to proceed or "ctrl+C" to quit.\n'.format(collection_name))
+
+        print('Okay, proceeding...')
+        get_contacts_collection(collection_name).drop()
 
 
 def get_contacts_collection(collection_name):
@@ -98,6 +130,53 @@ def prune_bad_apples(collection_name):
     print("Deleted {} bad apples.".format(deleted.deleted_count))
 
 
+def insert_from_csv(collection_name, csv, replace=False):
+    """
+    Inserts a csv of contacts into a specified collection.
+    """
+
+    replace and drop_collection(collection_name)
+    collection = get_contacts_collection(collection_name)
+
+    contact_df = None
+    for path in SEARCH_PATHS:
+        try:
+            contact_df = pd.read_csv(path + csv)
+            break
+        except FileNotFoundError:
+            continue
+
+    if contact_df is None or len(contact_df) == 0:
+        raise FileNotFoundError('File "{}" not found'.format(csv))
+
+    contact_df.columns = map(str.lower, contact_df.columns)
+    if 'first' in contact_df.columns:
+        contact_df.rename(columns={'first': 'first_name'}, inplace=True)
+    if 'last' in contact_df.columns:
+        contact_df.rename(columns={'last': 'last_name'}, inplace=True)
+
+    critical_columns = ['first_name', 'last_name', 'title', 'email',
+                        'company', 'address_street', 'address_unit',
+                        'address_city_state', 'phone', 'type', 'domain']
+
+    stock_df = pd.DataFrame(columns=critical_columns)
+    insert_df = contact_df.merge(stock_df, 'left')[critical_columns]
+    insert_df = insert_df.where(pd.notnull(insert_df), None)
+    insert_df['company'] = insert_df['company'].apply(parse_company)
+
+    create_collection_indices(collection_name)
+
+    try:
+        insert_docs = insert_df.to_dict(orient='records')
+        collection.insert_many(insert_docs, ordered=False)
+        number_inserted = len(insert_docs)
+    except utils.BWE as bwe:
+        number_inserted = bwe.details['nInserted']
+    print('Successfully inserted {} contacts into database'.format(number_inserted))
+
+    prune_bad_apples(collection_name)
+
+
 def get_contacts_domains(collection_name, batchsize=100):
 
     collection = get_contacts_collection(collection_name)
@@ -106,7 +185,7 @@ def get_contacts_domains(collection_name, batchsize=100):
 
         contacts = list(collection.aggregate([
             {'$match': {
-                'domain': {'$exists': False}
+                'domain_processed': None
             }},
             {'$sample': {
                 'size': batchsize
@@ -122,6 +201,7 @@ def get_contacts_domains(collection_name, batchsize=100):
             domain_pool, pool_exists = Pool(min(20, len(contacts))), True
             contacts = domain_pool.map(pull_domain, contacts)
             for contact in contacts:
+                contact['domain_processed'] = True
                 collection.update_one({'_id': contact['_id']}, {
                     '$set': contact
                 })
@@ -146,7 +226,7 @@ def get_contacts_domains(collection_name, batchsize=100):
 
 def pull_domain(contact):
 
-    domain = contact_funcs.get_domain(contact['company'])
+    domain = contact_funcs.get_domain(contact['company'], in_parallel=True)
     contact['domain'] = domain
     print("Got domain for {}".format(contact["first_name"]))
     time.sleep(2)
@@ -155,7 +235,6 @@ def pull_domain(contact):
 
 def pull_email(contact):
     try:
-
         email = contact_funcs.get_email(
             contact['first_name'],
             contact['last_name'],
@@ -180,6 +259,7 @@ def get_contacts_emails(collection_name, batchsize=150):
         contacts = list(collection.aggregate([
             {'$match': {
                 'domain': {'$ne': None},
+                'domain_processed': True,
                 'email': {'$exists': False}
             }},
             {'$sample': {
@@ -209,6 +289,9 @@ def get_contacts_emails(collection_name, batchsize=150):
                     ))
                 except mongoerrors.DuplicateKeyError:
                     print('User with the same email already exists.')
+                    collection.delete_one({
+                        '_id': contact['_id']
+                    })
                     continue
         except Exception as e:
             print(e)
@@ -225,7 +308,15 @@ def separate_contact_blocks(filename):
     which are: [Name, Title, Company, Address1, Address2,
     Address3, City State Zip, Phone, Type]
     """
-    text = pdf_hl.extract_text(filename)
+    text = None
+    for path in SEARCH_PATHS:
+        try:
+            text = pdf_hl.extract_text(path + filename)
+            break
+        except FileNotFoundError:
+            continue
+    if not text:
+        raise FileNotFoundError('File "{}" not found.'.format(filename))
     return {tuple(item.split("\n")) for item in text.split("\n\n")
             if not ('MEETING ATTENDANCE LIST' or 'No part of this list') in item}
 
@@ -328,6 +419,9 @@ def split_name(name):
 def parse_company(company_name):
     """Make company names more friendly."""
 
+    if not company_name:
+        return None
+
     if company_name.isupper() and len(company_name) <= 4:
         # Likely an acronym (Thisnk CBRE or JLL)
         return company_name
@@ -340,7 +434,7 @@ def parse_company(company_name):
                              ' p. a', ' llp']
     unfriendly_chars = '.,~( '
     conjunctions = [' and ', ' but ', ' or ', ' of ', ' to ',
-                    'at ']
+                    ' at ']
     for item in list_unfriendly_words:
         new_company_name = new_company_name.replace(item, '')
     new_company_name = new_company_name.strip(unfriendly_chars)
@@ -357,6 +451,35 @@ def parse_company(company_name):
     new_company_name = word_capitalizer(new_company_name, company_name)
 
     return new_company_name if new_company_name else company_name
+
+
+def fill_db():
+
+    total_mod = 0
+
+    # while True:
+
+    contacts = list(get_contacts_collection('main_contact_db').find({
+        '$or': [
+            {'domain': {'$ne': None}},
+            {'email': {'$ne': None}}
+        ]
+    }))
+
+    for contact in contacts:
+        update = {}
+        if utils.inbool(contact, 'email'):
+            update['email'] = contact['email']
+        if utils.inbool(contact, 'domain'):
+            update['domain'] = contact['domain']
+            update['domain_processed'] = True
+        update_result = get_contacts_collection('combined_collection').update_one({
+            'first_name': contact['first_name'],
+            'last_name': contact['last_name']
+        }, {'$set': update})
+        if update_result.modified_count == 1:
+            total_mod += 1
+            print('Modified a contact: {}'.format(contact['first_name']))
 
 
 def word_capitalizer(canvas, old_word):
@@ -387,9 +510,141 @@ def print_collection_companes(collection_name):
         ]
     ))
 
-    import pandas as pd
     df = pd.DataFrame(business_names)
-    df.to_csv(THIS_DIR + '/files/business_names.csv')
+    df.to_csv(MAIN_PATH + '/business_names.csv')
+
+
+def remove_email_dupes(collection_name):
+
+    contacts = get_contacts_collection('main_contact_db').aggregate([
+        {'$group': {
+            '_id': '$email',
+            'count': {'$sum': 1}
+        }},
+        {'$sort': {
+            'count': -1
+        }}
+    ])
+
+    path = f'{MAIN_PATH}/{collection_name}_duplicate_emails.csv'
+
+    email_counts = pd.DataFrame(list(contacts))
+    email_counts.to_csv(path)
+
+    input(f"\nDuplicate emails have been outputed. to '{path}'."
+          f"If you would like to proceed with removing duplicates "
+          f"please press 'Enter' to proceed.\n")
+
+    email_counts.rename(columns={'_id': 'email'}, inplace=True)
+    email_counts = email_counts[['email', 'count']]
+    email_counts = email_counts[email_counts['count'] > 1]
+    email_counts = email_counts.dropna()
+
+    collection = get_contacts_collection('main_contact_db')
+
+    for email in email_counts['email']:
+
+        candidates = list(collection.find({'email': email}))
+
+        for candidate in candidates:
+            if not (candidate['address_street'] or
+                    candidate['address_unit'] or
+                    candidate['address_city_state']):
+                candidate['has_details'] = False
+            else:
+                candidate['has_details'] = True
+
+            candidate['match_value'] = fuzz.WRatio(
+                candidate['email'].split('@')[1],
+                candidate['company']
+            )
+
+        details = [c['has_details'] for c in candidates]
+        if any(details):
+            # delete all the ones that have no details
+            for candidate in candidates.copy():
+                if not candidate['has_details']:
+                    collection.delete_one({'_id': candidate['_id']})
+                    candidates.remove(candidate)
+
+        if len(candidates) > 1:
+            # keep the one with the highest email-to-company match.
+            highest_match = {'match_value': -10}
+            for candidate in candidates:
+                if candidate['match_value'] > highest_match['match_value']:
+                    highest_match = candidate
+
+            for candidate in candidates:
+                if candidate != highest_match:
+                    collection.delete_one({'_id': candidate['_id']})
+                    candidates.remove(candidate)
+
+
+def get_collection_domains(collection_name):
+
+    domains = list(get_contacts_collection(collection_name).aggregate([
+        {
+            '$addFields': {
+                'domain': {
+                    '$arrayElemAt': [
+                        {'$split': [
+                            "$email",
+                            "@"
+                        ]},
+                        1
+                    ]
+                }
+            },
+        },
+        {'$project': {
+            'domain': 1,
+            'company': 1,
+            '_id': 0
+        }},
+        {'$group': {
+            '_id': "$domain",
+            'count': {
+                '$sum': 1
+            },
+            'companies': {
+                '$addToSet': '$company'
+            }
+        }},
+    ]))
+
+    pd.DataFrame(domains).to_csv(MAIN_PATH + '/domains.csv')
+    print(f'Generated to {MAIN_PATH}/domains.csv!')
+
+
+def import_domains():
+    """
+    Imports a list of domains and linked companies.
+    """
+    import ast
+
+    domains = pd.read_csv(MAIN_PATH + '/domains.csv')
+    domains = domains.rename(columns={'_id': 'domain'})[['domain', 'companies']]
+    domains['companies'] = domains['companies'].apply(ast.literal_eval)
+    domains = domains.to_dict(orient='records')
+
+    for domain in domains:
+        modified = DB_DOMAINS.update_one({
+            'domain': domain['domain']
+        }, {
+            '$addToSet': {
+                'companies': {
+                    '$each': domain['companies']
+                }
+            },
+            '$setOnInsert': {
+                'domain': domain['domain']
+            }
+        }, upsert=True)
+
+        if modified.modified_count > 1:
+            print("Modified one: {}".format(domain['domain']))
+        elif modified.upserted_id:
+            print("Inserted one: {}".format(domain['domain']))
 
 
 if __name__ == "__main__":
@@ -406,8 +661,4 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    parse_icsc('contacts_collection1')
-
-    # test_contact_block_to_dict()
-    # print(separate_contact_blocks(THIS_DIR + '/files/2020MA_Attendees.pdf'))
-    # setup('contacts_collection1', THIS_DIR + '/files/2020MA_Attendees.pdf')
+    import_domains()

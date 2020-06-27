@@ -47,6 +47,7 @@ DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
 DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
 DB_UNSUBSCRIBED = SYSTEM_MONGO.get_collection(mongo.UNSUBSCRIBED)
 DB_FEEDS = SYSTEM_MONGO.get_collection(mongo.FEEDS)
+DB_DOMAINS = SYSTEM_MONGO.get_collection(mongo.DOMAINS)
 BWE = mongo.BulkWriteError
 
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
@@ -93,14 +94,16 @@ def create_index(collection):
     if collection.lower() == 'coordinates':
         DB_COORDINATES.create_index([('center', 1)])
         DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1),
+                                     ('zoom', 1), ('query_point', 1)], unique=True)
         DB_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_COORDINATES.create_index([('processed_terms', 1)])
         DB_COORDINATES.create_index([('stage', 1)])
         DB_COORDINATES.create_index([('ran', 1), ('stage', 1)])
         DB_COORDINATES.create_index([('ran', 1)])
     if collection.lower() == 'log':
-        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
+        DB_LOG.create_index([('center', 1), ('viewport', 1),
+                             ('zoom', 1), ('method', 1)], unique=True)
     if collection.lower() == 'regions':
         DB_REGIONS.create_index([('name', 1)], unique=True)
         DB_REGIONS.create_index([('geometry', "2dsphere")])
@@ -117,7 +120,8 @@ def create_index(collection):
     if collection.lower() == 'ms_coordinates':
         DB_MS_COORDINATES.create_index([('center', 1)])
         DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_MS_COORDINATES.create_index(
+            [('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
         DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_MS_COORDINATES.create_index([('processed_terms', 1)])
     if collection.lower() == 'minesweeper_places':
@@ -136,6 +140,9 @@ def create_index(collection):
         DB_STATS.create_index([('stat_name', 1)], unique=True)
     if collection.lower() == 'misc':
         DB_MISC.create_index([('name', 1)], unique=True)
+    if collection.lower() == 'domains':
+        DB_DOMAINS.create_index([('domain', 1)], unique=True)
+        DB_DOMAINS.create_index([('companies', 1)])
 
 
 def db_index(collection, *indices, **kwargs):
@@ -533,7 +540,8 @@ if __name__ == "__main__":
 
     def test_round_object():
         print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello"]))
-        print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello", [1.213, 23.423, 345.3409089]], 3))
+        print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756,
+                            "hello", [1.213, 23.423, 345.3409089]], 3))
         print(round_object({
             'pie': 1.2334,
             'hell': 'hate',
