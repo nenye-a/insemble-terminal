@@ -27,7 +27,7 @@ SEARCH_PATHS = ['', MAIN_PATH, THIS_DIR + '/files/', THIS_DIR,
 
 def parse_contacts(collection_name):
 
-    get_contacts_domains(collection_name)
+    # get_contacts_domains(collection_name)
     get_contacts_emails(collection_name)
 
 
@@ -675,6 +675,7 @@ if __name__ == "__main__":
     # get_contacts_emails('main_contact_db')
 
     # print(get_contacts_collection('main_contact_db').count_documents({
+    #     # 'domain': {'$ne': None}
     #     'domain_processed': True,
-    #     'email': {'$exists': True}
+    #     # 'email': {'$exists': True}
     # }))
