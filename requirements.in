@@ -13,8 +13,6 @@ whitenoise
 psutil
 ipython
 sentry-sdk
-autopep8
-flake8
 requests
 pandas
 djangorestframework
@@ -31,3 +29,4 @@ yattag
 sendgrid
 feedparser
 pdfminer.six
+clearbit
