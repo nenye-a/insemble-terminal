@@ -249,6 +249,7 @@ def logic_handler(company, address, city, contact_type):
 
         query_list.append(("ACTIVITY", {"searches": searches1}))
         query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
+        query_list.append(("ACTIVITY", {"searches": searches2}))
         query_list.append(("PERFORMANCE", {"searches": searches2, "performance_type": "OVERALL"}))
 
         return query_list
