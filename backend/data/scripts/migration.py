@@ -185,17 +185,21 @@ def adjust_names():
 def pass_names():
 
     places = list(utils.DB_TERMINAL_PLACES.find({
-        'name': {'$regex': r' at '}
+        'name': {'$regex': r' at ', '$options': "i"}
     }, {
         'name': 1, '_id': 1
     }))
 
     for place in places:
+        if " at " in place['name']:
+            new_name = place['name'].split(" at ")[0]
+        elif " At " in place['name']:
+            new_name = place['name'].split(" At ")[0]
         try:
             utils.DB_TERMINAL_PLACES.update_one({
                 '_id': place['_id']
             }, {'$set': {
-                'name': place['name'].split(" at ")[0],
+                'name': new_name,
                 'previous_name': place['name']
             }})
             print('Updated succesfully ({})'.format(place['_id']))
@@ -235,17 +239,73 @@ def delete_failures():
     })
 
 
+# def modify_revisions():
+
+#     utils.DB_PLACES_HISTORY.aggregate([
+#         {'$project': {
+#             '_id': "$place_id",
+#             'revisions': 1
+#         }},
+#         {'$merge': "temp_revisions"}
+#     ])
+
+def check_revisions():
+    import pprint
+
+    items = list(utils.DB_PLACES_HISTORY.aggregate([
+        {'$unwind': {
+            'path': '$revisions'
+        }},
+        {'$group': {
+            '_id': "$_id",
+            'first': {
+                '$first': "$revisions"
+            },
+            'last': {
+                '$last': "$revisions"
+            }
+        }},
+        {"$addFields": {
+            "first.version": 1,
+            "last.version": 0
+        }},
+        {"$project": {
+            "revisions": [
+                "$first", "$last"
+            ]
+        }},
+        # {"$merge": "temp_revisions"}
+    ], allowDiskUse=True))
+
+    pprint.pprint(items)
+
+
+def store_old_values():
+    import pprint
+
+    pprint.pprint(list(utils.DB_TERMINAL_PLACES.aggregate([
+        {'$project': {
+            'activity_history_temp': {
+                'activity_volume': "$activity_volume",
+                "avg_activity": "$avg_activity",
+                'local_retail_volume': "$local_retail_volume",
+                'brand_volume': "$brand_volume",
+                'local_category_volume': "$local_category_volume",
+                'revised_date': "$last_update"
+            }
+        }},
+        {'$addFields': {
+            'activity_history_temp.local_retail_volume_radius': 1,
+            'activity_history_temp.local_category_volume_radius': 3,
+        }},
+        {'$merge': 'places_history'}
+    ])))
+
+
 if __name__ == "__main__":
-    # migrate_terminal()
-    # add_city()
-    # import_LA()
-    # add_city_fast()
-    # add_state_fast()
-    # add_state_to_county()
-    # test_db()
-    # TEST_DB.delete_many({})
-    # adjust_names()
     # pass_names()
-    fix_blank_names()
-    # delete_failures()
+    # print(utils.DB_TERMINAL_PLACES.find_one({
+    #     'name': {'$regex': r' at ', '$options': "i"}
+    # }))
+
     pass

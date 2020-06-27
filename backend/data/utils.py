@@ -86,7 +86,6 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
     if collection.lower() == 'places_history':
-        DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.version', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.revised_time', 1)])
@@ -576,7 +575,8 @@ if __name__ == "__main__":
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
     # RUN
-    # create_index("stats")
+    create_index("places_history")
+    # SYSTEM_MONGO.get_collection("terminal.temp_revisions").rename("places_history")
 
     # TESTS
 
