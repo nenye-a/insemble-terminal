@@ -24,6 +24,12 @@ SEARCH_PATHS = ['', MAIN_PATH, THIS_DIR + '/files/', THIS_DIR,
                 BASE_DIR + '/newsgenerator/sources/']
 
 
+def parse_contacts(collection_name):
+
+    get_contacts_domains(collection_name)
+    get_contacts_emails(collection_name)
+
+
 def parse_pdf_contacts(collection_name, filename=None):
 
     if not collection_exists(collection_name):
@@ -38,8 +44,7 @@ def parse_pdf_contacts(collection_name, filename=None):
                 collection_name, filename
             ))
 
-    get_contacts_domains(collection_name)
-    get_contacts_emails(collection_name)
+    parse_contacts(collection_name)
 
 
 def insert_from_pdf(collection_name, pdf, replace=False):
@@ -661,4 +666,4 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    import_domains()
+    parse_contacts('main_contact_db')
