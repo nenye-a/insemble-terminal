@@ -6,6 +6,7 @@ import dateutil.parser as tparser
 from fuzzywuzzy import process
 
 REGEX_18_HOURS = r'\[(?:\d+\,){17}\d+\]'
+REGEX_20_HOURS = r'\[(?:\d+\,){19}\d+\]'
 REGEX_24_HOURS = r'\[(?:\d+\,){23}\d+\]'
 # REGEX_ADDRESS = r'[\w\-\s\=\:\&\;\,\.\+\\\(\)\'\!\*\@\#\$\%\|]+\,[\\+\w+\'?\s+]+\,[\w+\s+]+\,\s+\w{2}\s+\d{5}'
 # AMPERSAND = '\\\\u0026'
@@ -215,7 +216,9 @@ def google_detail_parser(response):
         # find the 18 or 24 hour activity distribution,depending on which is present
         data = [ast.literal_eval(item) for item in re.findall(REGEX_18_HOURS, stew)]
         if len(data) == 0:
-            data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, stew)]
+            data = [ast.literal_eval(item) for item in re.findall(REGEX_20_HOURS, stew)]
+            if len(data) == 0:
+                data = [ast.literal_eval(item) for item in re.findall(REGEX_24_HOURS, stew)]
         activity = data
     except Exception:
         activity = None
