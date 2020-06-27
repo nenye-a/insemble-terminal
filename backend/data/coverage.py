@@ -11,7 +11,6 @@ def coverage(name, location, scope):
     location_list = [word.strip() for word in location.split(',')]
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
@@ -25,7 +24,6 @@ def coverage(name, location, scope):
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
         }))

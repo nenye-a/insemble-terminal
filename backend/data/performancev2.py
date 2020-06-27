@@ -6,6 +6,8 @@ import datetime as dt
 from billiard.pool import Pool
 from functools import partial
 
+import common
+
 '''
 
 Performance related queries.
@@ -45,7 +47,6 @@ def performancev2(name, address):
     """
 
     place = utils.DB_TERMINAL_PLACES.find_one({
-        '$text': {'$search': name},
         'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
         'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
         'google_details.activity': {'$ne': None}
@@ -68,7 +69,6 @@ def aggregate_performance(name, location, scope):
     if scope.lower() == 'city':
         # look for places in our database using regexes + search to match to items.
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': location_list[1].upper(),
@@ -83,7 +83,6 @@ def aggregate_performance(name, location, scope):
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}
@@ -106,7 +105,8 @@ def aggregate_performance(name, location, scope):
             data['overall']['name'] = name
 
         if location:
-            data['overall']['name'] = '{} ({})'.format(data['overall']['name'], location.split(',')[0])
+            data['overall']['name'] = '{} ({})'.format(
+                data['overall']['name'], location.split(',')[0])
 
     return data
 
@@ -182,7 +182,8 @@ def category_performance(category, location, scope, return_type=None):
             for item in data['by_category']:
                 item['name'] = '{} ({})'.format(item['name'], location.split(',')[0])
         if category:
-            data['overall']['name'] = '{} ({})'.format(data['overall']['name'], location.split(',')[0])
+            data['overall']['name'] = '{} ({})'.format(
+                data['overall']['name'], location.split(',')[0])
 
     return data
 
@@ -343,7 +344,8 @@ def categorical_data(matching_places, data_name, *return_types):
 
             if not return_types or 'by_category' in return_types:
                 category_dict = performance.section_by_key(matching_places, 'type')
-                category_details = pool.map(partial(split_list, data_type='category'), category_dict.items())
+                category_details = pool.map(
+                    partial(split_list, data_type='category'), category_dict.items())
             if not return_types or 'by_city' in return_types:
                 city_dict = performance.section_by_key(matching_places, 'city')
                 city_details = pool.map(partial(split_list, data_type='city'), city_dict.items())
@@ -419,9 +421,7 @@ def get_details(name, address):
 
 def total_volume(week_activity):
     """Find the total volume of activity"""
-    performance.fill_week(week_activity)
-    week_volume = sum([sum(day_activity) for day_activity in week_activity])
-    return week_volume
+    return sum(utils.flatten(week_activity))
 
 
 def avg_hourly_volume(week_activity):
@@ -443,34 +443,13 @@ def local_category_volume(geo_json_point, retail_type):
 
 def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
 
-    nearby_places = get_nearby(geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
+    nearby_places = common.get_nearby(
+        geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
     volume_array = [place['activity_volume'] for place in nearby_places
                     if 'activity_volume' in place and place['activity_volume'] > 0]
     total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
 
     return total_volume
-
-
-def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
-
-    if not terminal_db:
-        terminal_db = utils.DB_TERMINAL_PLACES
-
-    query = {}
-    if retail_type:
-        query['type'] = retail_type
-    query.update({
-        'location': {
-            '$near': {
-                '$geometry': geo_point,
-                '$maxDistance': utils.miles_to_meters(radius)
-            }
-        },
-    })
-
-    nearby_places = list(terminal_db.find(query))
-
-    return nearby_places
 
 
 if __name__ == "__main__":
@@ -485,7 +464,8 @@ if __name__ == "__main__":
 
     def test_aggregate_performance():
         # performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
-        performance_data = aggregate_performance("Wingstop", "Los Angeles County, CA, USA", "county")
+        performance_data = aggregate_performance(
+            "Wingstop", "Los Angeles County, CA, USA", "county")
         print(performance_data)
         print(len(performance_data['data']))
 

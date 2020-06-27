@@ -55,7 +55,6 @@ def aggregate_performance(name, location, scope):
     if scope.lower() == 'city':
         # look for places in our database using regexes + search to match to items.
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': location_list[1].upper(),
@@ -70,7 +69,6 @@ def aggregate_performance(name, location, scope):
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details': {'$exists': True}

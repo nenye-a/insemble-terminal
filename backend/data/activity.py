@@ -15,7 +15,6 @@ def activity(name, address):
     """
 
     place = utils.DB_TERMINAL_PLACES.find_one({
-        '$text': {'$search': name},
         'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
         'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
         'google_details.activity': {'$ne': None}
@@ -50,7 +49,6 @@ def aggregate_activity(name, location, scope):
     location_list = [word.strip() for word in location.split(',')]
     if scope.lower() == 'city':
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
             'state': location_list[1].upper(),
@@ -65,7 +63,6 @@ def aggregate_activity(name, location, scope):
         if not region:
             return None
         matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
             'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
             'location': {'$geoWithin': {'$geometry': region['geometry']}},
             'google_details.activity': {'$ne': None}

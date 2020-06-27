@@ -510,6 +510,24 @@ def inbool(item: dict, key: str):
     return key in item and item[key]
 
 
+def section_by_key(list_items, key):
+    """
+    Given a list of items, will section them off by the provided key.
+    Will return a dictionary of the following form:
+
+    {
+        val1 : [sublist with item[key] == val1],
+        val2: [sublist with item[key] == val2]
+    }
+    """
+
+    my_dict = {}
+    for item in list_items:
+        if key in item:
+            my_dict[item[key]] = my_dict.get(item[key], []) + [item]
+    return my_dict
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():
