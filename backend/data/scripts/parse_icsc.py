@@ -10,6 +10,7 @@ import pdfminer.high_level as pdf_hl
 import re
 import string
 import pandas as pd
+import numpy as np
 from billiard.pool import Pool
 from fuzzywuzzy import fuzz
 
@@ -232,8 +233,11 @@ def get_contacts_domains(collection_name, batchsize=100):
 def pull_domain(contact):
 
     domain = contact_funcs.get_domain(contact['company'], in_parallel=True)
+    if domain == np.nan:
+        domain = None
     contact['domain'] = domain
-    print("Got domain for {}".format(contact["first_name"]))
+    print("Got domain {} for {}".format(
+        domain, contact["first_name"]))
     time.sleep(2)
     return contact
 
@@ -292,7 +296,8 @@ def get_contacts_emails(collection_name, batchsize=150):
                         contact['email'],
                         contact['_id']
                     ))
-                except mongoerrors.DuplicateKeyError:
+                except mongoerrors.DuplicateKeyError as e:
+                    print(e)
                     print('User with the same email already exists.')
                     collection.delete_one({
                         '_id': contact['_id']
@@ -667,3 +672,9 @@ if __name__ == "__main__":
         print([contact_block_to_dict(block) for block in blocks])
 
     parse_contacts('main_contact_db')
+    # get_contacts_emails('main_contact_db')
+
+    # print(get_contacts_collection('main_contact_db').count_documents({
+    #     'domain_processed': True,
+    #     'email': {'$exists': True}
+    # }))

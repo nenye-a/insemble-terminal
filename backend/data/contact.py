@@ -399,3 +399,5 @@ if __name__ == "__main__":
 
     def test_get_email():
         print(get_email("Kate", "Jay", "verizonwireless.com"))
+
+    test_get_domain()
