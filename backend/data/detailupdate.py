@@ -52,6 +52,9 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
             if 'city' not in details['meta']:
                 city = utils.extract_city(details['meta']['address'])
                 update_details['city'] = city
+            if 'state' not in details['meta']:
+                city = utils.extract_city(details['meta']['address'])
+                update_details['city'] = city
 
             place_query = {'_id': details['meta']['_id']}
             place_update = {'$set': update_details}
@@ -171,8 +174,8 @@ def setup():
 
 if __name__ == "__main__":
 
-    setup()
+    # setup()
 
-    # google_detailer(wait=False)
+    google_detailer(wait=False)
     # check_recency()
     # update_last_update()
