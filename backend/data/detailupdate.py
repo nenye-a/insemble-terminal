@@ -159,10 +159,11 @@ def setup():
             #     {'last_update': -1},
             #     {'last_update': {'$exists': False}}
             # ]
-            '$or': [
-                {'activity_volume': {'$lte': 0}},
-                {'activity_volume': None}
-            ]
+            # '$or': [
+            #     {'activity_volume': {'$lte': 0}},
+            #     {'activity_volume': None}
+            # ]
+            'version': {'$lt': 3}
         }},
         {'$addFields': {
             'marked': False,
@@ -174,8 +175,8 @@ def setup():
 
 if __name__ == "__main__":
 
-    # setup()
+    setup()
 
-    google_detailer(wait=False)
+    # google_detailer(wait=False)
     # check_recency()
     # update_last_update()
