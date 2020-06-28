@@ -1,7 +1,8 @@
 import utils
-import performance
 import google
 import time
+
+import common
 
 
 '''
@@ -14,21 +15,13 @@ def activity(name, address):
     Provided a name and an address, will determine the activity details.
     """
 
-    place = utils.DB_TERMINAL_PLACES.find_one({
-        'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-        'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
-        'google_details.activity': {'$ne': None}
-    })
+    place = common.get_place(name, address)
 
     if place:
         activity = place['google_details']['activity']
-    elif not place:
-        place = performance.get_details(name, address)
-        if not place:
-            return None
-        # TODO: update details on database with the
-        # ones searched here if we don't have
-        activity = place['activity']
+        print(activity)
+    else:
+        return None
 
     name = place['name']
     location = place['address']
@@ -46,29 +39,14 @@ def activity(name, address):
 
 
 def aggregate_activity(name, location, scope):
-    location_list = [word.strip() for word in location.split(',')]
-    if scope.lower() == 'city':
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'google_details.activity': {'$ne': None}
-        }))
-    elif scope.lower() == 'county':
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details.activity': {'$ne': None}
-        }))
-    else:
-        return None
+
+    matching_places = common.aggregate_places(
+        name,
+        'brand',
+        location,
+        scope,
+        needs_google_details=True
+    )
 
     if not matching_places:
         return None
@@ -84,55 +62,13 @@ def aggregate_activity(name, location, scope):
 
 def category_activity(category, location, scope):
 
-    if scope.lower() == 'address':
-        retries, backoff = 0, 1
-        coordinates = None
-        while not coordinates or retries > 5:
-            try:
-                coordinates = utils.to_geojson(google.get_lat_lng(location))
-            except Exception:
-                retries += 1
-                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
-                time.sleep(1 + backoff)
-                backoff += 1
-
-        query = {
-            'location': {'$near': {'$geometry': coordinates,
-                                   '$maxDistance': utils.miles_to_meters(0.5)}},
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = utils.adjust_case(category)
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    elif scope.lower() == 'city':
-        location_list = [word.strip() for word in location.split(',')]
-        query = {
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    elif scope.lower() == 'county':
-        location_list = [word.strip() for word in location.split(',')]
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        query = {
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    else:
-        return None
-
+    matching_places = common.aggregate_places(
+        category,
+        'category',
+        location,
+        scope,
+        needs_google_details=True
+    )
     if not matching_places:
         return None
 
@@ -201,7 +137,7 @@ if __name__ == "__main__":
         # pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
         pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
 
-    # test_activity()
+    test_activity()
     # test_aggregate_activity()
-    test_category_activity()
+    # test_category_activity()
     # test_avg_hourly_activity()
