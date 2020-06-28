@@ -79,6 +79,32 @@ def category_activity(category, location, scope):
     }
 
 
+def normalize(activity):
+
+    if not isinstance(activity[0][1], list):
+        return activity
+
+    operating_list = utils.flatten(activity)
+
+
+def flatten_activity(indexed_activity):
+    """
+    Provied a activity list structured [start_hour: string, [activity]]
+    Will return a 24 hour list.
+    """
+
+    starting_hour, activity = indexed_activity
+    if len(activity) == 24:
+        return activity
+
+    pass
+
+
+def parse_activity(activity):
+
+    pass
+
+
 def combine_avg_activity(list_places):
 
     list_activity = [place['google_details']['activity'] for place in list_places]
