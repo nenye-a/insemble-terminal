@@ -175,8 +175,8 @@ def setup():
 
 if __name__ == "__main__":
 
-    setup()
+    # setup()
 
-    # google_detailer(wait=False)
+    google_detailer(wait=False)
     # check_recency()
     # update_last_update()
