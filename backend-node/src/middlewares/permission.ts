@@ -30,6 +30,8 @@ let permissions = shield({
     incrementMaxLicense: isUserAuthenticated,
     activateAccount: isUserAuthenticated,
     feedback: isUserAuthenticated,
+    createTerminalNote: isUserAuthenticated,
+    editNote: isUserAuthenticated,
   },
 });
 

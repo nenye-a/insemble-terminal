@@ -91,7 +91,9 @@ export default function ComparisonPopover(props: Props) {
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
     let usableColors =
-      reviewTag === ReviewTag.ACTIVITY || reviewTag === ReviewTag.COVERAGE
+      reviewTag === ReviewTag.ACTIVITY ||
+      reviewTag === ReviewTag.COVERAGE ||
+      reviewTag === ReviewTag.PERFORMANCE
         ? COLORS.slice(1)
         : COLORS;
 

@@ -69,25 +69,67 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
-                                         ('google_details.name', "text"),
-                                         ('yelp_details.name', "text")])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.rating', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.neighborhood', 1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+                                         ('google_details.name', "text")])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
-        DB_TERMINAL_PLACES.create_index([('google_details', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('county', 1), ('name', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('county', 1), ('type', 1)])
+        DB_TERMINAL_PLACES.create_index([('google_details.activity', 1)])
         DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('brand_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('address', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('county', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('county', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+        ])
     if collection.lower() == 'places_history':
-        DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.version', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.revised_time', 1)])
@@ -530,6 +572,24 @@ def inbool(item: dict, key: str):
     return item and key in item and item[key]
 
 
+def section_by_key(list_items, key):
+    """
+    Given a list of items, will section them off by the provided key.
+    Will return a dictionary of the following form:
+
+    {
+        val1 : [sublist with item[key] == val1],
+        val2: [sublist with item[key] == val2]
+    }
+    """
+
+    my_dict = {}
+    for item in list_items:
+        if key in item:
+            my_dict[item[key]] = my_dict.get(item[key], []) + [item]
+    return my_dict
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():
@@ -594,18 +654,3 @@ if __name__ == "__main__":
         print("1 -> 2\n{}\n".format(dictionary_diff(dict1, dict2)))
         print("2 -> 1\n{}\n".format(dictionary_diff(dict2, dict1)))
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
-
-    # RUN
-    # create_index("stats")
-
-    # TESTS
-
-    # test_state_code_to_name()
-    # test_parse_city()
-    # test_to_snake_case()
-    # test_snake_to_word()
-    # test_round_object()
-    # test_extract_city()
-    # test_extract_state()
-    # test_chunks()
-    # test_dictionary_diff()

@@ -281,7 +281,7 @@ class GoogleDetails(GenericScraper):
 
         name = utils.encode_word(name)
         address = utils.encode_word(address)
-        url = GoogleDetails.BASE_URL.format(name + '+near+' + address)
+        url = GoogleDetails.BASE_URL.format(name + '+' + address)
         print(url)
         return url
 
