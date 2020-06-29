@@ -38,6 +38,14 @@ export let removePinnedTableResolver: FieldResolver<
     throw new Error('This is not your terminal.');
   }
 
+  if (selectedPinnedTable.tableType === 'NOTE') {
+    await context.prisma.note.delete({
+      where: {
+        id: selectedPinnedTable.tableId,
+      },
+    });
+  }
+
   await context.prisma.pinnedFeed.delete({
     where: {
       id: selectedPinnedTable.id,
