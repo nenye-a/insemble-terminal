@@ -103,6 +103,13 @@ def saved_update(query, update, place_version):
     )
     if 'version' in previous and previous['version'] > place_version:
         # Already updated and versioned due to race condition.
+        utils.DB_TERMINAL_PLACES.update_one({
+            '_id': previous['_id'],
+        }, {
+            '$set': {
+                'version': previous['version']
+            }
+        })
         return
     new = table.find_one(query)
     diff = utils.dictionary_diff(previous, new)
@@ -149,33 +156,20 @@ def update_last_update():
     })
 
 
-def setup():
+def setup(query={}):
 
-    # TEMP_DB.create_index([('marked', 1)])
-    utils.DB_TERMINAL_PLACES.aggregate([
-        {'$match': {
-            # '$or': [
-            #     {'last_update': {'$lt': dt.datetime.utcnow() - dt.timedelta(weeks=1.5)}},
-            #     {'last_update': -1},
-            #     {'last_update': {'$exists': False}}
-            # ]
-            # '$or': [
-            #     {'activity_volume': {'$lte': 0}},
-            #     {'activity_volume': None}
-            # ]
-            'version': {'$lt': 3}
-        }},
-        {'$addFields': {
-            'marked': False,
-            'last_update': -1
-        }},
-        {'$merge': "temp_places"}
-    ])
+    pipeline = [{'$merge': "temp_places"}]
+    if query:
+        pipeline.insert(0, {'$match': query})
+
+    utils.DB_TERMINAL_PLACES.aggregate(pipeline)
 
 
 if __name__ == "__main__":
 
-    # setup()
+    # setup({
+    #     'version': 0
+    # })
 
     google_detailer(wait=False)
     # check_recency()
