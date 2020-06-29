@@ -275,7 +275,9 @@ function TableRow(props: TableRowProps) {
     fill,
     isComparison,
   } = datum;
-  let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
+  let bgColor = fill
+    ? lightenOrDarkenColor(fill, 25)
+    : lightenOrDarkenColor(THEME_COLOR, 25);
   let textColor = getTextColor(bgColor);
   let tableCells = [
     <DataTable.Cell
@@ -468,7 +470,7 @@ const PopoverTitle = styled(Text)`
 const Times = styled(Text)`
   padding-left: 2px;
   font-weight: ${FONT_WEIGHT_MEDIUM};
-  color: ${GRAY_TEXT};
+  color: inherit;
 `;
 
 const Navigator = styled(TouchableOpacity)`
