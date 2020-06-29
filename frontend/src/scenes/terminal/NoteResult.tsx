@@ -23,13 +23,13 @@ export default function NoteResult(props: Props) {
     GET_NOTE_DATA,
     {
       variables: {
-        noteId: tableId,
+        noteId: tableId || '',
       },
     },
   );
 
   return (
-    <View>
+    <Container>
       <ResultTitle
         title="Note"
         tableId={tableId || ''}
@@ -51,9 +51,13 @@ export default function NoteResult(props: Props) {
           <Text>{data.note.content}</Text>
         </NotesContainer>
       ) : null}
-    </View>
+    </Container>
   );
 }
+
+const Container = styled(View)`
+  padding: 20px 0;
+`;
 
 const NotesContainer = styled(View)`
   padding: 16px 22px;
