@@ -1,5 +1,5 @@
 import utils
-import common
+import accumulator
 
 '''
 Coverage related functions.
@@ -8,7 +8,7 @@ Coverage related functions.
 
 def coverage(name, location, scope):
 
-    matching_places = common.aggregate_places(
+    matching_places = accumulator.aggregate_places(
         name,
         'brand',
         location,
@@ -36,7 +36,7 @@ def coverage(name, location, scope):
 
 def category_coverage(category, location, scope):
 
-    matching_places = common.aggregate_places(
+    matching_places = accumulator.aggregate_places(
         category,
         'category',
         location,

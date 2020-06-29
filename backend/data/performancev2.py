@@ -1,11 +1,8 @@
-import time
-import google
-import utils
-import datetime as dt
 from billiard.pool import Pool
 from functools import partial
 
-import common
+import utils
+import accumulator
 
 '''
 
@@ -13,8 +10,7 @@ Performance related queries.
 
 '''
 
-LOCAL_RETAIL_RADIUS = 1  # miles
-LOCAL_CATEGORY_RADIUS = 3  # miles
+
 LOW_CONFIDENCE_VICINITY = 0.01  # miles
 BASELINE = 100  # baseline for index
 ALL_RETAIL_VOLUME = utils.DB_STATS.find_one(
@@ -45,7 +41,7 @@ def performancev2(name, address):
 
     """
 
-    place = common.get_place(name, address)
+    place = accumulator.get_place(name, address)
 
     if not place:
         return None
@@ -57,7 +53,7 @@ def performancev2(name, address):
 
 def aggregate_performance(name, location, scope):
 
-    matching_places = common.aggregate_places(
+    matching_places = accumulator.aggregate_places(
         name,
         'brand',
         location,
@@ -89,7 +85,7 @@ def aggregate_performance(name, location, scope):
 def category_performance(category, location, scope, return_type=None):
     data_name = category if category else location
 
-    matching_places = common.aggregate_places(
+    matching_places = accumulator.aggregate_places(
         category,
         'category',
         location,
@@ -301,39 +297,6 @@ def categorical_data(matching_places, data_name, *return_types):
     }
 
 
-def total_volume(week_activity):
-    """Find the total volume of activity"""
-    return sum(utils.flatten(week_activity))
-
-
-def avg_hourly_volume(week_activity):
-    """Find the average hourly volume"""
-
-    activity = [hour for hour in utils.flatten(week_activity) if hour > 0]
-    return sum(activity) / len(activity) if len(activity) > 0 else None
-
-
-def local_retail_volume(geo_json_point):
-    """Find the retail activity in the general location."""
-    return compile_details(geo_json_point, LOCAL_RETAIL_RADIUS)
-
-
-def local_category_volume(geo_json_point, retail_type):
-    """Fund the category activity in the general location."""
-    return compile_details(geo_json_point, LOCAL_CATEGORY_RADIUS, retail_type)
-
-
-def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
-
-    nearby_places = common.get_nearby(
-        geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
-    volume_array = [place['activity_volume'] for place in nearby_places
-                    if 'activity_volume' in place and place['activity_volume'] > 0]
-    total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
-
-    return total_volume
-
-
 if __name__ == "__main__":
 
     def test_performance():
@@ -359,23 +322,13 @@ if __name__ == "__main__":
 
     def test_category_performance_higher_scope():
         performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
-        # performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county", 'by_city')
+        # performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA",
+        #  "county", 'by_city')
         # performance = category_performance(None, "Los Angeles", "County")
         # print(performance['by_location'])
         print(performance)
 
-    def test_compile_details():
-        from bson import ObjectId
-
-        place = utils.DB_TERMINAL_PLACES.find_one({'_id': ObjectId("5eca2c36eabaf79dfe0825f1")})
-        total_volume = compile_details(place['location'], 1)
-        total_volume_category = compile_details(place['location'], 3, place['type'])
-        assert abs(total_volume - place['local_retail_volume']) < .5
-        assert abs(total_volume_category - place['local_category_volume']) < .5
-        print('Success')
-        return(1)
-
-    # test_performance()
+    test_performance()
     # test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()

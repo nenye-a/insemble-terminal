@@ -1,8 +1,5 @@
 import utils
-import google
-import time
-
-import common
+import accumulator
 
 
 '''
@@ -15,9 +12,9 @@ def activity(name, address):
     Provided a name and an address, will determine the activity details.
     """
 
-    place = common.get_place(name, address)
+    place = accumulator.get_place(name, address)
 
-    if place:
+    if place and place['google_details']['activity']:
         activity = place['google_details']['activity']
     else:
         return None
@@ -36,7 +33,7 @@ def activity(name, address):
 
 def aggregate_activity(name, location, scope):
 
-    matching_places = common.aggregate_places(
+    matching_places = accumulator.aggregate_places(
         name,
         'brand',
         location,
@@ -58,7 +55,7 @@ def aggregate_activity(name, location, scope):
 
 def category_activity(category, location, scope):
 
-    matching_places = common.aggregate_places(
+    matching_places = accumulator.aggregate_places(
         category,
         'category',
         location,
@@ -88,8 +85,9 @@ def normalize(activity):
 
 def normalize_flatten(list_acitivies):
     normalized_activity = utils.flatten(
-        [normalize(activity) for activity in list_acitivies]
+        [list(normalize(activity)) for activity in list_acitivies]
     )
+
     return normalized_activity
 
 
@@ -179,8 +177,8 @@ if __name__ == "__main__":
         # print(aggregate_activity("Starbucks", "Los Angeles Count, CA, USA", "County"))
 
     def test_category_activity():
-        # pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
-        pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
+        pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
+        # pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
 
     def test_decode_activity():
         print(decode_activity([0, [11, 5, 0, 5, 0, 0, 5, 5, 5, 11, 23, 29, 35,
@@ -207,6 +205,6 @@ if __name__ == "__main__":
     # test_activity()
     # test_decode_activity()
     # test_normalize_activity()
-    test_aggregate_activity()
-    # test_category_activity()
+    # test_aggregate_activity()
+    test_category_activity()
     # test_avg_hourly_activity()

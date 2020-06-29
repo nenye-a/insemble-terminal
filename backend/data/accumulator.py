@@ -2,14 +2,15 @@ import utils
 import time
 import datetime as dt
 import google
-from performancev2 import (total_volume, avg_hourly_volume,
-                           local_retail_volume, local_category_volume)
+
+LOCAL_RETAIL_RADIUS = 1  # miles
+LOCAL_CATEGORY_RADIUS = 3  # miles
 
 
 def get_place(name, address):
     """
     Get a place from the database that matches a name and
-    address. If the place is not in the database, scrape 
+    address. If the place is not in the database, scrape
     and return the details. Will return None if no place is
     available.
     """
@@ -90,7 +91,7 @@ def aggregate_places(name, name_type, location,
     ----------
         name: string - name of the brand or category
         name_type: 'brand' | 'category' | None
-        location: string - address, city, or county of the 
+        location: string - address, city, or county of the
                            area of which to include locations
                            from
         scope: 'CITY' | 'COUNTY' - scope of location.
@@ -190,7 +191,53 @@ def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
     return nearby_places
 
 
+def total_volume(week_activity):
+    """Find the total volume of activity"""
+    return sum(utils.flatten(week_activity))
+
+
+def avg_hourly_volume(week_activity):
+    """Find the average hourly volume"""
+
+    activity = [hour for hour in utils.flatten(week_activity) if hour > 0]
+    return sum(activity) / len(activity) if len(activity) > 0 else None
+
+
+def local_retail_volume(geo_json_point):
+    """Find the retail activity in the general location."""
+    return compile_details(geo_json_point, LOCAL_RETAIL_RADIUS)
+
+
+def local_category_volume(geo_json_point, retail_type):
+    """Fund the category activity in the general location."""
+    return compile_details(geo_json_point, LOCAL_CATEGORY_RADIUS, retail_type)
+
+
+def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
+
+    nearby_places = get_nearby(
+        geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
+    volume_array = [place['activity_volume'] for place in nearby_places
+                    if 'activity_volume' in place and place['activity_volume'] > 0]
+    total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
+
+    return total_volume
+
+
+def test_compile_details():
+    from bson import ObjectId
+
+    place = utils.DB_TERMINAL_PLACES.find_one({'_id': ObjectId("5eca2c36eabaf79dfe0825f1")})
+    total_volume = compile_details(place['location'], 1)
+    total_volume_category = compile_details(place['location'], 3, place['type'])
+    assert abs(total_volume - place['local_retail_volume']) < .5
+    assert abs(total_volume_category - place['local_category_volume']) < .5
+    print('Success')
+    return(1)
+
+
 if __name__ == "__main__":
+
     def test_get_details():
         # NOTE: Before firing this test, make sure to turn off update.
         name = "TGI Fridays"
