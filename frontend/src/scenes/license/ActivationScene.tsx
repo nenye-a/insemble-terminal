@@ -29,7 +29,7 @@ export default function ActivationScene() {
     ActivateAccountVariables
   >(ACTIVATE_ACCOUNT, {
     onCompleted: () => {
-      history.push('/results');
+      history.push('/');
     },
   });
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };

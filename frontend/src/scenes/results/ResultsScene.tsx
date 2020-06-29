@@ -67,7 +67,13 @@ export default function ResultsScene() {
   ] = useMutation<Search, SearchVariables>(SEARCH, {
     onError: () => {},
     onCompleted: ({ search }) => {
-      history.push('/results/' + search.searchId);
+      if (history.location.pathname === '/results') {
+        history.replace('/results/' + search.searchId, {
+          search: history.location.state.search,
+        });
+      } else {
+        history.push('/results/' + search.searchId);
+      }
     },
   });
   let [getSearchTag, { loading: getSearchTagLoading }] = useLazyQuery<
@@ -206,13 +212,6 @@ export default function ResultsScene() {
        * when user navigates from other scene, they pass the search query as a state
        */
       onSubmit(history.location.state.search);
-    } else if (history.action === 'POP') {
-      /**
-       * to prevent user from viewing the '/results' without results.
-       * it will forced to go back to previous screen.
-       * e.g the UserHomeScene
-       */
-      history.goBack();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
