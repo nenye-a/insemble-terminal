@@ -56,10 +56,31 @@ def generate_dataframe(results):
 
 def update_activity(query=None):
     pipeline = [
+        # SIMPLE SAMPLE (Temporary)
+        {'$match': {
+            'google_details.activity.0.0': {
+                '$type': 'array'
+            }
+        }},
+        {'$sample': {
+            'size': 50
+        }},
+        ##############
         {'$unwind': {'path': '$google_details.activity',
                      'preserveNullAndEmptyArrays': True}},
         {'$unwind': {'path': '$google_details.activity',
                      'preserveNullAndEmptyArrays': True}},
+        # INCLUDE TO PARSE NEW STYLE LIST:
+        {'$set': {
+            'google_details.activity': {
+                '$arrayElemAt': [
+                    '$google_details.activity', 1
+                ]
+            }
+        }},
+        {'$unwind': {'path': '$google_details.activity',
+                     'preserveNullAndEmptyArrays': True}},
+        #######
         {'$group': {
             '_id': '$_id',
             'activity': {'$addToSet': '$google_details.activity'},
@@ -73,7 +94,7 @@ def update_activity(query=None):
                 }
             }
         }},
-        {'$set': {
+        {'$project': {
             'activity_volume': {
                 '$cond': [{'$eq': ['$activity_volume', 0]}, -1, '$activity_volume']
             },
@@ -449,7 +470,8 @@ def get_one_mile():
 
         activity_volumes = [place['activity_volume'] for place in places
                             if place['activity_volume'] > 0]
-        activity = sum(activity_volumes) / len(activity_volumes) if len(activity_volumes) > 0 else None
+        activity = sum(activity_volumes) / \
+            len(activity_volumes) if len(activity_volumes) > 0 else None
         total_activity = sum(activity_volumes)
         cities.loc[city, 'activity (1mile)'] = activity
         cities.loc[city, 'total activity (1mile)'] = total_activity
@@ -461,8 +483,8 @@ def get_one_mile():
 if __name__ == "__main__":
     # stats_by_key('name')
     # get_one_mile()
-    # update_activity()
+    update_activity()
     # merge_activity()
     # update_brand_volume()
-    merge_brand_activity()
+    # merge_brand_activity()
     pass
