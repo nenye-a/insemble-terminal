@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -11,6 +11,8 @@ import { GET_NOTE_DATA } from '../../graphql/queries/server/notes';
 import { GetNote, GetNoteVariables } from '../../generated/GetNote';
 import ResultTitle from '../results/ResultTitle';
 
+import ManageNoteForm from './ManageNoteForm';
+
 type Props = {
   readOnly?: boolean;
   tableId?: string;
@@ -19,6 +21,7 @@ type Props = {
 
 export default function NoteResult(props: Props) {
   let { readOnly, tableId, pinTableId } = props;
+  let [isEditing, setIsEditing] = useState(false);
   let { data, loading, error } = useQuery<GetNote, GetNoteVariables>(
     GET_NOTE_DATA,
     {
@@ -43,13 +46,30 @@ export default function NoteResult(props: Props) {
       ) : error ? (
         <ErrorComponent text={formatErrorMessage(error.message)} />
       ) : data ? (
-        <NotesContainer>
-          <Row>
-            <Title>{data.note.title}</Title>
-            <Button mode="transparent" text="Edit" />
-          </Row>
-          <Text>{data.note.content}</Text>
-        </NotesContainer>
+        !isEditing ? (
+          <NotesContainer>
+            <Row>
+              <Title>{data.note.title}</Title>
+              <Button
+                mode="transparent"
+                text="Edit"
+                onPress={() => {
+                  setIsEditing(true);
+                }}
+              />
+            </Row>
+            <Text>{data.note.content}</Text>
+          </NotesContainer>
+        ) : (
+          <NotesContainer>
+            <ManageNoteForm
+              mode="edit"
+              tableId={tableId}
+              defaultTitle={data.note.title}
+              defaultContent={data.note.content}
+            />
+          </NotesContainer>
+        )
       ) : null}
     </Container>
   );
