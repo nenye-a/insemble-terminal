@@ -302,10 +302,47 @@ def store_old_values():
     ])))
 
 
+def apply_county_tags():
+    regions = utils.DB_REGIONS.find({
+        'type': "county",
+        'processed': None
+    }, {
+        'name': 1,
+        'geometry': 1,
+        'rank': 1
+    })
+
+    for region in regions:
+        county_name = region['name'].split(' - ')[0]
+        update = utils.DB_TERMINAL_PLACES.update_many({
+            'location': {
+                '$geoWithin': {
+                    '$geometry': region['geometry']
+                }
+            }
+        }, {
+            '$set': {
+                'county': county_name
+            }
+        })
+
+        utils.DB_REGIONS.update_one({
+            '_id': region['_id']
+        }, {
+            '$set': {
+                'processed': True
+            }
+        })
+
+        print(f"{update.modified_count} updated with {county_name} as county.")
+
+
 if __name__ == "__main__":
     # pass_names()
     # print(utils.DB_TERMINAL_PLACES.find_one({
     #     'name': {'$regex': r' at ', '$options': "i"}
     # }))
+    # apply_county_tags()
+    add_city_fast()
 
     pass

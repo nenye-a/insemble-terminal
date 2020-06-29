@@ -249,7 +249,8 @@ def split_list(item, data_type):
         result = combine_parse_details(location_list, forced_name=category)['overall']
     elif data_type == 'city':
         city, location_list = item
-        city = '{}, {}'.format(city, location_list[0]['state'])
+        if 'state' in location_list[0]:
+            city = '{}, {}'.format(city, location_list[0]['state'])
         result = combine_parse_details(location_list, forced_name=city)['overall']
     else:
         return None
@@ -279,8 +280,10 @@ def categorical_data(matching_places, data_name, *return_types):
             if not return_types or 'by_city' in return_types:
                 city_dict = utils.section_by_key(matching_places, 'city')
                 city_details = pool.map(partial(split_list, data_type='city'), city_dict.items())
+        except KeyError as key_e:
+            print(f'Key Error: {key_e}')
         except Exception as e:
-            print(e)
+            print(f'Observed: \n{type(e)}: {e}')
         finally:
             if pool_exists:
                 pool.close()
@@ -323,12 +326,12 @@ if __name__ == "__main__":
     def test_category_performance_higher_scope():
         performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
         # performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA",
-        #  "county", 'by_city')
+        #                                    "county", 'by_city')
         # performance = category_performance(None, "Los Angeles", "County")
         # print(performance['by_location'])
         print(performance)
 
-    test_performance()
+    # test_performance()
     # test_aggregate_performance()
     # test_category_performance()
     # test_category_performance_higher_scope()
