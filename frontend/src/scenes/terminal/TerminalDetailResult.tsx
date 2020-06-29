@@ -179,7 +179,7 @@ export default function TerminalDataResult(props: Props) {
             }
           } else if (tableType === TableType.COVERAGE) {
             return <CoverageResult {...props} />;
-          } else if (tableType === 'NOTE') {
+          } else if (tableType === TableType.NOTE) {
             return <NoteResult {...props} />;
           }
           return null;

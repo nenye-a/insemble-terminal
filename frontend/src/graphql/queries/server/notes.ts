@@ -9,7 +9,7 @@ export const CREATE_TERMINAL_NOTE = gql`
 `;
 
 export const EDIT_NOTE = gql`
-  mutation EditNote($noteId: String!, title: String!, content: String!){
+  mutation EditNote($noteId: String!, title: String, content: String){
     editNote(noteId: $noteId, title: $title, content: $content){
       id
       title

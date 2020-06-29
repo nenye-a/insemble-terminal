@@ -1,9 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useQuery } from '@apollo/react-hooks';
 
-import { View, Text, Button } from '../../core-ui';
+import { View, Text, Button, LoadingIndicator } from '../../core-ui';
+import { ErrorComponent } from '../../components';
+import { formatErrorMessage } from '../../helpers';
 import { FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { THEME_COLOR, WHITE } from '../../constants/colors';
+import { GET_NOTE_DATA } from '../../graphql/queries/server/notes';
+import { GetNote, GetNoteVariables } from '../../generated/GetNote';
 import ResultTitle from '../results/ResultTitle';
 
 type Props = {
@@ -14,6 +19,15 @@ type Props = {
 
 export default function NoteResult(props: Props) {
   let { readOnly, tableId, pinTableId } = props;
+  let { data, loading, error } = useQuery<GetNote, GetNoteVariables>(
+    GET_NOTE_DATA,
+    {
+      variables: {
+        noteId: tableId,
+      },
+    },
+  );
+
   return (
     <View>
       <ResultTitle
@@ -22,19 +36,21 @@ export default function NoteResult(props: Props) {
         readOnly={readOnly}
         pinTableId={pinTableId}
       />
-      <NotesContainer>
-        <Row>
-          <Title>Notes Title</Title>
-          <Button mode="transparent" text="Edit" />
-        </Row>
-        <Text>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse
-        </Text>
-      </NotesContainer>
+      {loading ? (
+        <LoadingIndicator
+          containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
+        />
+      ) : error ? (
+        <ErrorComponent text={formatErrorMessage(error.message)} />
+      ) : data ? (
+        <NotesContainer>
+          <Row>
+            <Title>{data.note.title}</Title>
+            <Button mode="transparent" text="Edit" />
+          </Row>
+          <Text>{data.note.content}</Text>
+        </NotesContainer>
+      ) : null}
     </View>
   );
 }
