@@ -42,6 +42,7 @@ export * from './OwnershipInfoData';
 
 export * from './PinnedFeed';
 export * from './Terminal';
+export * from './Note';
 
 export * from './CreateLicense';
 export * from './MasterToken';
