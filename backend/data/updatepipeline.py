@@ -117,7 +117,7 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
                 continue
 
             if update_type == 'volume':
-                if place['activity'] == []:
+                if place['activity_volume'] < 0:
                     continue
                 local_retail_volume = performancev2.local_retail_volume(place['location'])
                 local_category_volume = performancev2.local_category_volume(

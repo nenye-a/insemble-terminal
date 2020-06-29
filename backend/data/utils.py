@@ -68,23 +68,52 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
-                                         ('google_details.name', "text"),
-                                         ('yelp_details.name', "text")])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.rating', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.neighborhood', 1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+                                         ('google_details.name', "text")])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
-        DB_TERMINAL_PLACES.create_index([('google_details', 1)])
+        DB_TERMINAL_PLACES.create_index([('google_details.activity', 1)])
         DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('brand_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('address', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+        ])
     if collection.lower() == 'places_history':
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.version', 1)])
@@ -92,14 +121,16 @@ def create_index(collection):
     if collection.lower() == 'coordinates':
         DB_COORDINATES.create_index([('center', 1)])
         DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1),
+                                     ('zoom', 1), ('query_point', 1)], unique=True)
         DB_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_COORDINATES.create_index([('processed_terms', 1)])
         DB_COORDINATES.create_index([('stage', 1)])
         DB_COORDINATES.create_index([('ran', 1), ('stage', 1)])
         DB_COORDINATES.create_index([('ran', 1)])
     if collection.lower() == 'log':
-        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
+        DB_LOG.create_index([('center', 1), ('viewport', 1),
+                             ('zoom', 1), ('method', 1)], unique=True)
     if collection.lower() == 'regions':
         DB_REGIONS.create_index([('name', 1)], unique=True)
         DB_REGIONS.create_index([('geometry', "2dsphere")])
@@ -116,7 +147,8 @@ def create_index(collection):
     if collection.lower() == 'ms_coordinates':
         DB_MS_COORDINATES.create_index([('center', 1)])
         DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_MS_COORDINATES.create_index(
+            [('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
         DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_MS_COORDINATES.create_index([('processed_terms', 1)])
     if collection.lower() == 'minesweeper_places':
@@ -510,6 +542,24 @@ def inbool(item: dict, key: str):
     return key in item and item[key]
 
 
+def section_by_key(list_items, key):
+    """
+    Given a list of items, will section them off by the provided key.
+    Will return a dictionary of the following form:
+
+    {
+        val1 : [sublist with item[key] == val1],
+        val2: [sublist with item[key] == val2]
+    }
+    """
+
+    my_dict = {}
+    for item in list_items:
+        if key in item:
+            my_dict[item[key]] = my_dict.get(item[key], []) + [item]
+    return my_dict
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():
@@ -520,7 +570,8 @@ if __name__ == "__main__":
 
     def test_round_object():
         print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello"]))
-        print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello", [1.213, 23.423, 345.3409089]], 3))
+        print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756,
+                            "hello", [1.213, 23.423, 345.3409089]], 3))
         print(round_object({
             'pie': 1.2334,
             'hell': 'hate',
@@ -573,19 +624,3 @@ if __name__ == "__main__":
         print("1 -> 2\n{}\n".format(dictionary_diff(dict1, dict2)))
         print("2 -> 1\n{}\n".format(dictionary_diff(dict2, dict1)))
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
-
-    # RUN
-    create_index("places_history")
-    # SYSTEM_MONGO.get_collection("terminal.temp_revisions").rename("places_history")
-
-    # TESTS
-
-    # test_state_code_to_name()
-    # test_parse_city()
-    # test_to_snake_case()
-    # test_snake_to_word()
-    # test_round_object()
-    # test_extract_city()
-    # test_extract_state()
-    # test_chunks()
-    # test_dictionary_diff()

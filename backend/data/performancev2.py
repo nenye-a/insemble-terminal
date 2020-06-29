@@ -1,10 +1,8 @@
-import time
-import google
-import performance
-import utils
-import datetime as dt
 from billiard.pool import Pool
 from functools import partial
+
+import utils
+import accumulator
 
 '''
 
@@ -12,8 +10,7 @@ Performance related queries.
 
 '''
 
-LOCAL_RETAIL_RADIUS = 1  # miles
-LOCAL_CATEGORY_RADIUS = 3  # miles
+
 LOW_CONFIDENCE_VICINITY = 0.01  # miles
 BASELINE = 100  # baseline for index
 ALL_RETAIL_VOLUME = utils.DB_STATS.find_one(
@@ -44,15 +41,7 @@ def performancev2(name, address):
 
     """
 
-    place = utils.DB_TERMINAL_PLACES.find_one({
-        '$text': {'$search': name},
-        'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-        'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
-        'google_details.activity': {'$ne': None}
-    })
-
-    if not place:
-        place = get_details(name, address)
+    place = accumulator.get_place(name, address)
 
     if not place:
         return None
@@ -64,32 +53,13 @@ def performancev2(name, address):
 
 def aggregate_performance(name, location, scope):
 
-    location_list = [word.strip() for word in location.split(',')]
-    if scope.lower() == 'city':
-        # look for places in our database using regexes + search to match to items.
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'google_details': {'$exists': True}
-        }))
-    elif scope.lower() == 'county':
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details': {'$exists': True}
-        }))
-    else:
-        return None
+    matching_places = accumulator.aggregate_places(
+        name,
+        'brand',
+        location,
+        scope,
+        needs_google_details=True
+    )
 
     if not matching_places:
         return None
@@ -106,7 +76,8 @@ def aggregate_performance(name, location, scope):
             data['overall']['name'] = name
 
         if location:
-            data['overall']['name'] = '{} ({})'.format(data['overall']['name'], location.split(',')[0])
+            data['overall']['name'] = '{} ({})'.format(
+                data['overall']['name'], location.split(',')[0])
 
     return data
 
@@ -114,54 +85,13 @@ def aggregate_performance(name, location, scope):
 def category_performance(category, location, scope, return_type=None):
     data_name = category if category else location
 
-    if scope.lower() == 'address':
-        retries, backoff = 0, 1
-        coordinates = None
-        while not coordinates or retries > 5:
-            try:
-                coordinates = utils.to_geojson(google.get_lat_lng(location))
-            except Exception:
-                retries += 1
-                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
-                time.sleep(1 + backoff)
-                backoff += 1
-
-        query = {
-            'location': {'$near': {'$geometry': coordinates,
-                                   '$maxDistance': utils.miles_to_meters(0.5)}},
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = utils.adjust_case(category)
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    elif scope.lower() == 'city':
-        location_list = [word.strip() for word in location.split(',')]
-        query = {
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    elif scope.lower() == 'county':
-        location_list = [word.strip() for word in location.split(',')]
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        query = {
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    else:
-        return None
+    matching_places = accumulator.aggregate_places(
+        category,
+        'category',
+        location,
+        scope,
+        needs_google_details=True
+    )
 
     if not matching_places:
         return None
@@ -182,7 +112,8 @@ def category_performance(category, location, scope, return_type=None):
             for item in data['by_category']:
                 item['name'] = '{} ({})'.format(item['name'], location.split(',')[0])
         if category:
-            data['overall']['name'] = '{} ({})'.format(data['overall']['name'], location.split(',')[0])
+            data['overall']['name'] = '{} ({})'.format(
+                data['overall']['name'], location.split(',')[0])
 
     return data
 
@@ -338,14 +269,15 @@ def categorical_data(matching_places, data_name, *return_types):
         try:
             pool, pool_exists = Pool(10), True
             if not return_types or 'by_brand' in return_types:
-                brand_dict = performance.section_by_key(matching_places, 'name')
+                brand_dict = utils.section_by_key(matching_places, 'name')
                 brand_details = pool.map(partial(split_list, data_type='brand'), brand_dict.items())
 
             if not return_types or 'by_category' in return_types:
-                category_dict = performance.section_by_key(matching_places, 'type')
-                category_details = pool.map(partial(split_list, data_type='category'), category_dict.items())
+                category_dict = utils.section_by_key(matching_places, 'type')
+                category_details = pool.map(
+                    partial(split_list, data_type='category'), category_dict.items())
             if not return_types or 'by_city' in return_types:
-                city_dict = performance.section_by_key(matching_places, 'city')
+                city_dict = utils.section_by_key(matching_places, 'city')
                 city_details = pool.map(partial(split_list, data_type='city'), city_dict.items())
         except Exception as e:
             print(e)
@@ -365,114 +297,6 @@ def categorical_data(matching_places, data_name, *return_types):
     }
 
 
-def get_details(name, address):
-
-    details = google.get_google_details(
-        name, address
-    )
-
-    location = utils.to_geojson(google.get_lat_lng(address))
-
-    if details:
-
-        retail_type = None
-        if utils.inbool(details, 'type'):
-            retail_type = utils.adjust_case(details['type'].split(" in ")[0])
-
-        place = {
-            'name': utils.remove_name_ats(details['name']),
-            'address': details['address'],
-            'city': utils.extract_city(details['address']),
-            'state': utils.extract_state(details['address']),
-            'location': location,
-            'type': retail_type,
-
-            'activity_volume': total_volume(details['activity'])
-            if details['activity'] else -1,
-
-            'avg_activity': avg_hourly_volume(details['activity'])
-            if details['activity'] else -1,
-
-            'local_retail_volume': local_retail_volume(location)
-            if location else -1,
-
-            'local_category_volume': local_category_volume(location, retail_type)
-            if location else -1,
-
-            'num_nearby': len(get_nearby(location, 0.01)),
-
-            'version': 0,
-            'last_update': dt.datetime.utcnow(),
-            'google_details': details
-        }
-
-        try:
-            utils.DB_TERMINAL_PLACES.insert_one(place)
-            print("Inserted {} ({}) into the database.".format(
-                place['name'], place['address']
-            ))
-        except Exception:
-            pass
-
-        return place
-
-
-def total_volume(week_activity):
-    """Find the total volume of activity"""
-    performance.fill_week(week_activity)
-    week_volume = sum([sum(day_activity) for day_activity in week_activity])
-    return week_volume
-
-
-def avg_hourly_volume(week_activity):
-    """Find the average hourly volume"""
-
-    activity = [hour for hour in utils.flatten(week_activity) if hour > 0]
-    return sum(activity) / len(activity) if len(activity) > 0 else None
-
-
-def local_retail_volume(geo_json_point):
-    """Find the retail activity in the general location."""
-    return compile_details(geo_json_point, LOCAL_RETAIL_RADIUS)
-
-
-def local_category_volume(geo_json_point, retail_type):
-    """Fund the category activity in the general location."""
-    return compile_details(geo_json_point, LOCAL_CATEGORY_RADIUS, retail_type)
-
-
-def compile_details(geo_point, radius, retail_type=None, terminal_db=None):
-
-    nearby_places = get_nearby(geo_point, radius, retail_type=retail_type, terminal_db=terminal_db)
-    volume_array = [place['activity_volume'] for place in nearby_places
-                    if 'activity_volume' in place and place['activity_volume'] > 0]
-    total_volume = sum(volume_array) / len(volume_array) if volume_array else -1
-
-    return total_volume
-
-
-def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
-
-    if not terminal_db:
-        terminal_db = utils.DB_TERMINAL_PLACES
-
-    query = {}
-    if retail_type:
-        query['type'] = retail_type
-    query.update({
-        'location': {
-            '$near': {
-                '$geometry': geo_point,
-                '$maxDistance': utils.miles_to_meters(radius)
-            }
-        },
-    })
-
-    nearby_places = list(terminal_db.find(query))
-
-    return nearby_places
-
-
 if __name__ == "__main__":
 
     def test_performance():
@@ -485,7 +309,8 @@ if __name__ == "__main__":
 
     def test_aggregate_performance():
         # performance_data = aggregate_performance("Wingstop", "Atlanta, GA, USA", "city")
-        performance_data = aggregate_performance("Wingstop", "Los Angeles County, CA, USA", "county")
+        performance_data = aggregate_performance(
+            "Wingstop", "Los Angeles County, CA, USA", "county")
         print(performance_data)
         print(len(performance_data['data']))
 
@@ -497,26 +322,13 @@ if __name__ == "__main__":
 
     def test_category_performance_higher_scope():
         performance = category_performance("Mexican Restaurant", "Los Angeles, CA, USA", "city")
-        # performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA", "county", 'by_city')
+        # performance = category_performance("Mexican Restaurant", "Los Angeles County, CA, USA",
+        #  "county", 'by_city')
         # performance = category_performance(None, "Los Angeles", "County")
         # print(performance['by_location'])
         print(performance)
 
-    def test_get_details():
-        # NOTE: Before firing this test, make sure to turn off update.
-        name = "TGI Fridays"
-        address = "4701 Firestone Blvd, South Gate, CA 90280"
-        print(get_details(name, address))
-
-    def test_compile_details(burner=None):
-        from bson import ObjectId
-
-        place = utils.DB_TERMINAL_PLACES.find_one({'_id': ObjectId("5eca2c36eabaf79dfe0825f1")})
-        total_volume = compile_details(place['location'], 1)
-        total_volume_category = compile_details(place['location'], 3, place['type'])
-        assert abs(total_volume - place['local_retail_volume']) < .5
-        assert abs(total_volume_category - place['local_category_volume']) < .5
-        print('Success')
-        return(1)
-
     test_performance()
+    # test_aggregate_performance()
+    # test_category_performance()
+    # test_category_performance_higher_scope()

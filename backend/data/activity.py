@@ -1,7 +1,5 @@
 import utils
-import performance
-import google
-import time
+import accumulator
 
 
 '''
@@ -14,64 +12,34 @@ def activity(name, address):
     Provided a name and an address, will determine the activity details.
     """
 
-    place = utils.DB_TERMINAL_PLACES.find_one({
-        '$text': {'$search': name},
-        'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-        'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
-        'google_details.activity': {'$ne': None}
-    })
+    place = accumulator.get_place(name, address)
 
-    if place:
+    if place and place['google_details']['activity']:
         activity = place['google_details']['activity']
-    elif not place:
-        place = performance.get_details(name, address)
-        if not place:
-            return None
-        # TODO: update details on database with the
-        # ones searched here if we don't have
-        activity = place['activity']
+    else:
+        return None
 
     name = place['name']
     location = place['address']
 
-    activity_arrays = [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
-                       for sublist in activity]
-
-    avg_activity_per_hour = avg_hourly_activity(activity_arrays)
+    activity = normalize(activity)
 
     return {
         'name': name,
         'location': location,
-        'activity': package_activity(avg_activity_per_hour)
+        'activity': parse_activity(activity)
     }
 
 
 def aggregate_activity(name, location, scope):
-    location_list = [word.strip() for word in location.split(',')]
-    if scope.lower() == 'city':
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'google_details.activity': {'$ne': None}
-        }))
-    elif scope.lower() == 'county':
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details.activity': {'$ne': None}
-        }))
-    else:
-        return None
+
+    matching_places = accumulator.aggregate_places(
+        name,
+        'brand',
+        location,
+        scope,
+        needs_google_details=True
+    )
 
     if not matching_places:
         return None
@@ -87,55 +55,13 @@ def aggregate_activity(name, location, scope):
 
 def category_activity(category, location, scope):
 
-    if scope.lower() == 'address':
-        retries, backoff = 0, 1
-        coordinates = None
-        while not coordinates or retries > 5:
-            try:
-                coordinates = utils.to_geojson(google.get_lat_lng(location))
-            except Exception:
-                retries += 1
-                print("Failed to obtain coordinates, trying again. Retries: {}/5".format(retries))
-                time.sleep(1 + backoff)
-                backoff += 1
-
-        query = {
-            'location': {'$near': {'$geometry': coordinates,
-                                   '$maxDistance': utils.miles_to_meters(0.5)}},
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = utils.adjust_case(category)
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    elif scope.lower() == 'city':
-        location_list = [word.strip() for word in location.split(',')]
-        query = {
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    elif scope.lower() == 'county':
-        location_list = [word.strip() for word in location.split(',')]
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        query = {
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-            'google_details': {'$exists': True}
-        }
-        if category:
-            query['type'] = {"$regex": r"^" + utils.adjust_case(category), "$options": "i"}
-        matching_places = list(utils.DB_TERMINAL_PLACES.find(query))
-    else:
-        return None
-
+    matching_places = accumulator.aggregate_places(
+        category,
+        'category',
+        location,
+        scope,
+        needs_google_details=True
+    )
     if not matching_places:
         return None
 
@@ -146,20 +72,70 @@ def category_activity(category, location, scope):
     }
 
 
+def normalize(activity):
+
+    if isinstance(activity[0][0], int):
+        # TODO: Remove the need of naively dealing with length 18
+        # lists once data collection is complete.
+        return normalize_activity_old(activity)
+
+    encoded_activity = utils.flatten(activity)
+    return map(decode_activity, encoded_activity)
+
+
+def normalize_flatten(list_acitivies):
+    normalized_activity = utils.flatten(
+        [list(normalize(activity)) for activity in list_acitivies]
+    )
+
+    return normalized_activity
+
+
+def decode_activity(encoded_activity):
+    """
+    Provied a activity list structured [start_hour: string, [activity]]
+    Will return a 24 hour list, with the first index corresponding to
+    4AM.
+    """
+
+    first_hour = 4  # all lists baselined against 4 AM
+    final_activity = [0 for i in range(24)]
+
+    starting_hour, activity = encoded_activity
+    first_index = starting_hour - first_hour
+    item_indexes = range(first_index, first_index + len(activity))
+    indexed_activity = zip(item_indexes, activity)
+
+    for index, hour_activity in indexed_activity:
+        final_activity[index] = hour_activity
+
+    return final_activity
+
+
+def normalize_activity_old(activity):
+
+    return [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
+            for sublist in activity]
+
+
+def parse_activity(activity):
+    return package_activity(avg_hourly_activity(activity))
+
+
 def combine_avg_activity(list_places):
 
-    list_activity = [place['google_details']['activity'] for place in list_places]
-    activity_arrays = [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
-                       for sublist in utils.flatten(list_activity)]
+    list_activity = [place['google_details']['activity'] for place in list_places
+                     if place['google_details']['activity']]
+    activity = normalize_flatten(list_activity)
 
-    return package_activity(avg_hourly_activity(activity_arrays))
+    return parse_activity(activity)
 
 
 def avg_hourly_activity(activity):
     """Will dertemine the average activity of each hour over a week"""
     activity_by_hour = list(zip(*activity))
     return [round(sum(hour_activity) / len(hour_activity))
-            if hour_activity and utils.contains_match(bool, hour_activity) else 0
+            if hour_activity and any(hour_activity) else 0
             for hour_activity in activity_by_hour]
 
 
@@ -201,10 +177,34 @@ if __name__ == "__main__":
         # print(aggregate_activity("Starbucks", "Los Angeles Count, CA, USA", "County"))
 
     def test_category_activity():
-        # pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
-        pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
+        pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
+        # pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
+
+    def test_decode_activity():
+        print(decode_activity([0, [11, 5, 0, 5, 0, 0, 5, 5, 5, 11, 23, 29, 35,
+                                   35, 35, 41, 52, 70, 88, 100, 94, 82, 52, 29]]))
+        print(decode_activity([4, [2, 2, 2, 2, 8, 22, 14, 2, 2, 17, 28,
+                                   20, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]]))
+        print(decode_activity([6, [0, 0, 0, 0, 0, 14, 26, 39, 50, 61,
+                                   71, 78, 78, 69, 52, 35, 0, 0]]))
+
+    def test_normalize_activity():
+        print(list(normalize([
+            [
+                [0, [11, 5, 0, 5, 0, 0, 5, 5, 5, 11, 23, 29, 35,
+                     35, 35, 41, 52, 70, 88, 100, 94, 82, 52, 29]],
+                [4, [2, 2, 2, 2, 8, 22, 14, 2, 2, 17, 28,
+                     20, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]]
+            ],
+            [
+                [6, [0, 0, 0, 0, 0, 14, 26, 39, 50, 61,
+                     71, 78, 78, 69, 52, 35, 0, 0]]
+            ]
+        ])))
 
     # test_activity()
+    # test_decode_activity()
+    # test_normalize_activity()
     # test_aggregate_activity()
-    test_category_activity()
+    # test_category_activity()
     # test_avg_hourly_activity()
