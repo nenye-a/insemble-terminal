@@ -68,23 +68,52 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
-                                         ('google_details.name', "text"),
-                                         ('yelp_details.name', "text")])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.rating', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.neighborhood', 1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+                                         ('google_details.name', "text")])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
-        DB_TERMINAL_PLACES.create_index([('google_details', 1)])
+        DB_TERMINAL_PLACES.create_index([('google_details.activity', 1)])
         DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('brand_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('address', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+        ])
     if collection.lower() == 'places_history':
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.version', 1)])
@@ -599,6 +628,60 @@ if __name__ == "__main__":
     # RUN
     create_index("places_history")
     # SYSTEM_MONGO.get_collection("terminal.temp_revisions").rename("places_history")
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('name', 1),
+    #     ('address', 1),
+    #     ('google_details.activity', -1),
+    # ])
+
+    # print('Created First Index')
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('name', 1),
+    #     ('city', 1),
+    #     ('state', 1),
+    #     ('google_details.activity', -1),
+    # ])
+
+    # print('Created 2nd Index')
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('type', 1),
+    #     ('city', 1),
+    #     ('state', 1),
+    #     ('google_details.activity', -1),
+    # ])
+
+    # print('Created 3rd Index')
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('name', 1),
+    #     ('location', "2dsphere"),
+    #     ('google_details.activity', -1),
+    # ])
+
+    # print('Created 4th Index')
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('type', 1),
+    #     ('location', "2dsphere"),
+    #     ('google_details.activity', -1),
+    # ])
+
+    # print('Created 5th Index')
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('name', 1),
+    #     ('location', "2dsphere"),
+    # ])
+
+    # print('Created 6th Index')
+
+    # DB_TERMINAL_PLACES.create_index([
+    #     ('type', 1),
+    #     ('location', "2dsphere"),
+    # ])
 
     # TESTS
 

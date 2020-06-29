@@ -115,7 +115,7 @@ def aggregate_places(name, name_type, location,
     if needs_google_details:
         # TODO: re-index the database.
         name_query.update({
-            'google_details': {'$exists': True}
+            'google_details.activity': {'$ne': None}
         })
 
     location_list = [word.strip() for word in location.split(',')]

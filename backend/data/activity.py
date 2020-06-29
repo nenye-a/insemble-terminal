@@ -205,6 +205,6 @@ if __name__ == "__main__":
     # test_activity()
     # test_decode_activity()
     # test_normalize_activity()
-    # test_aggregate_activity()
-    test_category_activity()
+    test_aggregate_activity()
+    # test_category_activity()
     # test_avg_hourly_activity()
