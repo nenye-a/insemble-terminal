@@ -65,6 +65,9 @@
   "eslintConfig": {
     "extends": "kodefox/react"
   },
+  "jest": {
+    "globalSetup": "./global-setup.js"
+  },
   "prettier": {
     "singleQuote": true,
     "trailingComma": "all",
