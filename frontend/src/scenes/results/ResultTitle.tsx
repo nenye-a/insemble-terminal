@@ -342,6 +342,7 @@ export default function ResultTitle(props: Props) {
             pinTableId={pinTableId}
             terminalId={params.terminalId}
             readOnly={readOnly}
+            tableType={tableType}
           />
         )}
       </Row>

@@ -27,6 +27,7 @@ import {
 } from '../graphql/queries/server/terminals';
 
 import ErrorComponent from './ErrorComponent';
+import { useViewport } from '../helpers';
 
 type Props = {
   onClickAway: () => void;
@@ -46,8 +47,10 @@ export default function PinPopover(props: Props) {
     { loading: pinTableLoading, data: pinTableData, error: pinTableError },
   ] = useMutation<PinTable, PinTableVariables>(PIN_TABLE);
   let [addTerminalVisible, setAddTerminalVisible] = useState(false);
+  let { isDesktop } = useViewport();
+
   return (
-    <Container>
+    <Container isDesktop={isDesktop}>
       {terminalsLoading || pinTableLoading ? (
         <LoadingIndicator />
       ) : terminalsError ? (
@@ -112,10 +115,10 @@ export default function PinPopover(props: Props) {
   );
 }
 
-const Container = styled(Card)`
+const Container = styled(Card)<WithViewport>`
   margin-top: 12px;
   padding: 20px 30px;
-  width: 514px;
+  width: ${({ isDesktop }) => (isDesktop ? '514px' : '100%')};
   max-height: 285px;
   overflow: visible;
 `;

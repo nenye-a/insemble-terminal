@@ -2,15 +2,16 @@ import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
 
-import { TouchableOpacity, Text, Card } from '../core-ui';
+import { TouchableOpacity, Text, Card, Modal } from '../core-ui';
 import { DISABLED_TEXT_COLOR, THEME_COLOR } from '../constants/colors';
-import { ReviewTag } from '../generated/globalTypes';
+import { ReviewTag, TableType } from '../generated/globalTypes';
 import { ComparationTagWithFill } from '../types/types';
 import AddComparisonModal from '../scenes/results/AddComparisonModal';
 
 import SvgTripleDotsRow from './icons/triple-dots-row';
 import SvgRoundAdd from './icons/round-add';
 import SvgPin from './icons/pin';
+import PinPopover from './PinPopover';
 
 type Props = {
   onChange: (isOpen: boolean) => void;
@@ -24,6 +25,7 @@ type Props = {
   pinTableId?: string;
   terminalId?: string;
   readOnly?: boolean;
+  tableType: TableType;
 };
 
 export default function TripleDotsButton(props: Props) {
@@ -39,6 +41,7 @@ export default function TripleDotsButton(props: Props) {
     pinTableId,
     terminalId,
     readOnly,
+    tableType,
   } = props;
   let [popoverVisible, setPopoverVisible] = useState(false);
 
@@ -56,6 +59,7 @@ export default function TripleDotsButton(props: Props) {
           pinTableId={pinTableId}
           terminalId={terminalId}
           readOnly={readOnly}
+          tableType={tableType}
         />
       }
       position={['bottom']}
@@ -91,6 +95,7 @@ type TripleDotsPopoverProps = {
   pinTableId?: string;
   terminalId?: string;
   readOnly?: boolean;
+  tableType: TableType;
 };
 
 function TripleDotsPopover(props: TripleDotsPopoverProps) {
@@ -104,13 +109,16 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
     pinTableId,
     terminalId,
     readOnly,
+    tableType,
   } = props;
-  let [comparisonModalOpen, setComparisonModalOpen] = useState(false);
+  let [comparisonModalVisible, setComparisonModalVisible] = useState(false);
+  let [pinModalVisible, setPinModalVisible] = useState(false);
+
   return (
     <Container>
       <AddComparisonModal
-        visible={comparisonModalOpen}
-        onClose={() => setComparisonModalOpen(false)}
+        visible={comparisonModalVisible}
+        onClose={() => setComparisonModalVisible(false)}
         reviewTag={reviewTag}
         tableId={tableId}
         onTableIdChange={onTableIdChange}
@@ -120,15 +128,30 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
         pinId={pinTableId}
         terminalId={terminalId}
       />
+      <PinModal
+        visible={pinModalVisible}
+        onClose={() => setPinModalVisible(false)}
+        hideCloseButton={true}
+      >
+        <PinPopover
+          onClickAway={() => setPinModalVisible(false)}
+          tableId={tableId}
+          tableType={tableType}
+        />
+      </PinModal>
       <ButtonContainer
         onPress={() => {
-          setComparisonModalOpen(true);
+          setComparisonModalVisible(true);
         }}
       >
         <SvgRoundAdd width={24} height={24} />
         <PurpleText>Compare</PurpleText>
       </ButtonContainer>
-      <ButtonContainer>
+      <ButtonContainer
+        onPress={() => {
+          setPinModalVisible(true);
+        }}
+      >
         <SvgPin width={24} height={24} style={{ color: THEME_COLOR }} />
         <PurpleText>Terminals</PurpleText>
       </ButtonContainer>
@@ -156,4 +179,13 @@ const Touchable = styled(TouchableOpacity)`
 const PurpleText = styled(Text)`
   color: ${THEME_COLOR};
   padding-top: 8px;
+`;
+
+const PinModal = styled(Modal)`
+  width: 90vw;
+  max-height: 80vh;
+  height: fit-content;
+  border-radius: 2px;
+  justify-content: center;
+  background-color: transparent;
 `;
