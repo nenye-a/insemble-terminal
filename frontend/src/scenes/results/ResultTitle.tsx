@@ -56,12 +56,12 @@ import SvgQuestionMark from '../../components/icons/question-mark';
 type Props = {
   title: string;
   noData?: boolean;
-  reviewTag: ReviewTag;
+  reviewTag?: ReviewTag;
   tableId: string;
   onTableIdChange?: (tableId: string) => void;
   comparisonTags?: Array<ComparationTagWithFill>;
   canCompare?: boolean;
-  tableType: TableType;
+  tableType?: TableType;
   businessTag?: {
     type: BusinessType;
     params: string;
@@ -141,14 +141,16 @@ export default function ResultTitle(props: Props) {
   let infoboxPopover = (
     <PopoverContainer>{infoboxContent && infoboxContent()}</PopoverContainer>
   );
-  let pinPopover = (
+  let pinPopover = tableType ? (
     <PinPopover
       tableId={tableId}
       tableType={tableType}
       onClickAway={() => setPinPopoverOpen(false)}
     />
+  ) : (
+    <View />
   );
-  let comparisonPopover = (
+  let comparisonPopover = reviewTag ? (
     <ComparisonPopover
       reviewTag={reviewTag}
       tableId={tableId}
@@ -159,6 +161,8 @@ export default function ResultTitle(props: Props) {
       pinId={pinTableId}
       terminalId={params.terminalId}
     />
+  ) : (
+    <View />
   );
 
   let compareLocationText =
@@ -177,6 +181,7 @@ export default function ResultTitle(props: Props) {
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
 
+  let resultTitle = getResultTitle({ reviewTag, businessTag, locationTag });
   let showAuthAlert = () => {
     alert.show('You need to sign in to access this feature');
   };
@@ -215,12 +220,10 @@ export default function ResultTitle(props: Props) {
             )}
           </Popover>
         )}
-        {isTerminalScene && (
+        {isTerminalScene && resultTitle && (
           <>
             <Title> | </Title>
-            <SubTitle>
-              {getResultTitle({ reviewTag, businessTag, locationTag })}
-            </SubTitle>
+            <SubTitle>{resultTitle}</SubTitle>
           </>
         )}
       </Row>
@@ -234,16 +237,18 @@ export default function ResultTitle(props: Props) {
               {!readOnly && (
                 <Touchable
                   onPress={() => {
-                    updateComparison({
-                      variables: {
-                        actionType: CompareActionType.DELETE_ALL,
-                        tableId,
-                        reviewTag,
-                        pinId: pinTableId,
-                      },
-                      awaitRefetchQueries: true,
-                      refetchQueries: refetchTerminalQueries,
-                    });
+                    if (reviewTag) {
+                      updateComparison({
+                        variables: {
+                          actionType: CompareActionType.DELETE_ALL,
+                          tableId,
+                          reviewTag,
+                          pinId: pinTableId,
+                        },
+                        awaitRefetchQueries: true,
+                        refetchQueries: refetchTerminalQueries,
+                      });
+                    }
                   }}
                 >
                   <SvgRoundClose />
@@ -251,7 +256,9 @@ export default function ResultTitle(props: Props) {
               )}
             </>
           )
-        ) : null}
+        ) : (
+          <View />
+        )}
         {canCompare && !readOnly && (
           <Popover
             isOpen={comparisonPopoverOpen}
