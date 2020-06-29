@@ -18,7 +18,6 @@ html {
 @media all and (min-width: 768px) {
   .pac-container {
     width: 400px !important;
-    right: 0 !important;
   }
 }
 
