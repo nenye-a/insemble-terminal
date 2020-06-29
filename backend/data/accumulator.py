@@ -143,7 +143,7 @@ def aggregate_places(name, name_type, location,
         city_query = {
             'city': {
                 "$regex": r"^" + utils.adjust_case(location_list[0]),
-                "$options": "i"},
+            },
             'state': location_list[1].upper()
         }
         city_query.update(name_query)

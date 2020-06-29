@@ -73,6 +73,8 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('state', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('county', 1), ('name', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('county', 1), ('type', 1)])
         DB_TERMINAL_PLACES.create_index([('google_details.activity', 1)])
         DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
@@ -93,6 +95,18 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([
             ('type', 1),
             ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('county', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('county', 1),
             ('state', 1),
             ('google_details.activity', -1),
         ])
