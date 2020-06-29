@@ -9,5 +9,6 @@ export let TableType = enumType({
     'OWNERSHIP_INFO',
     'OWNERSHIP_CONTACT',
     'COVERAGE',
+    'NOTE',
   ],
 });
