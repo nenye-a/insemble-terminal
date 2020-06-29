@@ -17,6 +17,7 @@ import ContactsResult from '../results/ContactsResult';
 import OwnershipInformationResult from '../results/OwnershipInformationResult';
 
 import NoteResult from './NoteResult';
+import AddNoteButton from './AddNoteButton';
 
 type Props = {
   data: Array<PinnedFeeds>;
@@ -178,11 +179,13 @@ export default function TerminalDataResult(props: Props) {
             }
           } else if (tableType === TableType.COVERAGE) {
             return <CoverageResult {...props} />;
+          } else if (tableType === 'NOTE') {
+            return <NoteResult {...props} />;
           }
           return null;
         },
       )}
-      <NoteResult />
+      <AddNoteButton />
     </View>
   );
 }

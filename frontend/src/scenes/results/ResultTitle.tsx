@@ -72,6 +72,7 @@ type Props = {
   sortOrder?: Array<string>;
   onSortOrderChange?: (newSortOrder: Array<string>) => void;
   readOnly?: boolean;
+  onClosePress?: () => void;
 };
 
 type Params = {
@@ -97,6 +98,7 @@ export default function ResultTitle(props: Props) {
     sortOrder,
     onSortOrderChange,
     readOnly,
+    onClosePress,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -294,22 +296,26 @@ export default function ResultTitle(props: Props) {
           ) : (
             <Touchable
               onPress={() => {
-                if (pinTableId) {
-                  removePinnedTable({
-                    variables: {
-                      pinTableId,
-                    },
-                    awaitRefetchQueries: true,
-                    refetchQueries: [
-                      {
-                        query: GET_TERMINAL,
-                        variables: {
-                          terminalId: params?.terminalId || '',
-                        },
+                if (onClosePress) {
+                  onClosePress();
+                } else {
+                  if (pinTableId) {
+                    removePinnedTable({
+                      variables: {
+                        pinTableId,
                       },
-                      { query: GET_TERMINAL_LIST },
-                    ],
-                  });
+                      awaitRefetchQueries: true,
+                      refetchQueries: [
+                        {
+                          query: GET_TERMINAL,
+                          variables: {
+                            terminalId: params?.terminalId || '',
+                          },
+                        },
+                        { query: GET_TERMINAL_LIST },
+                      ],
+                    });
+                  }
                 }
               }}
               disabled={noData}
