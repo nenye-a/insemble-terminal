@@ -364,7 +364,7 @@ if __name__ == "__main__":
         # print(performance['by_location'])
         print(performance)
 
-    def test_compile_details(burner=None):
+    def test_compile_details():
         from bson import ObjectId
 
         place = utils.DB_TERMINAL_PLACES.find_one({'_id': ObjectId("5eca2c36eabaf79dfe0825f1")})

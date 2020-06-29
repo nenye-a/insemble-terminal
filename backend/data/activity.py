@@ -19,22 +19,18 @@ def activity(name, address):
 
     if place:
         activity = place['google_details']['activity']
-        print(activity)
     else:
         return None
 
     name = place['name']
     location = place['address']
 
-    activity_arrays = [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
-                       for sublist in activity]
-
-    avg_activity_per_hour = avg_hourly_activity(activity_arrays)
+    activity = normalize(activity)
 
     return {
         'name': name,
         'location': location,
-        'activity': package_activity(avg_activity_per_hour)
+        'activity': parse_activity(activity)
     }
 
 
@@ -81,44 +77,67 @@ def category_activity(category, location, scope):
 
 def normalize(activity):
 
-    if not isinstance(activity[0][1], list):
-        return activity
+    if isinstance(activity[0][0], int):
+        # TODO: Remove the need of naively dealing with length 18
+        # lists once data collection is complete.
+        return normalize_activity_old(activity)
 
-    operating_list = utils.flatten(activity)
+    encoded_activity = utils.flatten(activity)
+    return map(decode_activity, encoded_activity)
 
 
-def flatten_activity(indexed_activity):
+def normalize_flatten(list_acitivies):
+    normalized_activity = utils.flatten(
+        [normalize(activity) for activity in list_acitivies]
+    )
+    return normalized_activity
+
+
+def decode_activity(encoded_activity):
     """
     Provied a activity list structured [start_hour: string, [activity]]
-    Will return a 24 hour list.
+    Will return a 24 hour list, with the first index corresponding to
+    4AM.
     """
 
-    starting_hour, activity = indexed_activity
-    if len(activity) == 24:
-        return activity
+    first_hour = 4  # all lists baselined against 4 AM
+    final_activity = [0 for i in range(24)]
 
-    pass
+    starting_hour, activity = encoded_activity
+    first_index = starting_hour - first_hour
+    item_indexes = range(first_index, first_index + len(activity))
+    indexed_activity = zip(item_indexes, activity)
+
+    for index, hour_activity in indexed_activity:
+        final_activity[index] = hour_activity
+
+    return final_activity
+
+
+def normalize_activity_old(activity):
+
+    return [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
+            for sublist in activity]
 
 
 def parse_activity(activity):
-
-    pass
+    return package_activity(avg_hourly_activity(activity))
 
 
 def combine_avg_activity(list_places):
 
-    list_activity = [place['google_details']['activity'] for place in list_places]
-    activity_arrays = [[0, 0] + sublist + [0, 0, 0, 0] if len(sublist) == 18 else sublist
-                       for sublist in utils.flatten(list_activity)]
+    list_activity = [place['google_details']['activity'] for place in list_places
+                     if place['google_details']['activity']]
+    activity = normalize_flatten(list_activity)
 
-    return package_activity(avg_hourly_activity(activity_arrays))
+    return parse_activity(activity)
 
 
 def avg_hourly_activity(activity):
     """Will dertemine the average activity of each hour over a week"""
     activity_by_hour = list(zip(*activity))
     return [round(sum(hour_activity) / len(hour_activity))
-            if hour_activity and utils.contains_match(bool, hour_activity) else 0
+            if hour_activity and any(hour_activity) else 0
             for hour_activity in activity_by_hour]
 
 
@@ -163,7 +182,31 @@ if __name__ == "__main__":
         # pprint.pprint(category_activity("Coffee Shop", "Los Angeles, CA", "CITY"))
         pprint.pprint(category_activity("Coffee Shop", "Los Angeles County, CA", "COUNTY"))
 
-    test_activity()
-    # test_aggregate_activity()
+    def test_decode_activity():
+        print(decode_activity([0, [11, 5, 0, 5, 0, 0, 5, 5, 5, 11, 23, 29, 35,
+                                   35, 35, 41, 52, 70, 88, 100, 94, 82, 52, 29]]))
+        print(decode_activity([4, [2, 2, 2, 2, 8, 22, 14, 2, 2, 17, 28,
+                                   20, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]]))
+        print(decode_activity([6, [0, 0, 0, 0, 0, 14, 26, 39, 50, 61,
+                                   71, 78, 78, 69, 52, 35, 0, 0]]))
+
+    def test_normalize_activity():
+        print(list(normalize([
+            [
+                [0, [11, 5, 0, 5, 0, 0, 5, 5, 5, 11, 23, 29, 35,
+                     35, 35, 41, 52, 70, 88, 100, 94, 82, 52, 29]],
+                [4, [2, 2, 2, 2, 8, 22, 14, 2, 2, 17, 28,
+                     20, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]]
+            ],
+            [
+                [6, [0, 0, 0, 0, 0, 14, 26, 39, 50, 61,
+                     71, 78, 78, 69, 52, 35, 0, 0]]
+            ]
+        ])))
+
+    # test_activity()
+    # test_decode_activity()
+    # test_normalize_activity()
+    test_aggregate_activity()
     # test_category_activity()
     # test_avg_hourly_activity()
