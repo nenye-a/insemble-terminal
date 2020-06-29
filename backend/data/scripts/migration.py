@@ -280,6 +280,32 @@ def check_revisions():
     pprint.pprint(items)
 
 
+def correct_version():
+
+    pipeline = [
+        {
+            '$project': {
+                'version': {
+                    '$arrayElemAt': [
+                        '$revisions', 0
+                    ]
+                }
+            }
+        }, {
+            '$project': {
+                'version': {
+                    '$add': [
+                        '$version.version', 1
+                    ]
+                }
+            }
+        },
+        {'merge': "pending-versions"}
+    ]
+
+    utils.DB_PLACES_HISTORY.aggregate(pipeline)
+
+
 def store_old_values():
     import pprint
 
