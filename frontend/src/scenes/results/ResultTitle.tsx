@@ -50,10 +50,11 @@ import {
   RemovePinnedTableVariables,
 } from '../../generated/RemovePinnedTable';
 import SvgPin from '../../components/icons/pin';
-import SvgRoundAdd from '../../components/icons/round-add';
 import SvgRoundClose from '../../components/icons/round-close';
 import SvgClose from '../../components/icons/close';
-import SvgQuestionMark from '../../components/icons/question-mark';
+import InfoboxPopover from '../../components/InfoboxPopover';
+import AddComparisonButton from '../../components/AddComparisonButton';
+import TripleDotsButton from '../../components/TripleDotsButton';
 
 type Props = {
   title: string;
@@ -201,52 +202,17 @@ export default function ResultTitle(props: Props) {
     <Container isDesktop={isDesktop}>
       <Row flex>
         <Title noData={noData}>{title}</Title>
-        {infoboxContent && isDesktop ? (
-          <Popover
+        {infoboxContent && (
+          <InfoboxPopover
             isOpen={infoPopoverOpen}
-            content={infoboxPopover}
-            position={['bottom']}
-            onClickOutside={() => setInfoPopoverOpen(false)}
-            align="start"
-          >
-            {(ref) => (
-              <View
-                ref={ref}
-                onMouseEnter={() => {
-                  setInfoPopoverOpen(true);
-                }}
-                onMouseLeave={() => {
-                  setInfoPopoverOpen(false);
-                }}
-                style={{ marginLeft: 4, marginRight: 4 }}
-              >
-                <SvgQuestionMark
-                  style={{ color: noData ? DISABLED_TEXT_COLOR : THEME_COLOR }}
-                />
-              </View>
+            onChange={setInfoPopoverOpen}
+            content={() => (
+              <PopoverContainer>
+                {infoboxContent ? infoboxContent() : null}
+              </PopoverContainer>
             )}
-          </Popover>
-        ) : (
-          <>
-            <Touchable
-              onPress={() => {
-                setModalVisible(true);
-              }}
-            >
-              <SvgQuestionMark
-                style={{ color: noData ? DISABLED_TEXT_COLOR : THEME_COLOR }}
-              />
-            </Touchable>
-            <ModalContainer
-              visible={modalVisible}
-              hideCloseButton
-              onClose={() => {
-                setModalVisible(false);
-              }}
-            >
-              {infoboxContent && infoboxContent()}
-            </ModalContainer>
-          </>
+            disabled={noData}
+          />
         )}
         {isTerminalScene && resultTitle && (
           <>
@@ -256,7 +222,7 @@ export default function ResultTitle(props: Props) {
         )}
       </Row>
       <Row flex style={{ justifyContent: 'flex-end' }}>
-        {formattedCompareText ? (
+        {!isTerminalScene && formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
           ) : (
@@ -284,100 +250,99 @@ export default function ResultTitle(props: Props) {
               )}
             </>
           )
-        ) : (
-          <View />
-        )}
-        {canCompare && !readOnly && (
-          <Popover
-            isOpen={comparisonPopoverOpen}
-            content={comparisonPopover}
-            position={['bottom']}
-            onClickOutside={() => setComparisonPopoverOpen(false)}
-            align="end"
-          >
-            {(ref) => (
-              <Touchable
-                ref={ref}
-                onPress={() => {
-                  if (isAuthenticated) {
-                    if (readOnly) {
-                      showReadOnlyAlert();
-                    } else {
-                      setComparisonPopoverOpen(true);
-                    }
-                  } else {
-                    showAuthAlert();
-                  }
-                }}
+        ) : null}
+        {isDesktop ? (
+          <>
+            {canCompare && !readOnly && reviewTag && tableId && (
+              <AddComparisonButton
+                isOpen={comparisonPopoverOpen}
+                onChange={setComparisonPopoverOpen}
                 disabled={noData}
-              >
-                <SvgRoundAdd {...(noData && { fill: DISABLED_TEXT_COLOR })} />
-              </Touchable>
+                reviewTag={reviewTag}
+                tableId={tableId}
+                onTableIdChange={onTableIdChange}
+                comparisonTags={comparisonTags}
+                sortOrder={sortOrder}
+                onSortOrderChange={onSortOrderChange}
+                pinTableId={pinTableId}
+                terminalId={params.terminalId}
+                readOnly={readOnly}
+              />
             )}
-          </Popover>
-        )}
-        {readOnly ? null : isTerminalScene ? (
-          removePinnedTableLoading ? (
-            <LoadingIndicator />
-          ) : (
-            <Touchable
-              onPress={() => {
-                if (onClosePress) {
-                  onClosePress();
-                } else {
-                  if (pinTableId) {
-                    removePinnedTable({
-                      variables: {
-                        pinTableId,
-                      },
-                      awaitRefetchQueries: true,
-                      refetchQueries: [
-                        {
-                          query: GET_TERMINAL,
-                          variables: {
-                            terminalId: params?.terminalId || '',
-                          },
+            {readOnly ? null : isTerminalScene ? (
+              removePinnedTableLoading ? (
+                <LoadingIndicator />
+              ) : (
+                <Touchable
+                  onPress={() => {
+                    if (pinTableId) {
+                      removePinnedTable({
+                        variables: {
+                          pinTableId,
                         },
-                        { query: GET_TERMINAL_LIST },
-                      ],
-                    });
-                  }
-                }
-              }}
-              disabled={noData}
-            >
-              <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
-            </Touchable>
-          )
-        ) : (
-          <Popover
-            isOpen={pinPopoverOpen}
-            content={pinPopover}
-            position={['bottom']}
-            onClickOutside={() => setPinPopoverOpen(false)}
-            align="end"
-            containerStyle={{ overflow: 'visible' }}
-          >
-            {(ref) => (
-              <Touchable
-                ref={ref}
-                onPress={() => {
-                  if (isAuthenticated) {
-                    if (readOnly) {
-                      showReadOnlyAlert();
-                    } else {
-                      setPinPopoverOpen(true);
+                        awaitRefetchQueries: true,
+                        refetchQueries: [
+                          {
+                            query: GET_TERMINAL,
+                            variables: {
+                              terminalId: params?.terminalId || '',
+                            },
+                          },
+                          { query: GET_TERMINAL_LIST },
+                        ],
+                      });
                     }
-                  } else {
-                    showAuthAlert();
-                  }
-                }}
-                disabled={noData}
+                  }}
+                  disabled={noData}
+                >
+                  <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+                </Touchable>
+              )
+            ) : (
+              <Popover
+                isOpen={pinPopoverOpen}
+                content={pinPopover}
+                position={['bottom']}
+                onClickOutside={() => setPinPopoverOpen(false)}
+                align="end"
+                containerStyle={{ overflow: 'visible' }}
               >
-                <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
-              </Touchable>
+                {(ref) => (
+                  <Touchable
+                    ref={ref}
+                    onPress={() => {
+                      if (isAuthenticated) {
+                        if (readOnly) {
+                          showReadOnlyAlert();
+                        } else {
+                          setPinPopoverOpen(true);
+                        }
+                      } else {
+                        showAuthAlert();
+                      }
+                    }}
+                    disabled={noData}
+                  >
+                    <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+                  </Touchable>
+                )}
+              </Popover>
             )}
-          </Popover>
+          </>
+        ) : (
+          <TripleDotsButton
+            onChange={setComparisonPopoverOpen}
+            disabled={noData}
+            reviewTag={reviewTag}
+            tableId={tableId}
+            onTableIdChange={onTableIdChange}
+            comparisonTags={comparisonTags}
+            sortOrder={sortOrder}
+            onSortOrderChange={onSortOrderChange}
+            pinTableId={pinTableId}
+            terminalId={params.terminalId}
+            readOnly={readOnly}
+          />
         )}
       </Row>
     </Container>
