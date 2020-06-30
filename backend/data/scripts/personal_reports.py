@@ -138,7 +138,7 @@ def logic_handler(company, address, city, contact_type):
 
         comp_brand = most_likely_chain(nearby_brands)
         comp_brand_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-            "$near": {"$geometry": comp_brand['location'], "$maxDistance": 1000}}}))[0][
+            "$near": {"$geometry": comp_brand['location'], "$maxDistance": 10000}}}))[0][
             'name']  # TODO: may need to error check if counties are blank
 
         # TODO: if no retail is found in the near vicinity, choose retail in the closest MSA
@@ -203,7 +203,6 @@ def logic_handler(company, address, city, contact_type):
     return None
 
 def process_retailer(company, user_location):
-    matches = None
     query_list = []
     text_list = []
 
@@ -250,7 +249,7 @@ def process_retailer(company, user_location):
     comparison_brand = find_nearby_competitor_with_activity(base_brand['name'], base_brand['type'], location)
     category = base_brand['type']
     closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-        "$near": {"$geometry": location, "$maxDistance": 1000}}}))[0][
+        "$near": {"$geometry": location, "$maxDistance": 10000}}}))[0][
         'name']  # TODO: may need to error check if counties are blank
 
     # add to query list
@@ -272,7 +271,8 @@ def process_retailer(company, user_location):
     })
 
     # How am I doing in the market compared to competitors?
-    query_list.append(("COVERAGE", {"searches": searches1})) # TODO: add support for single address in coverage, otherwise change
+    # TODO: uncomment coverage when single address supported
+    #query_list.append(("COVERAGE", {"searches": searches1}))
     text_list.append("Some description of what's going on here") # TODO: descriptions
     query_list.append(("ACTIVITY", {"searches": searches1}))
     text_list.append("Some description of what's going on here")
@@ -283,12 +283,11 @@ def process_retailer(company, user_location):
     # Find the County where the brand has the lowest presence (needs work)
     # TODO: rather than selecting a random county where the user isn't, select it based on the non-presence of the brand
     base_brand_msa = list(utils.DB_REGIONS.find({"type": "msa", "geometry": {
-        "$near": {"$geometry": location, "$maxDistance": 1000}}}))[0][
-        'name']
+        "$near": {"$geometry": location}}}))[0]
     other_msa = utils.DB_REGIONS.find_one({"name": {"$ne": base_brand_msa['name']}, "type": "msa"})
     other_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-        "$near": {"$geometry": other_msa['center'], "$maxDistance": 1000}}}))[0][
-        'name']
+        "$near": {"$geometry": other_msa['center'], "$maxDistance": 10000}}}))[0][
+        'name'].replace(" -", ",")
 
     # Find the best city for the category of retail based on customerVolumeIndex
     city_search = {'location_tag': {'type': 'COUNTY', 'params': other_county},
@@ -312,9 +311,13 @@ def process_retailer(company, user_location):
 
     # if it doesn't find another brand in the prospect city to be next to (that's not the same brand), quit
     # (could potentially just select a random place in the top city)
-    if not matches: return None
 
-    other_brand, city = (matches[0]['name'], matches[0]['city']) # TODO: select the one with activity (or highest activity)
+    if not matches: return query_list
+
+    match = first_with_activity(matches)
+
+    if not match: return query_list
+    other_brand, city = (match, match['city']) # TODO: select the one with activity (or highest activity)
 
     # Add the category, brand and city to the coverage search
     searches2 = []
@@ -330,15 +333,16 @@ def process_retailer(company, user_location):
         'location_tag': {'type': 'COUNTY', 'params': other_county},
         'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
     })
-    query_list.append(("COVERAGE", {"searches": searches2}))
+    # TODO: uncomment coverage when single address supported
+    #query_list.append(("COVERAGE", {"searches": searches2}))
     text_list.append("Some description of what's going on here") # TODO: descriptions
 
     # Add the city performance breakdown for the category in the county
     query_list.append(("PERFORMANCE", {"searches": [city_search], "performance_type": "CITY"}))
     text_list.append("Some description of what's going on here") # TODO: descriptions
 
-    # Select one of the top performers (that aren't of the same brand)
-    # find the activity of that and the closest retailers
+    # find the activity of the closest retailers to the same category brand deep_dive
+    print("selecting top performer")
     near_retailer_matches = utils.DB_TERMINAL_PLACES.find(
         {"location": {"$near": {"$geometry": other_brand['location'], "$maxDistance": SEARCH_RADIUS}}})
     nearby_brands = first_with_activity(near_retailer_matches, NUM_CENTER_COMPS)
@@ -383,12 +387,12 @@ def first_with_activity(matches, num_results=1):
     # finds the first brand that has activity out of an iterable of brands, sorted by distance from predetermined location
     results = []
     for result in matches:
+        if 'activity_volume' in result and result['activity_volume'] > 0:
+            results.append(result)
         if len(results) >= num_results:
             if len(results) == 1:
                 return results[0]
             return results
-        if 'activity_volume' in result and result['activity_volume'] > 0:
-            results.append(result)
     return None
 
 
@@ -424,6 +428,6 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = THIS_DIR + '/files/icsc_emails_short_retailer_owner.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
     personal_reports(filename)
