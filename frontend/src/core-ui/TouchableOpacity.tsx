@@ -32,10 +32,10 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
           onPress();
         }
       }}
+      tabIndex={0}
       {...otherProps}
       onClick={(event: MouseEvent) => {
         if (stopPropagation) {
-          event.stopPropagation();
         }
         if (isLocalLink && !(event.metaKey || event.ctrlKey)) {
           event.preventDefault();
@@ -44,7 +44,6 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
           onPress();
         }
       }}
-      tabIndex={0}
     />
   );
 });
