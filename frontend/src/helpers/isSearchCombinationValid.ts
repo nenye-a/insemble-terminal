@@ -32,7 +32,7 @@ export default function isSearchCombinationValid(
     ) {
       return true;
     }
-  } else if (formattedReviewTag === ReviewTag.COVERAGE) {
+  } else if (formattedReviewTag === ReviewTag.MAP) {
     if (
       hasBusinessTag &&
       (typeof businessTag === 'string' ||

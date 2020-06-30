@@ -343,7 +343,7 @@ export default function ResultsScene() {
                     />
                   );
                 }
-              } else if (reviewTag === ReviewTag.COVERAGE) {
+              } else if (reviewTag === ReviewTag.MAP) {
                 return <CoverageResult {...props} />;
               }
               return null;

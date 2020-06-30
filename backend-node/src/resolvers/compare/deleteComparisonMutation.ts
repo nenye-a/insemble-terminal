@@ -431,7 +431,7 @@ export let deleteComparisonResolver: FieldResolver<
         comparationTags: table.comparationTags,
       };
 
-    case 'COVERAGE':
+    case 'MAP':
       table = await context.prisma.coverage.findOne({
         where: { id: tableId },
         select: {

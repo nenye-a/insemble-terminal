@@ -200,7 +200,7 @@ const convertCoverage = (
       return {
         name: name || '-',
         location: location || '_',
-        numLocations: num_locations || 0,
+        numLocations: num_locations ? `${num_locations}` : '-',
         coverageData:
           insertCoverage.length > 0 ? JSON.stringify(insertCoverage) : '[]',
         compareId: compareId,
@@ -212,7 +212,7 @@ const convertCoverage = (
 type CompareData = {
   name: string;
   location: string;
-  numLocations: number;
+  numLocations: string;
   coverageData: string;
   compareId: string;
 };
