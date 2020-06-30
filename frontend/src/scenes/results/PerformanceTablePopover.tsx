@@ -4,10 +4,8 @@ import styled from 'styled-components';
 import { View, Text } from '../../core-ui';
 import { THEME_COLOR } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD } from '../../constants/theme';
-import { useViewport } from '../../helpers';
 
-export default function PerformanceTablePopover() {
-  let { isDesktop } = useViewport();
+export default function PerformanceTablePopover(props: WithViewport) {
   let content = [
     {
       title: 'Volume Index',
@@ -66,7 +64,7 @@ export default function PerformanceTablePopover() {
   return (
     <Container>
       {content.map(({ title, subtitle, description }, idx) => (
-        <ItemContainer key={idx} isDesktop={isDesktop}>
+        <ItemContainer key={idx} isDesktop={props.isDesktop}>
           <PopoverTitle>
             {title}
             <Text> {subtitle}</Text>

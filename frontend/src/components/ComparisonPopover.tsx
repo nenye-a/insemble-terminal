@@ -351,7 +351,7 @@ const Title = styled(Text)<TextProps & WithViewport>`
 const Row = styled(View)`
   flex-direction: row;
   align-items: center;
-  margin: 2px 0;
+  margin: 2px 6px;
   svg {
     color: ${THEME_COLOR};
     &:hover {
@@ -367,7 +367,14 @@ const CloseContainer = styled(TouchableOpacity)`
 const ComparisonDivider = styled(Divider)`
   background-color: ${GREY_DIVIDER};
   height: 2px;
-  margin: 28px 34px;
+  ${({ isDesktop }) =>
+    isDesktop
+      ? css`
+          margin: 28px 34px;
+        `
+      : css`
+          margin: 28px 8px;
+        `}
 `;
 
 const Circle = styled(View)`

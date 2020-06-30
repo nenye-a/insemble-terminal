@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   LoadingIndicator,
   Card,
-  Modal,
 } from '../../core-ui';
 import { PinPopover } from '../../components';
 import {
@@ -23,7 +22,6 @@ import {
   FONT_SIZE_LARGE,
   FONT_WEIGHT_BOLD,
   FONT_SIZE_SMALL,
-  DEFAULT_BORDER_RADIUS,
 } from '../../constants/theme';
 import { useAuth } from '../../context';
 import { getResultTitle, useViewport } from '../../helpers';
@@ -108,7 +106,6 @@ export default function ResultTitle(props: Props) {
   let [comparisonPopoverOpen, setComparisonPopoverOpen] = useState(false);
   let [pinPopoverOpen, setPinPopoverOpen] = useState(false);
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
-  let [modalVisible, setModalVisible] = useState(false);
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
   let refetchTerminalQueries = params.terminalId
@@ -213,6 +210,7 @@ export default function ResultTitle(props: Props) {
               </PopoverContainer>
             )}
             disabled={noData}
+            isDesktop={isDesktop}
           />
         )}
         {isTerminalScene && resultTitle && (
@@ -399,11 +397,4 @@ const PopoverContainer = styled(Card)`
   flex: 1;
   padding: 14px;
   max-width: 600px;
-`;
-
-const ModalContainer = styled(Modal)`
-  width: 365px;
-  max-height: fit-content;
-  padding: 12px;
-  border-radius: ${DEFAULT_BORDER_RADIUS};
 `;
