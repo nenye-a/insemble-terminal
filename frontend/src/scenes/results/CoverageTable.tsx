@@ -6,7 +6,7 @@ import { DataTable } from '../../components';
 import { WHITE, THEME_COLOR } from '../../constants/colors';
 import { MergedCoverageData, Direction } from '../../types/types';
 import { GetCoverage_coverageTable_data_coverageData as CoverageBusiness } from '../../generated/GetCoverage';
-import { useSortableData } from '../../helpers';
+import { useSortableData, useViewport } from '../../helpers';
 
 type Props = {
   data: Array<MergedCoverageData>;
@@ -21,6 +21,7 @@ export default function CoverageTable(props: Props) {
   data.forEach(({ coverageData }) => {
     allCoverageData = allCoverageData.concat(coverageData);
   });
+  let { isDesktop } = useViewport();
   // Note: What we want to sort is the numlocations of data.coverageData
   let { sortedData, requestSort, sortConfig } = useSortableData<
     CoverageBusiness
@@ -30,7 +31,7 @@ export default function CoverageTable(props: Props) {
   });
 
   return (
-    <Container>
+    <Container isDesktop={isDesktop}>
       <LegendContainer>
         {data.map(({ fill, name }, index) => (
           <Row key={`legend-${index}`}>
@@ -74,8 +75,8 @@ export default function CoverageTable(props: Props) {
   );
 }
 
-const Container = styled(View)`
-  width: 410px;
+const Container = styled(View)<ViewProps & WithViewport>`
+  width: ${({ isDesktop }) => (isDesktop ? '410px' : '100%')};
   padding: 24px;
   background-color: ${WHITE};
 `;

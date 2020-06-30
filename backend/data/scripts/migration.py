@@ -280,26 +280,81 @@ def check_revisions():
     pprint.pprint(items)
 
 
-def store_old_values():
-    import pprint
+def correct_version():
 
-    pprint.pprint(list(utils.DB_TERMINAL_PLACES.aggregate([
-        {'$project': {
-            'activity_history_temp': {
-                'activity_volume': "$activity_volume",
-                "avg_activity": "$avg_activity",
-                'local_retail_volume': "$local_retail_volume",
-                'brand_volume': "$brand_volume",
-                'local_category_volume': "$local_category_volume",
-                'revised_date': "$last_update"
+    pipeline = [
+        {
+            '$project': {
+                'version': {
+                    '$arrayElemAt': [
+                        '$revisions', 0
+                    ]
+                }
             }
-        }},
-        {'$addFields': {
-            'activity_history_temp.local_retail_volume_radius': 1,
-            'activity_history_temp.local_category_volume_radius': 3,
-        }},
-        {'$merge': 'places_history'}
-    ])))
+        }, {
+            '$project': {
+                'version': {
+                    '$add': [
+                        '$version.version', 1
+                    ]
+                }
+            }
+        }, {
+            '$set': {
+                'version': {
+                    '$cond': [
+                        {"$eq": ["$version", None]},
+                        0,
+                        "$version"
+                    ]
+                }
+            }
+        },
+        {'$merge': "pending_versions"}
+    ]
+    utils.DB_PLACES_HISTORY.aggregate(pipeline)
+    utils.SYSTEM_MONGO.get_collection("terminal.pending_versions").aggregate([
+        {'$merge': {
+            "into": "places",
+            "whenNotMatched": "discard"
+        }}
+    ])
+    utils.SYSTEM_MONGO.get_collection("terminal.pending_versions").drop()
+
+
+def store_old_values():
+
+    # utils.DB_TERMINAL_PLACES.aggregate([
+    #     {'$project': {
+    #         'activity_history_temp': {
+    #             'activity_volume': "$activity_volume",
+    #             "avg_activity": "$avg_activity",
+    #             'local_retail_volume': "$local_retail_volume",
+    #             'brand_volume': "$brand_volume",
+    #             'local_category_volume': "$local_category_volume",
+    #             'revised_date': "$last_update"
+    #         }
+    #     }},
+    #     {'$addFields': {
+    #         'activity_history_temp.local_retail_volume_radius': 1,
+    #         'activity_history_temp.local_category_volume_radius': 3,
+    #     }},
+    #     {'$merge': 'places_history'}
+    # ])
+
+    # print("Successfully created the temporary history.")
+
+    utils.DB_PLACES_HISTORY.update_many(
+        {'activity_history_temp': {'$exists': True}},
+        [
+            {'$set': {
+                'activity_history': {
+                    "$concatArrays": [["$activity_history_temp"], "$activity_history"]
+                }
+            }},
+            {'$unset': "activity_history_temp"}
+        ]
+    )
 
 
 def apply_county_tags():
@@ -343,6 +398,8 @@ if __name__ == "__main__":
     #     'name': {'$regex': r' at ', '$options': "i"}
     # }))
     # apply_county_tags()
-    add_city_fast()
+    # add_city_fast()
+    # correct_version()
+    store_old_values()
 
     pass

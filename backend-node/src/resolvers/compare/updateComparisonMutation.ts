@@ -663,7 +663,7 @@ export let updateComparisonResolver: FieldResolver<
         tableId: table.id,
         comparationTags: table.comparationTags,
       };
-    case 'COVERAGE':
+    case 'MAP':
       if (actionType === 'DELETE') {
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');

@@ -20,6 +20,8 @@ import {
   PerformanceTableType,
   ReviewTag,
   OwnershipType as GeneratedOwnershipType,
+  BusinessTagType,
+  LocationTagType,
 } from '../../generated/globalTypes';
 import {
   ResultQuery,
@@ -28,6 +30,7 @@ import {
   BusinessTagResult,
   LocationTag,
   PerformanceRowPressParam,
+  MapInfoboxPressParam,
 } from '../../types/types';
 import { getResultQueries, capitalize, useViewport } from '../../helpers';
 import {
@@ -146,6 +149,25 @@ export default function ResultsScene() {
           : selectedSearchTagWithIds?.locationTag,
       });
     }
+  };
+
+  let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
+    let { businessName, address } = params.newTag;
+    onSubmit({
+      reviewTag: undefined,
+      businessTag: businessName
+        ? {
+            params: businessName,
+            type: BusinessTagType.BUSINESS,
+          }
+        : undefined,
+      locationTag: address
+        ? {
+            params: address,
+            type: LocationTagType.ADDRESS,
+          }
+        : undefined,
+    });
   };
 
   let updateStates = ({
@@ -343,8 +365,13 @@ export default function ResultsScene() {
                     />
                   );
                 }
-              } else if (reviewTag === ReviewTag.COVERAGE) {
-                return <CoverageResult {...props} />;
+              } else if (reviewTag === ReviewTag.MAP) {
+                return (
+                  <CoverageResult
+                    onInfoBoxPress={onMapInfoboxPress}
+                    {...props}
+                  />
+                );
               }
               return null;
             })}

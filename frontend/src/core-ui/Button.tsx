@@ -48,7 +48,7 @@ export default function Button(props: Props) {
     iconPlacement = 'end',
     ...otherProps
   } = props;
-
+  let isLink = otherProps.href != null;
   let buttonContent = [
     <Text
       key={`button-text-${text}`}
@@ -64,7 +64,7 @@ export default function Button(props: Props) {
   ];
   return (
     <Container
-      forwardedAs="button"
+      forwardedAs={isLink ? 'a' : 'button'}
       type="button"
       disabled={loading || disabled}
       mode={mode}
@@ -91,6 +91,7 @@ const Container = styled(TouchableOpacity)<Props>`
   flex-direction: row;
   align-items: center;
   outline: none;
+  text-decoration: none;
   border-radius: ${(props) =>
     props.shape === 'round' ? '14px' : DEFAULT_BORDER_RADIUS};
     height: ${(props) =>

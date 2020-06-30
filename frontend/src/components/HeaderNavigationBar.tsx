@@ -66,6 +66,7 @@ export default function HeaderNavigationBar(props: Props) {
           onPress={() => {
             history.push('/');
           }}
+          href="/"
         >
           <InsembleLogo color="purple" />
         </TouchableOpacity>
@@ -90,6 +91,7 @@ export default function HeaderNavigationBar(props: Props) {
               onPress={() => {
                 history.push('/terminals');
               }}
+              href="/terminals"
             />
             <ProfileMenuDropdown />
           </RowEnd>

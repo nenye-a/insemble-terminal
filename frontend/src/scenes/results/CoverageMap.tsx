@@ -3,7 +3,11 @@ import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY, THEME_COLOR } from '../../constants/colors';
-import { MergedCoverageData, LocationLatLng } from '../../types/types';
+import {
+  MergedCoverageData,
+  LocationLatLng,
+  MapInfoboxPressParam,
+} from '../../types/types';
 import { GetCoverage_coverageTable_data_coverageData as CoverageBusiness } from '../../generated/GetCoverage';
 import { PinInfoBox } from '../../components';
 
@@ -12,10 +16,11 @@ type LatLng = google.maps.LatLng;
 type Props = {
   data: Array<MergedCoverageData>;
   selectedBusiness?: CoverageBusiness;
+  onInfoBoxPress?: (param: MapInfoboxPressParam) => void;
 };
 
 function CoverageMap(props: Props) {
-  let { data, selectedBusiness, ...otherProps } = props;
+  let { data, selectedBusiness, onInfoBoxPress, ...otherProps } = props;
   let mapRef = useRef<GoogleMap | null>(null);
   let [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
   let [selectedPinLatLng, setSelectedPinLatLng] = useState<LatLng | null>(null);
@@ -59,7 +64,6 @@ function CoverageMap(props: Props) {
       }}
       defaultCenter={defaultCenter}
       zoom={0}
-      onClick={closePinInfo}
       onMouseOut={closePinInfo}
       {...otherProps}
     >
@@ -96,6 +100,15 @@ function CoverageMap(props: Props) {
                   rating={rating || 0}
                   markerPosition={latLng}
                   onClose={closePinInfo}
+                  onInfoboxPress={() => {
+                    onInfoBoxPress &&
+                      onInfoBoxPress({
+                        newTag: {
+                          businessName: name,
+                          address,
+                        },
+                      });
+                  }}
                 />
               </Marker>
             );
@@ -140,7 +153,7 @@ const WithGoogleMap = withGoogleMap(CoverageMap);
 export default (props: Props) => {
   return (
     <WithGoogleMap
-      containerElement={<View flex />}
+      containerElement={<View flex style={{ minHeight: 200 }} />}
       mapElement={<View flex />}
       {...props}
     />

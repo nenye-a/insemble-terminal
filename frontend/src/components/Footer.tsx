@@ -38,6 +38,7 @@ export default function Footer() {
         onPress={() => {
           history.push('/contact-us');
         }}
+        href="/contact-us"
       >
         <WhiteText fontWeight={FONT_WEIGHT_MEDIUM}>Contact us!</WhiteText>
       </TouchableOpacity>

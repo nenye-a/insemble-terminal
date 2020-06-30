@@ -167,10 +167,8 @@ def setup(query={}):
 
 if __name__ == "__main__":
 
-    # setup({
-    #     'google_details.time_of_scrape': {'$lt': dt.datetime.utcnow() - dt.timedelta(days=4)}
-    # })
-
-    google_detailer(wait=False)
+    # setup()
+    pass
+    # google_detailer(wait=False)
     # check_recency()
     # update_last_update()

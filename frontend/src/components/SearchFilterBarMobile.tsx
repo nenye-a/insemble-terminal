@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, CSSProperties } from 'react';
 import styled, { css } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useHistory } from 'react-router-dom';
@@ -61,6 +61,8 @@ type Props = {
   disableAll?: boolean;
   disableReviewTag?: boolean;
   focus?: boolean;
+  hideReviewTag?: boolean;
+  containerStyle?: CSSProperties;
 };
 
 export default function SearchFilterBarMobile(props: Props) {
@@ -72,6 +74,8 @@ export default function SearchFilterBarMobile(props: Props) {
     disableAll = false,
     disableReviewTag = false,
     focus = false,
+    hideReviewTag = false,
+    containerStyle,
   } = props;
   let alert = useAlert();
 
@@ -120,42 +124,46 @@ export default function SearchFilterBarMobile(props: Props) {
       {businessTagLoading ? (
         <LoadingIndicator />
       ) : businessTagData ? (
-        <SearchContainer focus={focus}>
-          <Popover
-            isOpen={dataTypeFilterVisible}
-            content={
-              <PillSelector
-                options={REVIEW_TAG_OPTIONS}
-                style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
-                selectedOptions={[selectedDataType]}
-                onSelect={setSelectedDataType}
-                onUnselect={() => {
-                  setSelectedDataType('');
-                }}
-                onClickAway={() => setDataTypeFilterVisible(false)}
-              />
-            }
-            position={['bottom']}
-            onClickOutside={() => setDataTypeFilterVisible(false)}
-            align="start"
-          >
-            {(ref) => (
-              <DataFilterContainer
-                ref={ref}
-                disabled={disableAll || disableReviewTag}
-                onPress={() => setDataTypeFilterVisible(!dataTypeFilterVisible)}
-                focus={focus}
-              >
-                {selectedDataType ? (
-                  <Pill disabled={disableAll || disableReviewTag}>
-                    {selectedDataType}
-                  </Pill>
-                ) : (
-                  <ReviewTagPlaceholder>Search data</ReviewTagPlaceholder>
-                )}
-              </DataFilterContainer>
-            )}
-          </Popover>
+        <SearchContainer focus={focus} style={containerStyle}>
+          {!hideReviewTag && (
+            <Popover
+              isOpen={dataTypeFilterVisible}
+              content={
+                <PillSelector
+                  options={REVIEW_TAG_OPTIONS}
+                  style={{ position: 'absolute', marginTop: 5, zIndex: 999 }}
+                  selectedOptions={[selectedDataType]}
+                  onSelect={setSelectedDataType}
+                  onUnselect={() => {
+                    setSelectedDataType('');
+                  }}
+                  onClickAway={() => setDataTypeFilterVisible(false)}
+                />
+              }
+              position={['bottom']}
+              onClickOutside={() => setDataTypeFilterVisible(false)}
+              align="start"
+            >
+              {(ref) => (
+                <DataFilterContainer
+                  ref={ref}
+                  disabled={disableAll || disableReviewTag}
+                  onPress={() =>
+                    setDataTypeFilterVisible(!dataTypeFilterVisible)
+                  }
+                  focus={focus}
+                >
+                  {selectedDataType ? (
+                    <Pill disabled={disableAll || disableReviewTag}>
+                      {selectedDataType}
+                    </Pill>
+                  ) : (
+                    <ReviewTagPlaceholder>Search data</ReviewTagPlaceholder>
+                  )}
+                </DataFilterContainer>
+              )}
+            </Popover>
+          )}
           {focus ? <SpacedText>of</SpacedText> : <Spacing />}
           <Dropdown<SelectedBusiness | null>
             selectedOption={selectedBusiness}
