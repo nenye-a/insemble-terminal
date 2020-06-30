@@ -144,30 +144,12 @@ export default function ResultTitle(props: Props) {
     },
   });
 
-  let infoboxPopover = (
-    <PopoverContainer>{infoboxContent && infoboxContent()}</PopoverContainer>
-  );
   let pinPopover =
     tableType && tableId ? (
       <PinPopover
         tableId={tableId}
         tableType={tableType}
         onClickAway={() => setPinPopoverOpen(false)}
-      />
-    ) : (
-      <View />
-    );
-  let comparisonPopover =
-    reviewTag && tableId ? (
-      <ComparisonPopover
-        reviewTag={reviewTag}
-        tableId={tableId}
-        onTableIdChange={onTableIdChange}
-        activeComparison={comparisonTags}
-        sortOrder={sortOrder}
-        onSortOrderChange={onSortOrderChange}
-        pinId={pinTableId}
-        terminalId={params.terminalId}
       />
     ) : (
       <View />
@@ -198,6 +180,25 @@ export default function ResultTitle(props: Props) {
     alert.show('This is a read-only page');
   };
 
+  let removePin = () => {
+    if (pinTableId) {
+      removePinnedTable({
+        variables: {
+          pinTableId,
+        },
+        awaitRefetchQueries: true,
+        refetchQueries: [
+          {
+            query: GET_TERMINAL,
+            variables: {
+              terminalId: params?.terminalId || '',
+            },
+          },
+          { query: GET_TERMINAL_LIST },
+        ],
+      });
+    }
+  };
   return (
     <Container isDesktop={isDesktop}>
       <Row flex>
@@ -251,9 +252,9 @@ export default function ResultTitle(props: Props) {
             </>
           )
         ) : null}
-        {isDesktop ? (
+        {isDesktop && !readOnly ? (
           <>
-            {canCompare && !readOnly && reviewTag && tableId && (
+            {canCompare && reviewTag && tableId && (
               <AddComparisonButton
                 isOpen={comparisonPopoverOpen}
                 onChange={setComparisonPopoverOpen}
@@ -269,28 +270,16 @@ export default function ResultTitle(props: Props) {
                 readOnly={readOnly}
               />
             )}
-            {readOnly ? null : isTerminalScene ? (
+            {isTerminalScene ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
               ) : (
                 <Touchable
                   onPress={() => {
-                    if (pinTableId) {
-                      removePinnedTable({
-                        variables: {
-                          pinTableId,
-                        },
-                        awaitRefetchQueries: true,
-                        refetchQueries: [
-                          {
-                            query: GET_TERMINAL,
-                            variables: {
-                              terminalId: params?.terminalId || '',
-                            },
-                          },
-                          { query: GET_TERMINAL_LIST },
-                        ],
-                      });
+                    if (onClosePress) {
+                      onClosePress();
+                    } else {
+                      removePin();
                     }
                   }}
                   disabled={noData}
@@ -329,9 +318,8 @@ export default function ResultTitle(props: Props) {
               </Popover>
             )}
           </>
-        ) : (
+        ) : !isDesktop && !readOnly && reviewTag && tableType ? (
           <TripleDotsButton
-            onChange={setComparisonPopoverOpen}
             disabled={noData}
             reviewTag={reviewTag}
             tableId={tableId}
@@ -343,8 +331,11 @@ export default function ResultTitle(props: Props) {
             terminalId={params.terminalId}
             readOnly={readOnly}
             tableType={tableType}
+            isTerminalScene={isTerminalScene}
+            removePinFn={removePin}
+            removePinLoading={removePinnedTableLoading}
           />
-        )}
+        ) : null}
       </Row>
     </Container>
   );

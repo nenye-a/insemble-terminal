@@ -119,7 +119,7 @@ const Container = styled(Card)<WithViewport>`
   margin-top: 12px;
   padding: 20px 30px;
   width: ${({ isDesktop }) => (isDesktop ? '514px' : '100%')};
-  max-height: 285px;
+  max-height: 400px;
   overflow: visible;
 `;
 

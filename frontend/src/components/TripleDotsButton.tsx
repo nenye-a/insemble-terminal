@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
 
-import { TouchableOpacity, Text, Card, Modal } from '../core-ui';
+import {
+  TouchableOpacity,
+  Text,
+  Card,
+  Modal,
+  LoadingIndicator,
+} from '../core-ui';
 import { DISABLED_TEXT_COLOR, THEME_COLOR } from '../constants/colors';
 import { ReviewTag, TableType } from '../generated/globalTypes';
 import { ComparationTagWithFill } from '../types/types';
@@ -12,12 +18,11 @@ import SvgTripleDotsRow from './icons/triple-dots-row';
 import SvgRoundAdd from './icons/round-add';
 import SvgPin from './icons/pin';
 import PinPopover from './PinPopover';
+import SvgClose from './icons/close';
 
-type Props = {
-  onChange: (isOpen: boolean) => void;
-  disabled?: boolean;
+type TripleDotsPopoverProps = {
   reviewTag: ReviewTag;
-  tableId: string;
+  tableId?: string;
   onTableIdChange?: (newTableId: string) => void;
   comparisonTags?: Array<ComparationTagWithFill>;
   sortOrder?: Array<string>;
@@ -26,42 +31,23 @@ type Props = {
   terminalId?: string;
   readOnly?: boolean;
   tableType: TableType;
+  isTerminalScene?: boolean;
+  removePinFn: () => void;
+  removePinLoading: boolean;
+};
+
+type Props = TripleDotsPopoverProps & {
+  disabled?: boolean;
 };
 
 export default function TripleDotsButton(props: Props) {
-  let {
-    onChange,
-    disabled,
-    reviewTag,
-    tableId,
-    onTableIdChange,
-    comparisonTags,
-    sortOrder,
-    onSortOrderChange,
-    pinTableId,
-    terminalId,
-    readOnly,
-    tableType,
-  } = props;
+  let { disabled, ...tripleDotsProps } = props;
   let [popoverVisible, setPopoverVisible] = useState(false);
 
   return (
     <Popover
       isOpen={popoverVisible}
-      content={
-        <TripleDotsPopover
-          reviewTag={reviewTag}
-          tableId={tableId}
-          onTableIdChange={onTableIdChange}
-          comparisonTags={comparisonTags}
-          sortOrder={sortOrder}
-          onSortOrderChange={onSortOrderChange}
-          pinTableId={pinTableId}
-          terminalId={terminalId}
-          readOnly={readOnly}
-          tableType={tableType}
-        />
-      }
+      content={<TripleDotsPopover {...tripleDotsProps} />}
       position={['bottom']}
       onClickOutside={() => {
         setPopoverVisible(false);
@@ -85,19 +71,6 @@ export default function TripleDotsButton(props: Props) {
   );
 }
 
-type TripleDotsPopoverProps = {
-  reviewTag: ReviewTag;
-  tableId: string;
-  onTableIdChange?: (newTableId: string) => void;
-  comparisonTags?: Array<ComparationTagWithFill>;
-  sortOrder?: Array<string>;
-  onSortOrderChange?: (newSortOrder: Array<string>) => void;
-  pinTableId?: string;
-  terminalId?: string;
-  readOnly?: boolean;
-  tableType: TableType;
-};
-
 function TripleDotsPopover(props: TripleDotsPopoverProps) {
   let {
     reviewTag,
@@ -108,37 +81,43 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
     onSortOrderChange,
     pinTableId,
     terminalId,
-    readOnly,
+    isTerminalScene,
     tableType,
+    removePinFn,
+    removePinLoading,
   } = props;
   let [comparisonModalVisible, setComparisonModalVisible] = useState(false);
   let [pinModalVisible, setPinModalVisible] = useState(false);
 
   return (
     <Container>
-      <AddComparisonModal
-        visible={comparisonModalVisible}
-        onClose={() => setComparisonModalVisible(false)}
-        reviewTag={reviewTag}
-        tableId={tableId}
-        onTableIdChange={onTableIdChange}
-        activeComparison={comparisonTags}
-        sortOrder={sortOrder}
-        onSortOrderChange={onSortOrderChange}
-        pinId={pinTableId}
-        terminalId={terminalId}
-      />
-      <PinModal
-        visible={pinModalVisible}
-        onClose={() => setPinModalVisible(false)}
-        hideCloseButton={true}
-      >
-        <PinPopover
-          onClickAway={() => setPinModalVisible(false)}
-          tableId={tableId}
-          tableType={tableType}
-        />
-      </PinModal>
+      {tableId && (
+        <>
+          <AddComparisonModal
+            visible={comparisonModalVisible}
+            onClose={() => setComparisonModalVisible(false)}
+            reviewTag={reviewTag}
+            tableId={tableId}
+            onTableIdChange={onTableIdChange}
+            activeComparison={comparisonTags}
+            sortOrder={sortOrder}
+            onSortOrderChange={onSortOrderChange}
+            pinId={pinTableId}
+            terminalId={terminalId}
+          />
+          <PinModal
+            visible={pinModalVisible}
+            onClose={() => setPinModalVisible(false)}
+            hideCloseButton={true}
+          >
+            <PinPopover
+              onClickAway={() => setPinModalVisible(false)}
+              tableId={tableId}
+              tableType={tableType}
+            />
+          </PinModal>
+        </>
+      )}
       <ButtonContainer
         onPress={() => {
           setComparisonModalVisible(true);
@@ -147,14 +126,28 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
         <SvgRoundAdd width={24} height={24} />
         <PurpleText>Compare</PurpleText>
       </ButtonContainer>
-      <ButtonContainer
-        onPress={() => {
-          setPinModalVisible(true);
-        }}
-      >
-        <SvgPin width={24} height={24} style={{ color: THEME_COLOR }} />
-        <PurpleText>Terminals</PurpleText>
-      </ButtonContainer>
+      {isTerminalScene ? (
+        <ButtonContainer onPress={removePinFn} disabled={removePinLoading}>
+          {removePinLoading ? (
+            <LoadingIndicator />
+          ) : (
+            <>
+              <SvgClose width={24} height={24} style={{ color: THEME_COLOR }} />
+              <PurpleText>Remove</PurpleText>
+            </>
+          )}
+        </ButtonContainer>
+      ) : (
+        <ButtonContainer
+          onPress={() => {
+            setPinModalVisible(true);
+          }}
+        >
+          <SvgPin width={24} height={24} style={{ color: THEME_COLOR }} />
+          <PurpleText>Terminals</PurpleText>
+        </ButtonContainer>
+      )}
+
       {/* TODO: add export button */}
     </Container>
   );
