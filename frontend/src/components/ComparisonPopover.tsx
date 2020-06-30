@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Divider,
   LoadingIndicator,
+  Button,
 } from '../core-ui';
 import {
   DARK_TEXT_COLOR,
@@ -191,6 +192,19 @@ export default function ComparisonPopover(props: Props) {
     }
   };
 
+  let onDeleteAll = () => {
+    updateComparison({
+      variables: {
+        actionType: CompareActionType.DELETE_ALL,
+        tableId,
+        reviewTag,
+        pinId,
+      },
+      refetchQueries: refetchTerminalQueries,
+      awaitRefetchQueries: true,
+    });
+  };
+
   useEffect(() => {
     if (!tableId) {
       setTableId(tableIdProp);
@@ -202,7 +216,16 @@ export default function ComparisonPopover(props: Props) {
     <Container isDesktop={isDesktop}>
       {activeComparison && activeComparison.length > 0 ? (
         <View>
-          <Title isDesktop={isDesktop}>Active Comparison</Title>
+          <TitleContainer>
+            <Title isDesktop={isDesktop}>Active Comparison</Title>
+            {!isDesktop && (
+              <Button
+                text="Delete All"
+                mode="transparent"
+                onPress={onDeleteAll}
+              />
+            )}
+          </TitleContainer>
           <ScrollView isDesktop={isDesktop}>
             {activeComparison.map((comparison) => {
               let bgColor =
@@ -362,4 +385,10 @@ const ScrollView = styled(View)<ViewProps & WithViewport>`
 
 const SearchbarContainer = styled(View)`
   padding: 0 34px;
+`;
+
+const TitleContainer = styled(View)`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 `;
