@@ -7,8 +7,13 @@ import {
   TableType,
   PerformanceTableType,
   OwnershipType,
+  BusinessTagType,
+  LocationTagType,
 } from '../../generated/globalTypes';
-import { PerformanceRowPressParam } from '../../types/types';
+import {
+  PerformanceRowPressParam,
+  MapInfoboxPressParam,
+} from '../../types/types';
 import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
@@ -56,6 +61,25 @@ export default function TerminalDataResult(props: Props) {
         },
       });
     }
+  };
+  let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
+    let { businessName, address } = params.newTag;
+    history.push('/results', {
+      search: {
+        businessTag: businessName
+          ? {
+              params: businessName,
+              type: BusinessTagType.BUSINESS,
+            }
+          : undefined,
+        locationTag: address
+          ? {
+              params: address,
+              type: LocationTagType.ADDRESS,
+            }
+          : undefined,
+      },
+    });
   };
   return (
     <View>
@@ -178,7 +202,9 @@ export default function TerminalDataResult(props: Props) {
               );
             }
           } else if (tableType === TableType.COVERAGE) {
-            return <CoverageResult {...props} />;
+            return (
+              <CoverageResult onInfoBoxPress={onMapInfoboxPress} {...props} />
+            );
           } else if (tableType === TableType.NOTE) {
             return <NoteResult {...props} />;
           }
