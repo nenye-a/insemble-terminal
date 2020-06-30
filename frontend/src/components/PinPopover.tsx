@@ -17,6 +17,7 @@ import {
 } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import ManageTerminalForm from '../scenes/terminal/ManageTerminalForm';
+import { useViewport } from '../helpers';
 import { TableType } from '../generated/globalTypes';
 import { GetTerminalList } from '../generated/GetTerminalList';
 import { PinTable, PinTableVariables } from '../generated/PinTable';
@@ -27,7 +28,6 @@ import {
 } from '../graphql/queries/server/terminals';
 
 import ErrorComponent from './ErrorComponent';
-import { useViewport } from '../helpers';
 
 type Props = {
   onClickAway: () => void;

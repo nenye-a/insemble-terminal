@@ -13,7 +13,7 @@ import {
   Card,
   Modal,
 } from '../../core-ui';
-import { ComparisonPopover, PinPopover } from '../../components';
+import { PinPopover } from '../../components';
 import {
   THEME_COLOR,
   DISABLED_TEXT_COLOR,
