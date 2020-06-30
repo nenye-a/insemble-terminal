@@ -55,13 +55,15 @@ export default function NoteResult(props: Props) {
           <NotesContainer>
             <Row>
               <Title>{data.note.title}</Title>
-              <Button
-                mode="transparent"
-                text="Edit"
-                onPress={() => {
-                  setIsEditing(true);
-                }}
-              />
+              {!readOnly && (
+                <Button
+                  mode="transparent"
+                  text="Edit"
+                  onPress={() => {
+                    setIsEditing(true);
+                  }}
+                />
+              )}
             </Row>
             <Text>{data.note.content}</Text>
           </NotesContainer>

@@ -185,7 +185,7 @@ export default function TerminalDataResult(props: Props) {
           return null;
         },
       )}
-      <AddNoteButton />
+      {!readOnly && <AddNoteButton />}
     </View>
   );
 }
