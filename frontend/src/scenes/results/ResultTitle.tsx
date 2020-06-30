@@ -57,7 +57,7 @@ type Props = {
   title: string;
   noData?: boolean;
   reviewTag?: ReviewTag;
-  tableId: string;
+  tableId?: string;
   onTableIdChange?: (tableId: string) => void;
   comparisonTags?: Array<ComparationTagWithFill>;
   canCompare?: boolean;
@@ -143,29 +143,31 @@ export default function ResultTitle(props: Props) {
   let infoboxPopover = (
     <PopoverContainer>{infoboxContent && infoboxContent()}</PopoverContainer>
   );
-  let pinPopover = tableType ? (
-    <PinPopover
-      tableId={tableId}
-      tableType={tableType}
-      onClickAway={() => setPinPopoverOpen(false)}
-    />
-  ) : (
-    <View />
-  );
-  let comparisonPopover = reviewTag ? (
-    <ComparisonPopover
-      reviewTag={reviewTag}
-      tableId={tableId}
-      onTableIdChange={onTableIdChange}
-      activeComparison={comparisonTags}
-      sortOrder={sortOrder}
-      onSortOrderChange={onSortOrderChange}
-      pinId={pinTableId}
-      terminalId={params.terminalId}
-    />
-  ) : (
-    <View />
-  );
+  let pinPopover =
+    tableType && tableId ? (
+      <PinPopover
+        tableId={tableId}
+        tableType={tableType}
+        onClickAway={() => setPinPopoverOpen(false)}
+      />
+    ) : (
+      <View />
+    );
+  let comparisonPopover =
+    reviewTag && tableId ? (
+      <ComparisonPopover
+        reviewTag={reviewTag}
+        tableId={tableId}
+        onTableIdChange={onTableIdChange}
+        activeComparison={comparisonTags}
+        sortOrder={sortOrder}
+        onSortOrderChange={onSortOrderChange}
+        pinId={pinTableId}
+        terminalId={params.terminalId}
+      />
+    ) : (
+      <View />
+    );
 
   let compareLocationText =
     comparisonTags && comparisonTags.length > 0
@@ -239,7 +241,7 @@ export default function ResultTitle(props: Props) {
               {!readOnly && (
                 <Touchable
                   onPress={() => {
-                    if (reviewTag) {
+                    if (reviewTag && tableId) {
                       updateComparison({
                         variables: {
                           actionType: CompareActionType.DELETE_ALL,

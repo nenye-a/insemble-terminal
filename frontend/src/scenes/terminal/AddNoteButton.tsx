@@ -23,7 +23,7 @@ export default function AddNoteButton() {
         onClosePress={() => {
           setIsEditing(false);
         }}
-        tableId=""
+        canCompare={false}
       />
       <NotesContainer>
         <ManageNoteForm mode="add" terminalId={params.terminalId} />

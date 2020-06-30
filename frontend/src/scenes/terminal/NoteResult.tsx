@@ -31,6 +31,9 @@ export default function NoteResult(props: Props) {
     },
   );
 
+  let onClosePress = () => {
+    setIsEditing(false);
+  };
   return (
     <Container>
       <ResultTitle
@@ -38,6 +41,8 @@ export default function NoteResult(props: Props) {
         tableId={tableId || ''}
         readOnly={readOnly}
         pinTableId={pinTableId}
+        canCompare={false}
+        {...(isEditing && { onClosePress })}
       />
       {loading ? (
         <LoadingIndicator
@@ -90,6 +95,6 @@ const Title = styled(Text)`
 `;
 const Row = styled(View)`
   flex-direction: row;
-  flex-wrap: wrap;
   justify-content: space-between;
+  align-items: baseline;
 `;

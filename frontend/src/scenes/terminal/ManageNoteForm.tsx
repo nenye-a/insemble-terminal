@@ -113,6 +113,7 @@ export default function ManageNoteForm(props: Props) {
           mode="transparent"
           text="Save"
           type="submit"
+          tabIndex={-1}
           loading={loading || editNoteLoading}
         />
       </Row>
