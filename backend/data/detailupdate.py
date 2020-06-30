@@ -168,7 +168,7 @@ def setup(query={}):
 if __name__ == "__main__":
 
     # setup({
-    #     'version': 0
+    #     'google_details.time_of_scrape': {'$lt': dt.datetime.utcnow() - dt.timedelta(days=4)}
     # })
 
     google_detailer(wait=False)
