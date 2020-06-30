@@ -55,7 +55,7 @@ def get_news(business_tag_id=None, location_tag_id=None,
     result = get_data(request(NEWS_TABLE, variables), 'newsTable')
     while poll and is_polling(result):
         time.sleep(1)
-        print(result)
+        print("Still Polling....")
         return get_news(table_id=result['table']['id'], poll=poll)
     return result
 
@@ -67,7 +67,7 @@ def open_news(open_news_id, poll=False):
     result = get_data(request(OPEN_NEWS_TABLE, variables), 'openNews')
     while poll and is_polling(result):
         time.sleep(1)
-        print(result)
+        print("Still Polling....")
         return open_news(open_news_id, poll=poll)
     return result
 
@@ -83,7 +83,7 @@ def get_performance(performance_type, business_tag_id=None, location_tag_id=None
     result = get_data(request(PERFORMANCE_TABLE, variables), 'performanceTable')
     while poll and is_polling(result):
         time.sleep(1)
-        print(result)
+        print("Still Polling....")
         return get_performance(performance_type,
                                table_id=result['table']['id'],
                                poll=poll)
@@ -100,7 +100,7 @@ def get_activity(business_tag_id=None, location_tag_id=None,
     result = get_data(request(ACTIVITY_DATA, variables), 'activityTable')
     while poll and is_polling(result):
         time.sleep(1)
-        print(result)
+        print("Still Polling....")
         return get_activity(table_id=result['table']['id'],
                             poll=poll)
     return result
@@ -213,8 +213,8 @@ def get_terminal_note(note_id):
 def get_data(result, key):
     if 'data' in result and result['data']:
         return result['data'][key]
-    elif 'error' in result:
-        return result['error']
+    elif 'errors' in result:
+        return result['errors']
     else:
         return None
 
@@ -224,6 +224,7 @@ def is_polling(result):
 
 
 if __name__ == "__main__":
+    import pprint
     # NOTE: For all the terminal related tests, please
     # adjust the ids to use actual ids on the site you
     # are test. For exmaple testing with terminals hosted
@@ -233,7 +234,7 @@ if __name__ == "__main__":
     location = {'type': 'CITY', 'params': 'Atlanta, GA, USA'}
     business = {'type': 'BUSINESS', 'params': 'Starbucks'}
 
-    test_search = search(
+    test_search_item = search(
         business_tag=business,
         location_tag=location
     )
@@ -241,24 +242,24 @@ if __name__ == "__main__":
     def test_performance():
         performance = get_performance(
             'ADDRESS',
-            business_tag_id=test_search['businessTag']['id'],
-            location_tag_id=test_search['locationTag']['id'],
+            business_tag_id=test_search_item['businessTag']['id'],
+            location_tag_id=test_search_item['locationTag']['id'],
             poll=True
         )
         print(performance)
 
     def test_activity():
         activiy = get_activity(
-            business_tag_id=test_search['businessTag']['id'],
-            location_tag_id=test_search['locationTag']['id'],
+            business_tag_id=test_search_item['businessTag']['id'],
+            location_tag_id=test_search_item['locationTag']['id'],
             poll=True
         )
-        print(activiy)
+        pprint.pprint(activiy)
 
     def test_coverage():
         coverage = get_coverage(
-            business_tag_id=test_search['businessTag']['id'],
-            location_tag_id=test_search['locationTag']['id']
+            business_tag_id=test_search_item['businessTag']['id'],
+            location_tag_id=test_search_item['locationTag']['id']
         )
         print(coverage)
 
@@ -267,7 +268,7 @@ if __name__ == "__main__":
         comparison_update = update_comparison(
             'ADD',
             review_tag='PERFORMANCE',
-            business_tag_id=test_search['businessTag']['id'],
+            business_tag_id=test_search_item['businessTag']['id'],
             location_tag=compare_location,
             table_id='ckbsib3xl0039bq35tqiu47yj',
         )
@@ -328,10 +329,15 @@ if __name__ == "__main__":
         ),
 
     # test_pin_table()
-    # test_add_note()
-    # test_get_terminal()
-    # test_share_terminal()
-    # test_get_shared_terminal()
-    # test_get_terminal_info()
-    # test_search()
-    # print(get_performance('ADDRESS', table_id='ckbsm0qai0335bq357ipl833f'))
+    # test_activity()
+    # comparison_update = update_comparison(
+    #     'ADD',
+    #     review_tag='ACTIVITY',
+    #     business_tag_id='ckbshn69p0007bq35bjtjl1w8',
+    #     location_tag=location,
+    #     table_id='ckc26h4i700850s35k2shk574',
+    # )
+    # print(comparison_update)
+    # pprint.pprint(get_activity(table_id='ckc26jzpd00920s357q252d7r', poll=True))
+
+    pprint.pprint(get_performance('ADDRESS', table_id='ckc12szdl0630ky35cf9gqoi7'))

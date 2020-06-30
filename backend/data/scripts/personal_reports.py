@@ -15,7 +15,7 @@ from graphql import gql
 from decouple import config
 
 SEARCH_RADIUS = 10000  # meters
-NUM_CENTER_COMPS = 4 # stores
+NUM_CENTER_COMPS = 4  # stores
 DEFAULT_BRAND = 'Starbucks'
 GOOG_KEY = config("GOOG_KEY")
 
@@ -76,7 +76,8 @@ def personal_reports(csv_filename):
         address = contact_df["Address"][i]
         city = contact_df["City"][i]
 
-        print("Servicing {}. Finding locations for {}, a {} near {} {}".format(name, company, contact_type, address, city))
+        print("Servicing {}. Finding locations for {}, a {} near {} {}".format(
+            name, company, contact_type, address, city))
 
         query_list, text_list = logic_handler(company, address, city, contact_type)
 
@@ -149,6 +150,7 @@ def logic_handler(company, address, city, contact_type):
 
     return None, None
 
+
 def process_retailer(company, user_location):
     query_list = []
     text_list = []
@@ -193,7 +195,8 @@ def process_retailer(company, user_location):
     location = base_brand['location']
     # find nearby competitive retail site
     print("Finding a nearby competitive retail site.")
-    comparison_brand = find_nearby_competitor_with_activity(base_brand['name'], base_brand['type'], location)
+    comparison_brand = find_nearby_competitor_with_activity(
+        base_brand['name'], base_brand['type'], location)
     category = base_brand['type']
     closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
         "$near": {"$geometry": location, "$maxDistance": 10000}}}))[0][
@@ -204,12 +207,12 @@ def process_retailer(company, user_location):
 
     searches1 = []
     searches1.append({
-        'location_tag': {'type': 'COUNTY', 'params': closest_county},
-        'business_tag': {'type': 'CATEGORY', 'params': category}
-    })
-    searches1.append({
         'location_tag': {'type': 'ADDRESS', 'params': base_brand['address']},
         'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
+    })
+    searches1.append({
+        'location_tag': {'type': 'COUNTY', 'params': closest_county},
+        'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     if comparison_brand:
         searches1.append({
@@ -221,30 +224,74 @@ def process_retailer(company, user_location):
 
     query_list.append(("COVERAGE", {"searches": searches1}))
     text_list.append("SECT: Map")
-    text_list.append("This is a map of {} and {}, along with other {}s in {}".format(base_brand['name'], comparison_brand['name'], category, closest_county))
+    text_list.append("This is a map of {} and {}, along with other {}s in {}".format(
+        base_brand['name'], comparison_brand['name'], category, closest_county))
     query_list.append(("ACTIVITY", {"searches": searches1}))
 
-    base_over_cat = None # TODO TEXT. Need to use performance table in helper to populate the details
-    base_over_comp = None # TODO
+    # TODO: make it so that the requester uses the table_ids instead of the
+    # same query.
+    activity_id = helper.activity_graph(searches1)
+    activity_data = gql.get_activity(table_id=activity_id, poll=True)
+
+    base_data = activity_data['table']['data']
+    compare_data = activity_data['table']['compareData']
+    compare_data_dict = utils.section_by_key(compare_data, 'name')
+
+    base_avg_activity = parse_node_activity(base_data[0]['activityData'])
+    category_avg_activity = parse_node_activity(
+        compare_data_dict[category][0]['activityData'])
+    comp_avg_activity = parse_node_activity(
+        compare_data_dict[comparison_brand['name']][0]['activityData'])
+
+    # TODO TEXT. Need to use performance table in helper to populate the details
+    base_over_cat = round((base_avg_activity / category_avg_activity) * 100, 1)
+    base_over_comp = round((base_avg_activity / comp_avg_activity) * 100, 1)  # TODO
     text_list.append("SECT: Site Activity")
-    text_list.append("Using mobile and web data to approximate customer visits to retail locatoins, what we see here is "
-                     "that {0} at {1} has {2}% customer activity compared to other {3}s. {4} has {5}% the activity of {6} at {7},"
-                     " which is nearby. You may want to take a deeper look at what makes these stores operate successfully"
-                     "so that you can implement the learnings in each of your locations.".format(base_brand['name'],
-                        base_brand['address'], base_over_cat, category, base_brand['name'], base_over_comp, comparison_brand['name'],
-                                                                                                 comparison_brand['address']))
+    text_list.append(f"Using mobile and web data to approximate customer visits to "
+                     f"retail locations, what we see here is that {base_brand['name']} "
+                     f"at {base_brand['address']} has {base_over_cat}% customer activity "
+                     f"compared to other {category}s. {base_brand['name']} has "
+                     f"{base_over_comp}% the activity of {comparison_brand['name']} at "
+                     f"{comparison_brand['address']}, which is nearby. You may want to "
+                     f"take a deeper look at what makes these stores operate successfully"
+                     f"so that you can implement the learnings in each of your locations.")
+
     query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
-    base_category_index = None # TODO
-    base_brand_index = None # TODO
-    comp_category_index = None # TODO
-    comp_brand_index = None # TODO
+
+    performance_id = helper.performance_table('OVERALL', searches1)
+    performance_data = gql.get_performance('OVERALL', table_id=performance_id, poll=True)
+
+    base_data = performance_data['table']['data']
+    compare_data = performance_data['table']['compareData']
+    compare_data_dict = utils.section_by_key(compare_data, 'name')
+    compare_data_dict = {utils.strip_parantheses_context(brand_name): data
+                         for brand_name, data in compare_data_dict.items()}
+
+    base_category_index = round(base_data[0]['localCategoryIndex'] / 100, 1)
+    base_brand_index = round(base_data[0]['nationalIndex'] / 100, 1)
+    comp_category_index = round(
+        compare_data_dict[comparison_brand['name']][0]['localCategoryIndex'] / 100, 1)
+    comp_brand_index = round(
+        compare_data_dict[comparison_brand['name']][0]['nationalIndex'] / 100, 1)
     text_list.append("SECT: Site Performance")
-    text_list.append("If we look at this {0} for an accumulation of weeks, we see that this location is getting {1}x the footfall"
-                     "of the average {2} a 3 mile radius from the category index. Competitor {3} is getting {4}x the "
-                     "footfall of the average {2} in a 3 mile radius. If we look at the brand index, we see that this "
-                     "particular {0} is getting {5}x the number of visitors as the average {0}, and {3} is getting {6}x the "
-                     "number of visitors as the average {3}.".format(base_brand['name'], base_category_index, category,
-                        comparison_brand['name'], comp_category_index, base_brand_index, comp_brand_index))
+    text_list.append("If we look at this {brand_name} for an accumulation of weeks, we see that "
+                     "this location is getting {cat_index}x the footfall of the average {category} "
+                     "a 3 mile radius from the category index. Competitor {comp_name} is getting "
+                     "{comp_cat_index}x the footfall of the average {category} in a 3 mile radius. "
+                     "If we look at the brand index, we see that this particular {brand_name} is "
+                     "getting {brand_index}x the number of visitors as the average {brand_name}, "
+                     "and {comp_name} is getting {comp_brand_index}x the number of visitors as the "
+                     "average {comp_name}.".format(
+                         brand_name=base_brand['name'],
+                         cat_index=base_category_index,
+                         category=category,
+                         comp_name=comparison_brand['name'],
+                         comp_cat_index=comp_category_index,
+                         brand_index=base_brand_index,
+                         comp_brand_index=comp_brand_index
+                     ))
+
+    print(text_list)
 
     #### Where should I expand to? #####
     # Find the County where the brand has the lowest presence (needs work)
@@ -258,12 +305,12 @@ def process_retailer(company, user_location):
 
     # Find the best city for the category of retail based on customerVolumeIndex
     city_search = {'location_tag': {'type': 'COUNTY', 'params': other_county},
-        'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}}
+                   'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}}
     table_id = helper.performance_table("CITY", [city_search])
     perf = gql.get_performance("CITY", table_id=table_id, poll=True)
     cities = [entry['name'].split("(")[0].strip() for entry in
-                reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
-                if item['customerVolumeIndex'] is not None else 0))]
+              reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
+                              if item['customerVolumeIndex'] is not None else 0))]
 
     # find the top city with a brand of the same category that's not the base brand (so we don't recommend that they
     # open next to their own location)
@@ -272,19 +319,22 @@ def process_retailer(company, user_location):
     for item in cities:
         city, state = item.split(", ")
         matches = list(utils.DB_TERMINAL_PLACES.find(
-            {"name": {"$ne":base_brand['name']}, "type": base_brand['type'], "city": city, "state": state}))
+            {"name": {"$ne": base_brand['name']}, "type": base_brand['type'], "city": city, "state": state}))
         if matches:
             break
 
     # if it doesn't find another brand in the prospect city to be next to (that's not the same brand), quit
     # (could potentially just select a random place in the top city)
 
-    if not matches: return query_list
+    if not matches:
+        return query_list
 
     match = first_with_activity(matches)
 
-    if not match: return query_list
-    other_brand, city = (match, match['city']) # TODO: select the one with activity (or highest activity)
+    if not match:
+        return query_list
+    # TODO: select the one with activity (or highest activity)
+    other_brand, city = (match, match['city'])
 
     # Add the category, brand and city to the coverage search
     searches2 = []
@@ -293,7 +343,7 @@ def process_retailer(company, user_location):
         'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}
     })
     searches2.append({
-        'location_tag': {'type': 'CITY', 'params': city+", "+state},
+        'location_tag': {'type': 'CITY', 'params': city + ", " + state},
         'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}
     })
     searches2.append({
@@ -326,12 +376,14 @@ def process_retailer(company, user_location):
 
     # Add the city activity breakdown of the nearby retail of the spot with the highest activity
     query_list.append(("ACTIVITY", {"searches": searches3}))
-    text_list.append("SECT: Close up on a {} in {}".format(other_brand['type'], other_brand['city']))
+    text_list.append("SECT: Close up on a {} in {}".format(
+        other_brand['type'], other_brand['city']))
     text_list.append("Looking into {} more since it's up on our list, we can actually see a high performing {}, "
                      "that's surrounded by retail for which we can also see how customers are visiting these spots.".format(
-                    other_brand['city'], other_brand['name']))
+                         other_brand['city'], other_brand['name']))
 
     return (query_list, text_list)
+
 
 def process_landlord(address, city, location):
     query_list = []
@@ -348,8 +400,8 @@ def process_landlord(address, city, location):
     BRAND_IDX_RESULTS = 25
     potential_bases = first_with_activity(matches, BRAND_IDX_RESULTS)
     base_brand = [entry for entry in
-                         reversed(
-                             sorted(potential_bases, key=lambda item: item['activity_volume'] / item['brand_volume']
+                  reversed(
+                      sorted(potential_bases, key=lambda item: item['activity_volume'] / item['brand_volume']
                              if item['activity_volume'] is not None else 0))][0]
     base_brand_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
         "$near": {"$geometry": base_brand['location'], "$maxDistance": 10000}}}))[0][
@@ -371,14 +423,17 @@ def process_landlord(address, city, location):
 
     # Add the activity and performance breakdown for a brand that is likely doing well in the shopping center
     query_list.append(("ACTIVITY", {"searches": rent_comp_searches}))
-    text_list.append("SECT: How do I put myself in the best position possible when dealing with tenants?")
+    text_list.append(
+        "SECT: How do I put myself in the best position possible when dealing with tenants?")
     text_list.append("Whether you're negotiating rent, tracking percentage rent deals, or deciding whether to continue "
                      "spending on a particular tenant, it's best to be informed on their current customer draw. Here, "
                      "we use mobile and web data to provide insight on how customers are attending this {} compared to "
                      "other {} in {}. Typically, when a retailer's one location is higher than it's average, they "
                      "may pay a higher rent to keep the strong unit.".format(base_brand['name'], base_brand['type'], base_brand_county))
-    query_list.append(("PERFORMANCE", {"searches": rent_comp_searches, "performance_type": "OVERALL"}))
-    text_list.append("SECT: How do I put myself in the best position possible when dealing with tenants?")
+    query_list.append(
+        ("PERFORMANCE", {"searches": rent_comp_searches, "performance_type": "OVERALL"}))
+    text_list.append(
+        "SECT: How do I put myself in the best position possible when dealing with tenants?")
     text_list.append("We even break it down further to show you how {} is performing at different scopes. You can "
                      "hover over the information bubble at the top of the table for more detail.")
 
@@ -400,23 +455,26 @@ def process_landlord(address, city, location):
 
     query_list.append(("COVERAGE", {"searches": nearby_retail_searches}))
     text_list.append("SECT: Map")
-    text_list.append("Similarly for surrounding retail, we can analyze customer flow through a shopping area.")
+    text_list.append(
+        "Similarly for surrounding retail, we can analyze customer flow through a shopping area.")
     query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
-    live_hours = [None, None] # TODO
-    largest_contributor = None # TODO
-    suggested_time = None # TODO
-    text_list.append("SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
+    live_hours = [None, None]  # TODO
+    largest_contributor = None  # TODO
+    suggested_time = None  # TODO
+    text_list.append(
+        "SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
     text_list.append("Here you'll see some stores near our initial {0} that may have some customer overlap. Most of "
                      "the customers here are coming during the hours of {1} and {2}, and the largest contributor of "
                      "customers on an average day in 2020 is {3}. Anyone sourcing tenants for this shopping area may "
                      "want to find a similar brand as {3}, a cotenant of theirs, or brands that have presence in the "
                      "{4} to compliment the customer traffic in the shopping center".format(base_brand['name'],
-                        live_hours[0], live_hours[1], largest_contributor, suggested_time))
-    query_list.append(("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
-    text_list.append("SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
+                                                                                            live_hours[0], live_hours[1], largest_contributor, suggested_time))
+    query_list.append(
+        ("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
+    text_list.append(
+        "SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
     text_list.append("Here we can see the stats broken down further for retail near {} at {}".format(base_brand['name'],
-                                                                                            base_brand['address']))
-
+                                                                                                     base_brand['address']))
 
     #### Who are the best tenants to go after in the market? ####
     # TODO: make this depend on the category that's missing based on activity profile
@@ -433,7 +491,8 @@ def process_landlord(address, city, location):
         'business_tag': {'type': 'CATEGORY', 'params': category2}
     })
     query_list.append(("PERFORMANCE", {"searches": desired_tenants, "performance_type": "BRAND"}))
-    text_list.append("SECT: Who are the best {} and {} tenants in the market?".format(category1, category2))
+    text_list.append(
+        "SECT: Who are the best {} and {} tenants in the market?".format(category1, category2))
     text_list.append("If we want to find and contact tenants who are performing well during these times, we can "
                      "actually look them up and see how their brand is doing in {} here. Again, the performance is "
                      "based on mobile data and web traffic from consumers, so you're always quick to know how they're "
@@ -447,7 +506,7 @@ def process_landlord(address, city, location):
         "$near": {"$geometry": location}}}))[0]
     center_proxy_retailer = list(utils.DB_TERMINAL_PLACES.find(
         {"location": {"$near": {"$geometry": base_brand_msa['center'], "$maxDistance": SEARCH_RADIUS}}}))[0]
-    center_city = center_proxy_retailer['city']+", "+center_proxy_retailer['state']
+    center_city = center_proxy_retailer['city'] + ", " + center_proxy_retailer['state']
 
     # Find the best type of store in a certain retail area based on customerVolumeIndex
     store_search = {'location_tag': {'type': 'CITY', 'params': center_city}}
@@ -456,8 +515,8 @@ def process_landlord(address, city, location):
 
     # choose a particular category to highlight
     top_categories = [entry['name'].split("(")[0].strip() for entry in
-                    reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
-                    if item['customerVolumeIndex'] is not None else 0))]
+                      reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
+                                      if item['customerVolumeIndex'] is not None else 0))]
     for top_category in top_categories:
         if not 'airport' in top_category.lower():
             break
@@ -472,8 +531,10 @@ def process_landlord(address, city, location):
     }
     query_list.append(("COVERAGE", {"searches": [top_cat_search]}))
     text_list.append("SECT: Where may I want to invest in new property or businesses?")
-    text_list.append("This is a map of {}s, one of the top performing retail categories in {} currently".format(top_category, center_city))  # TODO: descriptions
-    query_list.append(("PERFORMANCE", {"searches": [category_search], "performance_type": "CATEGORY"}))
+    text_list.append("This is a map of {}s, one of the top performing retail categories in {} currently".format(
+        top_category, center_city))  # TODO: descriptions
+    query_list.append(
+        ("PERFORMANCE", {"searches": [category_search], "performance_type": "CATEGORY"}))
     text_list.append("SECT: Where may I want to invest in new property or businesses?")
     text_list.append("Here we can see the various retail categories present in {}, sorted by which brands "
                      "are drawing the most consumers during this part of the year. An item with a higher Volume index "
@@ -481,6 +542,7 @@ def process_landlord(address, city, location):
                      "expanded for specific brands and contact information".format(center_city))
 
     return (query_list, text_list)
+
 
 def process_broker(location):
     query_list = []
@@ -502,7 +564,7 @@ def process_broker(location):
     perf = gql.get_performance("CITY", table_id=table_id, poll=True)
     cities = [entry['name'].split("(")[0].strip() for entry in
               reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
-              if item['customerVolumeIndex'] is not None else 0))]
+                              if item['customerVolumeIndex'] is not None else 0))]
 
     # find the top city with a brand of the same category
     matches = None
@@ -514,11 +576,14 @@ def process_broker(location):
             break
 
     # if it doesn't find matches, quit
-    if not matches: return query_list
+    if not matches:
+        return query_list
     match = first_with_activity(matches)
 
-    if not match: return query_list
-    brand, city, state = (match, match['city'], match['state'])  # TODO: select the one with activity (or highest activity)
+    if not match:
+        return query_list
+    # TODO: select the one with activity (or highest activity)
+    brand, city, state = (match, match['city'], match['state'])
 
     # add coverage, city, and activity searches
     best_for_category_searches = []
@@ -526,9 +591,9 @@ def process_broker(location):
         'location_tag': {'type': 'COUNTY', 'params': county},
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
-    print(city+", "+state)
+    print(city + ", " + state)
     best_for_category_searches.append({
-        'location_tag': {'type': 'CITY', 'params': city+", "+state},
+        'location_tag': {'type': 'CITY', 'params': city + ", " + state},
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     query_list.append(("COVERAGE", {"searches": best_for_category_searches}))
@@ -541,7 +606,8 @@ def process_broker(location):
         'location_tag': {'type': 'COUNTY', 'params': county},
         'business_tag': {'type': 'CATEGORY', 'params': category}
     }]
-    query_list.append(("PERFORMANCE", {"searches": performance_by_city_search, "performance_type": "CITY"}))
+    query_list.append(
+        ("PERFORMANCE", {"searches": performance_by_city_search, "performance_type": "CITY"}))
     text_list.append("SECT: Where should my client expand in the market based on who's moving?")
     text_list.append("In the table above we see {0} performance broken down by city. The data is generated from mobile "
                      "and web traffic to approximate the amount of visitors a particular site has. By looking at the "
@@ -550,7 +616,8 @@ def process_broker(location):
 
     activity_against_brand_cat = []
     activity_against_brand_cat.append({
-        'location_tag': {'type': 'ADDRESS', 'params': brand['address']}, # TODO: may fail for things like "Suite A", check google address format
+        # TODO: may fail for things like "Suite A", check google address format
+        'location_tag': {'type': 'ADDRESS', 'params': brand['address']},
         'business_tag': {'type': 'BUSINESS', 'params': brand['name']}
     })
     activity_against_brand_cat.append({
@@ -583,12 +650,14 @@ def process_broker(location):
 
     query_list.append(("COVERAGE", {"searches": nearby_retail_searches}))
     text_list.append("SECT: Surrounding Retail")
-    text_list.append("This is a map of the retail surrounding {} at {}".format(brand['name'], brand['address']))
+    text_list.append("This is a map of the retail surrounding {} at {}".format(
+        brand['name'], brand['address']))
     query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
     text_list.append("SECT: Site Activity")
     text_list.append("We can additionally assess the surrounding retail in the area to get a look of the environment. "
                      "Here, we see the metrics for how the nearby stores are doing in terms of their customer flow")
-    query_list.append(("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
+    query_list.append(
+        ("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
     text_list.append("SECT: Site Performance")
     text_list.append("The peformance table breaks it down further, where you can see how each location compares to "
                      "nearby retail, same category retail, and other units of the same brand")
@@ -602,9 +671,11 @@ def find_nearby_competitor_with_activity(brand, category, location):
     print("Finding the largest nearby competitors")
     category_matches = utils.DB_TERMINAL_PLACES.find({"type": category, "location": {
         "$near": {"$geometry": location, "$maxDistance": SEARCH_RADIUS}}})
-    same_cat_brands = [match['name'] for match in category_matches if match['name'].lower() != brand.lower()]
+    same_cat_brands = [match['name']
+                       for match in category_matches if match['name'].lower() != brand.lower()]
     # TODO: make place matching better for name variations
-    most_likely_competitors = sorted(Counter(same_cat_brands).items(), key=lambda x: x[1], reverse=True)
+    most_likely_competitors = sorted(Counter(same_cat_brands).items(),
+                                     key=lambda x: x[1], reverse=True)
 
     # find closest large competitor with activity
     print("Finding the closest large competitor with activity")
@@ -656,6 +727,12 @@ def most_likely_chain(matches):
     return most_likely[0]
 
 
+def parse_node_activity(activity_data):
+
+    activity_array = [activity['amount'] for activity in activity_data if activity['amount'] > 0]
+    return sum(activity_array) / len(activity_array) if any(activity_array) else 0
+
+
 if __name__ == "__main__":
     def test_find_competitor_with_activity():
         brand = "Starbucks"
@@ -664,6 +741,11 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
+    # filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     personal_reports(filename)
+
+    # process_retailer(
+    #     ""
+    # )

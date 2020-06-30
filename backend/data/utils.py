@@ -481,6 +481,11 @@ def unsubscribe(email_list):
     }})
 
 
+def strip_parantheses_context(word):
+    matcher = re.compile(r' \([^\(]+\)$')
+    return matcher.sub('', word)
+
+
 def dictionary_diff(previous, new, replaced=True):
     """
     Provided a dictionary, will return a dictionary of the values that have
