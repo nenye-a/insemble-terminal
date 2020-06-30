@@ -80,16 +80,17 @@ def personal_reports(csv_filename):
         print("Servicing {}. Finding locations for {}, a {} near {} {}".format(
             name, company, contact_type, address, city))
 
-        query_list, text_list = logic_handler(company, address, city, contact_type)
+        # query_list, text_list = logic_handler(company, address, city, contact_type)
+        query_list = logic_handler(company, address, city, contact_type)
 
         # TODO add result query to mongo for that (company, address, city, contact_type)
         if query_list:
             # create personal terminals
             print(name, contact_type, company)
             print(query_list)
-            print(text_list)
-            # print(helper.create_shared_report(*query_list, name="1BfromLL:{}'s report for {}".format(name, company),
-            #                                   description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
+            # print(text_list)
+            print(helper.create_shared_report(*query_list, name="1BfromLL:{}'s report for {}".format(name, company),
+                                              description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
 
         print("{},{},{},{} Queries ----".format(company, address, city, contact_type), query_list)
 
@@ -99,13 +100,12 @@ def logic_handler(company, address, city, contact_type):
     contact_type = contact_type.lower()
 
     print("Gathering coordinates")
-
     coords = get_coords(city, address)
     if not coords:
         coords = get_coords(city)  # if coords doesn't load initially, try searching city alone
     if not coords:
         print("Could not retrieve coordinates for {}, {}".format(address, city))
-        return [], []
+        return []
 
     coords = (coords['lat'], coords['lng'])
     location = utils.to_geojson(coords)
@@ -137,14 +137,17 @@ def logic_handler(company, address, city, contact_type):
         return None, None
 
     # if type people researcher
-    if ('Consumer/Market Research'.lower() or 'Financial/Investment Services'.lower() or 'Parking and Traffic'.lower()) in contact_type:
+    if ('Consumer/Market Research'.lower() or 'Financial/Investment Services'.lower() or
+            'Parking and Traffic'.lower()) in contact_type:
         return None, None
 
     # if type services
-    if ('advertising/marketing/pr' or 'architecture/design/engineering' or 'Building Materials/Structural'.lower() or
-        'Computer Software/Hardware'.lower() or 'Construction'.lower() or 'insurance' or 'law firm' or
-        'lending institution' or 'maintenance' or 'other business services' or 'personell services' or 'press/media' or
-            'publications/publishers' or 'trade association' or 'utilities/telecommunication') in contact_type:
+    if ('advertising/marketing/pr' or 'architecture/design/engineering' or
+            'Building Materials/Structural'.lower() or 'Computer Software/Hardware'.lower() or
+            'Construction'.lower() or 'insurance' or 'law firm' or 'lending institution' or
+            'maintenance' or 'other business services' or 'personell services' or
+            'press/media' or 'publications/publishers' or 'trade association' or
+            'utilities/telecommunication') in contact_type:
         return None, None
 
     # TODO check to see if city is something within our viewports
@@ -160,8 +163,11 @@ def process_retailer(company, user_location):
     # find closest retail site
     print("Finding closest retail site for user location")
     processed_brand = preprocess.preprocess(company)
-    matches = list(utils.DB_TERMINAL_PLACES.find(
-        {"name": processed_brand, "location": {"$near": {"$geometry": user_location}}}))
+    matches = list(utils.DB_TERMINAL_PLACES.find({
+        "name": processed_brand,
+        "location": {"$near": {"$geometry": user_location}},
+        "activity_volume": {"$gt": 0}
+    }))
 
     # if retail site is not found at all
     if not matches:
@@ -171,27 +177,39 @@ def process_retailer(company, user_location):
         if subsidiaries:
             for sub in subsidiaries:
                 if matches or (sub.lower() == 'more'):
-                    break  # break if matches or if reached the paginated end of google company subsidaries
+                    # break if matches or if reached the
+                    # paginated end of google company subsidaries
+                    break
                 processed_sub = preprocess.preprocess(sub)
-                matches = list(utils.DB_TERMINAL_PLACES.find(
-                    {"name": processed_sub, "location": {"$near": {"$geometry": user_location}}}))
+                matches = list(utils.DB_TERMINAL_PLACES.find({
+                    "name": processed_sub,
+                    "location": {"$near": {"$geometry": user_location}},
+                    "activity_volume": {"$gt": 0}
+                }))
 
-    # if subsidaries weren't found, find well known retailer in their area to get activity and performance from
-    print("No subsidiaries found. Attempting to find well known default retailer {} nearby".format(DEFAULT_BRAND))
+    # if subsidaries weren't found, find well known retailer
+    # in their area to get activity and performance from
+    print("No subsidiaries found. Attempting to find "
+          "well known default retailer {} nearby".format(DEFAULT_BRAND))
+
     if not matches:
         processed_default = preprocess.preprocess(DEFAULT_BRAND)
-        matches = list(utils.DB_TERMINAL_PLACES.find(
-            {"name": processed_default, "location": {"$near": {"$geometry": user_location}}}))
+        matches = list(utils.DB_TERMINAL_PLACES.find({
+            "name": processed_default,
+            "location": {"$near": {"$geometry": user_location}},
+            "activity_volume": {"$gt": 0}
+        }))
 
-    # Should have matches at this point, but if we haven't, return empty list
+    # Should have matches at this point,
+    # but if we haven't, return empty list
     if not matches:
         return []
 
-    #### How am I doing in the market and how do I measure up next to competitors? ####
+    # How am I doing in the market and how do I measure up next to competitors? #
 
-    # find the closest matched brand with activity
     print("Found matches. Getting the closest match with activity...")
-    base_brand = first_with_activity(matches)
+    # base_brand = first_with_activity(matches)
+    base_brand = matches[0]
 
     location = base_brand['location']
     # find nearby competitive retail site
@@ -224,115 +242,133 @@ def process_retailer(company, user_location):
     # How am I doing in the market compared to competitors?
 
     query_list.append(("COVERAGE", {"searches": searches1}))
-    text_list.append("SECT: Map")
-    text_list.append("This is a map of {} and {}, along with other {}s in {}".format(
-        base_brand['name'], comparison_brand['name'], category, closest_county))
-    query_list.append(("ACTIVITY", {"searches": searches1}))
+    query_list.append(("NOTE", {
+        "title": "Map",
+        "content": (f"This is a map of {base_brand['name']} and {comparison_brand['name']}, "
+                    f"along with other {category}s in {closest_county}")
+    }))
 
-    # TODO: make it so that the requester uses the table_ids instead of the
-    # same query.
     activity_id = helper.activity_graph(searches1)
     activity_data = gql.get_activity(table_id=activity_id, poll=True)
+
+    query_list.append(("ACTIVITY", activity_id))
 
     base_data = activity_data['table']['data']
     compare_data = activity_data['table']['compareData']
     compare_data_dict = utils.section_by_key(compare_data, 'name')
-
     base_avg_activity = parse_node_activity(base_data[0]['activityData'])
     category_avg_activity = parse_node_activity(
         compare_data_dict[category][0]['activityData'])
     comp_avg_activity = parse_node_activity(
         compare_data_dict[comparison_brand['name']][0]['activityData'])
-
     base_over_cat = round((base_avg_activity / category_avg_activity) * 100, 1)
     base_over_comp = round((base_avg_activity / comp_avg_activity) * 100, 1)
-    text_list.append("SECT: Site Activity")
-    text_list.append(f"Using mobile and web data to approximate customer visits to "
-                     f"retail locations, what we see here is that {base_brand['name']} "
-                     f"at {base_brand['address']} has {base_over_cat}% customer activity "
-                     f"compared to other {category}s. {base_brand['name']} has "
-                     f"{base_over_comp}% the activity of {comparison_brand['name']} at "
-                     f"{comparison_brand['address']}, which is nearby. You may want to "
-                     f"take a deeper look at what makes these stores operate successfully"
-                     f"so that you can implement the learnings in each of your locations.")
 
-    query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
+    query_list.append(("NOTE", {
+        "title": "Site Activity",
+        "content": (f"Using mobile and web data to approximate customer visits to "
+                    f"retail locations, what we see here is that {base_brand['name']} "
+                    f"at {base_brand['address']} has {base_over_cat}% customer activity "
+                    f"compared to other {category}s. {base_brand['name']} has "
+                    f"{base_over_comp}% the activity of {comparison_brand['name']} at "
+                    f"{comparison_brand['address']}, which is nearby. You may want to "
+                    f"take a deeper look at what makes these stores operate successfully"
+                    f"so that you can implement the learnings in each of your locations.")
+    }))
 
     performance_id = helper.performance_table('OVERALL', searches1)
     performance_data = gql.get_performance('OVERALL', table_id=performance_id, poll=True)
+
+    query_list.append(("PERFORMANCE", performance_id))
 
     base_data = performance_data['table']['data']
     compare_data = performance_data['table']['compareData']
     compare_data_dict = utils.section_by_key(compare_data, 'name')
     compare_data_dict = {utils.strip_parantheses_context(brand_name): data
                          for brand_name, data in compare_data_dict.items()}
-
     base_category_index = round(base_data[0]['localCategoryIndex'] / 100, 1)
     base_brand_index = round(base_data[0]['nationalIndex'] / 100, 1)
     comp_category_index = round(
         compare_data_dict[comparison_brand['name']][0]['localCategoryIndex'] / 100, 1)
     comp_brand_index = round(
         compare_data_dict[comparison_brand['name']][0]['nationalIndex'] / 100, 1)
-    text_list.append("SECT: Site Performance")
-    text_list.append("If we look at this {brand_name} for an accumulation of weeks, we see that "
-                     "this location is getting {cat_index}x the footfall of the average {category} "
-                     "a 3 mile radius from the category index. Competitor {comp_name} is getting "
-                     "{comp_cat_index}x the footfall of the average {category} in a 3 mile radius. "
-                     "If we look at the brand index, we see that this particular {brand_name} is "
-                     "getting {brand_index}x the number of visitors as the average {brand_name}, "
-                     "and {comp_name} is getting {comp_brand_index}x the number of visitors as the "
-                     "average {comp_name}.".format(
-                         brand_name=base_brand['name'],
-                         cat_index=base_category_index,
-                         category=category,
-                         comp_name=comparison_brand['name'],
-                         comp_cat_index=comp_category_index,
-                         brand_index=base_brand_index,
-                         comp_brand_index=comp_brand_index
-                     ))
 
-    print(text_list)
+    query_list.append(("NOTE", {
+        "title": "Site Performance",
+        "content": ("If we look at this {brand_name} for an accumulation of weeks, we see that "
+                    "this location is getting {cat_index}x the footfall of the average {category} "
+                    "a 3 mile radius from the category index. Competitor {comp_name} is getting "
+                    "{comp_cat_index}x the footfall of the average {category} in a 3 mile radius. "
+                    "If we look at the brand index, we see that this particular {brand_name} is "
+                    "getting {brand_index}x the number of visitors as the average {brand_name}, "
+                    "and {comp_name} is getting {comp_brand_index}x the number of visitors as the "
+                    "average {comp_name}.".format(
+                        brand_name=base_brand['name'],
+                        cat_index=base_category_index,
+                        category=category,
+                        comp_name=comparison_brand['name'],
+                        comp_cat_index=comp_category_index,
+                        brand_index=base_brand_index,
+                        comp_brand_index=comp_brand_index
+                    ))
+    }))
 
     #### Where should I expand to? #####
     # Find the County where the brand has the lowest presence (needs work)
-    # TODO: rather than selecting a random county where the user isn't, select it based on the non-presence of the brand
-    base_brand_msa = list(utils.DB_REGIONS.find({"type": "msa", "geometry": {
-        "$near": {"$geometry": location}}}))[0]
+    # TODO: rather than selecting a random county where the user isn't,
+    # select it based on the non-presence of the brand
+    base_brand_msa = list(utils.DB_REGIONS.find({
+        "type": "msa",
+        "geometry": {"$near": {"$geometry": location}}
+    }))[0]
     other_msa = utils.DB_REGIONS.find_one({"name": {"$ne": base_brand_msa['name']}, "type": "msa"})
-    other_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-        "$near": {"$geometry": other_msa['center'], "$maxDistance": 10000}}}))[0][
-        'name'].replace(" -", ",")
+    other_county = list(utils.DB_REGIONS.find({
+        "type": "county",
+        "geometry": {"$near": {
+            "$geometry": other_msa['center'],
+            "$maxDistance": 10000
+        }}}))[0]['name'].replace(" -", ",")
 
     # Find the best city for the category of retail based on customerVolumeIndex
     city_search = {'location_tag': {'type': 'COUNTY', 'params': other_county},
                    'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}}
     table_id = helper.performance_table("CITY", [city_search])
     perf = gql.get_performance("CITY", table_id=table_id, poll=True)
-    cities = [entry['name'].split("(")[0].strip() for entry in
+    cities = [utils.strip_parantheses_context(entry['name']) for entry in
               reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
                               if item['customerVolumeIndex'] is not None else 0))]
 
-    # find the top city with a brand of the same category that's not the base brand (so we don't recommend that they
+    # find the top city with a brand of the same category that's
+    # not the base brand (so we don't recommend that they
     # open next to their own location)
-    # TODO: Either solve this by finding the city without the brand, or by finding the place without the brand in the same city
+    # TODO: Either solve this by finding the city without the brand, or
+    # by finding the place without the brand in the same city
     matches = None
     for item in cities:
         city, state = item.split(", ")
-        matches = list(utils.DB_TERMINAL_PLACES.find(
-            {"name": {"$ne": base_brand['name']}, "type": base_brand['type'], "city": city, "state": state}))
+        matches = list(utils.DB_TERMINAL_PLACES.find({
+            "name": {"$ne": base_brand['name']},
+            "type": base_brand['type'],
+            "city": city,
+            "state": state,
+            "activity_volume": {"$gt": 0}
+        }))
         if matches:
             break
 
-    # if it doesn't find another brand in the prospect city to be next to (that's not the same brand), quit
+    # if it doesn't find another brand in the prospect city
+    # to be next to (that's not the same brand), quit
     # (could potentially just select a random place in the top city)
 
     if not matches:
         return query_list
 
-    match = first_with_activity(matches)
+    # match = first_with_activity(matches)
+    match = matches[0]
 
-    if not match:
-        return query_list
+    # if not match:
+    #     return query_list
+
     # TODO: select the one with activity (or highest activity)
     other_brand, city = (match, match['city'])
 
@@ -350,23 +386,37 @@ def process_retailer(company, user_location):
         'location_tag': {'type': 'COUNTY', 'params': other_county},
         'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
     })
+
     query_list.append(("COVERAGE", {"searches": searches2}))
-    text_list.append("SECT: Expansion")
-    text_list.append("Now let's say we wanted to expand {} within a different region, like {}. We can actually search "
-                     "the region for all of the places where the highest attended {}s are, and then dive deeper into "
-                     "the results".format(base_brand['name'], other_msa['name'], base_brand['type']))
+    query_list.append(("NOTE", {
+        "title": "Expansion",
+        "content": ("Now let's say we wanted to expand {} within a different region, "
+                    "like {}. We can actually search the region for all of the places "
+                    "where the highest attended {}s are, and then dive deeper into "
+                    "the results".format(base_brand['name'], other_msa['name'], base_brand['type']))
+    }))
 
     # Add the city performance breakdown for the category in the county
     query_list.append(("PERFORMANCE", {"searches": [city_search], "performance_type": "CITY"}))
-    text_list.append("SECT: Expansion")
-    text_list.append("In the chart above, we have all of the cities in {} ranked by the average customer volume they "
-                     "each receive. Below, we'll take a look at the retail scene in that area".format(other_county))
+    query_list.append(("NOTE", {
+        "title": "Expansion",
+        "content": ("In the chart above, we have all of the cities in {} ranked by the "
+                    "average customer volume they each receive. Below, we'll take a look "
+                    "at the retail scene in that area".format(other_county))
+    }))
 
     # find the activity of the closest retailers to the same category brand deep_dive
     print("selecting top performer")
-    near_retailer_matches = utils.DB_TERMINAL_PLACES.find(
-        {"location": {"$near": {"$geometry": other_brand['location'], "$maxDistance": SEARCH_RADIUS}}})
-    nearby_brands = first_with_activity(near_retailer_matches, NUM_CENTER_COMPS)
+    near_retailer_matches = utils.DB_TERMINAL_PLACES.find({
+        "location": {
+            "$near": {"$geometry": other_brand['location'],
+                      "$maxDistance": SEARCH_RADIUS}
+        },
+        "activity_volume": {"$gt": 0}
+    })
+
+    # nearby_brands = first_with_activity(near_retailer_matches, NUM_CENTER_COMPS)
+    nearby_brands = near_retailer_matches[:4]
     searches3 = []
     for item in nearby_brands:
         searches3.append({
@@ -376,13 +426,15 @@ def process_retailer(company, user_location):
 
     # Add the city activity breakdown of the nearby retail of the spot with the highest activity
     query_list.append(("ACTIVITY", {"searches": searches3}))
-    text_list.append("SECT: Close up on a {} in {}".format(
-        other_brand['type'], other_brand['city']))
-    text_list.append("Looking into {} more since it's up on our list, we can actually see a high performing {}, "
-                     "that's surrounded by retail for which we can also see how customers are visiting these spots.".format(
-                         other_brand['city'], other_brand['name']))
+    query_list.append(("NOTE", {
+        "title": "Close up on a {} in {}".format(other_brand['type'], other_brand['city']),
+        "content": ("Looking into {} more since it's up on our list, we can actually see a "
+                    "high performing {}, that's surrounded by retail for which we can also "
+                    "see how customers are visiting these spots.".format(
+                        other_brand['city'], other_brand['name']))
+    }))
 
-    return (query_list, text_list)
+    return query_list
 
 
 def process_landlord(address, city, location):
@@ -712,8 +764,15 @@ def find_nearby_competitor_with_activity(brand, category, location):
 
     # find largest nearby competitors
     print("Finding the largest nearby competitors")
-    category_matches = utils.DB_TERMINAL_PLACES.find({"type": category, "location": {
-        "$near": {"$geometry": location, "$maxDistance": SEARCH_RADIUS}}})
+    category_matches = utils.DB_TERMINAL_PLACES.find({
+        "type": category,
+        "location": {"$near": {
+            "$geometry": location,
+            "$maxDistance": SEARCH_RADIUS
+        }},
+        "activity_volume": {"$gt": 0}
+    }),
+
     same_cat_brands = [match['name']
                        for match in category_matches if match['name'].lower() != brand.lower()]
     # TODO: make place matching better for name variations
@@ -851,9 +910,9 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
+    # filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
-    # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     personal_reports(filename)
 
     # test_activity_dict = {'Subway': [{'name': '4AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 25}, {'name': '10AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 44}, {'name': '11AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '12PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 72}, {'name': '1PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '2PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 63}, {'name': '3PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '4PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '5PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '6PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 58}, {'name': '7PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 46}, {'name': '8PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 32}, {'name': '9PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Rocksalt Grille': [{'name': '4AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 14}, {'name': '12PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 22}, {'name': '1PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 26}, {'name': '2PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 28}, {'name': '3PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 31}, {'name': '4PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 39}, {'name': '5PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '6PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '7PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 36}, {'name': '8PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 20}, {'name': '9PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Esquire Hair Replacement Center LLC': [{'name': '4AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {
