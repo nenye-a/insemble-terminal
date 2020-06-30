@@ -1,0 +1,27 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "UpdateEnum",
+      "enum": "ReviewTag",
+      "createdValues": [
+        "MAP"
+      ],
+      "deletedValues": [
+        "COVERAGE"
+      ]
+    },
+    {
+      "tag": "UpdateField",
+      "model": "CoverageData",
+      "field": "numLocations",
+      "type": "String"
+    },
+    {
+      "tag": "UpdateField",
+      "model": "CompareCoverageData",
+      "field": "numLocations",
+      "type": "String"
+    }
+  ]
+}
