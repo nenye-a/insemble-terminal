@@ -85,7 +85,7 @@ def personal_reports(csv_filename):
             # create personal terminals
             print(name, contact_type, company)
             print(query_list)
-            print(helper.create_shared_report(*query_list, name="O1:{}'s report for {}".format(name, company),
+            print(helper.create_shared_report(*query_list, name="1BfromLL:{}'s report for {}".format(name, company),
                                               description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
 
         print("{},{},{},{} Queries ----".format(company, address, city, contact_type), query_list)
@@ -123,7 +123,7 @@ def logic_handler(company, address, city, contact_type):
 
     # if type broker
     if ('real estate services' or 'retail broker' or 'tenant services') in contact_type:
-        return None #process_broker(address, city, location)
+        return process_broker(location)
 
     # if type municipality
     if 'public sector' in contact_type:
@@ -351,42 +351,16 @@ def process_landlord(address, city, location):
         {"location": {"$near": {"$geometry": base_brand['location'], "$maxDistance": SEARCH_RADIUS}}})
     nearby_brands = first_with_activity(near_base_matches, NUM_CENTER_COMPS)
 
-    # comp_brand = most_likely_chain(nearby_brands)
-    # comp_brand_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-    #     "$near": {"$geometry": comp_brand['location'], "$maxDistance": 10000}}}))[0][
-    #     'name']  # TODO: may need to error check if counties are blank
-
-    # TODO: if no retail is found in the near vicinity, choose retail in the closest MSA
-
     # add to query list
     print("Adding desired tenant queries")
     searches1 = []
     nearby_retail_searches = []
-    # searches1.append({
-    #     'location_tag': {'type': 'ADDRESS', 'params': comp_brand['address']},
-    #     'business_tag': {'type': 'BUSINESS', 'params': comp_brand['name']}
-    # })
-    # searches1.append({
-    #     'location_tag': {'type': 'COUNTY', 'params': comp_brand_county.replace(" -", ",")},
-    #     'business_tag': {'type': 'BUSINESS', 'params': comp_brand['name']}
-    # })
-    # searches1.append({
-    #     'location_tag': {'type': 'COUNTY', 'params': comp_brand_county.replace(" -", ",")},
-    #     'business_tag': {'type': 'CATEGORY', 'params': comp_brand['type']}
-    # })
 
     for item in nearby_brands:
         nearby_retail_searches.append({
             'location_tag': {'type': 'ADDRESS', 'params': item['address']},
             'business_tag': {'type': 'BUSINESS', 'params': item['name']}
         })
-
-    # query_list.append(("ACTIVITY", {"searches": searches1}))
-    # text_list.append("Some description of what's going on here")  # TODO: descriptions
-    # query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
-    # text_list.append("Some description of what's going on here")  # TODO: descriptions
-    # query_list.append(("COVERAGE", {"searches": searches1}))
-    # text_list.append("Some description of what's going on here")  # TODO: descriptions
 
     query_list.append(("COVERAGE", {"searches": nearby_retail_searches}))
     text_list.append("Some description of what's going on here")  # TODO: descriptions
@@ -398,6 +372,7 @@ def process_landlord(address, city, location):
 
     #### Who are the best tenants to go after in the market? ####
     # TODO: make this depend on the category that's missing based on activity profile
+    # TODO: figure out why sandwich shop doesn't come up, but coffee shop does
     category1 = 'Sandwich Shop'
     category2 = 'Coffee Shop'
     desired_tenants = []
@@ -445,6 +420,105 @@ def process_landlord(address, city, location):
     query_list.append(("COVERAGE", {"searches": [top_cat_search]}))
     text_list.append("Some description of what's going on here")  # TODO: descriptions
     query_list.append(("PERFORMANCE", {"searches": [category_search], "performance_type": "CATEGORY"}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+
+    return query_list
+
+def process_broker(location):
+    query_list = []
+    text_list = []
+
+    #### Where's the best place for a particular business? ####
+    # find the best place for a sandwich shop
+    # TODO: figure out why sandwich shop doesn't come up, but coffee shop does
+    category = 'Sandwich Shop'
+
+    county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
+        "$near": {"$geometry": location, "$maxDistance": 10000}}}))[0][
+        'name'].replace(" -", ",")
+
+    # Find the best city for the category of retail based on customerVolumeIndex
+    city_search = {'location_tag': {'type': 'COUNTY', 'params': county},
+                   'business_tag': {'type': 'CATEGORY', 'params': category}}
+    table_id = helper.performance_table("CITY", [city_search])
+    perf = gql.get_performance("CITY", table_id=table_id, poll=True)
+    cities = [entry['name'].split("(")[0].strip() for entry in
+              reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
+              if item['customerVolumeIndex'] is not None else 0))]
+
+    # find the top city with a brand of the same category
+    matches = None
+    for item in cities:
+        city, state = item.split(", ")
+        matches = list(utils.DB_TERMINAL_PLACES.find(
+            {"type": category, "city": city, "state": state}))
+        if matches:
+            break
+
+    # if it doesn't find matches, quit
+    if not matches: return query_list
+    match = first_with_activity(matches)
+
+    if not match: return query_list
+    brand, city, state = (match, match['city'], match['state'])  # TODO: select the one with activity (or highest activity)
+
+    # add coverage, city, and activity searches
+    best_for_category_searches = []
+    best_for_category_searches.append({
+        'location_tag': {'type': 'COUNTY', 'params': county},
+        'business_tag': {'type': 'CATEGORY', 'params': category}
+    })
+    print(city+", "+state)
+    best_for_category_searches.append({
+        'location_tag': {'type': 'CITY', 'params': city+", "+state},
+        'business_tag': {'type': 'CATEGORY', 'params': category}
+    })
+    query_list.append(("COVERAGE", {"searches": best_for_category_searches}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+
+    performance_by_city_search = [{
+        'location_tag': {'type': 'COUNTY', 'params': county},
+        'business_tag': {'type': 'CATEGORY', 'params': category}
+    }]
+    query_list.append(("PERFORMANCE", {"searches": performance_by_city_search, "performance_type": "CITY"}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+
+    activity_against_brand_cat = []
+    activity_against_brand_cat.append({
+        'location_tag': {'type': 'ADDRESS', 'params': brand['address']}, # TODO: may fail for things like "Suite A", check google address format
+        'business_tag': {'type': 'BUSINESS', 'params': brand['name']}
+    })
+    activity_against_brand_cat.append({
+        'location_tag': {'type': 'COUNTY', 'params': county},
+        'business_tag': {'type': 'BUSINESS', 'params': brand['name']}
+    })
+    activity_against_brand_cat.append({
+        'location_tag': {'type': 'COUNTY', 'params': county},
+        'business_tag': {'type': 'CATEGORY', 'params': category}
+    })
+    query_list.append(("ACTIVITY", {"searches": activity_against_brand_cat}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+
+    #### How's the retail in that location? ####
+    near_base_matches = utils.DB_TERMINAL_PLACES.find(
+        {"location": {"$near": {"$geometry": brand['location'], "$maxDistance": SEARCH_RADIUS}}})
+    nearby_brands = first_with_activity(near_base_matches, NUM_CENTER_COMPS)
+
+    # add to query list
+    print("Adding desired tenant queries")
+    nearby_retail_searches = []
+
+    for item in nearby_brands:
+        nearby_retail_searches.append({
+            'location_tag': {'type': 'ADDRESS', 'params': item['address']},
+            'business_tag': {'type': 'BUSINESS', 'params': item['name']}
+        })
+
+    query_list.append(("COVERAGE", {"searches": nearby_retail_searches}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    query_list.append(("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
     text_list.append("Some description of what's going on here")  # TODO: descriptions
 
     return query_list
