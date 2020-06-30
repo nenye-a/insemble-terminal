@@ -173,7 +173,9 @@ export default function ResultTitle(props: Props) {
     );
 
   let compareLocationText =
-    comparisonTags && comparisonTags.length > 0
+    comparisonTags &&
+    comparisonTags.length > 0 &&
+    comparisonTags[0].businessTag?.params
       ? comparisonTags.length === 1 && comparisonTags[0].locationTag
         ? comparisonTags[0].locationTag.type === LocationTagType.ADDRESS
           ? `near ${comparisonTags[0].locationTag.params}`
@@ -183,7 +185,10 @@ export default function ResultTitle(props: Props) {
 
   let formattedCompareText =
     comparisonTags?.length === 1
-      ? `Comparing with ${comparisonTags[0].businessTag?.params} ${compareLocationText}`
+      ? `Comparing with ${
+          comparisonTags[0].businessTag?.params ||
+          comparisonTags[0].locationTag?.params
+        } ${compareLocationText}`
       : comparisonTags && comparisonTags?.length > 0
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
