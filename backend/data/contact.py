@@ -336,7 +336,7 @@ def get_domain(business_name, in_parallel=False):
 
     domain = collection.find_one({
         # TODO: handle if multiple domains are linked to this company
-        'companies': {'$regex': business_name, '$options': "i"}
+        'companies': {'$regex': business_name}
     })
     if domain:
         return domain['domain']

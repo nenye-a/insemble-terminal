@@ -27,7 +27,7 @@ SEARCH_PATHS = ['', MAIN_PATH, THIS_DIR + '/files/', THIS_DIR,
 
 def parse_contacts(collection_name):
 
-    get_contacts_domains(collection_name)
+    # get_contacts_domains(collection_name)
     get_contacts_emails(collection_name)
 
 
@@ -127,7 +127,7 @@ def prune_bad_apples(collection_name):
             '$regex': (
                 r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
                 r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
-                r'(?:size( ?)zeus)|(?:buxton)'
+                r'(?:site( ?)zeus)|(?:buxton)'
             ),
             '$options': "i"
         }
@@ -524,6 +524,23 @@ def print_collection_companes(collection_name):
     df.to_csv(MAIN_PATH + '/business_names.csv')
 
 
+def print_to_csv(collection_name):
+
+    contacts = pd.DataFrame(get_contacts_collection(collection_name).find({
+        'email': {'$ne': None},
+        'address_street': {'$ne': None},
+        'address_city_state': {'$ne': None}
+    }, {
+        '_id': 0
+    }))
+
+    contacts = contacts.rename(columns={'address_city_state': 'city'}).set_index('email')
+    path = f'{MAIN_PATH}/{collection_name}_contacts_list.csv'
+    contacts.to_csv(path)
+
+    print(f'CSV printed to {path}')
+
+
 def remove_email_dupes(collection_name):
 
     contacts = get_contacts_collection('main_contact_db').aggregate([
@@ -671,10 +688,13 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    parse_contacts('main_contact_db')
-    # get_contacts_emails('main_contact_db')
+    # parse_contacts('main_contact_db')
+    # # get_contacts_emails('main_contact_db')
 
     # print(get_contacts_collection('main_contact_db').count_documents({
-    #     'domain_processed': True,
-    #     'email': {'$exists': True}
+    #     # 'domain': {'$ne': None}
+    #     # 'domain_processed': True,
+    #     'email': {'$ne': None},
+    #     'address_street': {'$ne': None},
     # }))
+    print_to_csv('main_contact_db')

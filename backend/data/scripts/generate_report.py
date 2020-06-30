@@ -45,17 +45,6 @@ def generate_report(brand_name, custom_query=None):
                 'nationalIndex': round(performancev2.BASELINE * volume / item['brand_volume'])
                 if (volume != 0 and 'brand_volume' in item and item['brand_volume'] != -1) else None,
             })
-            # if 'activity' in item['google_details']:
-            #     if item['google_details']['activity']:
-            #         sales_index = performance.activity_score(item['google_details']['activity'])
-            #         if sales_index != 0:
-            #             results_list.append({
-            #                 'name': item['name'],
-            #                 'address': item['address'],
-            #                 'sales_index': sales_index,
-            #                 'rating': item['google_details']['rating'],
-            #                 'num_reviews': item['google_details']['num_reviews']
-            #             })
 
     file_name = brand_name.lower()
     my_dataframe = pd.DataFrame(results_list)

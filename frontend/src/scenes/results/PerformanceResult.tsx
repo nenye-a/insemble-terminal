@@ -95,6 +95,7 @@ export default function PerformanceResult(props: Props) {
     data?.performanceTable.table?.compareData,
     data?.performanceTable.table?.comparationTags,
     sortOrder,
+    true,
   );
 
   let dataWithAsterisk = coloredData.map((datum) => ({

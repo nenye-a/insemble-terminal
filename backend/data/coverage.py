@@ -1,5 +1,5 @@
 import utils
-import performance
+import accumulator
 
 '''
 Coverage related functions.
@@ -8,29 +8,13 @@ Coverage related functions.
 
 def coverage(name, location, scope):
 
-    location_list = [word.strip() for word in location.split(',')]
-    if scope.lower() == 'city':
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
-        }))
-    elif scope.lower() == 'county':
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': {"$regex": r"^" + location_list[1].upper(), "$options": "i"},
-            'type': 'county'
-        })
-        if not region:
-            return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            '$text': {'$search': name},
-            'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-        }))
-    else:
-        return None
+    matching_places = accumulator.aggregate_places(
+        name,
+        'brand',
+        location,
+        scope,
+        needs_google_details=False
+    )
 
     if not matching_places:
         return None
@@ -52,27 +36,13 @@ def coverage(name, location, scope):
 
 def category_coverage(category, location, scope):
 
-    location_list = [word.strip() for word in location.split(',')]
-    if scope.lower() == 'city':
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"},
-            'city': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-        }))
-    elif scope.lower() == 'county':
-        region = utils.DB_REGIONS.find_one({
-            'name': {"$regex": r"^" + utils.adjust_case(location_list[0]), "$options": "i"},
-            'state': location_list[1].upper(),
-            'type': 'county'
-        })
-        if not region:
-            return None
-        matching_places = list(utils.DB_TERMINAL_PLACES.find({
-            'type': {"$regex": r"^" + utils.adjust_case(category), "$options": "i"},
-            'location': {'$geoWithin': {'$geometry': region['geometry']}},
-        }))
-    else:
-        return None
+    matching_places = accumulator.aggregate_places(
+        category,
+        'category',
+        location,
+        scope,
+        needs_google_details=False
+    )
 
     if not matching_places:
         return None
@@ -87,7 +57,7 @@ def category_coverage(category, location, scope):
 
 
 def categorical_data(list_places):
-    brand_dict = performance.section_by_key(list_places, 'name')
+    brand_dict = utils.section_by_key(list_places, 'name')
     coverage_dict = {k: extract_coverage(v) for k, v in brand_dict.items()}
     coverage = [{
         'business_name': utils.adjust_case(brand),
@@ -139,5 +109,5 @@ if __name__ == "__main__":
         print(category_coverage("Mexican Restaurant", "Los Angeles, CA, USA", "City"))
         # print(category_coverage("Mexican Restaurant", "Harris County, TX, USA", "County"))
 
-    # test_coverage()
-    test_category_coverage()
+    test_coverage()
+    # test_category_coverage()

@@ -52,12 +52,16 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
             if 'city' not in details['meta']:
                 city = utils.extract_city(details['meta']['address'])
                 update_details['city'] = city
+            if 'state' not in details['meta']:
+                city = utils.extract_city(details['meta']['address'])
+                update_details['city'] = city
 
             place_query = {'_id': details['meta']['_id']}
             place_update = {'$set': update_details}
+            version = details['meta']['version'] if 'version' in details['meta'] else 0
 
             # update and save revision of data.
-            saved_update(place_query, place_update)
+            saved_update(place_query, place_update, version)
 
             print('GOOGLE_COLLECTOR: Updated {} at {} ({}) with google details.'.format(
                 details['meta']['name'],
@@ -75,7 +79,7 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
         })
 
 
-def saved_update(query, update):
+def saved_update(query, update, place_version):
     """
     Updates an item in the TERMINAL_PLACES database, and saves the timestamped difference
     in the PLACES_HISTORY database.
@@ -97,6 +101,9 @@ def saved_update(query, update):
         query,
         update
     )
+    if 'version' in previous and previous['version'] > place_version:
+        # Already updated and versioned due to race condition.
+        return
     new = table.find_one(query)
     diff = utils.dictionary_diff(previous, new)
     'version' in diff and diff.pop('version')
@@ -108,7 +115,7 @@ def saved_update(query, update):
             "revised_time": update_time,
         })
 
-        history.update_one({'place_id': previous['_id']}, {
+        history.update_one({'_id': previous['_id']}, {
             '$push': {
                 'revisions': {
                     '$each': [history_update],
@@ -116,7 +123,7 @@ def saved_update(query, update):
                 }
             },
             '$setOnInsert': {
-                'place_id': previous['_id']
+                '_id': previous['_id']
             }
         }, upsert=True)
 
@@ -144,13 +151,17 @@ def update_last_update():
 
 def setup():
 
-    TEMP_DB.create_index([('marked', 1)])
+    # TEMP_DB.create_index([('marked', 1)])
     utils.DB_TERMINAL_PLACES.aggregate([
         {'$match': {
+            # '$or': [
+            #     {'last_update': {'$lt': dt.datetime.utcnow() - dt.timedelta(weeks=1.5)}},
+            #     {'last_update': -1},
+            #     {'last_update': {'$exists': False}}
+            # ]
             '$or': [
-                {'last_update': {'$lt': dt.datetime.utcnow() - dt.timedelta(weeks=1.5)}},
-                {'last_update': -1},
-                {'last_update': {'$exists': False}}
+                {'activity_volume': {'$lte': 0}},
+                {'activity_volume': None}
             ]
         }},
         {'$addFields': {
@@ -164,6 +175,7 @@ def setup():
 if __name__ == "__main__":
 
     # setup()
+
     google_detailer(wait=False)
     # check_recency()
     # update_last_update()
