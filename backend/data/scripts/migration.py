@@ -323,9 +323,8 @@ def correct_version():
 
 
 def store_old_values():
-    import pprint
 
-    pprint.pprint(list(utils.DB_TERMINAL_PLACES.aggregate([
+    utils.DB_TERMINAL_PLACES.aggregate([
         {'$project': {
             'activity_history_temp': {
                 'activity_volume': "$activity_volume",
@@ -341,7 +340,21 @@ def store_old_values():
             'activity_history_temp.local_category_volume_radius': 3,
         }},
         {'$merge': 'places_history'}
-    ])))
+    ])
+
+    print("Successfully created the temporary history.")
+
+    utils.DB_PLACES_HISTORY.update_many(
+        {'activity_history_temp': {'$exists': True}},
+        [
+            {'$set': {
+                'activity_history': {
+                    "$concatArray": [["$activity_history_temp"], "$activity_history"]
+                }
+            }},
+            {'$unset': "activity_history_temp"}
+        ]
+    )
 
 
 def apply_county_tags():
@@ -386,6 +399,7 @@ if __name__ == "__main__":
     # }))
     # apply_county_tags()
     # add_city_fast()
-    correct_version()
+    # correct_version()
+    store_old_values()
 
     pass
