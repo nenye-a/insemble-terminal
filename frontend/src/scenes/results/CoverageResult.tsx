@@ -21,6 +21,7 @@ import {
   GetCoverage_coverageTable_comparationTags as ComparationTags,
 } from '../../generated/GetCoverage';
 import { GET_COVERAGE_DATA } from '../../graphql/queries/server/results';
+import { MapInfoboxPressParam } from '../../types/types';
 
 import CoverageTable from './CoverageTable';
 import CoverageMap from './CoverageMap';
@@ -33,6 +34,7 @@ type Props = {
   tableId?: string;
   pinTableId?: string;
   readOnly?: boolean;
+  onInfoBoxPress?: (param: MapInfoboxPressParam) => void;
 };
 
 type ColoredData = (CoverageData | CoverageCompareData) & {
@@ -40,7 +42,14 @@ type ColoredData = (CoverageData | CoverageCompareData) & {
 };
 
 export default function CoverageResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
+  let {
+    businessTagId,
+    locationTagId,
+    tableId,
+    pinTableId,
+    readOnly,
+    onInfoBoxPress,
+  } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [selectedBusiness, setSelectedBusiness] = useState<CoverageBusiness>();
@@ -86,6 +95,7 @@ export default function CoverageResult(props: Props) {
       key="coverage-map"
       data={loading ? prevData : coloredData}
       selectedBusiness={selectedBusiness}
+      onInfoBoxPress={onInfoBoxPress}
     />,
   ];
 
