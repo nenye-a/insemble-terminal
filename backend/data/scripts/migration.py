@@ -400,6 +400,6 @@ if __name__ == "__main__":
     # apply_county_tags()
     # add_city_fast()
     # correct_version()
-    store_old_values()
+    # store_old_values()
 
     pass

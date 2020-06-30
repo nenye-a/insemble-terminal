@@ -56,15 +56,15 @@ def generate_dataframe(results):
 
 def update_activity(query=None):
     pipeline = [
-        # SIMPLE SAMPLE (Temporary)
-        {'$match': {
-            'google_details.activity.0.0': {
-                '$type': 'array'
-            }
-        }},
-        {'$sample': {
-            'size': 50
-        }},
+        # # SIMPLE SAMPLE (Temporary)
+        # {'$match': {
+        #     'google_details.activity.0.0': {
+        #         '$type': 'array'
+        #     }
+        # }},
+        # {'$sample': {
+        #     'size': 50
+        # }},
         ##############
         {'$unwind': {'path': '$google_details.activity',
                      'preserveNullAndEmptyArrays': True}},
