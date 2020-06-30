@@ -30,6 +30,7 @@ type Props = ComponentProps<typeof TouchableOpacity> & {
   badgeText?: string;
   loading?: boolean;
   stopPropagation?: boolean;
+  iconPlacement?: 'start' | 'end';
 };
 
 export default function Button(props: Props) {
@@ -44,8 +45,23 @@ export default function Button(props: Props) {
     loading,
     disabled,
     stopPropagation,
+    iconPlacement = 'end',
     ...otherProps
   } = props;
+
+  let buttonContent = [
+    <Text
+      key={`button-text-${text}`}
+      as="span"
+      color="white"
+      fontWeight={FONT_WEIGHT_MEDIUM}
+      fontSize={FONT_SIZE_SMALL}
+      {...textProps}
+    >
+      {text}
+    </Text>,
+    icon,
+  ];
   return (
     <Container
       forwardedAs="button"
@@ -61,16 +77,7 @@ export default function Button(props: Props) {
         <LoadingIndicator color={mode === 'primary' ? 'white' : 'purple'} />
       ) : (
         <>
-          <Text
-            as="span"
-            color="white"
-            fontWeight={FONT_WEIGHT_MEDIUM}
-            fontSize={FONT_SIZE_SMALL}
-            {...textProps}
-          >
-            {text}
-          </Text>
-          {icon}
+          {iconPlacement === 'start' ? buttonContent.reverse() : buttonContent}
         </>
       )}
     </Container>
