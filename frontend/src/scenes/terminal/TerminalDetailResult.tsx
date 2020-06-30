@@ -8,13 +8,16 @@ import {
   PerformanceTableType,
   OwnershipType,
 } from '../../generated/globalTypes';
+import { PerformanceRowPressParam } from '../../types/types';
 import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
 import CoverageResult from '../results/CoverageResult';
 import ContactsResult from '../results/ContactsResult';
 import OwnershipInformationResult from '../results/OwnershipInformationResult';
-import { PerformanceRowPressParam } from '../../types/types';
+
+import NoteResult from './NoteResult';
+import AddNoteButton from './AddNoteButton';
 
 type Props = {
   data: Array<PinnedFeeds>;
@@ -176,10 +179,13 @@ export default function TerminalDataResult(props: Props) {
             }
           } else if (tableType === TableType.COVERAGE) {
             return <CoverageResult {...props} />;
+          } else if (tableType === TableType.NOTE) {
+            return <NoteResult {...props} />;
           }
           return null;
         },
       )}
+      {!readOnly && <AddNoteButton />}
     </View>
   );
 }

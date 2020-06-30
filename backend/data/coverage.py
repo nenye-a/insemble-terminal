@@ -6,7 +6,26 @@ Coverage related functions.
 '''
 
 
-def coverage(name, location, scope):
+def coverage(name, address):
+
+    place = accumulator.get_place(name, address)
+
+    if not utils.inbool(place, 'location'):
+        return None
+
+    return {
+        'name': place['name'],
+        'location': place['address'],
+        'num_locations': None,
+        'coverage': [{
+            'business_name': place['name'],
+            'num_locations': None,
+            'locations': [parse_location(place)]
+        }]
+    }
+
+
+def aggregate_coverage(name, location, scope):
 
     matching_places = accumulator.aggregate_places(
         name,
@@ -78,31 +97,40 @@ def extract_coverage(list_places):
     for place in list_places:
         num_locations += 1
         if 'location' in place:
-            rating = None
-            num_reviews = None
-            if 'google_details' in place:
-                if 'rating' in place['google_details']:
-                    rating = place['google_details']['rating']
-                if 'num_reviews' in place['google_details']:
-                    num_reviews = place['google_details']['num_reviews']
-
-            locations.append({
-                'lat': place['location']['coordinates'][1],
-                'lng': place['location']['coordinates'][0],
-                'name': place['name'],
-                'address': place['address'],
-                'rating': rating,
-                'num_reviews': num_reviews
-            })
+            location = parse_location(place)
+            locations.append(location)
     return {
         'num_locations': num_locations,
         'locations': locations
     }
 
 
+def parse_location(place):
+
+    rating = None
+    num_reviews = None
+    if 'google_details' in place:
+        if 'rating' in place['google_details']:
+            rating = place['google_details']['rating']
+        if 'num_reviews' in place['google_details']:
+            num_reviews = place['google_details']['num_reviews']
+
+    return {
+        'lat': place['location']['coordinates'][1],
+        'lng': place['location']['coordinates'][0],
+        'name': place['name'],
+        'address': place['address'],
+        'rating': rating,
+        'num_reviews': num_reviews
+    }
+
+
 if __name__ == "__main__":
     def test_coverage():
-        print(coverage("Starbucks", "Los Angeles, CA, USA", "City"))
+        print(coverage("Starbucks", "800 W Olympic Blvd #102, Los Angeles, CA 90015"))
+
+    def test_aggregate_coverage():
+        print(aggregate_coverage("Starbucks", "Los Angeles, CA, USA", "City"))
         # print(coverage("Starbucks", "Los Angeles, CA, USA", "County"))
 
     def test_category_coverage():
