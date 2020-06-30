@@ -11,9 +11,11 @@ import utils
 import google
 import requests
 from graphql import helper
+from graphql import gql
 from decouple import config
 
 SEARCH_RADIUS = 10000  # meters
+NUM_CENTER_COMPS = 4 # stores
 DEFAULT_BRAND = 'Starbucks'
 GOOG_KEY = config("GOOG_KEY")
 
@@ -91,8 +93,6 @@ def personal_reports(csv_filename):
 
 def logic_handler(company, address, city, contact_type):
     # decides what to do given business details
-    matches = None
-    query_list = []
     contact_type = contact_type.lower()
 
     print("Gathering coordinates")
@@ -115,86 +115,11 @@ def logic_handler(company, address, city, contact_type):
 
     # if type retailer
     if 'retailer' in contact_type:
-
-        # find closest retail site
-        print("Finding closest retail site for user location")
-        processed_brand = preprocess.preprocess(company)
-        matches = list(utils.DB_TERMINAL_PLACES.find(
-            {"name": processed_brand, "location": {"$near": {"$geometry": location}}}))
-
-        # if retail site is not found at all
-        if not matches:
-            # try finding subsidiaries
-            print("Retail site not found. Attempting to find subsidary sites")
-            subsidiaries = google.get_company(processed_brand, 'subsidiaries')
-            if subsidiaries:
-                for sub in subsidiaries:
-                    if matches or (sub.lower() == 'more'):
-                        break  # break if matches or if reached the paginated end of google company subsidaries
-                    processed_sub = preprocess.preprocess(sub)
-                    matches = list(utils.DB_TERMINAL_PLACES.find(
-                        {"name": processed_sub, "location": {"$near": {"$geometry": location}}}))
-
-        # if subsidaries weren't found, find well known retailer in their area to get activity and performance from
-        print("No subsidiaries found. Attempting to find well known default retailer {} nearby".format(DEFAULT_BRAND))
-        if not matches:
-            processed_default = preprocess.preprocess(DEFAULT_BRAND)
-            matches = list(utils.DB_TERMINAL_PLACES.find(
-                {"name": processed_default, "location": {"$near": {"$geometry": location}}}))
-
-        # Should have matches at this point, but if we haven't, return empty list
-        if not matches:
-            return []
-
-        # find the closest matched brand with activity
-        print("Found matches. Getting the closest match with activity...")
-        base_brand = first_with_activity(matches)
-
-        location = base_brand['location']
-        # find nearby competitive retail site
-        print("Finding a nearby competitive retail site.")
-        comparison_brand = find_nearby_competitor_with_activity(base_brand['name'], base_brand['type'], location)
-        category = base_brand['type']
-        closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-            "$near": {"$geometry": location, "$maxDistance": 1000}}}))[0]['name']  # TODO: may need to error check if counties are blank
-
-        # add to query list
-        print("Adding desired tenant queries")
-        # print(base_brand)
-        # print(comparison_brand)
-        # print(category)
-        # print(closest_county)
-
-        searches1 = []
-        searches1.append({
-            'location_tag': {'type': 'ADDRESS', 'params': base_brand['address']},
-            'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
-        })
-        if comparison_brand:
-            searches1.append({
-                'location_tag': {'type': 'ADDRESS', 'params': comparison_brand['address']},
-                'business_tag': {'type': 'BUSINESS', 'params': comparison_brand['name']}
-            })
-        searches1.append({
-            'location_tag': {'type': 'COUNTY', 'params': closest_county.replace(" -", ",")},
-            'business_tag': {'type': 'CATEGORY', 'params': category}
-        })
-
-        query_list.append(("ACTIVITY", {"searches": searches1}))
-        query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
-
-        # query_list.append(['ACTIVITY', base_brand['name'], base_brand['address']])
-        # if comparison_brand: query_list.append(['ACTIVITY', comparison_brand['name'], comparison_brand['address']])
-        # query_list.append(['ACTIVITY', category, closest_county])
-        # query_list.append(['PERFORMANCE', base_brand['name'], base_brand['address']])
-        # if comparison_brand: query_list.append(['PERFORMANCE', comparison_brand['name'], comparison_brand['address']])
-        # query_list.append(['PERFORMANCE', category, closest_county])
-
-        return query_list
+        return process_retailer(company, location)
 
     # if type landlord
     if ('owner' or 'hospitality industry' or 'shopping center management') in contact_type:
-        NUM_CENTER_COMPS = 4
+        query_list = []
 
         # find closest retail with activity in local vicinity
         print("Finding closest retail site for user location")
@@ -236,10 +161,6 @@ def logic_handler(company, address, city, contact_type):
             'business_tag': {'type': 'CATEGORY', 'params': comp_brand['type']}
         })
 
-        # query_list.append(['PERFORMANCE', comp_brand['name'], comp_brand['address']])
-        # query_list.append(['PERFORMANCE', comp_brand['name'], comp_brand_county])
-        # query_list.append(['PERFORMANCE', comp_brand['type'], comp_brand_county])
-
         for item in nearby_brands:
             # searches2.append(['PERFORMANCE', item['name'], item['address']])
             searches2.append({
@@ -280,6 +201,159 @@ def logic_handler(company, address, city, contact_type):
     # TODO check to see if city is something within our viewports
 
     return None
+
+def process_retailer(company, user_location):
+    matches = None
+    query_list = []
+    text_list = []
+
+    ##### Finding the representative retail brand #####
+    # find closest retail site
+    print("Finding closest retail site for user location")
+    processed_brand = preprocess.preprocess(company)
+    matches = list(utils.DB_TERMINAL_PLACES.find(
+        {"name": processed_brand, "location": {"$near": {"$geometry": user_location}}}))
+
+    # if retail site is not found at all
+    if not matches:
+        # try finding subsidiaries
+        print("Retail site not found. Attempting to find subsidary sites")
+        subsidiaries = google.get_company(processed_brand, 'subsidiaries')
+        if subsidiaries:
+            for sub in subsidiaries:
+                if matches or (sub.lower() == 'more'):
+                    break  # break if matches or if reached the paginated end of google company subsidaries
+                processed_sub = preprocess.preprocess(sub)
+                matches = list(utils.DB_TERMINAL_PLACES.find(
+                    {"name": processed_sub, "location": {"$near": {"$geometry": user_location}}}))
+
+    # if subsidaries weren't found, find well known retailer in their area to get activity and performance from
+    print("No subsidiaries found. Attempting to find well known default retailer {} nearby".format(DEFAULT_BRAND))
+    if not matches:
+        processed_default = preprocess.preprocess(DEFAULT_BRAND)
+        matches = list(utils.DB_TERMINAL_PLACES.find(
+            {"name": processed_default, "location": {"$near": {"$geometry": user_location}}}))
+
+    # Should have matches at this point, but if we haven't, return empty list
+    if not matches:
+        return []
+
+    #### How am I doing in the market and how do I measure up next to competitors? ####
+
+    # find the closest matched brand with activity
+    print("Found matches. Getting the closest match with activity...")
+    base_brand = first_with_activity(matches)
+
+    location = base_brand['location']
+    # find nearby competitive retail site
+    print("Finding a nearby competitive retail site.")
+    comparison_brand = find_nearby_competitor_with_activity(base_brand['name'], base_brand['type'], location)
+    category = base_brand['type']
+    closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
+        "$near": {"$geometry": location, "$maxDistance": 1000}}}))[0][
+        'name']  # TODO: may need to error check if counties are blank
+
+    # add to query list
+    print("Adding desired tenant queries")
+
+    searches1 = []
+    searches1.append({
+        'location_tag': {'type': 'ADDRESS', 'params': base_brand['address']},
+        'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
+    })
+    if comparison_brand:
+        searches1.append({
+            'location_tag': {'type': 'ADDRESS', 'params': comparison_brand['address']},
+            'business_tag': {'type': 'BUSINESS', 'params': comparison_brand['name']}
+        })
+    searches1.append({
+        'location_tag': {'type': 'COUNTY', 'params': closest_county.replace(" -", ",")},
+        'business_tag': {'type': 'CATEGORY', 'params': category}
+    })
+
+    # How am I doing in the market compared to competitors?
+    query_list.append(("COVERAGE", {"searches": searches1})) # TODO: add support for single address in coverage, otherwise change
+    text_list.append("Some description of what's going on here") # TODO: descriptions
+    query_list.append(("ACTIVITY", {"searches": searches1}))
+    text_list.append("Some description of what's going on here")
+    query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
+    text_list.append("Some description of what's going on here")
+
+    #### Where should I expand to? #####
+    # Find the County where the brand has the lowest presence (needs work)
+    # TODO: rather than selecting a random county where the user isn't, select it based on the non-presence of the brand
+    base_brand_msa = list(utils.DB_REGIONS.find({"type": "msa", "geometry": {
+        "$near": {"$geometry": location, "$maxDistance": 1000}}}))[0][
+        'name']
+    other_msa = utils.DB_REGIONS.find_one({"name": {"$ne": base_brand_msa['name']}, "type": "msa"})
+    other_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
+        "$near": {"$geometry": other_msa['center'], "$maxDistance": 1000}}}))[0][
+        'name']
+
+    # Find the best city for the category of retail based on customerVolumeIndex
+    city_search = {'location_tag': {'type': 'COUNTY', 'params': other_county},
+        'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}}
+    table_id = helper.performance_table("CITY", [city_search])
+    perf = gql.get_performance("CITY", table_id=table_id, poll=True)
+    cities = [entry['name'].split("(")[0].strip() for entry in
+                reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
+                if item['customerVolumeIndex'] is not None else 0))]
+
+    # find the top city with a brand of the same category that's not the base brand (so we don't recommend that they
+    # open next to their own location)
+    # TODO: Either solve this by finding the city without the brand, or by finding the place without the brand in the same city
+    matches = None
+    for item in cities:
+        city, state = item.split(", ")
+        matches = list(utils.DB_TERMINAL_PLACES.find(
+            {"name": {"$ne":base_brand['name']}, "type": base_brand['type'], "city": city, "state": state}))
+        if matches:
+            break
+
+    # if it doesn't find another brand in the prospect city to be next to (that's not the same brand), quit
+    # (could potentially just select a random place in the top city)
+    if not matches: return None
+
+    other_brand, city = (matches[0]['name'], matches[0]['city']) # TODO: select the one with activity (or highest activity)
+
+    # Add the category, brand and city to the coverage search
+    searches2 = []
+    searches2.append({
+        'location_tag': {'type': 'COUNTY', 'params': other_county},
+        'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}
+    })
+    searches2.append({
+        'location_tag': {'type': 'CITY', 'params': city},
+        'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}
+    })
+    searches2.append({
+        'location_tag': {'type': 'COUNTY', 'params': other_county},
+        'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
+    })
+    query_list.append(("COVERAGE", {"searches": searches2}))
+    text_list.append("Some description of what's going on here") # TODO: descriptions
+
+    # Add the city performance breakdown for the category in the county
+    query_list.append(("PERFORMANCE", {"searches": [city_search], "performance_type": "CITY"}))
+    text_list.append("Some description of what's going on here") # TODO: descriptions
+
+    # Select one of the top performers (that aren't of the same brand)
+    # find the activity of that and the closest retailers
+    near_retailer_matches = utils.DB_TERMINAL_PLACES.find(
+        {"location": {"$near": {"$geometry": other_brand['location'], "$maxDistance": SEARCH_RADIUS}}})
+    nearby_brands = first_with_activity(near_retailer_matches, NUM_CENTER_COMPS)
+    searches3 = []
+    for item in nearby_brands:
+        searches3.append({
+            'location_tag': {'type': 'ADDRESS', 'params': item['address']},
+            'business_tag': {'type': 'BUSINESS', 'params': item['name']}
+        })
+
+    # Add the city activity breakdown of the nearby retail of the spot with the highest activity
+    query_list.append(("ACTIVITY", {"searches": searches3}))
+    text_list.append("Some description of what's going on here")  # TODO: descriptions
+
+    return query_list
 
 
 def find_nearby_competitor_with_activity(brand, category, location):
