@@ -4,8 +4,10 @@ import styled from 'styled-components';
 import { View, Text } from '../../core-ui';
 import { THEME_COLOR } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD } from '../../constants/theme';
+import { useViewport } from '../../helpers';
 
 export default function PerformanceTablePopover() {
+  let { isDesktop } = useViewport();
   let content = [
     {
       title: 'Volume Index',
@@ -64,7 +66,7 @@ export default function PerformanceTablePopover() {
   return (
     <Container>
       {content.map(({ title, subtitle, description }, idx) => (
-        <ItemContainer key={idx}>
+        <ItemContainer key={idx} isDesktop={isDesktop}>
           <PopoverTitle>
             {title}
             <Text> {subtitle}</Text>
@@ -83,8 +85,8 @@ const PopoverTitle = styled(Text)`
 const Container = styled(View)`
   flex-flow: row wrap;
 `;
-const ItemContainer = styled(View)`
-  width: 50%;
+const ItemContainer = styled(View)<WithViewport>`
+  width: ${({ isDesktop }) => (isDesktop ? '50%' : '100%')};
   margin-bottom: 12px;
   &:last-of-type {
     margin-bottom: 0;
