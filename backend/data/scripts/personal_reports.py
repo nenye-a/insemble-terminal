@@ -78,15 +78,16 @@ def personal_reports(csv_filename):
 
         print("Servicing {}. Finding locations for {}, a {} near {} {}".format(name, company, contact_type, address, city))
 
-        query_list = logic_handler(company, address, city, contact_type)
+        query_list, text_list = logic_handler(company, address, city, contact_type)
 
         # TODO add result query to mongo for that (company, address, city, contact_type)
         if query_list:
             # create personal terminals
             print(name, contact_type, company)
             print(query_list)
-            print(helper.create_shared_report(*query_list, name="1BfromLL:{}'s report for {}".format(name, company),
-                                              description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
+            print(text_list)
+            # print(helper.create_shared_report(*query_list, name="1BfromLL:{}'s report for {}".format(name, company),
+            #                                   description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
 
         print("{},{},{},{} Queries ----".format(company, address, city, contact_type), query_list)
 
@@ -102,7 +103,7 @@ def logic_handler(company, address, city, contact_type):
         coords = get_coords(city)  # if coords doesn't load initially, try searching city alone
     if not coords:
         print("Could not retrieve coordinates for {}, {}".format(address, city))
-        return []
+        return [], []
 
     coords = (coords['lat'], coords['lng'])
     location = utils.to_geojson(coords)
@@ -127,26 +128,26 @@ def logic_handler(company, address, city, contact_type):
 
     # if type municipality
     if 'public sector' in contact_type:
-        return None
+        return None, None
 
     # if type scholar
     if ('academic institution' or 'student') in contact_type:
-        return None
+        return None, None
 
     # if type people researcher
     if ('Consumer/Market Research'.lower() or 'Financial/Investment Services'.lower() or 'Parking and Traffic'.lower()) in contact_type:
-        return None
+        return None, None
 
     # if type services
     if ('advertising/marketing/pr' or 'architecture/design/engineering' or 'Building Materials/Structural'.lower() or
         'Computer Software/Hardware'.lower() or 'Construction'.lower() or 'insurance' or 'law firm' or
         'lending institution' or 'maintenance' or 'other business services' or 'personell services' or 'press/media' or
             'publications/publishers' or 'trade association' or 'utilities/telecommunication') in contact_type:
-        return None
+        return None, None
 
     # TODO check to see if city is something within our viewports
 
-    return None
+    return None, None
 
 def process_retailer(company, user_location):
     query_list = []
@@ -196,14 +197,14 @@ def process_retailer(company, user_location):
     category = base_brand['type']
     closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
         "$near": {"$geometry": location, "$maxDistance": 10000}}}))[0][
-        'name']  # TODO: may need to error check if counties are blank
+        'name'].replace(" -", ",")  # TODO: may need to error check if counties are blank
 
     # add to query list
     print("Adding desired tenant queries")
 
     searches1 = []
     searches1.append({
-        'location_tag': {'type': 'COUNTY', 'params': closest_county.replace(" -", ",")},
+        'location_tag': {'type': 'COUNTY', 'params': closest_county},
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     searches1.append({
@@ -219,11 +220,31 @@ def process_retailer(company, user_location):
     # How am I doing in the market compared to competitors?
 
     query_list.append(("COVERAGE", {"searches": searches1}))
-    text_list.append("Some description of what's going on here") # TODO: descriptions
+    text_list.append("SECT: Map")
+    text_list.append("This is a map of {} and {}, along with other {}s in {}".format(base_brand['name'], comparison_brand['name'], category, closest_county))
     query_list.append(("ACTIVITY", {"searches": searches1}))
-    text_list.append("Some description of what's going on here")
+
+    base_over_cat = None # TODO TEXT. Need to use performance table in helper to populate the details
+    base_over_comp = None # TODO
+    text_list.append("SECT: Site Activity")
+    text_list.append("Using mobile and web data to approximate customer visits to retail locatoins, what we see here is "
+                     "that {0} at {1} has {2}% customer activity compared to other {3}s. {4} has {5}% the activity of {6} at {7},"
+                     " which is nearby. You may want to take a deeper look at what makes these stores operate successfully"
+                     "so that you can implement the learnings in each of your locations.".format(base_brand['name'],
+                        base_brand['address'], base_over_cat, category, base_brand['name'], base_over_comp, comparison_brand['name'],
+                                                                                                 comparison_brand['address']))
     query_list.append(("PERFORMANCE", {"searches": searches1, "performance_type": "OVERALL"}))
-    text_list.append("Some description of what's going on here")
+    base_category_index = None # TODO
+    base_brand_index = None # TODO
+    comp_category_index = None # TODO
+    comp_brand_index = None # TODO
+    text_list.append("SECT: Site Performance")
+    text_list.append("If we look at this {0} for an accumulation of weeks, we see that this location is getting {1}x the footfall"
+                     "of the average {2} a 3 mile radius from the category index. Competitor {3} is getting {4}x the "
+                     "footfall of the average {2} in a 3 mile radius. If we look at the brand index, we see that this "
+                     "particular {0} is getting {5}x the number of visitors as the average {0}, and {3} is getting {6}x the "
+                     "number of visitors as the average {3}.".format(base_brand['name'], base_category_index, category,
+                        comparison_brand['name'], comp_category_index, base_brand_index, comp_brand_index))
 
     #### Where should I expand to? #####
     # Find the County where the brand has the lowest presence (needs work)
@@ -280,11 +301,16 @@ def process_retailer(company, user_location):
         'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
     })
     query_list.append(("COVERAGE", {"searches": searches2}))
-    text_list.append("Some description of what's going on here") # TODO: descriptions
+    text_list.append("SECT: Expansion")
+    text_list.append("Now let's say we wanted to expand {} within a different region, like {}. We can actually search "
+                     "the region for all of the places where the highest attended {}s are, and then dive deeper into "
+                     "the results".format(base_brand['name'], other_msa['name'], base_brand['type']))
 
     # Add the city performance breakdown for the category in the county
     query_list.append(("PERFORMANCE", {"searches": [city_search], "performance_type": "CITY"}))
-    text_list.append("Some description of what's going on here") # TODO: descriptions
+    text_list.append("SECT: Expansion")
+    text_list.append("In the chart above, we have all of the cities in {} ranked by the average customer volume they "
+                     "each receive. Below, we'll take a look at the retail scene in that area".format(other_county))
 
     # find the activity of the closest retailers to the same category brand deep_dive
     print("selecting top performer")
@@ -300,9 +326,12 @@ def process_retailer(company, user_location):
 
     # Add the city activity breakdown of the nearby retail of the spot with the highest activity
     query_list.append(("ACTIVITY", {"searches": searches3}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Close up on a {} in {}".format(other_brand['type'], other_brand['city']))
+    text_list.append("Looking into {} more since it's up on our list, we can actually see a high performing {}, "
+                     "that's surrounded by retail for which we can also see how customers are visiting these spots.".format(
+                    other_brand['city'], other_brand['name']))
 
-    return query_list
+    return (query_list, text_list)
 
 def process_landlord(address, city, location):
     query_list = []
@@ -342,8 +371,16 @@ def process_landlord(address, city, location):
 
     # Add the activity and performance breakdown for a brand that is likely doing well in the shopping center
     query_list.append(("ACTIVITY", {"searches": rent_comp_searches}))
+    text_list.append("SECT: How do I put myself in the best position possible when dealing with tenants?")
+    text_list.append("Whether you're negotiating rent, tracking percentage rent deals, or deciding whether to continue "
+                     "spending on a particular tenant, it's best to be informed on their current customer draw. Here, "
+                     "we use mobile and web data to provide insight on how customers are attending this {} compared to "
+                     "other {} in {}. Typically, when a retailer's one location is higher than it's average, they "
+                     "may pay a higher rent to keep the strong unit.".format(base_brand['name'], base_brand['type'], base_brand_county))
     query_list.append(("PERFORMANCE", {"searches": rent_comp_searches, "performance_type": "OVERALL"}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: How do I put myself in the best position possible when dealing with tenants?")
+    text_list.append("We even break it down further to show you how {} is performing at different scopes. You can "
+                     "hover over the information bubble at the top of the table for more detail.")
 
     #### How are customers going to my shopping area & where are the inefficiencies? What tenants to go after? ####
     # find the retail near initial brand
@@ -353,7 +390,6 @@ def process_landlord(address, city, location):
 
     # add to query list
     print("Adding desired tenant queries")
-    searches1 = []
     nearby_retail_searches = []
 
     for item in nearby_brands:
@@ -363,11 +399,23 @@ def process_landlord(address, city, location):
         })
 
     query_list.append(("COVERAGE", {"searches": nearby_retail_searches}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Map")
+    text_list.append("Similarly for surrounding retail, we can analyze customer flow through a shopping area.")
     query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    live_hours = [None, None] # TODO
+    largest_contributor = None # TODO
+    suggested_time = None # TODO
+    text_list.append("SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
+    text_list.append("Here you'll see some stores near our initial {0} that may have some customer overlap. Most of "
+                     "the customers here are coming during the hours of {1} and {2}, and the largest contributor of "
+                     "customers on an average day in 2020 is {3}. Anyone sourcing tenants for this shopping area may "
+                     "want to find a similar brand as {3}, a cotenant of theirs, or brands that have presence in the "
+                     "{4} to compliment the customer traffic in the shopping center".format(base_brand['name'],
+                        live_hours[0], live_hours[1], largest_contributor, suggested_time))
     query_list.append(("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
+    text_list.append("Here we can see the stats broken down further for retail near {} at {}".format(base_brand['name'],
+                                                                                            base_brand['address']))
 
 
     #### Who are the best tenants to go after in the market? ####
@@ -385,7 +433,12 @@ def process_landlord(address, city, location):
         'business_tag': {'type': 'CATEGORY', 'params': category2}
     })
     query_list.append(("PERFORMANCE", {"searches": desired_tenants, "performance_type": "BRAND"}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Who are the best {} and {} tenants in the market?".format(category1, category2))
+    text_list.append("If we want to find and contact tenants who are performing well during these times, we can "
+                     "actually look them up and see how their brand is doing in {} here. Again, the performance is "
+                     "based on mobile data and web traffic from consumers, so you're always quick to know how they're "
+                     "currently doing. The Insemble Terminal platform itself has contact information for the tenants "
+                     "as well, if you'd like to reach out to them via phone or email.".format(base_brand_county))
 
     #### Where should I invest in new property? ####
 
@@ -418,11 +471,16 @@ def process_landlord(address, city, location):
         'location_tag': {'type': 'CITY', 'params': center_city}
     }
     query_list.append(("COVERAGE", {"searches": [top_cat_search]}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Where may I want to invest in new property or businesses?")
+    text_list.append("This is a map of {}s, one of the top performing retail categories in {} currently".format(top_category, center_city))  # TODO: descriptions
     query_list.append(("PERFORMANCE", {"searches": [category_search], "performance_type": "CATEGORY"}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Where may I want to invest in new property or businesses?")
+    text_list.append("Here we can see the various retail categories present in {}, sorted by which brands "
+                     "are drawing the most consumers during this part of the year. An item with a higher Volume index "
+                     "typically is doing pretty well compared to others. As before, these categories can also be "
+                     "expanded for specific brands and contact information".format(center_city))
 
-    return query_list
+    return (query_list, text_list)
 
 def process_broker(location):
     query_list = []
@@ -474,14 +532,21 @@ def process_broker(location):
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     query_list.append(("COVERAGE", {"searches": best_for_category_searches}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Where should my client expand in the market based on who's moving?")
+    text_list.append("Let's say you had a client that does really well when they're next to {0}, and they wanted to"
+                     " expand in {1}. We can actually search the region for all of the places where the highest attended "
+                     "{0}s are, and then dive deeper into the results".format(category, county))
 
     performance_by_city_search = [{
         'location_tag': {'type': 'COUNTY', 'params': county},
         'business_tag': {'type': 'CATEGORY', 'params': category}
     }]
     query_list.append(("PERFORMANCE", {"searches": performance_by_city_search, "performance_type": "CITY"}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Where should my client expand in the market based on who's moving?")
+    text_list.append("In the table above we see {0} performance broken down by city. The data is generated from mobile "
+                     "and web traffic to approximate the amount of visitors a particular site has. By looking at the "
+                     "volume index, we can see that {1} is the best city for {0}s in {2}. If you hover over the info "
+                     "bubble, you can get more information on the performance indexes.".format(category, city, county))
 
     activity_against_brand_cat = []
     activity_against_brand_cat.append({
@@ -497,7 +562,9 @@ def process_broker(location):
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     query_list.append(("ACTIVITY", {"searches": activity_against_brand_cat}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: What's the retail like in this area?")
+    text_list.append("If we dive deeper into those locations, we'll find that the {} in {} generally outperform the "
+                     "category of {} in {}".format(brand['name'], city, category, county))
 
     #### How's the retail in that location? ####
     near_base_matches = utils.DB_TERMINAL_PLACES.find(
@@ -515,13 +582,18 @@ def process_broker(location):
         })
 
     query_list.append(("COVERAGE", {"searches": nearby_retail_searches}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Surrounding Retail")
+    text_list.append("This is a map of the retail surrounding {} at {}".format(brand['name'], brand['address']))
     query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Site Activity")
+    text_list.append("We can additionally assess the surrounding retail in the area to get a look of the environment. "
+                     "Here, we see the metrics for how the nearby stores are doing in terms of their customer flow")
     query_list.append(("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
-    text_list.append("Some description of what's going on here")  # TODO: descriptions
+    text_list.append("SECT: Site Performance")
+    text_list.append("The peformance table breaks it down further, where you can see how each location compares to "
+                     "nearby retail, same category retail, and other units of the same brand")
 
-    return query_list
+    return (query_list, text_list)
 
 
 def find_nearby_competitor_with_activity(brand, category, location):
