@@ -190,7 +190,7 @@ export default function PerformanceResult(props: Props) {
             type: data.performanceTable.table.locationTag.type,
           },
         })}
-        infoboxContent={PerformanceTablePopover}
+        infoboxContent={() => <PerformanceTablePopover isDesktop={isDesktop} />}
         pinTableId={pinTableId}
         sortOrder={sortOrder}
         readOnly={readOnly}

@@ -17,6 +17,7 @@ import {
 } from '../constants/colors';
 import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import ManageTerminalForm from '../scenes/terminal/ManageTerminalForm';
+import { useViewport } from '../helpers';
 import { TableType } from '../generated/globalTypes';
 import { GetTerminalList } from '../generated/GetTerminalList';
 import { PinTable, PinTableVariables } from '../generated/PinTable';
@@ -46,8 +47,10 @@ export default function PinPopover(props: Props) {
     { loading: pinTableLoading, data: pinTableData, error: pinTableError },
   ] = useMutation<PinTable, PinTableVariables>(PIN_TABLE);
   let [addTerminalVisible, setAddTerminalVisible] = useState(false);
+  let { isDesktop } = useViewport();
+
   return (
-    <Container>
+    <Container isDesktop={isDesktop}>
       {terminalsLoading || pinTableLoading ? (
         <LoadingIndicator />
       ) : terminalsError ? (
@@ -112,11 +115,11 @@ export default function PinPopover(props: Props) {
   );
 }
 
-const Container = styled(Card)`
+const Container = styled(Card)<WithViewport>`
   margin-top: 12px;
   padding: 20px 30px;
-  width: 514px;
-  max-height: 285px;
+  width: ${({ isDesktop }) => (isDesktop ? '514px' : '100%')};
+  max-height: 400px;
   overflow: visible;
 `;
 
