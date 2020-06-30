@@ -144,19 +144,25 @@ def create_shared_report(*table_tuples, terminal_id=None, name=None, description
     Helper function to create a shared report based on a list of tables.
     Tables should come in a list of tuples, the first containing the type
     of table, and the 2nd either an id (of an existing table), or a dictionary
-    of search parameters
+    of search parameters.
+
+
 
     Example Table Tuple -
         ("PERFORMANCE", "ckbsib3xl0039bq35tqiu47yj") or
         ("PERFORMANCE, {"searches":[... (searches - as defined by performance)],
                         "performance_type": "ADDRESS"})
 
+    Supports Performance, Activity, Coverage, and Notes.
+    Notes should provide dictionary params structured: {title: "", content: ""}
+
     Returns: Link to shared report & the terminal_id used
     """
 
     if not terminal_id:
         terminal_id_list = gql.create_terminal(
-            name if name else 'Custom Report ' + str(dt.datetime.utcnow().replace(microsecond=0)).split(' ')[0],
+            name if name else 'Custom Report ' +
+            str(dt.datetime.utcnow().replace(microsecond=0)).split(' ')[0],
             description
         )
         terminal_id = terminal_id_list[-1]['id']
@@ -172,6 +178,9 @@ def create_shared_report(*table_tuples, terminal_id=None, name=None, description
                 table_id = activity_graph(**params)
             elif table_type == 'COVERAGE':
                 table_id = coverage_map(**params)
+            elif table_type == 'NOTE':
+                gql.create_note(terminal_id=terminal_id, **params)
+                continue
             else:
                 continue
         elif isinstance(params, str):

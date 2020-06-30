@@ -7,6 +7,7 @@ from results import (NEWS_TABLE, OPEN_NEWS_TABLE, PERFORMANCE_TABLE, ACTIVITY_DA
 from comparison import UPDATE_COMPARISON
 from terminals import (GET_TERMINAL, CREATE_TERMINAL, PIN_TABLE, SHARE_TERMINAL,
                        GET_SHARED_TERMINAL, GET_TERMINAL_BASIC_INFO)
+from notes import CREATE_TERMINAL_NOTE, GET_TERMINAL_NOTE
 
 API_URI = config('API_URI')
 GQL_SESSION = requests.session()
@@ -194,6 +195,21 @@ def get_terminal_info(terminal_id):
     return get_data(request(GET_TERMINAL_BASIC_INFO, variables), 'terminal')
 
 
+def create_note(terminal_id, title, content):
+    variables = {
+        'terminalId': terminal_id,
+        'title': title,
+        'content': content
+    }
+    return get_data(request(CREATE_TERMINAL_NOTE, variables),
+                    'createTerminalNote')
+
+
+def get_terminal_note(note_id):
+    variables = {'noteId': note_id}
+    return get_data(request(GET_TERMINAL_NOTE, variables), 'note')
+
+
 def get_data(result, key):
     if 'data' in result and result['data']:
         return result['data'][key]
@@ -208,6 +224,12 @@ def is_polling(result):
 
 
 if __name__ == "__main__":
+    # NOTE: For all the terminal related tests, please
+    # adjust the ids to use actual ids on the site you
+    # are test. For exmaple testing with terminals hosted
+    # on staging when looking at production will not work,
+    # neither will testing on terminal ids located in other
+    # people's local terminals.
     location = {'type': 'CITY', 'params': 'Atlanta, GA, USA'}
     business = {'type': 'BUSINESS', 'params': 'Starbucks'}
 
@@ -287,7 +309,26 @@ if __name__ == "__main__":
     def test_search():
         print(search(business_tag=business))
 
-    test_pin_table()
+    def test_add_note():
+        result = create_note(
+            'ckbvymez90514uq35fe17w5d4',
+            'Context 1',
+            'Interested in hearing your thoughts'
+        ),
+        print(result)
+        result = pin_table(
+            'ckbvymez90514uq35fe17w5d4',
+            'ckbvwzigy0203uq35qhoc5b7l',
+            'PERFORMANCE'
+        )
+        result = create_note(
+            'ckbvymez90514uq35fe17w5d4',
+            'Context 2',
+            'Interested in hearing your thoughts again.'
+        ),
+
+    # test_pin_table()
+    # test_add_note()
     # test_get_terminal()
     # test_share_terminal()
     # test_get_shared_terminal()
