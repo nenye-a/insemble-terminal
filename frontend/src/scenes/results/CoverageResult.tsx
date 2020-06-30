@@ -130,7 +130,7 @@ export default function CoverageResult(props: Props) {
   return (
     <View>
       <ResultTitle
-        title="Coverage"
+        title="Map"
         noData={noData}
         reviewTag={ReviewTag.MAP}
         tableId={data?.coverageTable.id || ''}
