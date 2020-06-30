@@ -299,11 +299,27 @@ def correct_version():
                     ]
                 }
             }
+        }, {
+            '$set': {
+                'version': {
+                    '$cond': [
+                        {"$eq": ["$version", None]},
+                        0,
+                        "$version"
+                    ]
+                }
+            }
         },
-        {'merge': "pending-versions"}
+        {'$merge': "pending_versions"}
     ]
-
     utils.DB_PLACES_HISTORY.aggregate(pipeline)
+    utils.SYSTEM_MONGO.get_collection("terminal.pending_versions").aggregate([
+        {'$merge': {
+            "into": "places",
+            "whenNotMatched": "discard"
+        }}
+    ])
+    utils.SYSTEM_MONGO.get_collection("terminal.pending_versions").drop()
 
 
 def store_old_values():
@@ -369,6 +385,7 @@ if __name__ == "__main__":
     #     'name': {'$regex': r' at ', '$options': "i"}
     # }))
     # apply_county_tags()
-    add_city_fast()
+    # add_city_fast()
+    correct_version()
 
     pass
