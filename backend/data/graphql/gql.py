@@ -338,6 +338,6 @@ if __name__ == "__main__":
     #     table_id='ckc26h4i700850s35k2shk574',
     # )
     # print(comparison_update)
-    # pprint.pprint(get_activity(table_id='ckc26jzpd00920s357q252d7r', poll=True))
+    pprint.pprint(get_activity(table_id='ckc26jzpd00920s357q252d7r', poll=True))
 
-    pprint.pprint(get_performance('ADDRESS', table_id='ckc12szdl0630ky35cf9gqoi7'))
+    # pprint.pprint(get_performance('ADDRESS', table_id='ckc12szdl0630ky35cf9gqoi7'))

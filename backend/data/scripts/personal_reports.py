@@ -10,6 +10,7 @@ import preprocess
 import utils
 import google
 import requests
+import statistics
 from graphql import helper
 from graphql import gql
 from decouple import config
@@ -243,9 +244,8 @@ def process_retailer(company, user_location):
     comp_avg_activity = parse_node_activity(
         compare_data_dict[comparison_brand['name']][0]['activityData'])
 
-    # TODO TEXT. Need to use performance table in helper to populate the details
     base_over_cat = round((base_avg_activity / category_avg_activity) * 100, 1)
-    base_over_comp = round((base_avg_activity / comp_avg_activity) * 100, 1)  # TODO
+    base_over_comp = round((base_avg_activity / comp_avg_activity) * 100, 1)
     text_list.append("SECT: Site Activity")
     text_list.append(f"Using mobile and web data to approximate customer visits to "
                      f"retail locations, what we see here is that {base_brand['name']} "
@@ -458,17 +458,60 @@ def process_landlord(address, city, location):
     text_list.append(
         "Similarly for surrounding retail, we can analyze customer flow through a shopping area.")
     query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
-    live_hours = [None, None]  # TODO
-    largest_contributor = None  # TODO
-    suggested_time = None  # TODO
+
+    activity_id = helper.activity_graph(nearby_retail_searches)
+    activity_data = gql.get_activity(table_id=activity_id, poll=True)
+
+    base_data = activity_data['table']['data']
+    compare_data = activity_data['table']['compareData']
+    compare_data_dict = utils.section_by_key(compare_data, 'name')
+
+    activity_dict = {}
+    activity_dict[base_data[0]['name']] = base_data[0]['activityData']
+    activity_dict.update({
+        retailer_name: data[0]['activityData']
+        for retailer_name, data in compare_data_dict.items()
+    })
+
+    largest_contributor = get_largest_contributer(activity_dict)
+
+    raw_live_hours = get_live_hours(activity_dict)
+    hours_sentance = []
+    suggested_time = raw_live_hours[0][2]
+    for live_hours in raw_live_hours:
+        hours = list(filter(None, live_hours[:2]))
+        if len(hours) == 2:
+            hours_sentance.append(
+                f'during the hours of {hours[0]}-{hours[1]}'
+            )
+            suggested_time = live_hours[2]
+        elif len(hours) == 1:
+            hours_sentance.append(
+                f'at {hours[0]}'
+            )
+    if len(hours_sentance) == 1:
+        hours_sentance = hours_sentance[0]
+    elif len(hours_sentance) == 2:
+        hours_sentance = ' and '.join(hours_sentance)
+    elif len(hours_sentance) > 2:
+        hours_sentance = ', '.join(hours_sentance[:-1])
+        hours_sentance += ', and ' + hours_sentance[-1]
+
     text_list.append(
         "SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
-    text_list.append("Here you'll see some stores near our initial {0} that may have some customer overlap. Most of "
-                     "the customers here are coming during the hours of {1} and {2}, and the largest contributor of "
-                     "customers on an average day in 2020 is {3}. Anyone sourcing tenants for this shopping area may "
-                     "want to find a similar brand as {3}, a cotenant of theirs, or brands that have presence in the "
-                     "{4} to compliment the customer traffic in the shopping center".format(base_brand['name'],
-                                                                                            live_hours[0], live_hours[1], largest_contributor, suggested_time))
+    text_list.append("Here you'll see some stores near our initial {base_brand} that may have "
+                     "some customer overlap. Most of the customers here are coming {hours_sentance}, "
+                     "and the largest contributor of customers on an average day in 2020 is "
+                     "{largest_contributer}. Anyone sourcing tenants for this shopping area may "
+                     "want to find a similar brand as {largest_contributer}, a cotenant of theirs, "
+                     "or brands that have presence in the {suggested_time} to compliment the "
+                     "customer traffic in the shopping center".format(
+                         base_brand=base_brand['name'],
+                         hours_sentance=hours_sentance,
+                         largest_contributer=largest_contributor,
+                         suggested_time=suggested_time
+                     ))
+
     query_list.append(
         ("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
     text_list.append(
@@ -733,6 +776,73 @@ def parse_node_activity(activity_data):
     return sum(activity_array) / len(activity_array) if any(activity_array) else 0
 
 
+def get_largest_contributer(activity_dict):
+
+    sorted_items = sorted({
+        key: parse_node_activity(data) for key, data in activity_dict.items()
+    }.items(), key=lambda x: x[1], reverse=True)
+
+    return sorted_items[0][0]
+
+
+def get_live_hours(activity_dict):
+
+    hours = ["{}AM".format(x) for x in range(4, 12)]
+    hours.append("12PM")
+    hours.extend(["{}PM".format(x) for x in range(1, 12)])
+    hours.append("12AM")
+    hours.extend(["{}AM".format(x) for x in range(1, 4)])
+
+    positioner = dict(zip(hours, range(24)))
+    finder = {value: key for key, value in positioner.items()}
+
+    activity_array = [0 for num in range(24)]
+    for brand in activity_dict:
+        for item in activity_dict[brand]:
+            activity_array[positioner[item['name']]] += item['amount']
+
+    nonzero_activity = list(filter(bool, activity_array))
+    avg_activity = sum(nonzero_activity) / len(nonzero_activity)
+    std_activity = statistics.stdev(nonzero_activity)
+
+    cutoff = avg_activity + 0.5 * std_activity
+
+    # create a list of live pairs for each hot period or itme.
+    live_pairs = []
+    left, right = None, None
+    for index, value in enumerate(activity_array):
+        if value > cutoff:
+            if not left:
+                left = index
+            else:
+                right = index
+        else:
+            if left:
+                live_pairs.append([left, right])
+                left, right = None, None
+
+    # add suggeted time to the pairs.
+    for pair in live_pairs:
+        if pair[1] and pair[1] < 8:
+            # index 8 is noon
+            pair.append('afternoon or evening')
+        elif pair[0] > 8:
+            pair.append('morning')
+        elif pair[1] and pair[1] < 13:
+            pair.append('evening')
+        elif pair[0] > 6:
+            pair.append('early morning')
+        else:
+            pair.append(None)
+
+    for pair in live_pairs:
+        pair[0] = finder[pair[0]]
+        if pair[1]:
+            pair[1] = finder[pair[1]]
+
+    return live_pairs
+
+
 if __name__ == "__main__":
     def test_find_competitor_with_activity():
         brand = "Starbucks"
@@ -741,11 +851,12 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    # filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
-    filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
+    # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     personal_reports(filename)
 
-    # process_retailer(
-    #     ""
-    # )
+    # test_activity_dict = {'Subway': [{'name': '4AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 25}, {'name': '10AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 44}, {'name': '11AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '12PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 72}, {'name': '1PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '2PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 63}, {'name': '3PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '4PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '5PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '6PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 58}, {'name': '7PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 46}, {'name': '8PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 32}, {'name': '9PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Rocksalt Grille': [{'name': '4AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 14}, {'name': '12PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 22}, {'name': '1PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 26}, {'name': '2PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 28}, {'name': '3PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 31}, {'name': '4PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 39}, {'name': '5PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '6PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '7PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 36}, {'name': '8PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 20}, {'name': '9PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Esquire Hair Replacement Center LLC': [{'name': '4AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {
+    #     'name': '7AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 69}, {'name': '10AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 58}, {'name': '11AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 56}, {'name': '12PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 53}, {'name': '1PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 53}, {'name': '2PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 41}, {'name': '3PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 38}, {'name': '4PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 30}, {'name': '5PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 38}, {'name': '6PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 36}, {'name': '7PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '8PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '9PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}], 'Ying Thai Cuisine': [{'name': '4AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '10AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '11AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 24}, {'name': '12PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 32}, {'name': '1PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 36}, {'name': '2PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 38}, {'name': '3PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 39}, {'name': '4PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 46}, {'name': '5PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 60}, {'name': '6PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 70}, {'name': '7PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 68}, {'name': '8PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 51}, {'name': '9PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}]}
+
+    # print(get_live_hours(test_activity_dict))
