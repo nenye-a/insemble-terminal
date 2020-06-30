@@ -239,6 +239,7 @@ export default function ResultTitle(props: Props) {
             </Touchable>
             <ModalContainer
               visible={modalVisible}
+              hideCloseButton
               onClose={() => {
                 setModalVisible(false);
               }}
@@ -446,6 +447,6 @@ const PopoverContainer = styled(Card)`
 const ModalContainer = styled(Modal)`
   width: 365px;
   max-height: fit-content;
-  padding: 12px 24px;
+  padding: 12px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
 `;

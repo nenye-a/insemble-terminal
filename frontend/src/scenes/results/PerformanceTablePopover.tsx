@@ -65,25 +65,15 @@ export default function PerformanceTablePopover() {
   ];
   return (
     <Container>
-      {isDesktop
-        ? content.map(({ title, subtitle, description }, idx) => (
-            <ItemContainer key={idx}>
-              <PopoverTitle>
-                {title}
-                <Text> {subtitle}</Text>
-              </PopoverTitle>
-              {description}
-            </ItemContainer>
-          ))
-        : content.map(({ title, subtitle, description }, idx) => (
-            <ItemContainerMobile key={idx}>
-              <PopoverTitle>
-                {title}
-                <Text> {subtitle}</Text>
-              </PopoverTitle>
-              {description}
-            </ItemContainerMobile>
-          ))}
+      {content.map(({ title, subtitle, description }, idx) => (
+        <ItemContainer key={idx} isDesktop={isDesktop}>
+          <PopoverTitle>
+            {title}
+            <Text> {subtitle}</Text>
+          </PopoverTitle>
+          {description}
+        </ItemContainer>
+      ))}
     </Container>
   );
 }
@@ -95,16 +85,8 @@ const PopoverTitle = styled(Text)`
 const Container = styled(View)`
   flex-flow: row wrap;
 `;
-const ItemContainer = styled(View)`
-  width: 50%;
-  margin-bottom: 12px;
-  &:last-of-type {
-    margin-bottom: 0;
-  }
-`;
-
-const ItemContainerMobile = styled(View)`
-  width: 100%;
+const ItemContainer = styled(View)<WithViewport>`
+  width: ${({ isDesktop }) => (isDesktop ? '50%' : '100%')};
   margin-bottom: 12px;
   &:last-of-type {
     margin-bottom: 0;
