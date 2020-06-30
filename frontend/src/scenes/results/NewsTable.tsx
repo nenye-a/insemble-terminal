@@ -57,13 +57,15 @@ export default function NewsTable(props: Props) {
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
           let id = idProp || index;
+          let path = history.location.pathname.includes('news')
+            ? `${history.location.pathname}/${id}`
+            : `${history.location.pathname}/news/${id}`;
+
           return (
             <DataTable.Row
               key={index}
+              href={path}
               onPress={() => {
-                let path = history.location.pathname.includes('news')
-                  ? `${history.location.pathname}/${id}`
-                  : `${history.location.pathname}/news/${id}`;
                 history.push(path, {
                   title,
                   link,

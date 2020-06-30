@@ -26,6 +26,7 @@ export default function LoginScene() {
           onPress={() => {
             history.push('/signup');
           }}
+          href="/signup"
         />
       </NoAccountContainer>
       {/* TODO: Forgot password scene */}
