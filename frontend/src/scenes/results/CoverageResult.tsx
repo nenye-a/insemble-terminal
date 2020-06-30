@@ -132,7 +132,7 @@ export default function CoverageResult(props: Props) {
       <ResultTitle
         title="Coverage"
         noData={noData}
-        reviewTag={ReviewTag.COVERAGE}
+        reviewTag={ReviewTag.MAP}
         tableId={data?.coverageTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({ tableId: newTableId });

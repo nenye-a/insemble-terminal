@@ -70,7 +70,7 @@ export default function getResultQueries(
     // TODO: there will be by city, by county
   }
 
-  if (!reviewTag || reviewTag === ReviewTag.COVERAGE) {
+  if (!reviewTag || reviewTag === ReviewTag.MAP) {
     if (
       (businessTag?.type === BusinessType.BUSINESS &&
         locationTag?.type !== LocationTagType.ADDRESS) ||
@@ -78,7 +78,7 @@ export default function getResultQueries(
         locationTag?.type !== LocationTagType.NATION &&
         locationTag?.type !== LocationTagType.ADDRESS)
     ) {
-      queries.push({ reviewTag: ReviewTag.COVERAGE, type: 'COVERAGE' });
+      queries.push({ reviewTag: ReviewTag.MAP, type: 'COVERAGE' });
     }
   }
   if (!reviewTag || reviewTag === ReviewTag.ACTIVITY) {
