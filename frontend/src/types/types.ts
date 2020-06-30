@@ -126,3 +126,10 @@ export type PerformanceRowPressParam = {
     businessTag: BusinessTagResult;
   };
 };
+
+export type MapInfoboxPressParam = {
+  newTag: {
+    businessName: string | null;
+    address: string | null;
+  };
+};
