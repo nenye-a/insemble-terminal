@@ -124,7 +124,9 @@ export default function PerformanceResult(props: Props) {
             !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
             .filter(notIncludedFilterFn)
-            .map((item) => item.businessTag?.params);
+            .map(
+              (item) => item.businessTag?.params || item.locationTag?.params,
+            );
           let notIncludedTagId = comparationTags
             .filter(notIncludedFilterFn)
             .map((item) => item.id);

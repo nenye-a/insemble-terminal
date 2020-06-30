@@ -24,6 +24,7 @@ export default function SignUpScene() {
           onPress={() => {
             history.push('/login');
           }}
+          href="/login"
         />
       </RowView>
     </Container>

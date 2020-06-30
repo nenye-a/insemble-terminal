@@ -1,4 +1,4 @@
-import React, { MouseEvent, forwardRef, Ref } from 'react';
+import React, { MouseEvent, forwardRef, Ref, useState } from 'react';
 import styled, { css } from 'styled-components';
 
 import { isLocalUrl } from '../helpers';
@@ -16,11 +16,14 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
   let { onPress, href, stopPropagation, disabled, ...otherProps } = props;
   let isLink = href != null;
   let isLocalLink = isLink && isLocalUrl(href);
+  let [metaOrCtrlActive, setMetaOrCtrlActive] = useState(false);
   return (
     <Touchable
       as={isLink ? 'a' : undefined}
       href={href}
-      target={isLink && !isLocalLink ? '_blank' : undefined}
+      target={
+        isLink && (!isLocalLink || metaOrCtrlActive) ? '_blank' : undefined
+      }
       disabled={disabled}
       ref={forwardedRef}
       onKeyDown={(e: KeyboardEvent) => {
@@ -36,11 +39,14 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
       {...otherProps}
       onClick={(event: MouseEvent) => {
         if (stopPropagation) {
+          event.stopPropagation();
         }
         if (isLocalLink && !(event.metaKey || event.ctrlKey)) {
           event.preventDefault();
         }
-        if (onPress && !disabled) {
+        if (isLocalLink && (event.metaKey || event.ctrlKey)) {
+          setMetaOrCtrlActive(true);
+        } else if (onPress && !disabled) {
           onPress();
         }
       }}
@@ -66,6 +72,7 @@ const Touchable = styled(View)<ViewProps>`
   transition-property: opacity;
   transition-duration: 0.15s;
   outline: none;
+  text-decoration: none;
   ${(props) => (props.href == null ? undefined : linkStyles)}
   ${(props) =>
     props.disabled &&

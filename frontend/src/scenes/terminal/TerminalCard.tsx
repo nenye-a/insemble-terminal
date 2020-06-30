@@ -94,6 +94,7 @@ export default function TerminalCard(props: Props) {
         onPress={() => {
           history.push(`/terminals/${id}`);
         }}
+        href={`/terminals/${id}`}
         disabled={isLandingPage}
         {...otherProps}
       >
