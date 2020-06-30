@@ -400,7 +400,7 @@ class CoverageAPI(BasicAPI):
 
         Parameters: {
             location: {
-                locationType: 'CITY'|'COUNTY' <- supported | unsupported => 'STATE'|'NATION'|'ADDRESS'
+                locationType: 'ADDRESS'|'CITY'|'COUNTY' <- supported | unsupported => 'STATE'|'NATION'
                 params: string
             }
             business: {
@@ -447,17 +447,18 @@ class CoverageAPI(BasicAPI):
         location = params['location']
         business = params['business']
 
-        # data = {}
         data = []
-        if location['locationType'] == 'ADDRESS':
-            error = "'ADDRESS' not supported for coverage requests"
-            return Response({'status_detail': [error]}, status=status.HTTP_400_BAD_REQUEST)
 
         if business['businessType'] == 'BUSINESS':
 
+            if location['locationType'] == 'ADDRESS':
+                coverage_data = coverage.coverage(business['params'], location['params'])
+                if coverage_data:
+                    data.append(coverage_data)
+
             # CITY & COUNTY + BUSINESS
-            if location['locationType'] in ['CITY', 'COUNTY']:
-                coverage_data = coverage.coverage(
+            elif location['locationType'] in ['CITY', 'COUNTY']:
+                coverage_data = coverage.aggregate_coverage(
                     business['params'], location['params'], location['locationType'])
                 if coverage_data:
                     data.append(coverage_data)
@@ -469,7 +470,7 @@ class CoverageAPI(BasicAPI):
         elif business['businessType'] == 'CATEGORY':
 
             # CITY & COUNTY + CATEGORY
-            if location['locationType'] in ['CITY', 'COUNTY']:
+            if location['locationType'] in ['ADDRESS', 'CITY', 'COUNTY']:
                 coverage_data = coverage.category_coverage(
                     business['params'], location['params'], location['locationType'])
                 if coverage_data:
