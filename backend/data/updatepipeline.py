@@ -1,7 +1,7 @@
 import utils
 import mongo
 import time
-import performancev2
+import accumulator
 import pandas as pd
 import datetime as dt
 
@@ -19,32 +19,14 @@ def setup(query={'activity_volume': {'$ne': -1}}, update_all=True):
             'activity': {'$ne': []},
         })
 
-    utils.SYSTEM_MONGO.get_collection("terminal.temp_volume_places").create_index(
-        [('marked', 1)]
-    )
     utils.DB_TERMINAL_PLACES.aggregate([
         {
             '$match': query
         },
         {
-            '$addFields': {
-                'marked': -1
-            }
-        },
-        {
             "$merge": "temp_volume_places"
         }
     ])
-
-
-def clear_marks():
-
-    utils.SYSTEM_MONGO.get_collection("terminal.temp_volume_places").update_many(
-        {'marked': {'$ne': -1}},
-        {'$set': {
-            'marked': -1
-        }}
-    )
 
 
 def setup_confidence(query={}):
@@ -78,8 +60,6 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
         raise Exception('Update type: \'{}\' is not either \'volume\' '
                         'or \'confidence\'. Please retry.'.format(update_type))
 
-    # run_id = random.randint(0, 10000)
-    # query = {'marked': -1}
     query = {}
     additional_query and query.update(additional_query)
 
@@ -89,6 +69,8 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
 
     while collecting:
 
+        start = time.time()
+
         pipeline = []
         if query:
             pipeline.append({'$match': query})
@@ -96,9 +78,6 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
 
         places = list(temp_db.aggregate(pipeline))
         id_list = [place['_id'] for place in places]
-        # temp_db.update_many({'_id': {'$in': id_list}}, {'$set': {
-        #     'marked': run_id
-        # }})
 
         if len(places) == 0:
             if wait:
@@ -119,8 +98,8 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
             if update_type == 'volume':
                 if place['activity_volume'] < 0:
                     continue
-                local_retail_volume = performancev2.local_retail_volume(place['location'])
-                local_category_volume = performancev2.local_category_volume(
+                local_retail_volume = accumulator.local_retail_volume(place['location'])
+                local_category_volume = accumulator.local_category_volume(
                     place['location'], place['type']) if 'type' in place else -1
 
                 results.append({
@@ -129,7 +108,7 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
                     'local_category_volume': local_category_volume
                 })
             elif update_type == 'confidence':
-                num_nearby = len(performancev2.get_nearby(place['location'], 0.01))
+                num_nearby = len(accumulator.get_nearby(place['location'], 0.01))
                 results.append({
                     '_id': place['_id'],
                     'num_nearby': num_nearby
@@ -144,15 +123,15 @@ def proximity_update(update_type, batch_size=100, wait=True, additional_query=No
             update_db.insert_many(results, ordered=False)
         except Exception:
             pass
+        temp_db.delete_many({
+            '_id': {"$in": id_list}
+        })
         print('ACTIVITY_UPDATE: Batch complete, updated {count} places. '
               'searching for more locations. Last Update: {update_time}'.format(
                   count=len(places),
                   update_time=dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
               ))
-
-        temp_db.delete_many({
-            '_id': {"$in": id_list}
-        })
+        print(f'{round(time.time() - start,1)} seconds in batch.')
 
 
 def ordered_update():
@@ -172,10 +151,12 @@ def merge_update():
     update_db.aggregate([
         {'$merge': 'places'}
     ])
+    # update_db.drop()
     # update_db.delete_many({})
 
 
 if __name__ == "__main__":
+    # setup()
     # setup_confidence()
     # proximity_update('confidence', wait=False)
     proximity_update('volume', wait=False)

@@ -120,22 +120,18 @@ def update_activity(query=None):
             '$match': query
         })
 
-    # TEST_DB.aggregate(pipeline)
     utils.DB_TERMINAL_PLACES.aggregate(pipeline, allowDiskUse=True)
+    print("Finished creating all the activities. Now migrating them to db.")
+    activity_db = utils.SYSTEM_MONGO.get_collection("terminal.activity-levels")
+    activity_db.aggregate([
+        {"$merge": {"into": "places"}}
+    ])
+    activity_db.drop()
 
 
 def revise_activity():
     # Make revisions for the activity of places.
     pass
-
-
-def merge_activity():
-
-    temp_db = utils.SYSTEM_MONGO.get_collection("terminal.activity-levels")
-
-    temp_db.aggregate([
-        {"$merge": {"into": "places"}}
-    ])
 
 
 def update_brand_volume():
@@ -202,6 +198,18 @@ def update_brand_volume():
             }
         ], allowDiskUse=True
     )
+
+    print('Done aggregating brand activity, beginning merge.')
+
+    update_db = utils.SYSTEM_MONGO.get_collection("terminal.brand_activity")
+    update_db.aggregate([
+        {"$project": {
+            "_id": 1,
+            "brand_volume": 1
+        }},
+        {"$merge": {"into": "places"}}
+    ])
+    update_db.drop()
 
 
 def stats_by_key(key):
@@ -348,19 +356,6 @@ def stats_by_key(key):
     pd.DataFrame(places).set_index('_id').to_csv(GENERATED_PATH + key[1:] + '_stats.csv')
 
 
-def merge_brand_activity():
-
-    temp_db = utils.SYSTEM_MONGO.get_collection("terminal.brand_activity")
-
-    temp_db.aggregate([
-        {"$project": {
-            "_id": 1,
-            "brand_volume": 1
-        }},
-        {"$merge": {"into": "places"}}
-    ])
-
-
 def test_activity():
 
     places = list(utils.DB_TERMINAL_PLACES.aggregate([
@@ -483,8 +478,8 @@ def get_one_mile():
 if __name__ == "__main__":
     # stats_by_key('name')
     # get_one_mile()
-    update_activity()
+    # update_activity()
     # merge_activity()
-    # update_brand_volume()
+    update_brand_volume()
     # merge_brand_activity()
     pass
