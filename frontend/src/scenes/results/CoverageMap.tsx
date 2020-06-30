@@ -101,7 +101,6 @@ function CoverageMap(props: Props) {
                   markerPosition={latLng}
                   onClose={closePinInfo}
                   onInfoboxPress={() => {
-                    console.log('infobox pressed');
                     onInfoBoxPress &&
                       onInfoBoxPress({
                         newTag: {
