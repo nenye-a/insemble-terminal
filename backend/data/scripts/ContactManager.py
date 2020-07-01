@@ -704,14 +704,10 @@ def update_source():
 
 if __name__ == "__main__":
     def test_contact_block_to_dict():
-        blocks = [('Andrew Corno', 'Senior Vice President', 'JLL', '3854 Beecher Street', 'Washington, DC 20007 United States',
-                   '(301) 520-2620', 'Real Estate Services'), ('Nate Tower', 'CEO and Founding Partner', 'Broad Reach Retail Partners, LLC',
-                                                               '1111 Benfield Blvd', 'Suite 100', 'Millersville, MD 21108 United States', '(443) 621-6555', 'Owner/Developer'),
-                  ('Susan Johnson', 'Real Estate Director', 'Hallmark Cards', '20131 Tailwind Lane', 'Cornelius, NC 28031 United States',
-                   '704.987.5048', 'Retailer/Tenant'), ('Jennifer Chagnon', 'Freeman Expositions', '8301 Ambassador Road', 'Dallas, TX 75247 United States', 'N/A'),
-                  ('Daniel Gold', 'Founding Partner', 'Future Energy Solutions', '5400 NW 35 AVenue', 'Fort Lauderdale, FL 33309 United States',
-                   'N/A', 'Utilities, Telecommunications and Other'), ('Matthew L. Mehring', 'Director of Real Estate', 'FOCUS Brands',
-                                                                       '8009 Maureen Drive', 'Cranberry Township, PA', '16066 United States', '(615) 477-8725', 'Retailer/Tenant'), ('Matthew L. Mehring', 'Director of Real Estate', 'FOCUS Brands',
-                                                                                                                                                                                     'P. O. Box Maureen Drive', 'Cranberry Township, PA', '16066 United States', '(615) 477-8725', 'Retailer/Tenant')]
+        blocks = [('Andrew Corno', 'Senior Vice President', 'JLL', '3854 Beecher Street',
+                   'Washington, DC 20007 United States', '(301) 520-2620', 'Real Estate Services'),
+                  ('Nate Tower', 'CEO and Founding Partner', 'Broad Reach Retail Partners, LLC',
+                   '1111 Benfield Blvd', 'Suite 100', 'Millersville, MD 21108 United States',
+                   '(443) 621-6555', 'Owner/Developer')]
 
         print([contact_block_to_dict(block) for block in blocks])
