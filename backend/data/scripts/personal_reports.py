@@ -9,10 +9,10 @@ from collections import Counter
 import preprocess
 import utils
 import google
+import mongo
 import requests
 import statistics
-from graphql import helper
-from graphql import gql
+from graphql import helper, gql
 from decouple import config
 
 SEARCH_RADIUS = 10000  # meters
@@ -62,12 +62,9 @@ report logic:
 """
 
 
-def personal_reports(csv_filename):
-    # parse CSV of names to get name, company, address, type, conference.
+def report_from_csv(csv_filename):
     contact_df = pd.read_csv(csv_filename)
-    all_queries = []
 
-    # iterate through the list
     for i in contact_df.index:
         # if we've already populated the search for this contact, skip
 
@@ -77,35 +74,66 @@ def personal_reports(csv_filename):
         address = contact_df["Address"][i]
         city = contact_df["City"][i]
 
-        print("Servicing {}. Finding locations for {}, a {} near {}, {}".format(
-            name, company, contact_type, address, city))
-        query_list = []
-        if (isinstance(address, str) and isinstance(city, str)):
-            query_list = [("NOTE", {
-                "title": f"Welcome to the Insemble Terminal, {name.split(' ')[0]}.",
-                "content": (f"Below, we’ve compiled a report based on your address in {city.split(',')[0]}. "
-                            f"We can quickly dive into how retail is performing at "
-                            f"a local level and find out the best places for businesses during "
-                            f"these times. Through the Insemble Terminal, your market opportunities, "
-                            f"retail and shopping center performance, and contacts are all available for "
-                            f"millions of locations nationwide. \n\nThis report was made in under 30 minutes using Insemble. "
-                            f"Let us know what you think! - Insemble Team")
-            })]
-        result = logic_handler(company, address, city, contact_type)
-
-        # TODO add result query to mongo for the contact so that we can start/stop the script (company, address, city, contact_type)
-        if result:
-            query_list = query_list + result
-            # create personal terminals
-            print(name, contact_type, company)
-            print(query_list)
-            print(helper.create_shared_report(*query_list, name="2CTest:{}'s report for {}".format(name, company),
-                                              description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
-
-        print("{},{},{},{} Queries ----".format(company, address, city, contact_type), query_list)
+        print(generate_report(name, company, address, city, contact_type, in_parallel=True))
 
 
-def logic_handler(company, address, city, contact_type):
+def generate_report(name, company, address, city, contact_type,
+                    first_name=None, last_name=None, in_parallel=False):
+    """
+    Generates personal report for contact.
+    """
+    database = mongo.Connect() if in_parallel else utils.SYSTEM_MONGO
+
+    if not name and (first_name and last_name):
+        name = f"{first_name} {last_name}"
+
+    print(f"Generating report for {name} @ {address} in {city}")
+
+    query_list = []
+    if isinstance(address, str) and isinstance(city, str):
+        query_list.append(get_intro_query(
+            first_name if first_name else name.split(" ")[0].strip(),
+            city
+        ))
+
+    queries = logic_handler(company, address, city, contact_type, database)
+    if not queries:
+        return None
+
+    query_list.extend(queries)
+    print(f'Queries collection. Generating personal report for {name}')
+
+    report, terminal_id = helper.create_shared_report(
+        *query_list,
+        name=f"{name}'s report for {company}",
+        description=("{}: Generated report for {} related retail near {}, {}"
+                     .format(
+                         contact_type,
+                         company,
+                         address,
+                         city)))
+
+    print(report, terminal_id)
+    return report
+
+
+def get_intro_query(first_name, city):
+
+    return ("NOTE", {
+        "title": f"Welcome to the Insemble Terminal, {first_name}.",
+        "content": (f"Below, we’ve compiled a report based on your address in {city.split(',')[0]}."
+                    " We can quickly dive into how retail is performing at a local level and find "
+                    "out the best places for businesses during these times. Through the Insemble "
+                    "Terminal, your market opportunities, retail and shopping center performance, "
+                    "and contacts are all available for millions of locations nationwide. \n\nThis "
+                    "report was made in under 30 minutes using Insemble. Let us know what you "
+                    "think! - Insemble Team")
+    })
+
+
+def logic_handler(company, address, city, contact_type,
+                  database=utils.SYSTEM_MONGO):
+
     # decides what to do given business details
     contact_type = contact_type.lower()
 
@@ -128,16 +156,16 @@ def logic_handler(company, address, city, contact_type):
 
     # if type retailer
     if 'retailer' in contact_type:
-        return process_retailer(company, location)
+        return process_retailer(company, location, database=database)
 
     # if type landlord
     if ('owner' or 'hospitality industry' or 'shopping center management') in contact_type:
-        return process_landlord(address, city, location)
+        return process_landlord(address, city, location, database=database)
         # return process_broker(location)
 
     # if type broker
     if ('real estate services' or 'retail broker' or 'tenant services') in contact_type:
-        return process_broker(location)
+        return process_broker(location, database=database)
 
     # if type municipality
     if 'public sector' in contact_type:
@@ -166,14 +194,18 @@ def logic_handler(company, address, city, contact_type):
     return None
 
 
-def process_retailer(company, user_location):
+def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
+
+    db_regions = database.get_collection(mongo.REGIONS)
+    db_places = database.get_collection(mongo.TERMINAL_PLACES)
+
     query_list = []
 
     ##### Finding the representative retail brand #####
     # find closest retail site
     print("Finding closest retail site for user location")
     processed_brand = preprocess.preprocess(company)
-    matches = list(utils.DB_TERMINAL_PLACES.find({
+    matches = list(db_places.find({
         "name": processed_brand,
         "location": {"$near": {"$geometry": user_location}},
         "activity_volume": {"$gt": 0}
@@ -191,7 +223,7 @@ def process_retailer(company, user_location):
                     # paginated end of google company subsidaries
                     break
                 processed_sub = preprocess.preprocess(sub)
-                matches = list(utils.DB_TERMINAL_PLACES.find({
+                matches = list(db_places.find({
                     "name": processed_sub,
                     "location": {"$near": {"$geometry": user_location}},
                     "activity_volume": {"$gt": 0}
@@ -204,7 +236,7 @@ def process_retailer(company, user_location):
 
     if not matches:
         processed_default = preprocess.preprocess(DEFAULT_BRAND)
-        matches = list(utils.DB_TERMINAL_PLACES.find({
+        matches = list(db_places.find({
             "name": processed_default,
             "location": {"$near": {"$geometry": user_location}},
             "activity_volume": {"$gt": 0}
@@ -224,9 +256,9 @@ def process_retailer(company, user_location):
     # find nearby competitive retail site
     print("Finding a nearby competitive retail site.")
     comparison_brand = find_nearby_competitor_with_activity(
-        base_brand['name'], base_brand['type'], location)
+        base_brand['name'], base_brand['type'], location, db_places)
     category = base_brand['type']
-    closest_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
+    closest_county = list(db_regions.find({"type": "county", "geometry": {
         "$near": {"$geometry": location, "$maxDistance": 10000}}}))[0][
         'name'].replace(" -", ",")  # TODO: may need to error check if counties are blank
 
@@ -235,12 +267,12 @@ def process_retailer(company, user_location):
 
     searches1 = []
     searches1.append({
-        'location_tag': {'type': 'ADDRESS', 'params': base_brand['address']},
-        'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
-    })
-    searches1.append({
         'location_tag': {'type': 'COUNTY', 'params': closest_county},
         'business_tag': {'type': 'CATEGORY', 'params': category}
+    })
+    searches1.append({
+        'location_tag': {'type': 'ADDRESS', 'params': base_brand['address']},
+        'business_tag': {'type': 'BUSINESS', 'params': base_brand['name']}
     })
     if comparison_brand:
         searches1.append({
@@ -266,18 +298,19 @@ def process_retailer(company, user_location):
 
     query_list.append(("ACTIVITY", activity_id))
 
-    base_data = activity_data['table']['data']
-
+    data = activity_data['table']['data']
     compare_data = activity_data['table']['compareData']
     compare_data_dict = utils.section_by_key(compare_data, 'name')
-    base_avg_activity = parse_node_activity(base_data[0]['activityData'])
+
+    base_avg_activity = parse_node_activity(
+        compare_data_dict[base_brand['name']][0]['activityData'])
 
     if comparison_brand:
         comp_avg_activity = parse_node_activity(
             compare_data_dict[comparison_brand['name']][0]['activityData'])
         base_over_comp = round((base_avg_activity / comp_avg_activity) * 100, 1)
-    category_avg_activity = parse_node_activity(
-        compare_data_dict[category][0]['activityData'])
+    category_avg_activity = parse_node_activity(data[0]['activityData'])
+
     base_over_cat = round((base_avg_activity / category_avg_activity) * 100, 1)
 
     comparison_sentence = (f"{base_brand['name']} has {base_over_comp}% the activity of "
@@ -299,13 +332,15 @@ def process_retailer(company, user_location):
 
     query_list.append(("PERFORMANCE", performance_id))
 
-    base_data = performance_data['table']['data']
     compare_data = performance_data['table']['compareData']
     compare_data_dict = utils.section_by_key(compare_data, 'name')
     compare_data_dict = {utils.strip_parantheses_context(brand_name): data
                          for brand_name, data in compare_data_dict.items()}
-    base_category_index = round(base_data[0]['localCategoryIndex'] / 100, 2)
-    base_brand_index = round(base_data[0]['nationalIndex'] / 100, 2)
+
+    base_category_index = round(
+        compare_data_dict[base_brand['name']][0]['localCategoryIndex'] / 100, 2)
+    base_brand_index = round(
+        compare_data_dict[base_brand['name']][0]['nationalIndex'] / 100, 2)
     if comparison_brand:
         print(comparison_brand)
         print(compare_data_dict[comparison_brand['name']][0])
@@ -342,12 +377,12 @@ def process_retailer(company, user_location):
     # Find the County where the brand has the lowest presence (needs work)
     # TODO: rather than selecting a random county where the user isn't,
     # select it based on the non-presence of the brand
-    base_brand_msa = list(utils.DB_REGIONS.find({
+    base_brand_msa = list(db_regions.find({
         "type": "msa",
         "geometry": {"$near": {"$geometry": location}}
     }))[0]
-    other_msa = utils.DB_REGIONS.find_one({"name": {"$ne": base_brand_msa['name']}, "type": "msa"})
-    other_county = list(utils.DB_REGIONS.find({
+    other_msa = db_regions.find_one({"name": {"$ne": base_brand_msa['name']}, "type": "msa"})
+    other_county = list(db_regions.find({
         "type": "county",
         "geometry": {"$near": {
             "$geometry": other_msa['center'],
@@ -371,7 +406,7 @@ def process_retailer(company, user_location):
     matches = None
     for item in cities:
         city, state = item.split(", ")
-        matches = list(utils.DB_TERMINAL_PLACES.find({
+        matches = list(db_places.find({
             "name": {"$ne": base_brand['name']},
             "type": base_brand['type'],
             "city": city,
@@ -428,7 +463,7 @@ def process_retailer(company, user_location):
 
     # find the activity of the closest retailers to the same category brand deep_dive
     print("selecting top performer")
-    near_retailer_matches = utils.DB_TERMINAL_PLACES.find({
+    near_retailer_matches = db_places.find({
         "location": {
             "$near": {"$geometry": other_brand['location'],
                       "$maxDistance": SEARCH_RADIUS}
@@ -457,14 +492,18 @@ def process_retailer(company, user_location):
     return query_list
 
 
-def process_landlord(address, city, location):
+def process_landlord(address, city, location, database=utils.SYSTEM_MONGO):
+
+    db_regions = database.get_collection(mongo.REGIONS)
+    db_places = database.get_collection(mongo.TERMINAL_PLACES)
+
     query_list = []
 
     # Does this person deserve to be paying a higher rent?
     # Should they be getting extra benefits due to high activity? ####
     # find retail with the highest brand_index in the local vicinity
     print("Finding retail with the highest brand index near user location")
-    matches = utils.DB_TERMINAL_PLACES.find({
+    matches = db_places.find({
         "location": {"$near": {
             "$geometry": location,
             "$maxDistance": SEARCH_RADIUS
@@ -481,7 +520,7 @@ def process_landlord(address, city, location):
         if item['activity_volume'] is not None else 0
     ))][0]
 
-    base_brand_county = list(utils.DB_REGIONS.find({
+    base_brand_county = list(db_regions.find({
         "type": "county", "geometry": {"$near": {
             "$geometry": base_brand['location'],
             "$maxDistance": 10000}}
@@ -533,7 +572,7 @@ def process_landlord(address, city, location):
     # How are customers going to my shopping area & where
     # are the inefficiencies? What tenants to go after? ####
     # find the retail near initial brand
-    near_base_matches = utils.DB_TERMINAL_PLACES.find({
+    near_base_matches = db_places.find({
         "location": {"$near": {
             "$geometry": base_brand['location'],
             "$maxDistance": SEARCH_RADIUS
@@ -662,9 +701,9 @@ def process_landlord(address, city, location):
     #### Where should I invest in new property? ####
 
     # find the center city of DMA
-    base_brand_msa = list(utils.DB_REGIONS.find({"type": "msa", "geometry": {
+    base_brand_msa = list(db_regions.find({"type": "msa", "geometry": {
         "$near": {"$geometry": location}}}))[0]
-    center_proxy_retailer = list(utils.DB_TERMINAL_PLACES.find(
+    center_proxy_retailer = list(db_places.find(
         {"location": {"$near": {"$geometry": base_brand_msa['center'], "$maxDistance": SEARCH_RADIUS}}}))[0]
     center_city = center_proxy_retailer['city'] + ", " + center_proxy_retailer['state']
 
@@ -676,7 +715,7 @@ def process_landlord(address, city, location):
     # choose a particular category to highlight
     top_categories = [entry['name'].split("(")[0].strip() for entry in
                       reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
-                                      if (item['customerVolumeIndex'] is not None) and item['numLocation']>1 else 0))]
+                                      if (item['customerVolumeIndex'] is not None) and item['numLocation'] > 1 else 0))]
     for top_category in top_categories:
         if not 'airport' in top_category.lower():
             break
@@ -713,7 +752,11 @@ def process_landlord(address, city, location):
     return query_list
 
 
-def process_broker(location):
+def process_broker(location, database=utils.SYSTEM_MONGO):
+
+    db_regions = database.get_collection(mongo.REGIONS)
+    db_places = database.get_collection(mongo.TERMINAL_PLACES)
+
     query_list = []
 
     #### Where's the best place for a particular business? ####
@@ -721,7 +764,7 @@ def process_broker(location):
     # TODO: figure out why sandwich shop doesn't come up, but coffee shop does
     category = 'Sandwich Shop'
 
-    county = list(utils.DB_REGIONS.find({
+    county = list(db_regions.find({
         "type": "county", "geometry": {"$near": {
             "$geometry": location,
             "$maxDistance": 10000}
@@ -741,7 +784,7 @@ def process_broker(location):
     matches = None
     for item in cities:
         city, state = item.split(", ")
-        matches = list(utils.DB_TERMINAL_PLACES.find({
+        matches = list(db_places.find({
             "type": category,
             "city": city,
             "state": state,
@@ -820,9 +863,18 @@ def process_broker(location):
     }))
 
     #### How's the retail in that location? ####
-    near_base_matches = utils.DB_TERMINAL_PLACES.find(
-        {"location": {"$near": {"$geometry": brand['location'], "$maxDistance": SEARCH_RADIUS}}})
-    nearby_brands = first_with_activity(near_base_matches, NUM_CENTER_COMPS)
+    near_base_matches = db_places.find({
+        "location": {"$near": {
+            "$geometry": brand['location'],
+            "$maxDistance": SEARCH_RADIUS
+        }},
+        "activity_volume": {'$gt': 0}
+    })
+
+    if not near_base_matches:
+        return query_list
+
+    nearby_brands = near_base_matches[:NUM_CENTER_COMPS]
 
     # add to query list
     print("Adding desired tenant queries")
@@ -866,20 +918,18 @@ def process_broker(location):
                     f"{brand['name']}. You can hover over the info bubble at the top of the table for "
                     f"more detail.")
     }))
-
-    print(query_list)
-
     return query_list
 
 
-def find_nearby_competitor_with_activity(brand, category, location):
+def find_nearby_competitor_with_activity(brand, category, location,
+                                         db_places=utils.DB_TERMINAL_PLACES):
 
     # TODO: Convert to use aggregations, directly
     # arrive at the answer
 
     # find largest nearby competitors
     print("Finding the largest nearby competitors")
-    category_matches = utils.DB_TERMINAL_PLACES.find({
+    category_matches = db_places.find({
         "type": category,
         "location": {"$near": {
             "$geometry": location,
@@ -900,7 +950,7 @@ def find_nearby_competitor_with_activity(brand, category, location):
     for competitor in most_likely_competitors:
         if comp_with_activity:
             return comp_with_activity
-        matches = list(utils.DB_TERMINAL_PLACES.find({
+        matches = list(db_places.find({
             "name": competitor[0],
             "location": {"$near": {
                 "$geometry": location,
@@ -936,11 +986,11 @@ def get_coords(city, address=None):
     return result['candidates'][0]['geometry']['location'] if result['candidates'] else None
 
 
-def most_likely_chain(matches):
+def most_likely_chain(matches, db_places=utils.DB_TERMINAL_PLACES):
     # finds the retailer that's most likely a chain the local area
     most_likely = (None, 0)
     for brand in matches:
-        results = utils.DB_TERMINAL_PLACES.find(
+        results = db_places.find(
             {"name": brand['name'], "location": {"$near": {"$geometry": brand['location'], "$maxDistance": 2 * SEARCH_RADIUS}}})
         result_list = list(results)
         if len(result_list) > most_likely[1]:
@@ -1030,7 +1080,7 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = THIS_DIR + '/files/icsc_emails_short_retailer_owner.csv'
+    # filename = THIS_DIR + '/files/icsc_emails_short_retailer_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
-    # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
-    personal_reports(filename)
+    filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
+    report_from_csv(filename)
