@@ -191,8 +191,8 @@ def create_shared_report(*table_tuples, terminal_id=None, name=None, description
             continue
 
         if table_id:
-            if table_type == 'MAP':
-                table_type = 'COVERAGE'
+            # if table_type == 'MAP':
+            #     table_type = 'COVERAGE'
             gql.pin_table(terminal_id, table_id, table_type)
         else:
             print('Failed to add table from {}'.format(table_tuple))
