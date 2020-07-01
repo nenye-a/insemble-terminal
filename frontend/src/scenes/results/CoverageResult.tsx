@@ -85,20 +85,6 @@ export default function CoverageResult(props: Props) {
 
   let loading = isLoading || coverageLoading;
 
-  let content = [
-    <CoverageTable
-      key="coverage-table"
-      data={loading ? prevData : coloredData}
-      hoverFunction={setSelectedBusiness}
-    />,
-    <CoverageMap
-      key="coverage-map"
-      data={loading ? prevData : coloredData}
-      selectedBusiness={selectedBusiness}
-      onInfoBoxPress={onInfoBoxPress}
-    />,
-  ];
-
   useEffect(() => {
     if (!coverageLoading) {
       if (data?.coverageTable) {
@@ -180,7 +166,17 @@ export default function CoverageResult(props: Props) {
           <EmptyDataComponent />
         ) : (!loading && !noData) || prevData.length > 0 ? (
           <ContentContainer isDesktop={isDesktop}>
-            {isDesktop ? content : content.reverse()}
+            <CoverageTable
+              key="coverage-table"
+              data={loading ? prevData : coloredData}
+              hoverFunction={setSelectedBusiness}
+            />
+            <CoverageMap
+              key="coverage-map"
+              data={loading ? prevData : coloredData}
+              selectedBusiness={selectedBusiness}
+              onInfoBoxPress={onInfoBoxPress}
+            />
           </ContentContainer>
         ) : null}
       </View>
@@ -195,6 +191,6 @@ export default function CoverageResult(props: Props) {
 }
 
 const ContentContainer = styled(View)<ViewProps & WithViewport>`
-  flex-direction: ${(props) => (props.isDesktop ? 'row' : 'column')};
-  height: 340px;
+  flex-direction: ${(props) => (props.isDesktop ? 'row' : 'column-reverse')};
+  height: ${(props) => (props.isDesktop ? '340px' : '400px')};
 `;

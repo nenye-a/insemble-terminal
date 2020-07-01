@@ -153,7 +153,7 @@ const WithGoogleMap = withGoogleMap(CoverageMap);
 export default (props: Props) => {
   return (
     <WithGoogleMap
-      containerElement={<View flex style={{ minHeight: 200 }} />}
+      containerElement={<View flex />}
       mapElement={<View flex />}
       {...props}
     />

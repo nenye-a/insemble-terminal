@@ -1,8 +1,9 @@
 import React, { ComponentProps, useState } from 'react';
 import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
+import Popover from 'react-tiny-popover';
 
-import { TouchableOpacity, Text, View, ClickAway } from '../core-ui';
+import { TouchableOpacity, Text, View } from '../core-ui';
 import {
   LIGHT_GRAY,
   DARK_TEXT_COLOR,
@@ -69,53 +70,55 @@ export default function ProfileMenuDropdown() {
           setFeedbackModalVisible(false);
         }}
       />
-      <ClickAway
-        onClickAway={() => {
-          setMenuOpen(false);
-        }}
+      <Popover
+        isOpen={menuOpen}
+        content={
+          <MenuWrapper>
+            <Header>
+              <Text
+                color={WHITE}
+                fontSize={FONT_SIZE_SEMI_MEDIUM}
+                fontWeight={FONT_WEIGHT_MEDIUM}
+              >
+                {user?.firstName}
+              </Text>
+              <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
+                {user?.email}
+              </Text>
+            </Header>
+            {MENUS.map(({ label, onPress }, index) => {
+              let lastIndex = index === MENUS.length - 1;
+              return (
+                <OptionContainer key={index} onPress={onPress}>
+                  <Text
+                    fontWeight={FONT_WEIGHT_MEDIUM}
+                    color={lastIndex ? THEME_COLOR : DARK_TEXT_COLOR}
+                    fontSize={FONT_SIZE_SEMI_MEDIUM}
+                  >
+                    {label}
+                  </Text>
+                </OptionContainer>
+              );
+            })}
+          </MenuWrapper>
+        }
+        position={['bottom']}
+        onClickOutside={() => setMenuOpen(false)}
+        align="end"
       >
-        <TouchableContainer
-          isOpen={menuOpen}
-          onPress={() => {
-            setMenuOpen(!menuOpen);
-          }}
-        >
-          <Placeholder>{user?.firstName}</Placeholder>
-          <ArrowIcon src={arrowIcon} alt="arrow-icon" isOpen={menuOpen} />
-        </TouchableContainer>
-        {menuOpen && (
-          <View style={{ zIndex: 99 }}>
-            <MenuWrapper>
-              <Header>
-                <Text
-                  color={WHITE}
-                  fontSize={FONT_SIZE_SEMI_MEDIUM}
-                  fontWeight={FONT_WEIGHT_MEDIUM}
-                >
-                  {user?.firstName}
-                </Text>
-                <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
-                  {user?.email}
-                </Text>
-              </Header>
-              {MENUS.map(({ label, onPress }, index) => {
-                let lastIndex = index === MENUS.length - 1;
-                return (
-                  <OptionContainer key={index} onPress={onPress}>
-                    <Text
-                      fontWeight={FONT_WEIGHT_MEDIUM}
-                      color={lastIndex ? THEME_COLOR : DARK_TEXT_COLOR}
-                      fontSize={FONT_SIZE_SEMI_MEDIUM}
-                    >
-                      {label}
-                    </Text>
-                  </OptionContainer>
-                );
-              })}
-            </MenuWrapper>
-          </View>
+        {(ref) => (
+          <TouchableContainer
+            ref={ref}
+            isOpen={menuOpen}
+            onPress={() => {
+              setMenuOpen(!menuOpen);
+            }}
+          >
+            <Placeholder>{user?.firstName}</Placeholder>
+            <ArrowIcon src={arrowIcon} alt="arrow-icon" isOpen={menuOpen} />
+          </TouchableContainer>
         )}
-      </ClickAway>
+      </Popover>
     </>
   );
 }
@@ -128,7 +131,7 @@ type TouchableContainerProps = ComponentProps<typeof TouchableOpacity> & {
   isOpen: boolean;
 };
 
-const TouchableContainer = styled(TouchableOpacity)`
+const TouchableContainer = styled(TouchableOpacity)<TouchableContainerProps>`
   background-color: ${(props) => (props.isOpen ? LIGHT_GRAY : 'transparent')};
   flex-direction: row;
   border-radius: 14px;
@@ -158,9 +161,6 @@ const Header = styled(View)`
 `;
 
 const MenuWrapper = styled(View)`
-  position: absolute;
-  margin-top: 5px;
-  right: 0px;
   width: 215px;
   box-shadow: ${SHADOW_COLOR};
 `;

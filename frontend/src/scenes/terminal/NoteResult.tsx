@@ -9,6 +9,7 @@ import { FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { THEME_COLOR, WHITE } from '../../constants/colors';
 import { GET_NOTE_DATA } from '../../graphql/queries/server/notes';
 import { GetNote, GetNoteVariables } from '../../generated/GetNote';
+import { TableType } from '../../generated/globalTypes';
 import ResultTitle from '../results/ResultTitle';
 
 import ManageNoteForm from './ManageNoteForm';
@@ -41,6 +42,7 @@ export default function NoteResult(props: Props) {
         tableId={tableId || ''}
         readOnly={readOnly}
         pinTableId={pinTableId}
+        tableType={TableType.NOTE}
         canCompare={false}
         {...(isEditing && { onClosePress })}
       />

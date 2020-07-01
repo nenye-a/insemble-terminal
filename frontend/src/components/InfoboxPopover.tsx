@@ -77,7 +77,7 @@ export default function InfoboxPopover(props: Props) {
 }
 
 const Touchable = styled(TouchableOpacity)`
-  margin-left: 12px;
+  margin-left: 4px;
   svg {
     color: ${THEME_COLOR};
     &:hover {
