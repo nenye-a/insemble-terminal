@@ -15,6 +15,9 @@ def get_place(name, address):
     available.
     """
 
+    print(name)
+    print(address)
+
     place = utils.DB_TERMINAL_PLACES.find_one({
         'name': {"$regex": r"^" + utils.adjust_case(name), "$options": "i"},
         'address': {"$regex": r'^' + utils.adjust_case(address[:10]), "$options": "i"},
@@ -74,7 +77,15 @@ def get_details(name, address):
                 place['name'], place['address']
             ))
         except Exception:
-            pass
+            # Return existing info if we miraculously have it after processing
+            # with google.
+            potential_place = utils.DB_TERMINAL_PLACES.find_one({
+                'name': place['name'],
+                'address': place['address']
+            })
+
+            if potential_place:
+                place = potential_place
 
         return place
 
@@ -193,13 +204,17 @@ def get_nearby(geo_point, radius, retail_type=None, terminal_db=None):
 
 def total_volume(week_activity):
     """Find the total volume of activity"""
-    return sum(utils.flatten(week_activity))
+    activity = utils.flatten(week_activity)
+    activity = utils.flatten([day for starting_hour, day in activity])
+    return sum(activity)
 
 
 def avg_hourly_volume(week_activity):
     """Find the average hourly volume"""
 
-    activity = [hour for hour in utils.flatten(week_activity) if hour > 0]
+    activity = utils.flatten(week_activity)
+    activity = utils.flatten([day for starting_hour, day in activity])
+    activity = [hour for hour in activity if hour > 0]
     return sum(activity) / len(activity) if len(activity) > 0 else None
 
 

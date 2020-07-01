@@ -17,6 +17,7 @@ def activity(name, address):
     if place and place['google_details']['activity']:
         activity = place['google_details']['activity']
     else:
+        print('here')
         return None
 
     name = place['name']
@@ -171,6 +172,7 @@ if __name__ == "__main__":
 
     def test_activity():
         print(activity("Starbucks", "3900 Cross Creek Rd"))
+        # print(activity("ALDI", "401 Englar Rd, Westminster, MD 21157, USA"))
 
     def test_aggregate_activity():
         print(aggregate_activity("Starbucks", "Los Angeles, CA, USA", "City"), "\n")
@@ -202,7 +204,7 @@ if __name__ == "__main__":
             ]
         ])))
 
-    # test_activity()
+    test_activity()
     # test_decode_activity()
     # test_normalize_activity()
     # test_aggregate_activity()

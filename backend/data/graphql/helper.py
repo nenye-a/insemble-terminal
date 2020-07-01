@@ -3,6 +3,7 @@ Helper functions for all things graphql.
 '''
 
 import gql
+import time
 import datetime as dt
 
 
@@ -101,7 +102,7 @@ def coverage_map(searches):
     table = gql.get_coverage(**first_search)
     if 'data' not in table:
         return None
-    table_id = add_comparisons('COVERAGE', table['id'], searches[1:])
+    table_id = add_comparisons('MAP', table['id'], searches[1:])
     return table_id
 
 
@@ -121,6 +122,7 @@ def add_comparisons(table_type, table_id, comparison_searches):
 
     for next_search in comparison_searches:
         if next_search:
+            time.sleep(.1)
             try:
                 compare_table = gql.update_comparison(
                     'ADD',
@@ -176,7 +178,7 @@ def create_shared_report(*table_tuples, terminal_id=None, name=None, description
                 table_id = performance_table(**params)
             elif table_type == 'ACTIVITY':
                 table_id = activity_graph(**params)
-            elif table_type == 'COVERAGE':
+            elif table_type == 'MAP':
                 table_id = coverage_map(**params)
             elif table_type == 'NOTE':
                 gql.create_note(terminal_id=terminal_id, **params)
@@ -189,6 +191,8 @@ def create_shared_report(*table_tuples, terminal_id=None, name=None, description
             continue
 
         if table_id:
+            if table_type == 'MAP':
+                table_type = 'COVERAGE'
             gql.pin_table(terminal_id, table_id, table_type)
         else:
             print('Failed to add table from {}'.format(table_tuple))
@@ -222,7 +226,7 @@ if __name__ == "__main__":
 
         performance_search = ("PERFORMANCE", {"searches": searches, "performance_type": "ADDRESS"})
         activity_search = ("ACTIVITY", {"searches": searches})
-        coverage_search = ("COVERAGE", {"searches": searches})
+        coverage_search = ("MAP", {"searches": searches})
 
         create_shared_report(performance_search, activity_search, coverage_search)
 
