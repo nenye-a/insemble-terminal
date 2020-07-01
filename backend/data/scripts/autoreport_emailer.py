@@ -12,7 +12,7 @@ import traceback
 from emailer import send_email
 from personal_reports import generate_report
 
-import contactmanager as cm
+import ContactManager as cm
 import utils
 
 MAIN_DB = cm.get_contacts_collection('main_contact_db')
@@ -47,10 +47,7 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
             {'$match': {
                 'email': {'$ne': None, '$nin': unsubscribed_list},
                 'address_street': {'$ne': None},
-                '$or': [
-                    {report_tag: {'$exists': False}},
-                    {report_tag: False}
-                ]
+                report_tag: {'$exists': False}
             }},
             {'$sample': {
                 'size': batchsize
@@ -307,15 +304,9 @@ if __name__ == "__main__":
         )
 
     def test_report_generator():
-        generate_reports('pre-flight-1', cm.get_contacts_collection('preflight-collection'))
+        generate_reports('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
 
     def test_report_emailer():
-        send_emails('pre-flight-1', cm.get_contacts_collection('preflight-collection'))
+        send_emails('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
     # test_report_generator()
-    # test_report_emailer()
-    cm.get_contacts_collection('preflight-collection').update_many({
-    }, {
-        '$unset': {
-            'pre-flight-1-emailed': ''
-        }
-    })
+    test_report_emailer()
