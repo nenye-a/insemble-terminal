@@ -337,6 +337,7 @@ export default function ResultTitle(props: Props) {
             isTerminalScene={isTerminalScene}
             removePinFn={removePin}
             removePinLoading={removePinnedTableLoading}
+            canCompare={canCompare}
           />
         ) : null}
       </Row>
