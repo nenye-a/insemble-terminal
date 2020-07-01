@@ -41,9 +41,9 @@
           <text id="in" transform="translate(361.341 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">in</tspan></text>
           <g id="Group_989" data-name="Group 989" transform="translate(164 8)">
             <g transform="matrix(1, 0, 0, 1, -51.66, -58)" filter="url(#Rectangle_1440)">
-              <rect id="Rectangle_1440-4" data-name="Rectangle 1440" width="86" height="28" rx="5" transform="translate(52 58)" fill="#6749aa"/>
+              <rect id="Rectangle_1440-4" data-name="Rectangle 1440" width="68" height="28" rx="5" transform="translate(61 58)" fill="#6749aa"/>
             </g>
-            <text id="Coverage" transform="translate(43.341 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-28.665" y="0">Coverage</tspan></text>
+            <text id="Map" transform="translate(43.341 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-14.608" y="0">Map</tspan></text>
           </g>
           <g id="Group_994" data-name="Group 994" transform="translate(280.813 8)">
             <g transform="matrix(1, 0, 0, 1, -168.47, -58)" filter="url(#Rectangle_1440-2)">
