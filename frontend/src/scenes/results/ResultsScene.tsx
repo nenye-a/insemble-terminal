@@ -42,7 +42,7 @@ import {
 import PerformanceResult from './PerformanceResult';
 import LatestNewsResult from './LatestNewsResult';
 import CustomerActivityResult from './CustomerActivityResult';
-import CoverageResult from './CoverageResult';
+import MapResult from './MapResult';
 import ContactsResult from './ContactsResult';
 import OwnershipInformationResult from './OwnershipInformationResult';
 
@@ -367,10 +367,7 @@ export default function ResultsScene() {
                 }
               } else if (reviewTag === ReviewTag.MAP) {
                 return (
-                  <CoverageResult
-                    onInfoBoxPress={onMapInfoboxPress}
-                    {...props}
-                  />
+                  <MapResult onInfoBoxPress={onMapInfoboxPress} {...props} />
                 );
               }
               return null;

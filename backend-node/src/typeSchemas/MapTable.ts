@@ -1,7 +1,7 @@
 import { objectType } from 'nexus';
 
-export let Coverage = objectType({
-  name: 'Coverage',
+export let Map = objectType({
+  name: 'Map',
   definition(t) {
     t.model.id();
     t.model.businessTag();

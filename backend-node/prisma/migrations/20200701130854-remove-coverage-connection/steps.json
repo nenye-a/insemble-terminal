@@ -1,0 +1,25 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "DeleteField",
+      "model": "ComparationTag",
+      "field": "coverage"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "Coverage",
+      "field": "comparationTags"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "Coverage",
+      "field": "data"
+    },
+    {
+      "tag": "DeleteField",
+      "model": "Coverage",
+      "field": "compareData"
+    }
+  ]
+}

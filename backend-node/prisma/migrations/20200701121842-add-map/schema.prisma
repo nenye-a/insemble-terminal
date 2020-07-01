@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = "***"
 }
 
 generator client {
@@ -43,6 +43,7 @@ enum TableType {
   ACTIVITY
   OWNERSHIP_INFO
   OWNERSHIP_CONTACT
+  COVERAGE
   MAP
   NOTE
 }
@@ -181,7 +182,7 @@ model ComparationTag {
   performance Performance[]
   news        News[]
   activity    Activity[]
-  Map         Map[]
+  coverage    Coverage[]
 }
 
 model Performance {
@@ -280,6 +281,34 @@ model Activity {
   updatedAt       DateTime              @updatedAt
 }
 
+model CoverageData {
+  id           String             @default(cuid()) @id
+  name         String
+  location     String
+  numLocations String?
+  coverageData String
+}
+
+model CompareCoverageData {
+  id           String             @default(cuid()) @id
+  name         String
+  location     String
+  numLocations String?
+  coverageData String
+  compareId    String
+}
+
+model Coverage {
+  id              String                @default(cuid()) @id
+  locationTag     LocationTag?
+  businessTag     BusinessTag?
+  comparationTags ComparationTag[]
+  data            CoverageData[]
+  compareData     CompareCoverageData[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
 model MapData {
   id           String             @default(cuid()) @id
   name         String
@@ -307,6 +336,7 @@ model Map {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 }
+
 
 model OwnershipContactData {
   id    String @default(cuid()) @id

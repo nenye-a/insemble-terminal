@@ -3,7 +3,7 @@ import time
 from decouple import config
 from search import SEARCH, GET_SEARCH_TAG
 from results import (NEWS_TABLE, OPEN_NEWS_TABLE, PERFORMANCE_TABLE, ACTIVITY_DATA,
-                     COVERAGE_DATA, CONTACT_DATA, INFO_DATA)
+                     MAP_DATA, CONTACT_DATA, INFO_DATA)
 from comparison import UPDATE_COMPARISON
 from terminals import (GET_TERMINAL, CREATE_TERMINAL, PIN_TABLE, SHARE_TERMINAL,
                        GET_SHARED_TERMINAL, GET_TERMINAL_BASIC_INFO)
@@ -112,7 +112,7 @@ def get_coverage(business_tag_id=None, location_tag_id=None,
         'locationTagId': location_tag_id,
         'tableId': table_id
     }
-    result = get_data(request(COVERAGE_DATA, variables), 'coverageTable')
+    result = get_data(request(MAP_DATA, variables), 'mapTable')
     return result
 
 

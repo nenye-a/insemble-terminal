@@ -7,20 +7,20 @@ import { FONT_SIZE_XLARGE, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
 import { useViewport } from '../../helpers';
 import activitySearchBox from '../../assets/images/activity-searchbox.svg';
-import coverageSearchBox from '../../assets/images/coverage-searchbox.svg';
+import mapSearchBox from '../../assets/images/map-searchbox.svg';
 import newsSearchbox from '../../assets/images/news-searchbox.svg';
 import performanceSearchbox from '../../assets/images/performance-searchbox.svg';
 import newsExample from '../../assets/images/news-example.svg';
 import activityExample from '../../assets/images/activity-example.svg';
-import coverageExample from '../../assets/images/coverage-example.svg';
+import mapExample from '../../assets/images/map-example.svg';
 import performanceExample from '../../assets/images/performance-example.png';
 import activitySearchBoxSmall from '../../assets/images/activity-searchbox-small.svg';
-import coverageSearchBoxSmall from '../../assets/images/coverage-searchbox-small.svg';
+import mapSearchBoxSmall from '../../assets/images/map-searchbox-small.svg';
 import newsSearchBoxSmall from '../../assets/images/news-searchbox-small.svg';
 import performanceSearchBoxSmall from '../../assets/images/performance-searchbox-small.svg';
 import newsExampleSmall from '../../assets/images/news-example-small.svg';
 import activityExampleSmall from '../../assets/images/activity-example-small.svg';
-import coverageExampleSmall from '../../assets/images/coverage-example-small.svg';
+import mapExampleSmall from '../../assets/images/map-example-small.svg';
 import performanceExampleSmall from '../../assets/images/performance-example-small.png';
 import SvgDotArrow from '../../components/icons/dot-arrow';
 import SvgTripleDots from '../../components/icons/triple-dots';
@@ -163,9 +163,9 @@ const TAGS = [
     image: newsExample,
   },
   {
-    label: 'coverage',
-    searchBarImage: coverageSearchBox,
-    image: coverageExample,
+    label: 'map',
+    searchBarImage: mapSearchBox,
+    image: mapExample,
   },
   {
     label: 'performance',
@@ -186,9 +186,9 @@ const MOBILE_TAGS = [
     image: newsExampleSmall,
   },
   {
-    label: 'coverage',
-    searchBarImage: coverageSearchBoxSmall,
-    image: coverageExampleSmall,
+    label: 'map',
+    searchBarImage: mapSearchBoxSmall,
+    image: mapExampleSmall,
   },
   {
     label: 'performance',

@@ -2,8 +2,8 @@ import { objectType } from 'nexus';
 import { prisma } from '../prisma';
 import { BusinessData } from 'dataTypes';
 
-export let CompareCoverageData = objectType({
-  name: 'CompareCoverageData',
+export let CompareMapData = objectType({
+  name: 'CompareMapData',
   definition(t) {
     t.model.id();
     t.model.name();
@@ -12,11 +12,11 @@ export let CompareCoverageData = objectType({
     t.field('coverageData', {
       type: 'CoverageBusiness',
       resolve: async ({ id }) => {
-        let coverageData = await prisma.compareCoverageData.findOne({
+        let mapData = await prisma.compareMapData.findOne({
           where: { id },
         });
         let parseBusinessData: Array<BusinessData> = JSON.parse(
-          coverageData?.coverageData || '[]',
+          mapData?.coverageData || '[]',
         );
         return parseBusinessData;
       },

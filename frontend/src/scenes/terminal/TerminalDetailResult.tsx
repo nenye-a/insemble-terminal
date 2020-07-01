@@ -17,7 +17,7 @@ import {
 import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
-import CoverageResult from '../results/CoverageResult';
+import MapResult from '../results/MapResult';
 import ContactsResult from '../results/ContactsResult';
 import OwnershipInformationResult from '../results/OwnershipInformationResult';
 
@@ -201,10 +201,8 @@ export default function TerminalDataResult(props: Props) {
                 />
               );
             }
-          } else if (tableType === TableType.COVERAGE) {
-            return (
-              <CoverageResult onInfoBoxPress={onMapInfoboxPress} {...props} />
-            );
+          } else if (tableType === TableType.MAP) {
+            return <MapResult onInfoBoxPress={onMapInfoboxPress} {...props} />;
           } else if (tableType === TableType.NOTE) {
             return <NoteResult {...props} />;
           }
