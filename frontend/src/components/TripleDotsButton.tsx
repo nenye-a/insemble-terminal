@@ -21,7 +21,7 @@ import PinPopover from './PinPopover';
 import SvgClose from './icons/close';
 
 type TripleDotsPopoverProps = {
-  reviewTag: ReviewTag;
+  reviewTag?: ReviewTag;
   tableId?: string;
   onTableIdChange?: (newTableId: string) => void;
   comparisonTags?: Array<ComparationTagWithFill>;
@@ -91,7 +91,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
 
   return (
     <Container>
-      {tableId && (
+      {tableId && reviewTag && (
         <>
           <AddComparisonModal
             visible={comparisonModalVisible}

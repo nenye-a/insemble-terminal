@@ -226,7 +226,7 @@ export default function ResultTitle(props: Props) {
         )}
       </Row>
       <Row flex style={{ justifyContent: 'flex-end' }}>
-        {!isTerminalScene && formattedCompareText ? (
+        {isDesktop && formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
           ) : (
@@ -255,7 +255,7 @@ export default function ResultTitle(props: Props) {
             </>
           )
         ) : null}
-        {isDesktop && !readOnly ? (
+        {(isDesktop && !readOnly) || onClosePress ? (
           <>
             {canCompare && reviewTag && tableId && (
               <AddComparisonButton
@@ -321,7 +321,7 @@ export default function ResultTitle(props: Props) {
               </Popover>
             )}
           </>
-        ) : !isDesktop && !readOnly && reviewTag && tableType ? (
+        ) : !isDesktop && !readOnly && tableType ? (
           <TripleDotsButton
             disabled={noData}
             reviewTag={reviewTag}
