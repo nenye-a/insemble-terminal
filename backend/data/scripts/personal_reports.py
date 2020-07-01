@@ -123,6 +123,7 @@ def logic_handler(company, address, city, contact_type):
     # if type landlord
     if ('owner' or 'hospitality industry' or 'shopping center management') in contact_type:
         return process_landlord(address, city, location)
+        # return process_broker(location)
 
     # if type broker
     if ('real estate services' or 'retail broker' or 'tenant services') in contact_type:
@@ -704,16 +705,19 @@ def process_broker(location):
     # TODO: figure out why sandwich shop doesn't come up, but coffee shop does
     category = 'Sandwich Shop'
 
-    county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-        "$near": {"$geometry": location, "$maxDistance": 10000}}}))[0][
-        'name'].replace(" -", ",")
+    county = list(utils.DB_REGIONS.find({
+        "type": "county", "geometry": {"$near": {
+            "$geometry": location,
+            "$maxDistance": 10000}
+        }}))[0]['name'].replace(" -", ",")
 
     # Find the best city for the category of retail based on customerVolumeIndex
     city_search = {'location_tag': {'type': 'COUNTY', 'params': county},
                    'business_tag': {'type': 'CATEGORY', 'params': category}}
     table_id = helper.performance_table("CITY", [city_search])
     perf = gql.get_performance("CITY", table_id=table_id, poll=True)
-    cities = [entry['name'].split("(")[0].strip() for entry in
+    print(perf)
+    cities = [utils.strip_parantheses_context(entry["name"]) for entry in
               reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
                               if item['customerVolumeIndex'] is not None else 0))]
 
@@ -721,18 +725,22 @@ def process_broker(location):
     matches = None
     for item in cities:
         city, state = item.split(", ")
-        matches = list(utils.DB_TERMINAL_PLACES.find(
-            {"type": category, "city": city, "state": state}))
+        matches = list(utils.DB_TERMINAL_PLACES.find({
+            "type": category,
+            "city": city,
+            "state": state,
+            "activity_volume": {"$gt": 0}
+        }))
+
         if matches:
             break
 
     # if it doesn't find matches, quit
     if not matches:
         return query_list
-    match = first_with_activity(matches)
 
-    if not match:
-        return query_list
+    match = matches[0]
+
     # TODO: select the one with activity (or highest activity)
     brand, city, state = (match, match['city'], match['state'])
 
@@ -749,21 +757,28 @@ def process_broker(location):
     })
     query_list.append(("MAP", {"searches": best_for_category_searches}))
     text_list.append("SECT: Where should my client expand in the market based on who's moving?")
-    text_list.append("Let's say you had a client that does really well when they're next to {0}, and they wanted to"
-                     " expand in {1}. We can actually search the region for all of the places where the highest attended "
-                     "{0}s are, and then dive deeper into the results".format(category, county))
+    text_list.append("Let's say you had a client that does really well when they're next to "
+                     "{0}, and they wanted to expand in {1}. We can actually search the region "
+                     "for all of the places where the highest attended {0}s are, and then dive "
+                     "deeper into the results".format(category, county))
 
     performance_by_city_search = [{
         'location_tag': {'type': 'COUNTY', 'params': county},
         'business_tag': {'type': 'CATEGORY', 'params': category}
     }]
+
     query_list.append(
         ("PERFORMANCE", {"searches": performance_by_city_search, "performance_type": "CITY"}))
-    text_list.append("SECT: Where should my client expand in the market based on who's moving?")
-    text_list.append("In the table above we see {0} performance broken down by city. The data is generated from mobile "
-                     "and web traffic to approximate the amount of visitors a particular site has. By looking at the "
-                     "volume index, we can see that {1} is the best city for {0}s in {2}. If you hover over the info "
-                     "bubble, you can get more information on the performance indexes.".format(category, city, county))
+
+    query_list.append(("NOTE", {
+        "title": "Where should my client expand in the market based on who's moving?",
+        "content": ("In the table above we see {0} performance broken down by city. "
+                    "The data is generated from mobile and web traffic to approximate "
+                    "the amount of visitors a particular site has. By looking at the "
+                    "volume index, we can see that {1} is the best city for {0}s in {2}. "
+                    "If you hover over the info bubble, you can get more information on "
+                    "the performance indexes.".format(category, city, county))
+    }))
 
     activity_against_brand_cat = []
     activity_against_brand_cat.append({
@@ -780,9 +795,13 @@ def process_broker(location):
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     query_list.append(("ACTIVITY", {"searches": activity_against_brand_cat}))
-    text_list.append("SECT: What's the retail like in this area?")
-    text_list.append("If we dive deeper into those locations, we'll find that the {} in {} generally outperform the "
-                     "category of {} in {}".format(brand['name'], city, category, county))
+
+    query_list.append(("NOTE", {
+        "title": "What's the retail like in this area?",
+        "content": ("If we dive deeper into those locations, we'll find that "
+                    "the {} in {} generally outperform the category of {} in {}"
+                    .format(brand['name'], city, category, county))
+    }))
 
     #### How's the retail in that location? ####
     near_base_matches = utils.DB_TERMINAL_PLACES.find(
@@ -800,20 +819,35 @@ def process_broker(location):
         })
 
     query_list.append(("MAP", {"searches": nearby_retail_searches}))
-    text_list.append("SECT: Surrounding Retail")
-    text_list.append("This is a map of the retail surrounding {} at {}".format(
-        brand['name'], brand['address']))
+    query_list.append(("NOTE", {
+        "title": "Surrounding Retail",
+        "content": ("This is a map of the retail surrounding {} at {}".format(
+            brand['name'], brand['address']))
+    }))
+
     query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
-    text_list.append("SECT: Site Activity")
-    text_list.append("We can additionally assess the surrounding retail in the area to get a look of the environment. "
-                     "Here, we see the metrics for how the nearby stores are doing in terms of their customer flow")
+
+    query_list.append(("MAP", {"searches": nearby_retail_searches}))
+    query_list.append(("NOTE", {
+        "title": "Site Activity",
+        "content": ("We can additionally assess the surrounding retail in the "
+                    "area to get a look of the environment. Here, we see the metrics "
+                    "for how the nearby stores are doing in terms of their customer flow")
+    }))
+
     query_list.append(
         ("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
-    text_list.append("SECT: Site Performance")
-    text_list.append("The peformance table breaks it down further, where you can see how each location compares to "
-                     "nearby retail, same category retail, and other units of the same brand")
 
-    return (query_list, text_list)
+    query_list.append(("NOTE", {
+        "title": "Site Performance",
+        "content": ("The peformance table breaks it down further, where you can see how "
+                    "each location compares to nearby retail, same category retail, and "
+                    "other units of the same brand")
+    }))
+
+    print(query_list)
+
+    return query_list
 
 
 def find_nearby_competitor_with_activity(brand, category, location):
@@ -974,12 +1008,7 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = THIS_DIR + '/files/icsc_emails_short_owner_test.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
-    # filename = THIS_DIR + '/files/icsc_emails_short_retailer_test.csv'
+    # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     personal_reports(filename)
-
-    # test_activity_dict = {'Subway': [{'name': '4AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 25}, {'name': '10AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 44}, {'name': '11AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '12PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 72}, {'name': '1PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '2PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 63}, {'name': '3PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '4PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '5PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '6PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 58}, {'name': '7PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 46}, {'name': '8PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 32}, {'name': '9PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Rocksalt Grille': [{'name': '4AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 14}, {'name': '12PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 22}, {'name': '1PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 26}, {'name': '2PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 28}, {'name': '3PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 31}, {'name': '4PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 39}, {'name': '5PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '6PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '7PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 36}, {'name': '8PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 20}, {'name': '9PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Esquire Hair Replacement Center LLC': [{'name': '4AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {
-    #     'name': '7AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 69}, {'name': '10AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 58}, {'name': '11AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 56}, {'name': '12PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 53}, {'name': '1PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 53}, {'name': '2PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 41}, {'name': '3PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 38}, {'name': '4PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 30}, {'name': '5PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 38}, {'name': '6PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 36}, {'name': '7PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '8PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '9PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}], 'Ying Thai Cuisine': [{'name': '4AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '10AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '11AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 24}, {'name': '12PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 32}, {'name': '1PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 36}, {'name': '2PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 38}, {'name': '3PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 39}, {'name': '4PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 46}, {'name': '5PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 60}, {'name': '6PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 70}, {'name': '7PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 68}, {'name': '8PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 51}, {'name': '9PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Ying Thai Cuisine (14 John St, Westminster, MD 21157)', 'amount': 0}]}
-
-    # print(get_live_hours(test_activity_dict))
