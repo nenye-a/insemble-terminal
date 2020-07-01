@@ -2,13 +2,13 @@ import { queryField, FieldResolver, stringArg } from 'nexus';
 import axios from 'axios';
 
 import { Root, Context } from 'serverTypes';
-import { PyCoverageResponse, PyCoverageData } from 'dataTypes';
+import { PyMapResponse, PyMapData } from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 import { LocationTag, BusinessTag } from '@prisma/client';
 
-let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
+let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
   _: Root,
   { businessTagId, locationTagId, tableId },
   context: Context,
@@ -28,9 +28,9 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
       })
     : undefined;
 
-  let coverage;
+  let map;
   if (tableId) {
-    let selectedCoverageById = await context.prisma.coverage.findOne({
+    let selectedMapById = await context.prisma.map.findOne({
       where: { id: tableId },
       include: {
         locationTag: true,
@@ -43,12 +43,12 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
         },
       },
     });
-    if (!selectedCoverageById) {
+    if (!selectedMapById) {
       throw new Error('Modal not Found.');
     }
-    coverage = [selectedCoverageById];
+    map = [selectedMapById];
   } else {
-    coverage = await context.prisma.coverage.findMany({
+    map = await context.prisma.map.findMany({
       where: {
         businessTag: businessTag ? { id: businessTag.id } : null,
         locationTag: locationTag ? { id: locationTag.id } : null,
@@ -64,54 +64,52 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
         },
       },
     });
-    coverage = coverage.filter(
-      ({ comparationTags }) => comparationTags.length === 0,
-    );
+    map = map.filter(({ comparationTags }) => comparationTags.length === 0);
   }
 
-  let selectedCoverage;
-  if (coverage.length) {
-    selectedCoverage = coverage[0];
-    let updateData = timeCheck(selectedCoverage.updatedAt, TABLE_UPDATE_TIME);
+  let selectedMap;
+  if (map.length) {
+    selectedMap = map[0];
+    let updateData = timeCheck(selectedMap.updatedAt, TABLE_UPDATE_TIME);
     if (updateData) {
       try {
-        let coverageUpdate = await getCoverageData(
-          selectedCoverage.locationTag,
-          selectedCoverage.businessTag,
+        let mapUpdate = await getMapData(
+          selectedMap.locationTag,
+          selectedMap.businessTag,
         );
-        let coverageData = convertCoverage(coverageUpdate.data);
-        let rawCompareData: Array<PyCoverageData & { compareId: string }> = [];
-        for (let comparationTag of selectedCoverage.comparationTags) {
-          let compareCoverageUpdate = await getCoverageData(
+        let mapData = convertMap(mapUpdate.data);
+        let rawCompareData: Array<PyMapData & { compareId: string }> = [];
+        for (let comparationTag of selectedMap.comparationTags) {
+          let compareMapUpdate = await getMapData(
             comparationTag.locationTag,
             comparationTag.businessTag,
           );
           rawCompareData = rawCompareData.concat(
-            compareCoverageUpdate.data.map((data) => ({
+            compareMapUpdate.data.map((data) => ({
               ...data,
               compareId: comparationTag.id,
             })),
           );
         }
-        let compareData = convertCoverage(rawCompareData);
-        await context.prisma.coverageData.deleteMany({
+        let compareData = convertMap(rawCompareData);
+        await context.prisma.mapData.deleteMany({
           where: {
-            coverage: {
-              id: selectedCoverage.id,
+            map: {
+              id: selectedMap.id,
             },
           },
         });
-        await context.prisma.compareCoverageData.deleteMany({
+        await context.prisma.compareMapData.deleteMany({
           where: {
-            coverage: {
-              id: selectedCoverage.id,
+            map: {
+              id: selectedMap.id,
             },
           },
         });
-        selectedCoverage = await context.prisma.coverage.update({
-          where: { id: selectedCoverage.id },
+        selectedMap = await context.prisma.map.update({
+          where: { id: selectedMap.id },
           data: {
-            data: { create: coverageData },
+            data: { create: mapData },
             compareData: { create: compareData as Array<CompareData> },
             updatedAt: new Date(),
           },
@@ -123,12 +121,11 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
     }
   } else {
     try {
-      let coverageUpdate = await getCoverageData(locationTag, businessTag);
-      // console.log(coverageUpdate)
-      let coverageData = convertCoverage(coverageUpdate.data);
-      selectedCoverage = await context.prisma.coverage.create({
+      let mapUpdate = await getMapData(locationTag, businessTag);
+      let mapData = convertMap(mapUpdate.data);
+      selectedMap = await context.prisma.map.create({
         data: {
-          data: { create: coverageData },
+          data: { create: mapData },
           businessTag: businessTag
             ? { connect: { id: businessTag.id } }
             : undefined,
@@ -142,14 +139,14 @@ let coverageResolver: FieldResolver<'Query', 'coverageTable'> = async (
       throw new Error('Failed to create data.');
     }
   }
-  return selectedCoverage;
+  return selectedMap;
 };
 
-const getCoverageData = async (
+const getMapData = async (
   locationTag: LocationTag | null | undefined,
   businessTag: BusinessTag | null | undefined,
 ) => {
-  let coverageUpdate: PyCoverageResponse = (
+  let mapUpdate: PyMapResponse = (
     await axios.get(`${API_URI}/api/coverage`, {
       params: {
         location: locationTag
@@ -168,15 +165,13 @@ const getCoverageData = async (
       paramsSerializer: axiosParamsSerializer,
     })
   ).data;
-  return coverageUpdate;
+  return mapUpdate;
 };
 
-const convertCoverage = (
-  coverageDataList: Array<PyCoverageData & { compareId?: string }>,
-) => {
-  let coverageData = coverageDataList.map(
+const convertMap = (mapDataList: Array<PyMapData & { compareId?: string }>) => {
+  let mapData = mapDataList.map(
     ({ name, location, num_locations, coverage, compareId }) => {
-      let insertCoverage = coverage.map(
+      let insertMap = coverage.map(
         ({ business_name, num_locations, locations }) => {
           let insertLocations = locations.map(
             ({ lat, lng, name, address, num_reviews, rating }) => {
@@ -192,7 +187,7 @@ const convertCoverage = (
           );
           return {
             businessName: business_name || '_',
-            numLocations: num_locations || 0,
+            numLocations: num_locations ? `${num_locations}` : '-',
             locations: insertLocations,
           };
         },
@@ -201,13 +196,12 @@ const convertCoverage = (
         name: name || '-',
         location: location || '_',
         numLocations: num_locations ? `${num_locations}` : '-',
-        coverageData:
-          insertCoverage.length > 0 ? JSON.stringify(insertCoverage) : '[]',
+        coverageData: insertMap.length > 0 ? JSON.stringify(insertMap) : '[]',
         compareId: compareId,
       };
     },
   );
-  return coverageData;
+  return mapData;
 };
 type CompareData = {
   name: string;
@@ -217,14 +211,14 @@ type CompareData = {
   compareId: string;
 };
 
-let coverageTable = queryField('coverageTable', {
-  type: 'Coverage',
+let mapTable = queryField('mapTable', {
+  type: 'Map',
   args: {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
     tableId: stringArg(),
   },
-  resolve: coverageResolver,
+  resolve: mapResolver,
 });
 
-export { coverageTable };
+export { mapTable };

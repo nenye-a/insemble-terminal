@@ -13,10 +13,10 @@ export * from './tags/businessTagsQuery';
 export * from './tables/performanceTableQuery';
 export * from './tables/newsTableQuery';
 export * from './tables/activityQuery';
-export * from './tables/coverageQuery';
+export * from './tables/mapQuery';
 export * from './tables/ownershipContactQuery';
 export * from './tables/ownershipInfoQuery';
-export * from './tables//noteQuery';
+export * from './tables/noteQuery';
 
 export * from './terminal/userTerminalsQuery';
 export * from './terminal/terminalQuery';
