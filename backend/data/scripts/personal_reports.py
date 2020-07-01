@@ -77,19 +77,29 @@ def personal_reports(csv_filename):
         address = contact_df["Address"][i]
         city = contact_df["City"][i]
 
-        print("Servicing {}. Finding locations for {}, a {} near {} {}".format(
+        print("Servicing {}. Finding locations for {}, a {} near {}, {}".format(
             name, company, contact_type, address, city))
+        query_list = []
+        if (isinstance(address, str) and isinstance(city, str)):
+            query_list = [("NOTE", {
+                "title": f"Welcome to the Insemble Terminal, {name.split(' ')[0]}.",
+                "content": (f"Below, we’ve compiled a report based on your address in {city.split(',')[0]}. "
+                            f"We can quickly dive into how retail is performing at "
+                            f"a local level and find out the best places for businesses during "
+                            f"these times. Through the Insemble Terminal, your market opportunities, "
+                            f"retail and shopping center performance, and contacts are all available for "
+                            f"millions of locations nationwide. \n\nThis report was made in under 30 minutes using Insemble. "
+                            f"Let us know what you think! - Insemble Team")
+            })]
+        result = logic_handler(company, address, city, contact_type)
 
-        # query_list, text_list = logic_handler(company, address, city, contact_type)
-        query_list = logic_handler(company, address, city, contact_type)
-
-        # TODO add result query to mongo for that (company, address, city, contact_type)
-        if query_list:
+        # TODO add result query to mongo for the contact so that we can start/stop the script (company, address, city, contact_type)
+        if result:
+            query_list = query_list + result
             # create personal terminals
             print(name, contact_type, company)
             print(query_list)
-            # print(text_list)
-            print(helper.create_shared_report(*query_list, name="1BfromLL:{}'s report for {}".format(name, company),
+            print(helper.create_shared_report(*query_list, name="2CTest:{}'s report for {}".format(name, company),
                                               description="{}: Generated report for {} related retail near {}, {}".format(contact_type, company, address, city)))
 
         print("{},{},{},{} Queries ----".format(company, address, city, contact_type), query_list)
@@ -158,7 +168,6 @@ def logic_handler(company, address, city, contact_type):
 
 def process_retailer(company, user_location):
     query_list = []
-    text_list = []
 
     ##### Finding the representative retail brand #####
     # find closest retail site
@@ -209,7 +218,6 @@ def process_retailer(company, user_location):
     # How am I doing in the market and how do I measure up next to competitors? #
 
     print("Found matches. Getting the closest match with activity...")
-    # base_brand = first_with_activity(matches)
     base_brand = matches[0]
 
     location = base_brand['location']
@@ -250,7 +258,7 @@ def process_retailer(company, user_location):
                     f"along with other {category}s in {closest_county}")
         if comparison_brand
         else (f"This is a map of {base_brand['name']} along with other {category}s in "
-              f"{closest_county}")
+              f"{closest_county}.")
     }))
 
     activity_id = helper.activity_graph(searches1)
@@ -273,17 +281,17 @@ def process_retailer(company, user_location):
     base_over_cat = round((base_avg_activity / category_avg_activity) * 100, 1)
 
     comparison_sentence = (f"{base_brand['name']} has {base_over_comp}% the activity of "
-                           f"{comparison_brand['name']} at {comparison_brand['address']}, "
+                           f"{comparison_brand['name']} at {comparison_brand['address'].split(',')[0]}, "
                            f"which is nearby.") if comparison_brand else ""
 
     query_list.append(("NOTE", {
         "title": "Site Activity",
         "content": (f"Using mobile and web data to approximate customer visits to "
                     f"retail locations, what we see here is that {base_brand['name']} "
-                    f"at {base_brand['address']} has {base_over_cat}% customer activity "
+                    f"at {base_brand['address'].split(',')[0]} has {base_over_cat}% customer activity "
                     f"compared to other {category}s. {comparison_sentence} You may want to "
                     f"take a deeper look at what makes these stores operate successfully"
-                    f"so that you can implement the learnings in each of your locations.")
+                    f" so that you can implement the learnings in each of your locations.")
     }))
 
     performance_id = helper.performance_table('OVERALL', searches1)
@@ -317,7 +325,7 @@ def process_retailer(company, user_location):
         "title": "Site Performance",
         "content": ("If we look at this {brand_name} for an accumulation of weeks, we see that "
                     "this location is getting {cat_index}x the footfall of the average {category} "
-                    "a 3 mile radius from the category index. {comp_sentence1} "
+                    "in a 3 mile radius from the category index. {comp_sentence1} "
                     "If we look at the brand index, we see that this particular {brand_name} is "
                     "getting {brand_index}x the number of visitors as the average {brand_name}"
                     "{comp_sentence2}.".format(
@@ -404,9 +412,9 @@ def process_retailer(company, user_location):
     query_list.append(("NOTE", {
         "title": "Expansion",
         "content": ("Now let's say we wanted to expand {} within a different region, "
-                    "like {}. We can actually search the region for all of the places "
+                    "like the {}. We can actually search the region for all of the places "
                     "where the highest attended {}s are, and then dive deeper into "
-                    "the results".format(base_brand['name'], other_msa['name'], base_brand['type']))
+                    "the results.".format(base_brand['name'], other_msa['name'], base_brand['type']))
     }))
 
     # Add the city performance breakdown for the category in the county
@@ -415,7 +423,7 @@ def process_retailer(company, user_location):
         "title": "Expansion",
         "content": ("In the chart above, we have all of the cities in {} ranked by the "
                     "average customer volume they each receive. Below, we'll take a look "
-                    "at the retail scene in that area".format(other_county))
+                    "at the retail scene in that area.".format(other_county))
     }))
 
     # find the activity of the closest retailers to the same category brand deep_dive
@@ -442,7 +450,7 @@ def process_retailer(company, user_location):
         "title": "Close up on a {} in {}".format(other_brand['type'], other_brand['city']),
         "content": ("Looking into {} more since it's up on our list, we can actually see a "
                     "high performing {}, that's surrounded by retail for which we can also "
-                    "see how customers are visiting these spots.".format(
+                    "see how customers are visiting these spots. This might be a market area we want to capture.".format(
                         other_brand['city'], other_brand['name']))
     }))
 
@@ -451,7 +459,6 @@ def process_retailer(company, user_location):
 
 def process_landlord(address, city, location):
     query_list = []
-    text_list = []
 
     # Does this person deserve to be paying a higher rent?
     # Should they be getting extra benefits due to high activity? ####
@@ -500,10 +507,10 @@ def process_landlord(address, city, location):
     query_list.append(("NOTE", {
         "title": "How do I put myself in the best position possible when dealing with tenants?",
         "content": ("Whether you're negotiating rent, tracking percentage rent deals, or deciding "
-                    "whether to continue pending on a particular tenant, it's best to be informed "
+                    "whether to continue serving requests for a particular tenant, it's best to be informed "
                     "on their current customer draw. Here, we use mobile and web data to provide "
-                    "insight on how customers are attending this {} compared to other {} in {}. "
-                    "Typically, when a retailer's one location is higher than it's average, they "
+                    "insight on how customers are attending this {} compared to other {}s in {}. "
+                    "Typically, when a retailer's site performance is higher than average, they "
                     "may pay a higher rent to keep the strong unit."
                     .format(base_brand['name'], base_brand['type'], base_brand_county))
     }))
@@ -512,9 +519,15 @@ def process_landlord(address, city, location):
         ("PERFORMANCE", {"searches": rent_comp_searches, "performance_type": "OVERALL"}))
     query_list.append(("NOTE", {
         "title": "How do I put myself in the best position possible when dealing with tenants?",
-        "content": (f"We even break it down further to show you how {base_brand['name']} "
-                    "is performing at different scopes. You can hover over the information "
-                    "bubble at the top of the table for more detail.")
+        "content": (f"We break it down further in Performance. Here, the Volume Index (IDX) lets us know how a "
+                    f"particular site ranks against retail in general. Using the retail, category, and brand indexes, "
+                    f"we see more specifically that this {base_brand['name']} is doing "
+                    f"{round(base_brand['activity_volume'] / base_brand['local_retail_volume'],2)}x compared to other "
+                    f"retail in the area, {round(base_brand['activity_volume'] / base_brand['local_category_volume'],2)}x "
+                    f"compared to other {base_brand['type']} in the area, and "
+                    f"{round(base_brand['activity_volume'] / base_brand['brand_volume'],2)}x compared to the average "
+                    f"{base_brand['name']}. You can hover over the info bubble at the top of the table for "
+                    f"more detail.")
     }))
 
     # How are customers going to my shopping area & where
@@ -593,7 +606,7 @@ def process_landlord(address, city, location):
                     "{largest_contributer}. Anyone sourcing tenants for this shopping area may "
                     "want to find a similar brand as {largest_contributer}, a cotenant of theirs, "
                     "or brands that have presence in the {suggested_time} to compliment the "
-                    "customer traffic in the shopping center".format(
+                    "customer traffic in the shopping center.".format(
                         base_brand=base_brand['name'],
                         hours_sentance=hours_sentance,
                         largest_contributer=largest_contributor,
@@ -607,8 +620,15 @@ def process_landlord(address, city, location):
     query_list.append(("NOTE", {
         "title": ("How are customers moving through my shopping center, and what "
                   "tenants should I be seeking out?"),
-        "content": ("Here we can see the stats broken down further for retail "
-                    "near {} at {}".format(base_brand['name'], base_brand['address']))
+        "content": (f"We break it down further in Performance. Here, the Volume Index (IDX) lets us know how a "
+                    f"particular site ranks against retail in general. Using the retail, category, and brand indexes, "
+                    f"we see more specifically that this {base_brand['name']} is doing "
+                    f"{round(base_brand['activity_volume'] / base_brand['local_retail_volume'],2)}x compared to other "
+                    f"retail in the area, {round(base_brand['activity_volume'] / base_brand['local_category_volume'],2)}x "
+                    f"compared to other {base_brand['type']} in the area, and "
+                    f"{round(base_brand['activity_volume'] / base_brand['brand_volume'],2)}x compared to the average "
+                    f"{base_brand['name']}. You can hover over the info bubble at the top of the table for "
+                    f"more detail.")
     }))
 
     #### Who are the best tenants to go after in the market? ####
@@ -631,12 +651,12 @@ def process_landlord(address, city, location):
         "title": "Who are the best {} and {} tenants in the market?".format(category1, category2),
         "content": ("If we want to find and contact tenants who are performing well "
                     "during these times, we can actually look them up and see how "
-                    "their brand is doing in {} here. Again, the performance is "
+                    "their brand is doing in {}. Again, the performance is "
                     "based on mobile data and web traffic from consumers, so you're "
                     "always quick to know how they're currently doing. The Insemble "
                     "Terminal platform itself has contact information for the tenants "
                     "as well, if you'd like to reach out to them via phone or email."
-                    .format(base_brand_county))
+                    .format(base_brand_county.split(',')[0]))
     }))
 
     #### Where should I invest in new property? ####
@@ -656,7 +676,7 @@ def process_landlord(address, city, location):
     # choose a particular category to highlight
     top_categories = [entry['name'].split("(")[0].strip() for entry in
                       reversed(sorted(perf['table']['data'], key=lambda item: item['customerVolumeIndex']
-                                      if item['customerVolumeIndex'] is not None else 0))]
+                                      if (item['customerVolumeIndex'] is not None) and item['numLocation']>1 else 0))]
     for top_category in top_categories:
         if not 'airport' in top_category.lower():
             break
@@ -670,14 +690,11 @@ def process_landlord(address, city, location):
         'location_tag': {'type': 'CITY', 'params': center_city}
     }
     query_list.append(("MAP", {"searches": [top_cat_search]}))
-    text_list.append("SECT: Where may I want to invest in new property or businesses?")
-    text_list.append("This is a map of {}s, one of the top performing retail categories in {} currently".format(
-        top_category, center_city))  # TODO: descriptions
 
     query_list.append(("NOTE", {
         "title": "Where may I want to invest in new property or businesses?",
-        "content": ("This is a map of {}s, one of the top performing "
-                    "retail categories in {} currently".format(top_category, center_city))
+        "content": ("This is a map of {}s, one of the current top performing "
+                    "retail categories in {}.".format(top_category.split(',')[0], center_city))
     }))
 
     query_list.append(
@@ -689,8 +706,8 @@ def process_landlord(address, city, location):
                     "{}, sorted by which brands are drawing the most consumers "
                     "during this part of the year. An item with a higher Volume "
                     "index typically is doing pretty well compared to others. As "
-                    "before, these categories can also be expanded for specific "
-                    "brands and contact information".format(center_city))
+                    "before, these categories can also be expanded to access specific "
+                    "brands and contact information.".format(center_city))
     }))
 
     return query_list
@@ -698,7 +715,6 @@ def process_landlord(address, city, location):
 
 def process_broker(location):
     query_list = []
-    text_list = []
 
     #### Where's the best place for a particular business? ####
     # find the best place for a sandwich shop
@@ -756,11 +772,11 @@ def process_broker(location):
         'business_tag': {'type': 'CATEGORY', 'params': category}
     })
     query_list.append(("MAP", {"searches": best_for_category_searches}))
-    text_list.append("SECT: Where should my client expand in the market based on who's moving?")
-    text_list.append("Let's say you had a client that does really well when they're next to "
-                     "{0}, and they wanted to expand in {1}. We can actually search the region "
-                     "for all of the places where the highest attended {0}s are, and then dive "
-                     "deeper into the results".format(category, county))
+    query_list.append(("NOTE", {
+        "title": "Map: Where should my client expand in the market based on who's moving?",
+        "content": (f"This is a map of {category}s in {county}, with specific highlights of {category}s in {city}. "
+                    f"{city} is the best city for {category}s in the current times. We'll explain more below...")
+    }))
 
     performance_by_city_search = [{
         'location_tag': {'type': 'COUNTY', 'params': county},
@@ -799,7 +815,7 @@ def process_broker(location):
     query_list.append(("NOTE", {
         "title": "What's the retail like in this area?",
         "content": ("If we dive deeper into those locations, we'll find that "
-                    "the {} in {} generally outperform the category of {} in {}"
+                    "the {} in {} generally outperform the category of {} in {}."
                     .format(brand['name'], city, category, county))
     }))
 
@@ -821,7 +837,7 @@ def process_broker(location):
     query_list.append(("MAP", {"searches": nearby_retail_searches}))
     query_list.append(("NOTE", {
         "title": "Surrounding Retail",
-        "content": ("This is a map of the retail surrounding {} at {}".format(
+        "content": ("This is a map of the retail surrounding {} at {}.".format(
             brand['name'], brand['address']))
     }))
 
@@ -832,7 +848,7 @@ def process_broker(location):
         "title": "Site Activity",
         "content": ("We can additionally assess the surrounding retail in the "
                     "area to get a look of the environment. Here, we see the metrics "
-                    "for how the nearby stores are doing in terms of their customer flow")
+                    "for how the nearby stores are doing in terms of their customer flow.")
     }))
 
     query_list.append(
@@ -840,9 +856,15 @@ def process_broker(location):
 
     query_list.append(("NOTE", {
         "title": "Site Performance",
-        "content": ("The peformance table breaks it down further, where you can see how "
-                    "each location compares to nearby retail, same category retail, and "
-                    "other units of the same brand")
+        "content": (f"We break it down further in Performance. Here, the Volume Index (IDX) lets us know how a "
+                    f"particular site ranks against retail in general. Using the retail, category, and brand indexes, "
+                    f"we see more specifically that this {brand['name']} is doing "
+                    f"{round(brand['activity_volume'] / brand['local_retail_volume'],2)}x compared to other "
+                    f"retail in the area, {round(brand['activity_volume'] / brand['local_category_volume'],2)}x "
+                    f"compared to other {brand['type']} in the area, and "
+                    f"{round(brand['activity_volume'] / brand['brand_volume'],2)}x compared to the average "
+                    f"{brand['name']}. You can hover over the info bubble at the top of the table for "
+                    f"more detail.")
     }))
 
     print(query_list)
@@ -930,7 +952,7 @@ def most_likely_chain(matches):
 def parse_node_activity(activity_data):
 
     activity_array = [activity['amount'] for activity in activity_data if activity['amount'] > 0]
-    return sum(activity_array) / len(activity_array) if any(activity_array) else 0
+    return sum(activity_array)
 
 
 def get_largest_contributer(activity_dict):
@@ -1008,7 +1030,7 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_retailer_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
     # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     personal_reports(filename)
