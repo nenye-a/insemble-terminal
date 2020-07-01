@@ -178,13 +178,13 @@ export const GET_ACTIVITY_DATA = gql`
   ${COMPARATION_TAGS}
 `;
 
-export const GET_COVERAGE_DATA = gql`
-  query GetCoverage(
+export const GET_MAP_DATA = gql`
+  query GetMap(
     $businessTagId: String
     $locationTagId: String
     $tableId: String
   ) {
-    coverageTable(
+    mapTable(
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId

@@ -62,9 +62,7 @@ export default function CustomerActivityResult(props: Props) {
     sortOrder,
     true,
   );
-  let noData =
-    !data?.activityTable.table?.data ||
-    data?.activityTable.table.data.length === 0;
+  let noData = coloredData.length === 0;
 
   useEffect(() => {
     if (
@@ -80,7 +78,9 @@ export default function CustomerActivityResult(props: Props) {
             !compareData.map((item) => item.compareId).includes(tag.id);
           let notIncluded = comparationTags
             .filter(notIncludedFilterFn)
-            .map((item) => item.businessTag?.params);
+            .map(
+              (item) => item.businessTag?.params || item.locationTag?.params,
+            );
           let notIncludedTagId = comparationTags
             .filter(notIncludedFilterFn)
             .map((item) => item.id);

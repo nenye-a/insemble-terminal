@@ -174,13 +174,13 @@ ACTIVITY_DATA = """
     {comparison_tags}
 """.format(comparison_tags=COMPARISON_TAGS)
 
-COVERAGE_DATA = """
-    query GetCoverage(
+MAP_DATA = """
+    query GetMap(
         $businessTagId: String
         $locationTagId: String
         $tableId: String
     ) {{
-        coverageTable(
+        mapTable(
             businessTagId: $businessTagId
             locationTagId: $locationTagId
             tableId: $tableId

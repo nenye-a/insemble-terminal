@@ -20,9 +20,9 @@ import {
   GetActivity_activityTable_table_compareData as ActivityCompareData,
 } from '../generated/GetActivity';
 import {
-  GetCoverage_coverageTable_data as CoverageData,
-  GetCoverage_coverageTable_compareData as CoverageCompareData,
-} from '../generated/GetCoverage';
+  GetMap_mapTable_data as MapData,
+  GetMap_mapTable_compareData as MapCompareData,
+} from '../generated/GetMap';
 
 export type ResultQuery = {
   reviewTag: ReviewTag | null;
@@ -58,7 +58,7 @@ export enum OwnershipType {
   PROPERTY_INFORMATION = 'PROPERTY_INFORMATION',
 }
 
-export type CoverageWithFill = (CoverageData | CoverageCompareData) & {
+export type MapWithFill = (MapData | MapCompareData) & {
   fill: string;
 };
 
@@ -100,8 +100,7 @@ export type MergedNewsData = (NewsData | NewsCompareData) &
 
 export type MergedActivityData = (ActivityData | ActivityCompareData) &
   WithFillAndComparison;
-export type MergedCoverageData = (CoverageData | CoverageCompareData) &
-  WithFillAndComparison;
+export type MergedMapData = (MapData | MapCompareData) & WithFillAndComparison;
 
 export type HasCompareId = {
   compareId: string;
@@ -124,5 +123,12 @@ export type PerformanceRowPressParam = {
   comparisonTag?: {
     locationTag: LocationTag;
     businessTag: BusinessTagResult;
+  };
+};
+
+export type MapInfoboxPressParam = {
+  newTag: {
+    businessName: string | null;
+    address: string | null;
   };
 };

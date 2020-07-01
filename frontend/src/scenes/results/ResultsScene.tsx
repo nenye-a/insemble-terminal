@@ -20,6 +20,8 @@ import {
   PerformanceTableType,
   ReviewTag,
   OwnershipType as GeneratedOwnershipType,
+  BusinessTagType,
+  LocationTagType,
 } from '../../generated/globalTypes';
 import {
   ResultQuery,
@@ -28,6 +30,7 @@ import {
   BusinessTagResult,
   LocationTag,
   PerformanceRowPressParam,
+  MapInfoboxPressParam,
 } from '../../types/types';
 import { getResultQueries, capitalize, useViewport } from '../../helpers';
 import {
@@ -39,7 +42,7 @@ import {
 import PerformanceResult from './PerformanceResult';
 import LatestNewsResult from './LatestNewsResult';
 import CustomerActivityResult from './CustomerActivityResult';
-import CoverageResult from './CoverageResult';
+import MapResult from './MapResult';
 import ContactsResult from './ContactsResult';
 import OwnershipInformationResult from './OwnershipInformationResult';
 
@@ -67,7 +70,13 @@ export default function ResultsScene() {
   ] = useMutation<Search, SearchVariables>(SEARCH, {
     onError: () => {},
     onCompleted: ({ search }) => {
-      history.push('/results/' + search.searchId);
+      if (history.location.pathname === '/results') {
+        history.replace('/results/' + search.searchId, {
+          search: history.location.state.search,
+        });
+      } else {
+        history.push('/results/' + search.searchId);
+      }
     },
   });
   let [getSearchTag, { loading: getSearchTagLoading }] = useLazyQuery<
@@ -142,6 +151,25 @@ export default function ResultsScene() {
     }
   };
 
+  let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
+    let { businessName, address } = params.newTag;
+    onSubmit({
+      reviewTag: undefined,
+      businessTag: businessName
+        ? {
+            params: businessName,
+            type: BusinessTagType.BUSINESS,
+          }
+        : undefined,
+      locationTag: address
+        ? {
+            params: address,
+            type: LocationTagType.ADDRESS,
+          }
+        : undefined,
+    });
+  };
+
   let updateStates = ({
     reviewTag,
     businessTag,
@@ -206,13 +234,6 @@ export default function ResultsScene() {
        * when user navigates from other scene, they pass the search query as a state
        */
       onSubmit(history.location.state.search);
-    } else if (history.action === 'POP') {
-      /**
-       * to prevent user from viewing the '/results' without results.
-       * it will forced to go back to previous screen.
-       * e.g the UserHomeScene
-       */
-      history.goBack();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -344,8 +365,10 @@ export default function ResultsScene() {
                     />
                   );
                 }
-              } else if (reviewTag === ReviewTag.COVERAGE) {
-                return <CoverageResult {...props} />;
+              } else if (reviewTag === ReviewTag.MAP) {
+                return (
+                  <MapResult onInfoBoxPress={onMapInfoboxPress} {...props} />
+                );
               }
               return null;
             })}

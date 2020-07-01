@@ -13,9 +13,10 @@ export * from './tags/businessTagsQuery';
 export * from './tables/performanceTableQuery';
 export * from './tables/newsTableQuery';
 export * from './tables/activityQuery';
-export * from './tables/coverageQuery';
+export * from './tables/mapQuery';
 export * from './tables/ownershipContactQuery';
 export * from './tables/ownershipInfoQuery';
+export * from './tables/noteQuery';
 
 export * from './terminal/userTerminalsQuery';
 export * from './terminal/terminalQuery';
@@ -26,6 +27,8 @@ export * from './terminal/pinTableMutation';
 export * from './terminal/removePinnedTableMutation';
 export * from './terminal/shareTerminalMutation';
 export * from './terminal/sharedTerminalQuery';
+export * from './terminal/createTerminalNoteMutation';
+export * from './terminal/editNoteMutation';
 
 export * from './license/createLicenseMutation';
 export * from './license/activateAccountMutation';

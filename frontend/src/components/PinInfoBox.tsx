@@ -17,6 +17,7 @@ type Props = {
   numReview: number;
   markerPosition: LatLng;
   onClose: () => void;
+  onInfoboxPress: () => void;
 };
 
 export default function PinInfoBox(props: Props) {
@@ -31,11 +32,13 @@ export default function PinInfoBox(props: Props) {
     visible,
     markerPosition,
     onClose,
+    onInfoboxPress,
   } = props;
   let leftText = ['Name:', 'Address:', 'Rating:', 'NumRating:'];
   let rightText = [name, address, rating, numReview];
   let handleInfoBoxPress = (e: Event) => {
     e.stopPropagation();
+    onInfoboxPress();
   };
   return visible ? (
     <InfoBox

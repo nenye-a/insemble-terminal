@@ -70,21 +70,18 @@ export default function getResultQueries(
     // TODO: there will be by city, by county
   }
 
-  if (!reviewTag || reviewTag === ReviewTag.COVERAGE) {
+  if (!reviewTag || reviewTag === ReviewTag.MAP) {
     if (
       (businessTag?.type === BusinessType.BUSINESS &&
-        locationTag?.type !== LocationTagType.ADDRESS) ||
+        locationTag?.type !== LocationTagType.NATION) ||
       (businessTag?.type === BusinessType.CATEGORY &&
-        locationTag?.type !== LocationTagType.NATION &&
-        locationTag?.type !== LocationTagType.ADDRESS)
+        locationTag?.type !== LocationTagType.NATION)
     ) {
-      queries.push({ reviewTag: ReviewTag.COVERAGE, type: 'COVERAGE' });
+      queries.push({ reviewTag: ReviewTag.MAP, type: 'MAP' });
     }
   }
   if (!reviewTag || reviewTag === ReviewTag.ACTIVITY) {
-    if (businessTag?.type === BusinessType.BUSINESS) {
-      queries.push({ reviewTag: ReviewTag.ACTIVITY, type: 'ACTIVITY' });
-    }
+    queries.push({ reviewTag: ReviewTag.ACTIVITY, type: 'ACTIVITY' });
   }
   if (!reviewTag || reviewTag === ReviewTag.CONTACT) {
     if (businessTag?.type === BusinessType.BUSINESS) {

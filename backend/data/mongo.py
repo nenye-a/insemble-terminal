@@ -30,6 +30,7 @@ STATS = "terminal.stats"
 ZIPS = "news.zipcodes"
 UNSUBSCRIBED = "news.unsubscribed"
 FEEDS = "news.feeds"
+DOMAINS = "contacts.domains"
 
 MISC = "terminal.misc"
 

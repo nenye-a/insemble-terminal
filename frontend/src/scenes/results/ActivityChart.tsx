@@ -97,7 +97,7 @@ export default function ActivityChart(props: Props) {
             height={200}
             width={chartWidth}
             data={lineChartData}
-            margin={{ right: 5 }}
+            margin={{ right: 5, top: 10 }}
           >
             <XAxis
               dataKey="name"
@@ -167,6 +167,7 @@ const Container = styled(View)`
   background-color: ${WHITE};
   padding: 24px 12px;
   box-shadow: ${SHADOW_COLOR};
+  min-height: 90px;
 `;
 
 const Row = styled(View)`

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import styled from 'styled-components';
+import React, { useEffect, useState, ComponentProps } from 'react';
+import styled, { css } from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
 
@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Divider,
   LoadingIndicator,
+  Button,
 } from '../core-ui';
 import {
   DARK_TEXT_COLOR,
@@ -22,6 +23,7 @@ import {
   capitalize,
   generateRandomColor,
   lightenOrDarkenColor,
+  useViewport,
 } from '../helpers';
 import { ReviewTag, CompareActionType } from '../generated/globalTypes';
 import { GetBusinessTag_businessTags as BusinessTag } from '../generated/GetBusinessTag';
@@ -29,6 +31,7 @@ import {
   LocationTag,
   BusinessTagResult,
   ComparationTagWithFill,
+  SearchTag,
 } from '../types/types';
 import {
   UpdateComparison,
@@ -39,6 +42,7 @@ import { GET_TERMINAL } from '../graphql/queries/server/terminals';
 
 import SearchFilterBar from './SearchFilterBar';
 import SvgRoundClose from './icons/round-close';
+import SearchFilterBarMobile from './SearchFilterBarMobile';
 
 type Props = {
   reviewTag: ReviewTag;
@@ -63,6 +67,7 @@ export default function ComparisonPopover(props: Props) {
     terminalId,
   } = props;
   let alert = useAlert();
+  let { isDesktop } = useViewport();
   let [tableId, setTableId] = useState('');
   let [activeComparison, setActiveComparison] = useState<
     Array<ComparationTagWithFill>
@@ -91,7 +96,9 @@ export default function ComparisonPopover(props: Props) {
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
     let usableColors =
-      reviewTag === ReviewTag.ACTIVITY || reviewTag === ReviewTag.COVERAGE
+      reviewTag === ReviewTag.ACTIVITY ||
+      reviewTag === ReviewTag.MAP ||
+      reviewTag === ReviewTag.PERFORMANCE
         ? COLORS.slice(1)
         : COLORS;
 
@@ -161,6 +168,43 @@ export default function ComparisonPopover(props: Props) {
     setActiveComparison(activeComparisonList);
   };
 
+  let onSearchPress = (searchTags: SearchTag) => {
+    let { businessTag, businessTagWithId, locationTag } = searchTags;
+    let variables = {
+      reviewTag,
+      businessTag,
+      businessTagId: businessTagWithId?.id,
+      locationTag,
+      tableId,
+      pinId,
+      actionType: CompareActionType.ADD,
+    };
+    if (terminalId) {
+      updateComparison({
+        variables,
+        refetchQueries: refetchTerminalQueries,
+        awaitRefetchQueries: true,
+      });
+    } else {
+      updateComparison({
+        variables,
+      });
+    }
+  };
+
+  let onDeleteAll = () => {
+    updateComparison({
+      variables: {
+        actionType: CompareActionType.DELETE_ALL,
+        tableId,
+        reviewTag,
+        pinId,
+      },
+      refetchQueries: refetchTerminalQueries,
+      awaitRefetchQueries: true,
+    });
+  };
+
   useEffect(() => {
     if (!tableId) {
       setTableId(tableIdProp);
@@ -169,131 +213,145 @@ export default function ComparisonPopover(props: Props) {
   }, [tableIdProp]);
 
   return (
-    <Container>
+    <Container isDesktop={isDesktop}>
       {activeComparison && activeComparison.length > 0 ? (
         <View>
-          <Title>Active Comparison</Title>
-          {activeComparison.map((comparison) => {
-            let bgColor =
-              reviewTag === ReviewTag.NEWS ||
-              reviewTag === ReviewTag.PERFORMANCE
-                ? comparison.fill
-                : lightenOrDarkenColor(comparison.fill || BLACK, 25);
+          <TitleContainer>
+            <Title isDesktop={isDesktop}>Active Comparison</Title>
+            {!isDesktop && (
+              <Button
+                text="Delete All"
+                mode="transparent"
+                onPress={onDeleteAll}
+              />
+            )}
+          </TitleContainer>
+          <ScrollView isDesktop={isDesktop}>
+            {activeComparison.map((comparison) => {
+              let bgColor =
+                reviewTag === ReviewTag.NEWS ||
+                reviewTag === ReviewTag.PERFORMANCE
+                  ? comparison.fill
+                  : lightenOrDarkenColor(comparison.fill || BLACK, 25);
 
-            return (
-              <Row key={'row_' + comparison.id}>
-                <Circle style={{ backgroundColor: bgColor }} />
-                <SearchFilterBar
-                  key={'search_' + comparison.id}
-                  defaultReviewTag={capitalize(reviewTag)}
-                  defaultBusinessTag={comparison.businessTag as BusinessTag}
-                  defaultLocationTag={
-                    comparison.locationTag
-                      ? {
-                          params: comparison.locationTag.params,
-                          type: comparison.locationTag.type,
-                        }
-                      : undefined
-                  }
-                  disableAll
-                />
-                <CloseContainer
-                  key={'del_' + comparison.id}
-                  onPress={() => {
-                    if (terminalId) {
-                      updateComparison({
-                        variables: {
-                          reviewTag,
-                          comparationTagId: comparison.id,
-                          tableId,
-                          actionType: CompareActionType.DELETE,
-                          pinId,
-                        },
-                        refetchQueries: refetchTerminalQueries,
-                        awaitRefetchQueries: true,
-                      });
-                    } else {
-                      updateComparison({
-                        variables: {
-                          reviewTag,
-                          comparationTagId: comparison.id,
-                          tableId,
-                          actionType: CompareActionType.DELETE,
-                          pinId,
-                        },
-                      });
-                    }
-                  }}
-                >
-                  <SvgRoundClose />
-                </CloseContainer>
-              </Row>
-            );
-          })}
-          <ComparisonDivider />
+              return (
+                <Row key={'row_' + comparison.id}>
+                  <Circle style={{ backgroundColor: bgColor }} />
+                  {isDesktop ? (
+                    <SearchFilterBar
+                      key={'search_' + comparison.id}
+                      defaultReviewTag={capitalize(reviewTag)}
+                      defaultBusinessTag={comparison.businessTag as BusinessTag}
+                      defaultLocationTag={
+                        comparison.locationTag
+                          ? {
+                              params: comparison.locationTag.params,
+                              type: comparison.locationTag.type,
+                            }
+                          : undefined
+                      }
+                      disableAll
+                    />
+                  ) : (
+                    <SearchFilterBarMobile
+                      key={'search_' + comparison.id}
+                      defaultReviewTag={capitalize(reviewTag)}
+                      defaultBusinessTag={comparison.businessTag as BusinessTag}
+                      defaultLocationTag={
+                        comparison.locationTag
+                          ? {
+                              params: comparison.locationTag.params,
+                              type: comparison.locationTag.type,
+                            }
+                          : undefined
+                      }
+                      disableAll={true}
+                      hideReviewTag={true}
+                    />
+                  )}
+                  <CloseContainer
+                    key={'del_' + comparison.id}
+                    onPress={() => {
+                      if (terminalId) {
+                        updateComparison({
+                          variables: {
+                            reviewTag,
+                            comparationTagId: comparison.id,
+                            tableId,
+                            actionType: CompareActionType.DELETE,
+                            pinId,
+                          },
+                          refetchQueries: refetchTerminalQueries,
+                          awaitRefetchQueries: true,
+                        });
+                      } else {
+                        updateComparison({
+                          variables: {
+                            reviewTag,
+                            comparationTagId: comparison.id,
+                            tableId,
+                            actionType: CompareActionType.DELETE,
+                            pinId,
+                          },
+                        });
+                      }
+                    }}
+                  >
+                    <SvgRoundClose />
+                  </CloseContainer>
+                </Row>
+              );
+            })}
+          </ScrollView>
+          <ComparisonDivider isDesktop={isDesktop} />
         </View>
       ) : null}
       {updateComparisonLoading ? (
         <LoadingIndicator />
-      ) : (
-        <View>
+      ) : isDesktop ? (
+        <SearchbarContainer>
           <Title>Please select a query to compare with this table.</Title>
           <SearchFilterBar
             disableReviewTag={true}
             defaultReviewTag={capitalize(reviewTag)}
-            onSearchPress={(searchTags) => {
-              let { businessTag, businessTagWithId, locationTag } = searchTags;
-              if (terminalId) {
-                updateComparison({
-                  variables: {
-                    reviewTag,
-                    businessTag,
-                    businessTagId: businessTagWithId?.id,
-                    locationTag,
-                    tableId,
-                    pinId,
-                    actionType: CompareActionType.ADD,
-                  },
-                  refetchQueries: refetchTerminalQueries,
-                  awaitRefetchQueries: true,
-                });
-              } else {
-                updateComparison({
-                  variables: {
-                    reviewTag,
-                    businessTag,
-                    businessTagId: businessTagWithId?.id,
-                    locationTag,
-                    tableId,
-                    pinId,
-                    actionType: CompareActionType.ADD,
-                  },
-                });
-              }
-            }}
+            onSearchPress={onSearchPress}
           />
-        </View>
+        </SearchbarContainer>
+      ) : (
+        <SearchFilterBarMobile
+          disableReviewTag={true}
+          defaultReviewTag={capitalize(reviewTag)}
+          onSearchPress={onSearchPress}
+          focus={true}
+        />
       )}
     </Container>
   );
 }
 
-const Container = styled(Card)`
+type ContainerProps = ComponentProps<typeof Card> & WithViewport;
+
+const Container = styled(Card)<ContainerProps>`
+  width: ${({ isDesktop }) => (isDesktop ? '850px' : '90vw')};
+  padding: ${({ isDesktop }) => (isDesktop ? '20px 16px' : '16px')};
   margin-top: 12px;
-  padding: 20px 50px;
-  width: 850px;
   overflow: visible;
 `;
 
-const Title = styled(Text)`
+const Title = styled(Text)<TextProps & WithViewport>`
   color: ${DARK_TEXT_COLOR};
   padding-bottom: 12px;
+  ${({ isDesktop }) =>
+    isDesktop &&
+    css`
+      padding: 0 34px;
+    `}
 `;
 
 const Row = styled(View)`
   flex-direction: row;
   align-items: center;
-  margin: 2px 0;
+  margin: 2px 6px;
   svg {
     color: ${THEME_COLOR};
     &:hover {
@@ -303,20 +361,41 @@ const Row = styled(View)`
 `;
 
 const CloseContainer = styled(TouchableOpacity)`
-  position: absolute;
-  right: -30px;
+  margin-left: 12px;
 `;
 
 const ComparisonDivider = styled(Divider)`
   background-color: ${GREY_DIVIDER};
   height: 2px;
-  margin: 28px 0;
+  ${({ isDesktop }) =>
+    isDesktop
+      ? css`
+          margin: 28px 34px;
+        `
+      : css`
+          margin: 28px 8px;
+        `}
 `;
 
 const Circle = styled(View)`
   width: 20px;
   height: 20px;
   border-radius: 10px;
-  position: absolute;
-  left: -30px;
+  margin-right: 12px;
+`;
+
+const ScrollView = styled(View)<ViewProps & WithViewport>`
+  overflow-y: scroll;
+  height: fit-content;
+  max-height: ${({ isDesktop }) => (isDesktop ? '200px' : '100px')};
+`;
+
+const SearchbarContainer = styled(View)`
+  padding: 0 34px;
+`;
+
+const TitleContainer = styled(View)`
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 `;

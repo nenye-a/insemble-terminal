@@ -1,0 +1,360 @@
+datasource db {
+  provider = "postgresql"
+  url = "***"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum LocationTagType {
+  ADDRESS
+  CITY
+  COUNTY
+  STATE
+  NATION
+}
+
+enum BusinessType {
+  BUSINESS
+  CATEGORY
+}
+
+enum PerformanceType {
+  BRAND
+  CATEGORY
+  OVERALL
+  ADDRESS
+  CITY
+  STATE
+}
+
+enum ReviewTag {
+  PERFORMANCE
+  NEWS
+  ACTIVITY
+  CONTACT
+  MAP
+}
+
+enum TableType {
+  PERFORMANCE
+  NEWS
+  ACTIVITY
+  OWNERSHIP_INFO
+  OWNERSHIP_CONTACT
+  MAP
+  NOTE
+}
+
+enum OwnershipType {
+  PROPERTY
+  COMPANY
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
+
+model LocationTag {
+  id     String          @default(cuid()) @id
+  type   LocationTagType
+  params String
+}
+
+model BusinessTag {
+  id     String       @default(cuid()) @id
+  type   BusinessType
+  params String
+}
+
+model Note {
+  id      String @default(cuid()) @id
+  title   String
+  content String
+  user    User
+}
+
+model PinnedFeed {
+  id        String    @default(cuid()) @id
+  tableType TableType
+  tableId   String
+}
+
+model Terminal {
+  id          String       @default(cuid()) @id
+  name        String
+  description String?
+  pinnedFeeds PinnedFeed[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model License {
+  id            String @default(cuid()) @id
+  masterLicense MasterLicense
+  user          User?
+}
+
+model MasterLicense {
+  id         String    @default(cuid()) @id
+  name       String
+  maxLicense Int
+  licenses   License[]
+}
+
+model User {
+  id           String      @default(cuid()) @id
+  email        String      @unique
+  avatar       String?
+  password     String
+  firstName    String
+  lastName     String
+  company      String
+  title        String?
+  description  String?
+  address      String?
+  terminals    Terminal[]
+  role         UserRole    @default(USER)
+  license      License?
+  searchLog    SearchLog[]
+  pendingEmail Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+}
+
+model UserSession {
+  id        String   @default(cuid()) @id
+  token     String
+  createdAt DateTime @default(now())
+  user      User
+}
+
+model UserRegisterVerification {
+  id         String  @default(cuid()) @id
+  email      String
+  userInput  String
+  verified   Boolean @default(false)
+  tokenEmail String
+  tokenQuery String
+}
+
+model UserEmailVerification {
+  id         String  @default(cuid()) @id
+  email      String
+  user       User
+  verified   Boolean @default(false)
+  tokenEmail String
+}
+
+model PerformanceData {
+  id                  String @default(cuid()) @id
+  name                String
+  avgRating           String?
+  customerVolumeIndex Int?
+  localRetailIndex    Int?
+  localCategoryIndex  Int?
+  nationalIndex       Int?
+  numReview           Int?
+  numLocation         Int?
+  numNearby           Int?
+}
+
+model ComparePerformanceData {
+  id                  String @default(cuid()) @id
+  name                String
+  avgRating           String?
+  customerVolumeIndex Int?
+  localRetailIndex    Int?
+  localCategoryIndex  Int?
+  nationalIndex       Int?
+  numReview           Int?
+  numLocation         Int?
+  numNearby           Int?
+  compareId           String
+}
+
+model ComparationTag {
+  id          String        @default(cuid()) @id
+  locationTag LocationTag?
+  businessTag BusinessTag?
+  performance Performance[]
+  news        News[]
+  activity    Activity[]
+  Map         Map[]
+}
+
+model Performance {
+  id              String                   @default(cuid()) @id
+  type            PerformanceType
+  locationTag     LocationTag?
+  businessTag     BusinessTag?
+  comparationTags ComparationTag[]
+  data            PerformanceData[]
+  compareData     ComparePerformanceData[]
+  polling         Boolean                  @default(false)
+  error           String?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+}
+
+model NewsData {
+  id          String @default(cuid()) @id
+  title       String
+  link        String
+  published   String
+  source      String
+  description String
+  relevance   Float
+}
+
+model CompareNewsData {
+  id          String @default(cuid()) @id
+  title       String
+  link        String
+  published   String
+  source      String
+  description String
+  relevance   Float
+  compareId   String
+}
+
+model News {
+  id              String            @default(cuid()) @id
+  locationTag     LocationTag?
+  businessTag     BusinessTag?
+  comparationTags ComparationTag[]
+  data            NewsData[]
+  compareData     CompareNewsData[]
+  polling         Boolean           @default(false)
+  error           String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model OpenNews {
+  id           String       @default(cuid()) @id
+  firstArticle String
+  locationTag  LocationTag?
+  businessTag  BusinessTag?
+  data         String?
+  polling      Boolean      @default(false)
+  error        String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model SearchLog {
+  id          String       @default(cuid()) @id
+  locationTag LocationTag?
+  businessTag BusinessTag?
+  reviewTag   ReviewTag?
+  createdAt   DateTime     @default(now())
+}
+
+model ActivityData {
+  id           String        @default(cuid()) @id
+  name         String
+  location     String
+  activityData String
+}
+
+model CompareActivityData {
+  id           String        @default(cuid()) @id
+  name         String
+  location     String
+  activityData String
+  compareId    String
+}
+
+model Activity {
+  id              String                @default(cuid()) @id
+  locationTag     LocationTag?
+  businessTag     BusinessTag?
+  comparationTags ComparationTag[]
+  data            ActivityData[]
+  compareData     CompareActivityData[]
+  polling         Boolean               @default(false)
+  error           String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+model MapData {
+  id           String             @default(cuid()) @id
+  name         String
+  location     String
+  numLocations String?
+  coverageData String
+}
+
+model CompareMapData {
+  id           String             @default(cuid()) @id
+  name         String
+  location     String
+  numLocations String?
+  coverageData String
+  compareId    String
+}
+
+model Map {
+  id              String                @default(cuid()) @id
+  locationTag     LocationTag?
+  businessTag     BusinessTag?
+  comparationTags ComparationTag[]
+  data            MapData[]
+  compareData     CompareMapData[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+}
+
+model OwnershipContactData {
+  id    String @default(cuid()) @id
+  name  String
+  title String
+  phone String
+  email String
+}
+
+model OwnershipContact {
+  id          String                 @default(cuid()) @id
+  type        OwnershipType
+  locationTag LocationTag?
+  businessTag BusinessTag?
+  data        OwnershipContactData[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+}
+
+model OwnershipInfoData {
+  id            String @default(cuid()) @id
+  parentCompany String
+  headquarters  String
+  phone         String
+  website       String
+  lastUpdate    String
+}
+
+model OwnershipInfo {
+  id          String            @default(cuid()) @id
+  type        OwnershipType
+  locationTag LocationTag?
+  businessTag BusinessTag?
+  data        OwnershipInfoData
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model FeedBack {
+  id     String  @default(cuid()) @id
+  email  String
+  title  String
+  feed   String
+  detail String?
+}
+
+model SharedTerminal {
+  id         String   @default(cuid()) @id
+  terminal   Terminal
+  expireDate DateTime
+}

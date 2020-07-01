@@ -663,7 +663,7 @@ export let updateComparisonResolver: FieldResolver<
         tableId: table.id,
         comparationTags: table.comparationTags,
       };
-    case 'COVERAGE':
+    case 'MAP':
       if (actionType === 'DELETE') {
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');
@@ -694,7 +694,7 @@ export let updateComparisonResolver: FieldResolver<
           tableId: promiseTableId,
         };
       }
-      table = await context.prisma.coverage.findOne({
+      table = await context.prisma.map.findOne({
         where: { id: tableId },
         select: {
           id: true,
@@ -715,7 +715,7 @@ export let updateComparisonResolver: FieldResolver<
         throw new Error('Selected table not found.');
       }
       if (actionType === 'DELETE_ALL') {
-        let coverage = await context.prisma.coverage.findMany({
+        let map = await context.prisma.map.findMany({
           where: {
             businessTag: table.businessTag
               ? { id: table.businessTag.id }
@@ -735,22 +735,20 @@ export let updateComparisonResolver: FieldResolver<
             },
           },
         });
-        coverage = coverage.filter(
-          ({ comparationTags }) => comparationTags.length === 0,
-        );
+        map = map.filter(({ comparationTags }) => comparationTags.length === 0);
         if (pinId) {
           await context.prisma.pinnedFeed.update({
             where: { id: pinId },
             data: {
-              tableId: coverage[0].id,
+              tableId: map[0].id,
             },
           });
         }
 
         return {
           reviewTag,
-          tableId: coverage[0].id,
-          comparationTags: coverage[0].comparationTags,
+          tableId: map[0].id,
+          comparationTags: map[0].comparationTags,
         };
       }
       if (
@@ -766,7 +764,7 @@ export let updateComparisonResolver: FieldResolver<
       }
       selectedComparationIds = table.comparationTags.map(({ id }) => id);
       newComparationIds = [...selectedComparationIds, selectedComparationId];
-      tables = await context.prisma.coverage.findMany({
+      tables = await context.prisma.map.findMany({
         where: {
           comparationTags: {
             some: { id: selectedComparationId },
@@ -798,7 +796,7 @@ export let updateComparisonResolver: FieldResolver<
         let connectNewCompIds = newComparationIds.map((compId) => {
           return { id: compId };
         });
-        table = await context.prisma.coverage.create({
+        table = await context.prisma.map.create({
           data: {
             businessTag: table.businessTag
               ? {

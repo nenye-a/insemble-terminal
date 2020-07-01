@@ -32,13 +32,11 @@ export default function isSearchCombinationValid(
     ) {
       return true;
     }
-  } else if (formattedReviewTag === ReviewTag.COVERAGE) {
+  } else if (formattedReviewTag === ReviewTag.MAP) {
     if (
       hasBusinessTag &&
       (typeof businessTag === 'string' ||
-        businessTag?.type === BusinessType.BUSINESS) &&
-      (!hasLocationTag ||
-        (hasLocationTag && locationTag?.type !== LocationTagType.ADDRESS))
+        businessTag?.type === BusinessType.BUSINESS)
     ) {
       return true;
     } else if (
@@ -46,9 +44,7 @@ export default function isSearchCombinationValid(
       typeof businessTag !== 'string' &&
       businessTag?.type === BusinessType.CATEGORY &&
       (!hasLocationTag ||
-        (hasLocationTag &&
-          locationTag?.type !== LocationTagType.ADDRESS &&
-          locationTag?.type !== LocationTagType.NATION))
+        (hasLocationTag && locationTag?.type !== LocationTagType.NATION))
     ) {
       return true;
     }

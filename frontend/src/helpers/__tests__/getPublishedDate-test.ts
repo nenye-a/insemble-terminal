@@ -7,6 +7,6 @@ describe('getPublishedDate', () => {
     let convertedArr = arr.map((item) =>
       getPublishedDate(item, new Date(2020, 4, 29, 17, 43)),
     ); // May-29-2020:5:43
-    expect(convertedArr).toEqual(['23 hours ago', '5/22']);
+    expect(convertedArr).toEqual(['5/28', '5/22']);
   });
 });

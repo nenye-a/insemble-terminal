@@ -91,8 +91,12 @@ export default function NewsTableMobile(props: Props) {
                 }}
               >
                 <View>
-                  <SourceText>{source}</SourceText>
-                  <Text fontWeight={FONT_WEIGHT_MEDIUM}>{title}</Text>
+                  <SourceText color={bgColor === WHITE ? GRAY_TEXT : textColor}>
+                    {source}
+                  </SourceText>
+                  <Text fontWeight={FONT_WEIGHT_MEDIUM} color={textColor}>
+                    {title}
+                  </Text>
                 </View>
               </DataTable.Cell>
               <DataTable.Cell
@@ -112,5 +116,4 @@ export default function NewsTableMobile(props: Props) {
 
 const SourceText = styled(Text)`
   margin-bottom: 8px;
-  color: ${GRAY_TEXT};
 `;
