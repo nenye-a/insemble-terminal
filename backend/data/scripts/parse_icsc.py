@@ -21,7 +21,7 @@ DB_DOMAINS = utils.SYSTEM_MONGO.get_collection("contacts.domains")
 DB_DOMAINS.create_index([('domain', 1)], unique=True)
 DB_DOMAINS.create_index([('companies', 1)])
 MAIN_PATH = THIS_DIR + '/files/contact_related'
-SEARCH_PATHS = ['', MAIN_PATH, THIS_DIR + '/files/', THIS_DIR,
+SEARCH_PATHS = ['', MAIN_PATH + '/', THIS_DIR + '/files/', THIS_DIR,
                 BASE_DIR + '/newsgenerator/sources/']
 
 
@@ -64,6 +64,9 @@ def insert_from_pdf(collection_name, pdf, replace=False):
     blocks = separate_contact_blocks(pdf)
     contacts = list(filter(None, [contact_block_to_dict(block) for block in blocks]))
 
+    for contact in contacts:
+        contact['source'] = pdf
+
     create_collection_indices(collection_name)
 
     try:
@@ -81,21 +84,24 @@ def insert_from_pdf(collection_name, pdf, replace=False):
 def create_collection_indices(collection_name):
 
     collection = get_contacts_collection(collection_name)
-    collection.create_index([('first_name', 1), ('last_name', 1)])
-    collection.create_index(
-        [('first_name', 1), ('last_name', 1), ('company', 1)],
-        unique=True,
-        partialFilterExpression={
-            'first_name': {'$exists': True},
-            'last_name': {'$exists': True},
-            'company': {'$exists': True},
-        })
-    collection.create_index([('email', 1)], unique=True,
-                            partialFilterExpression={'email': {'$exists': True}}),
-    collection.create_index([('domain', 1)])
-    collection.create_index([('company', 1)])
-    collection.create_index([('domain_processed', 1)])
-    collection.create_index([('email_processed', 1)])
+    try:
+        collection.create_index([('first_name', 1), ('last_name', 1)])
+        collection.create_index(
+            [('first_name', 1), ('last_name', 1), ('company', 1)],
+            unique=True,
+            partialFilterExpression={
+                'first_name': {'$exists': True},
+                'last_name': {'$exists': True},
+                'company': {'$exists': True},
+            })
+        collection.create_index([('email', 1)], unique=True,
+                                partialFilterExpression={'email': {'$exists': True}}),
+        collection.create_index([('domain', 1)])
+        collection.create_index([('company', 1)])
+        collection.create_index([('domain_processed', 1)])
+        collection.create_index([('email_processed', 1)])
+    except Exception as e:
+        print(f"{print(type(e))}: {e};\n\nDidn't Re-define indexes.")
 
 
 def collection_exists(collection_name):
@@ -169,6 +175,7 @@ def insert_from_csv(collection_name, csv, replace=False):
     insert_df = contact_df.merge(stock_df, 'left')[critical_columns]
     insert_df = insert_df.where(pd.notnull(insert_df), None)
     insert_df['company'] = insert_df['company'].apply(parse_company)
+    insert_df['source'] = csv
 
     create_collection_indices(collection_name)
 
@@ -325,6 +332,7 @@ def separate_contact_blocks(filename):
             break
         except FileNotFoundError:
             continue
+
     if not text:
         raise FileNotFoundError('File "{}" not found.'.format(filename))
     return {tuple(item.split("\n")) for item in text.split("\n\n")
@@ -381,8 +389,8 @@ def contact_block_to_dict(block):
 
     for i in range(len(address_blocks)):
         item = address_blocks.pop(0)
-        if not contact_dict["address_street"] and (bool(re.match(r'[\d\-]+[\s]+[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+', item))
-                                                   or ('pobox' in item.translate(str.maketrans('', '', string.punctuation)).lower().replace(" ", ""))):
+        if not contact_dict["address_street"] and (bool(re.match(r'[\d\-]+[\s]+[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+', item)) or
+                                                   ('pobox' in item.translate(str.maketrans('', '', string.punctuation)).lower().replace(" ", ""))):
             contact_dict["address_street"] = item
         elif not contact_dict["address_city_state"] and "," in item:
             contact_dict["address_city_state"] = item
@@ -674,6 +682,26 @@ def import_domains():
             print("Inserted one: {}".format(domain['domain']))
 
 
+def update_source():
+    """
+    Assumes that a database that contains source has been
+    created and named temp_source.
+    """
+    get_contacts_collection('temp_source').aggregate([
+        {'$project': {
+            "_id": 0,
+            "first_name": 1,
+            "last_name": 1,
+            "company": 1,
+            "source": 1
+        }},
+        {"$merge": {
+            "into": "main_contact_db",
+            "on": ["first_name", "last_name", "company"]
+        }}
+    ])
+
+
 if __name__ == "__main__":
     def test_contact_block_to_dict():
         blocks = [('Andrew Corno', 'Senior Vice President', 'JLL', '3854 Beecher Street', 'Washington, DC 20007 United States',
@@ -687,14 +715,3 @@ if __name__ == "__main__":
                                                                                                                                                                                      'P. O. Box Maureen Drive', 'Cranberry Township, PA', '16066 United States', '(615) 477-8725', 'Retailer/Tenant')]
 
         print([contact_block_to_dict(block) for block in blocks])
-
-    # parse_contacts('main_contact_db')
-    # # get_contacts_emails('main_contact_db')
-
-    # print(get_contacts_collection('main_contact_db').count_documents({
-    #     # 'domain': {'$ne': None}
-    #     # 'domain_processed': True,
-    #     'email': {'$ne': None},
-    #     'address_street': {'$ne': None},
-    # }))
-    print_to_csv('main_contact_db')
