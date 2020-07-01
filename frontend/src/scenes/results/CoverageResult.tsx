@@ -192,5 +192,5 @@ export default function CoverageResult(props: Props) {
 
 const ContentContainer = styled(View)<ViewProps & WithViewport>`
   flex-direction: ${(props) => (props.isDesktop ? 'row' : 'column-reverse')};
-  height: 340px;
+  height: ${(props) => (props.isDesktop ? '340px' : '400px')};
 `;
