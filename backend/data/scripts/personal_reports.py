@@ -103,9 +103,10 @@ def generate_report(name, company, address, city, contact_type,
     query_list.extend(queries)
     print(f'Queries collection. Generating personal report for {name}')
 
+    report_name = f"{name}'s report for {company}"
     report, terminal_id = helper.create_shared_report(
         *query_list,
-        name=f"{name}'s report for {company}",
+        name=report_name,
         description=("{}: Generated report for {} related retail near {}, {}"
                      .format(
                          contact_type,
@@ -114,7 +115,10 @@ def generate_report(name, company, address, city, contact_type,
                          city)))
 
     print(report, terminal_id)
-    return report
+    return {
+        "report_link": report,
+        "report_title": report_name
+    } if report else None
 
 
 def get_intro_query(first_name, city):
@@ -208,7 +212,8 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
     matches = list(db_places.find({
         "name": processed_brand,
         "location": {"$near": {"$geometry": user_location}},
-        "activity_volume": {"$gt": 0}
+        "activity_volume": {"$gt": 0},
+        "type": {"$ne": None}
     }))
 
     # if retail site is not found at all
@@ -226,7 +231,8 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
                 matches = list(db_places.find({
                     "name": processed_sub,
                     "location": {"$near": {"$geometry": user_location}},
-                    "activity_volume": {"$gt": 0}
+                    "activity_volume": {"$gt": 0},
+                    "type": {"$ne": None}
                 }))
 
     # if subsidaries weren't found, find well known retailer
@@ -239,7 +245,8 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
         matches = list(db_places.find({
             "name": processed_default,
             "location": {"$near": {"$geometry": user_location}},
-            "activity_volume": {"$gt": 0}
+            "activity_volume": {"$gt": 0},
+            "type": {"$ne": None}
         }))
 
     # Should have matches at this point,
@@ -411,7 +418,7 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
             "type": base_brand['type'],
             "city": city,
             "state": state,
-            "activity_volume": {"$gt": 0}
+            "activity_volume": {"$gt": 0},
         }))
         if matches:
             break
@@ -468,7 +475,8 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
             "$near": {"$geometry": other_brand['location'],
                       "$maxDistance": SEARCH_RADIUS}
         },
-        "activity_volume": {"$gt": 0}
+        "activity_volume": {"$gt": 0},
+        "type": {"$ne": None}
     })
 
     nearby_brands = near_retailer_matches[:4]
@@ -508,12 +516,15 @@ def process_landlord(address, city, location, database=utils.SYSTEM_MONGO):
             "$geometry": location,
             "$maxDistance": SEARCH_RADIUS
         }},
-        "activity_volume": {'$gt': 0}
+        "activity_volume": {'$gt': 0},
+        "type": {"$ne": None}
     })
     if not matches:
         print("No retail found in area for {}, {}".format(address, city))
         return []
     potential_bases = matches[:25]
+    print(potential_bases)
+    print('HIHIHIHIHI')
     base_brand = [entry for entry in reversed(sorted(
         potential_bases,
         key=lambda item: item['activity_volume'] / item['brand_volume']
@@ -577,7 +588,8 @@ def process_landlord(address, city, location, database=utils.SYSTEM_MONGO):
             "$geometry": base_brand['location'],
             "$maxDistance": SEARCH_RADIUS
         }},
-        "activity_volume": {"$gt": 0}
+        "activity_volume": {"$gt": 0},
+        "type": {"$ne": None}
     })
     nearby_brands = near_base_matches[:NUM_CENTER_COMPS]
 
@@ -788,7 +800,7 @@ def process_broker(location, database=utils.SYSTEM_MONGO):
             "type": category,
             "city": city,
             "state": state,
-            "activity_volume": {"$gt": 0}
+            "activity_volume": {"$gt": 0},
         }))
 
         if matches:
@@ -935,7 +947,7 @@ def find_nearby_competitor_with_activity(brand, category, location,
             "$geometry": location,
             "$maxDistance": SEARCH_RADIUS
         }},
-        "activity_volume": {"$gt": 0}
+        "activity_volume": {"$gt": 0},
     })
 
     same_cat_brands = [match['name']
@@ -956,7 +968,8 @@ def find_nearby_competitor_with_activity(brand, category, location,
                 "$geometry": location,
                 "$maxDistance": SEARCH_RADIUS
             }},
-            "activity_volume": {"$gt": 0}
+            "activity_volume": {"$gt": 0},
+            "type": {"$ne": None}
         }))
         comp_with_activity = matches[0] if matches else None
     return None

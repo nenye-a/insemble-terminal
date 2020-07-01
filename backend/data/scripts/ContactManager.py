@@ -702,6 +702,45 @@ def update_source():
     ])
 
 
+def create_prelight_collection():
+    get_contacts_collection('main_contact_db').aggregate([
+        {'$match': {
+            'email': {'$ne': None},
+            'address_street': {'$ne': None},
+        }},
+        {'$facet': {
+            'nenye_list': [
+                {'$sample': {
+                    'size': 20
+                }},
+                {'$set': {
+                    'email': 'nenanagbogu@gmail.com'
+                }}
+            ],
+            'colin_list': [
+                {'$sample': {
+                    'size': 20
+                }},
+                {'$set': {
+                    'email': 'corlando@mit.edu'
+                }}
+            ]
+        }},
+        {'$project': {
+            'total_list': {
+                '$concatArrays': ["$colin_list", "$nenye_list"]
+            }
+        }},
+        {'$unwind': {
+            'path': '$total_list'
+        }},
+        {'$replaceRoot': {
+            'newRoot': '$total_list'
+        }},
+        {'$merge': "preflight-collection"}
+    ])
+
+
 if __name__ == "__main__":
     def test_contact_block_to_dict():
         blocks = [('Andrew Corno', 'Senior Vice President', 'JLL', '3854 Beecher Street',
@@ -711,3 +750,5 @@ if __name__ == "__main__":
                    '(443) 621-6555', 'Owner/Developer')]
 
         print([contact_block_to_dict(block) for block in blocks])
+
+    create_prelight_collection()

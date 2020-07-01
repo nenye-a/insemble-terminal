@@ -23,7 +23,7 @@ MILES_TO_METERS_FACTOR = 1609.34
 EARTHS_RADIUS_MILES = 3958.8
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
-ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
+ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})?'
 AMPERSAND = '\\\\u0026'
 AMPERSAND2 = '&amp;'
 APOSTROPHE = '&#39;'
@@ -464,6 +464,26 @@ def extract_state(address):
         return None
 
 
+def extract_city_state(address, mode='all'):
+    finder = re.compile(ADDRESS_END_REGEX)
+    match_list = finder.findall(address)
+    if not match_list:
+        return None
+
+    match = [word.strip() for word in match_list[-1]]
+
+    if mode == 'all':
+        return '{city}, {state}'.format(
+            city=match[0], state=match[1]
+        )
+    elif mode == 'city':
+        return match[0]
+    elif mode == 'state':
+        return match[1]
+    else:
+        return None
+
+
 def state_code_to_name(state_code):
     return STATE_DICT.loc[state_code]['State']
 
@@ -659,3 +679,8 @@ if __name__ == "__main__":
         print("1 -> 2\n{}\n".format(dictionary_diff(dict1, dict2)))
         print("2 -> 1\n{}\n".format(dictionary_diff(dict2, dict1)))
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
+
+    def test_extract_city_state():
+        print(extract_city_state('Los Angeles, CA 902123, USA'))
+        print(extract_city_state('Los Angeles, CA 902123, USA', 'city'))
+        print(extract_city_state('Los Angeles, CA 901293', 'state'))

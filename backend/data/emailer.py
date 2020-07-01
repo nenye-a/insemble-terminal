@@ -33,11 +33,15 @@ def send_email(from_email, to_emails, subject, html_text):
         sg.useragent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0'
         response = sg.send(message)
         print(response.status_code)
+        if response.status_code % 200 < 10:
+            return True
+        else:
+            return False
     except Exception as e:
         print('EMAILER: Failed to send email to {}. Error: "{}"'.format(
             to_emails, e
         ))
-        # raise  # re-raise the exception to be handled elsewhere
+        return False
 
 
 if __name__ == "__main__":
