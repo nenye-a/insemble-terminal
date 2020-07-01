@@ -81,7 +81,7 @@ export default function PerformanceTable(props: Props) {
   let headerCells = [
     <DataTable.HeaderCell
       width={mobile ? 120 : 90}
-      align="right"
+      align="center"
       onClick={() => {
         requestSort('customerVolumeIndex');
       }}
@@ -93,7 +93,7 @@ export default function PerformanceTable(props: Props) {
     </DataTable.HeaderCell>,
     <DataTable.HeaderCell
       width={mobile ? 120 : 90}
-      align="right"
+      align="center"
       onClick={() => {
         requestSort('localRetailIndex');
       }}
@@ -105,7 +105,7 @@ export default function PerformanceTable(props: Props) {
     </DataTable.HeaderCell>,
     <DataTable.HeaderCell
       width={mobile ? 120 : 90}
-      align="right"
+      align="center"
       onClick={() => {
         requestSort('localCategoryIndex');
       }}
@@ -117,7 +117,7 @@ export default function PerformanceTable(props: Props) {
     </DataTable.HeaderCell>,
     <DataTable.HeaderCell
       width={mobile ? 120 : 100}
-      align="right"
+      align="center"
       onClick={() => {
         requestSort('nationalIndex');
       }}
@@ -129,7 +129,7 @@ export default function PerformanceTable(props: Props) {
     </DataTable.HeaderCell>,
     <DataTable.HeaderCell
       width={mobile ? 120 : 90}
-      align="right"
+      align="center"
       onClick={() => {
         requestSort('avgRating');
       }}
@@ -141,7 +141,7 @@ export default function PerformanceTable(props: Props) {
     </DataTable.HeaderCell>,
     <DataTable.HeaderCell
       width={mobile ? 120 : 90}
-      align="right"
+      align="center"
       onClick={() => {
         requestSort('numReview');
       }}
@@ -156,7 +156,7 @@ export default function PerformanceTable(props: Props) {
     headerCells.push(
       <DataTable.HeaderCell
         width={mobile ? 120 : 90}
-        align="right"
+        align="center"
         onClick={() => {
           requestSort('numLocation');
         }}
@@ -174,7 +174,7 @@ export default function PerformanceTable(props: Props) {
       {mobile ? (
         <DataTable.HeaderRow>
           <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
-          <Navigator
+          <TouchableOpacity
             onPress={() => {
               setHeaderIndex(headerIndex - 1);
             }}
@@ -185,9 +185,9 @@ export default function PerformanceTable(props: Props) {
               height={14}
               style={{ color: firstIndex ? GRAY_TEXT : WHITE }}
             />
-          </Navigator>
+          </TouchableOpacity>
           {headerCells[headerIndex]}
-          <Navigator
+          <Next
             onPress={() => {
               setHeaderIndex(headerIndex + 1);
             }}
@@ -198,7 +198,7 @@ export default function PerformanceTable(props: Props) {
               height={14}
               style={{ color: lastIndex ? GRAY_TEXT : WHITE }}
             />
-          </Navigator>
+          </Next>
         </DataTable.HeaderRow>
       ) : (
         <DataTable.HeaderRow>
@@ -473,6 +473,6 @@ const Times = styled(Text)`
   color: inherit;
 `;
 
-const Navigator = styled(TouchableOpacity)`
-  margin: 0 4px;
+const Next = styled(TouchableOpacity)`
+  margin-right: 18px;
 `;

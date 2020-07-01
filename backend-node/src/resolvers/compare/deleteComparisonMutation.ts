@@ -432,7 +432,7 @@ export let deleteComparisonResolver: FieldResolver<
       };
 
     case 'MAP':
-      table = await context.prisma.coverage.findOne({
+      table = await context.prisma.map.findOne({
         where: { id: tableId },
         select: {
           id: true,
@@ -456,7 +456,7 @@ export let deleteComparisonResolver: FieldResolver<
       newComparationIds = selectedComparationIds.filter(
         (id) => id !== selectedComparationId,
       );
-      tables = await context.prisma.coverage.findMany({
+      tables = await context.prisma.map.findMany({
         where: {
           comparationTags: {
             every: { id: { not: selectedComparationId } },
@@ -488,7 +488,7 @@ export let deleteComparisonResolver: FieldResolver<
         let connectNewCompIds = newComparationIds.map((compId) => {
           return { id: compId };
         });
-        table = await context.prisma.coverage.create({
+        table = await context.prisma.map.create({
           data: {
             businessTag: table.businessTag
               ? {

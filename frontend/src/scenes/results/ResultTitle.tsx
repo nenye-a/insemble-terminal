@@ -220,13 +220,13 @@ export default function ResultTitle(props: Props) {
         )}
         {isTerminalScene && resultTitle && (
           <>
-            <Title> | </Title>
+            <Title style={{ paddingLeft: 8, paddingRight: 8 }}>|</Title>
             <SubTitle>{resultTitle}</SubTitle>
           </>
         )}
       </Row>
-      <Row flex style={{ justifyContent: 'flex-end' }}>
-        {!isTerminalScene && formattedCompareText ? (
+      <Row style={{ minWidth: 100, justifyContent: 'flex-end' }}>
+        {isDesktop && formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
           ) : (
@@ -255,7 +255,7 @@ export default function ResultTitle(props: Props) {
             </>
           )
         ) : null}
-        {isDesktop && !readOnly ? (
+        {(isDesktop && !readOnly) || onClosePress ? (
           <>
             {canCompare && reviewTag && tableId && (
               <AddComparisonButton
@@ -321,7 +321,7 @@ export default function ResultTitle(props: Props) {
               </Popover>
             )}
           </>
-        ) : !isDesktop && !readOnly && reviewTag && tableType ? (
+        ) : !isDesktop && !readOnly && tableType ? (
           <TripleDotsButton
             disabled={noData}
             reviewTag={reviewTag}
@@ -337,6 +337,7 @@ export default function ResultTitle(props: Props) {
             isTerminalScene={isTerminalScene}
             removePinFn={removePin}
             removePinLoading={removePinnedTableLoading}
+            canCompare={canCompare}
           />
         ) : null}
       </Row>
@@ -357,6 +358,7 @@ const Container = styled(View)<ContainerProps>`
   justify-content: space-between;
   align-items: center;
   position: relative;
+  flex: 1;
 `;
 
 const Title = styled(Text)<TitleProps>`

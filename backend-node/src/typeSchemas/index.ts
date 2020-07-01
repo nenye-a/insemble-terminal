@@ -29,9 +29,9 @@ export * from './ActivityData';
 export * from './ActivityTimes';
 export * from './CompareActivityData';
 
-export * from './CoverageTable';
-export * from './CoverageData';
-export * from './CompareCoverageData';
+export * from './MapTable';
+export * from './MapData';
+export * from './CompareMapData';
 export * from './CoverageBusiness';
 export * from './CoverageLocation';
 

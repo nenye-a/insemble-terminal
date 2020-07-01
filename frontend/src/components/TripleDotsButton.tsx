@@ -21,7 +21,7 @@ import PinPopover from './PinPopover';
 import SvgClose from './icons/close';
 
 type TripleDotsPopoverProps = {
-  reviewTag: ReviewTag;
+  reviewTag?: ReviewTag;
   tableId?: string;
   onTableIdChange?: (newTableId: string) => void;
   comparisonTags?: Array<ComparationTagWithFill>;
@@ -34,6 +34,7 @@ type TripleDotsPopoverProps = {
   isTerminalScene?: boolean;
   removePinFn: () => void;
   removePinLoading: boolean;
+  canCompare?: boolean;
 };
 
 type Props = TripleDotsPopoverProps & {
@@ -85,13 +86,14 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
     tableType,
     removePinFn,
     removePinLoading,
+    canCompare,
   } = props;
   let [comparisonModalVisible, setComparisonModalVisible] = useState(false);
   let [pinModalVisible, setPinModalVisible] = useState(false);
 
   return (
     <Container>
-      {tableId && (
+      {tableId && reviewTag && canCompare && (
         <>
           <AddComparisonModal
             visible={comparisonModalVisible}
@@ -118,14 +120,16 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
           </PinModal>
         </>
       )}
-      <ButtonContainer
-        onPress={() => {
-          setComparisonModalVisible(true);
-        }}
-      >
-        <SvgRoundAdd width={24} height={24} />
-        <PurpleText>Compare</PurpleText>
-      </ButtonContainer>
+      {canCompare && (
+        <ButtonContainer
+          onPress={() => {
+            setComparisonModalVisible(true);
+          }}
+        >
+          <SvgRoundAdd width={24} height={24} />
+          <PurpleText>Compare</PurpleText>
+        </ButtonContainer>
+      )}
       {isTerminalScene ? (
         <ButtonContainer onPress={removePinFn} disabled={removePinLoading}>
           {removePinLoading ? (

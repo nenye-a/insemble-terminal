@@ -13,14 +13,14 @@ import {
 } from '../../helpers';
 import { ReviewTag, TableType } from '../../generated/globalTypes';
 import {
-  GetCoverage,
-  GetCoverageVariables,
-  GetCoverage_coverageTable_data as CoverageData,
-  GetCoverage_coverageTable_data_coverageData as CoverageBusiness,
-  GetCoverage_coverageTable_compareData as CoverageCompareData,
-  GetCoverage_coverageTable_comparationTags as ComparationTags,
-} from '../../generated/GetCoverage';
-import { GET_COVERAGE_DATA } from '../../graphql/queries/server/results';
+  GetMap,
+  GetMapVariables,
+  GetMap_mapTable_data as MapData,
+  GetMap_mapTable_data_coverageData as MapBusiness,
+  GetMap_mapTable_compareData as MapCompareData,
+  GetMap_mapTable_comparationTags as ComparationTags,
+} from '../../generated/GetMap';
+import { GET_MAP_DATA } from '../../graphql/queries/server/results';
 import { MapInfoboxPressParam } from '../../types/types';
 
 import CoverageTable from './CoverageTable';
@@ -37,11 +37,11 @@ type Props = {
   onInfoBoxPress?: (param: MapInfoboxPressParam) => void;
 };
 
-type ColoredData = (CoverageData | CoverageCompareData) & {
+type ColoredData = (MapData | MapCompareData) & {
   isComparison: boolean;
 };
 
-export default function CoverageResult(props: Props) {
+export default function MapResult(props: Props) {
   let {
     businessTagId,
     locationTagId,
@@ -52,16 +52,16 @@ export default function CoverageResult(props: Props) {
   } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
-  let [selectedBusiness, setSelectedBusiness] = useState<CoverageBusiness>();
+  let [selectedBusiness, setSelectedBusiness] = useState<MapBusiness>();
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
 
   let alert = useAlert();
   let { isLoading } = useGoogleMaps();
   let { isDesktop } = useViewport();
   let { loading: coverageLoading, data, error, refetch } = useQuery<
-    GetCoverage,
-    GetCoverageVariables
-  >(GET_COVERAGE_DATA, {
+    GetMap,
+    GetMapVariables
+  >(GET_MAP_DATA, {
     variables: {
       businessTagId,
       locationTagId,
@@ -70,39 +70,24 @@ export default function CoverageResult(props: Props) {
   });
 
   let { data: coloredData, comparisonTags } = useColoredData<
-    CoverageData,
-    CoverageCompareData
+    MapData,
+    MapCompareData
   >(
-    data?.coverageTable.data,
-    data?.coverageTable.compareData,
-    data?.coverageTable.comparationTags,
+    data?.mapTable.data,
+    data?.mapTable.compareData,
+    data?.mapTable.comparationTags,
     sortOrder,
     true,
   );
 
-  let noData =
-    !data?.coverageTable.data || data?.coverageTable.data.length === 0;
+  let noData = !data?.mapTable.data || data?.mapTable.data.length === 0;
 
   let loading = isLoading || coverageLoading;
 
-  let content = [
-    <CoverageTable
-      key="coverage-table"
-      data={loading ? prevData : coloredData}
-      hoverFunction={setSelectedBusiness}
-    />,
-    <CoverageMap
-      key="coverage-map"
-      data={loading ? prevData : coloredData}
-      selectedBusiness={selectedBusiness}
-      onInfoBoxPress={onInfoBoxPress}
-    />,
-  ];
-
   useEffect(() => {
     if (!coverageLoading) {
-      if (data?.coverageTable) {
-        let { compareData, comparationTags, id } = data.coverageTable;
+      if (data?.mapTable) {
+        let { compareData, comparationTags, id } = data.mapTable;
         if (compareData.length !== comparationTags.length) {
           let notIncludedFilterFn = (tag: ComparationTags) =>
             !compareData.map((item) => item.compareId).includes(tag.id);
@@ -145,22 +130,22 @@ export default function CoverageResult(props: Props) {
         title="Map"
         noData={noData}
         reviewTag={ReviewTag.MAP}
-        tableId={data?.coverageTable.id || ''}
+        tableId={data?.mapTable.id || ''}
         onTableIdChange={(newTableId: string) => {
           refetch({ tableId: newTableId });
         }}
         comparisonTags={comparisonTags}
-        tableType={TableType.COVERAGE}
-        {...(data?.coverageTable.businessTag && {
+        tableType={TableType.MAP}
+        {...(data?.mapTable.businessTag && {
           businessTag: {
-            params: data.coverageTable.businessTag.params,
-            type: data.coverageTable.businessTag.type,
+            params: data.mapTable.businessTag.params,
+            type: data.mapTable.businessTag.type,
           },
         })}
-        {...(data?.coverageTable.locationTag && {
+        {...(data?.mapTable.locationTag && {
           locationTag: {
-            params: data.coverageTable.locationTag.params,
-            type: data.coverageTable.locationTag.type,
+            params: data.mapTable.locationTag.params,
+            type: data.mapTable.locationTag.type,
           },
         })}
         pinTableId={pinTableId}
@@ -180,21 +165,28 @@ export default function CoverageResult(props: Props) {
           <EmptyDataComponent />
         ) : (!loading && !noData) || prevData.length > 0 ? (
           <ContentContainer isDesktop={isDesktop}>
-            {isDesktop ? content : content.reverse()}
+            <CoverageTable
+              key="coverage-table"
+              data={loading ? prevData : coloredData}
+              hoverFunction={setSelectedBusiness}
+            />
+            <CoverageMap
+              key="coverage-map"
+              data={loading ? prevData : coloredData}
+              selectedBusiness={selectedBusiness}
+              onInfoBoxPress={onInfoBoxPress}
+            />
           </ContentContainer>
         ) : null}
       </View>
       {!readOnly && (
-        <FeedbackButton
-          tableId={data?.coverageTable.id}
-          tableType={TableType.COVERAGE}
-        />
+        <FeedbackButton tableId={data?.mapTable.id} tableType={TableType.MAP} />
       )}
     </View>
   );
 }
 
 const ContentContainer = styled(View)<ViewProps & WithViewport>`
-  flex-direction: ${(props) => (props.isDesktop ? 'row' : 'column')};
-  height: 340px;
+  flex-direction: ${(props) => (props.isDesktop ? 'row' : 'column-reverse')};
+  height: ${(props) => (props.isDesktop ? '340px' : '400px')};
 `;

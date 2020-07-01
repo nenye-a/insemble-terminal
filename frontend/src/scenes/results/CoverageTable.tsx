@@ -4,31 +4,30 @@ import styled from 'styled-components';
 import { View, Text } from '../../core-ui';
 import { DataTable } from '../../components';
 import { WHITE, THEME_COLOR } from '../../constants/colors';
-import { MergedCoverageData, Direction } from '../../types/types';
-import { GetCoverage_coverageTable_data_coverageData as CoverageBusiness } from '../../generated/GetCoverage';
+import { MergedMapData, Direction } from '../../types/types';
+import { GetMap_mapTable_data_coverageData as MapBusiness } from '../../generated/GetMap';
 import { useSortableData, useViewport } from '../../helpers';
 
 type Props = {
-  data: Array<MergedCoverageData>;
-  hoverFunction: React.Dispatch<
-    React.SetStateAction<CoverageBusiness | undefined>
-  >;
+  data: Array<MergedMapData>;
+  hoverFunction: React.Dispatch<React.SetStateAction<MapBusiness | undefined>>;
 };
 
-export default function CoverageTable(props: Props) {
+export default function MapTable(props: Props) {
   let { data, hoverFunction } = props;
-  let allCoverageData: Array<CoverageBusiness> = [];
+  let allMapCoverageData: Array<MapBusiness> = [];
   data.forEach(({ coverageData }) => {
-    allCoverageData = allCoverageData.concat(coverageData);
+    allMapCoverageData = allMapCoverageData.concat(coverageData);
   });
   let { isDesktop } = useViewport();
   // Note: What we want to sort is the numlocations of data.coverageData
-  let { sortedData, requestSort, sortConfig } = useSortableData<
-    CoverageBusiness
-  >(allCoverageData, {
-    key: 'numLocations',
-    direction: Direction.DESCENDING,
-  });
+  let { sortedData, requestSort, sortConfig } = useSortableData<MapBusiness>(
+    allMapCoverageData,
+    {
+      key: 'numLocations',
+      direction: Direction.DESCENDING,
+    },
+  );
 
   return (
     <Container isDesktop={isDesktop}>

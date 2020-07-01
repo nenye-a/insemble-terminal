@@ -22,13 +22,18 @@ export default function FeedbackButton(props: Props) {
 
   return (
     <>
-      <View style={!isDesktop ? { paddingRight: 12 } : undefined}>
+      <View
+        style={
+          !isDesktop ? { paddingTop: 6, paddingRight: 12 } : { paddingTop: 6 }
+        }
+      >
         <FeedbackBtn
           mode="transparent"
           onPress={() => {
             setModalVisible(true);
           }}
           text="Feedback"
+          size="small"
         />
       </View>
       <AddFeedbackModal
@@ -46,6 +51,7 @@ export default function FeedbackButton(props: Props) {
 
 const FeedbackBtn = styled(Button)`
   align-self: flex-end;
+  height: 14px;
   ${Text} {
     font-style: italic;
     color: ${GRAY_TEXT};

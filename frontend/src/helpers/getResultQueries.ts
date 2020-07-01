@@ -77,7 +77,7 @@ export default function getResultQueries(
       (businessTag?.type === BusinessType.CATEGORY &&
         locationTag?.type !== LocationTagType.NATION)
     ) {
-      queries.push({ reviewTag: ReviewTag.MAP, type: 'COVERAGE' });
+      queries.push({ reviewTag: ReviewTag.MAP, type: 'MAP' });
     }
   }
   if (!reviewTag || reviewTag === ReviewTag.ACTIVITY) {

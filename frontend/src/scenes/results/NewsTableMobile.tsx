@@ -91,7 +91,7 @@ export default function NewsTableMobile(props: Props) {
                 }}
               >
                 <View>
-                  <SourceText color={bgColor === WHITE ? textColor : GRAY_TEXT}>
+                  <SourceText color={bgColor === WHITE ? GRAY_TEXT : textColor}>
                     {source}
                   </SourceText>
                   <Text fontWeight={FONT_WEIGHT_MEDIUM} color={textColor}>

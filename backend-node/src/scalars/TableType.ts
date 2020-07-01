@@ -8,7 +8,7 @@ export let TableType = enumType({
     'ACTIVITY',
     'OWNERSHIP_INFO',
     'OWNERSHIP_CONTACT',
-    'COVERAGE',
+    'MAP',
     'NOTE',
   ],
 });

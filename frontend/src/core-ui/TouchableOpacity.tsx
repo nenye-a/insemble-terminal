@@ -38,11 +38,11 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
       tabIndex={0}
       {...otherProps}
       onClick={(event: MouseEvent) => {
+        if (!isLink || (isLocalLink && !(event.metaKey || event.ctrlKey))) {
+          event.preventDefault();
+        }
         if (stopPropagation) {
           event.stopPropagation();
-        }
-        if (isLocalLink && !(event.metaKey || event.ctrlKey)) {
-          event.preventDefault();
         }
         if (isLocalLink && (event.metaKey || event.ctrlKey)) {
           setMetaOrCtrlActive(true);

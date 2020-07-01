@@ -4,18 +4,18 @@ import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 import { View } from '../../core-ui';
 import { GRAY, THEME_COLOR } from '../../constants/colors';
 import {
-  MergedCoverageData,
+  MergedMapData,
   LocationLatLng,
   MapInfoboxPressParam,
 } from '../../types/types';
-import { GetCoverage_coverageTable_data_coverageData as CoverageBusiness } from '../../generated/GetCoverage';
+import { GetMap_mapTable_data_coverageData as MapBusiness } from '../../generated/GetMap';
 import { PinInfoBox } from '../../components';
 
 type LatLng = google.maps.LatLng;
 
 type Props = {
-  data: Array<MergedCoverageData>;
-  selectedBusiness?: CoverageBusiness;
+  data: Array<MergedMapData>;
+  selectedBusiness?: MapBusiness;
   onInfoBoxPress?: (param: MapInfoboxPressParam) => void;
 };
 
@@ -132,9 +132,7 @@ function pinSymbol(color: string) {
   };
 }
 
-function getFlatLocations(
-  data: Array<MergedCoverageData>,
-): Array<LocationLatLng> {
+function getFlatLocations(data: Array<MergedMapData>): Array<LocationLatLng> {
   let locations: Array<LocationLatLng> = [];
 
   data.forEach((item) =>
@@ -153,7 +151,7 @@ const WithGoogleMap = withGoogleMap(CoverageMap);
 export default (props: Props) => {
   return (
     <WithGoogleMap
-      containerElement={<View flex style={{ minHeight: 200 }} />}
+      containerElement={<View flex />}
       mapElement={<View flex />}
       {...props}
     />
