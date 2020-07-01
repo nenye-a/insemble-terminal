@@ -130,16 +130,16 @@ def logic_handler(company, address, city, contact_type):
 
     # if type municipality
     if 'public sector' in contact_type:
-        return None, None
+        return None
 
     # if type scholar
     if ('academic institution' or 'student') in contact_type:
-        return None, None
+        return None
 
     # if type people researcher
     if ('Consumer/Market Research'.lower() or 'Financial/Investment Services'.lower() or
             'Parking and Traffic'.lower()) in contact_type:
-        return None, None
+        return None
 
     # if type services
     if ('advertising/marketing/pr' or 'architecture/design/engineering' or
@@ -148,11 +148,11 @@ def logic_handler(company, address, city, contact_type):
             'maintenance' or 'other business services' or 'personell services' or
             'press/media' or 'publications/publishers' or 'trade association' or
             'utilities/telecommunication') in contact_type:
-        return None, None
+        return None
 
     # TODO check to see if city is something within our viewports
 
-    return None, None
+    return None
 
 
 def process_retailer(company, user_location):
@@ -452,23 +452,32 @@ def process_landlord(address, city, location):
     query_list = []
     text_list = []
 
-    #### Does this person deserve to be paying a higher rent? Should they be getting extra benefits due to high activity? ####
+    # Does this person deserve to be paying a higher rent?
+    # Should they be getting extra benefits due to high activity? ####
     # find retail with the highest brand_index in the local vicinity
     print("Finding retail with the highest brand index near user location")
-    matches = utils.DB_TERMINAL_PLACES.find(
-        {"location": {"$near": {"$geometry": location, "$maxDistance": SEARCH_RADIUS}}})
+    matches = utils.DB_TERMINAL_PLACES.find({
+        "location": {"$near": {
+            "$geometry": location,
+            "$maxDistance": SEARCH_RADIUS
+        }},
+        "activity_volume": {'$gt': 0}
+    })
     if not matches:
         print("No retail found in area for {}, {}".format(address, city))
         return []
-    BRAND_IDX_RESULTS = 25
-    potential_bases = first_with_activity(matches, BRAND_IDX_RESULTS)
-    base_brand = [entry for entry in
-                  reversed(
-                      sorted(potential_bases, key=lambda item: item['activity_volume'] / item['brand_volume']
-                             if item['activity_volume'] is not None else 0))][0]
-    base_brand_county = list(utils.DB_REGIONS.find({"type": "county", "geometry": {
-        "$near": {"$geometry": base_brand['location'], "$maxDistance": 10000}}}))[0][
-        'name'].replace(" -", ",")  # TODO: may need to error check if counties are blank
+    potential_bases = matches[:25]
+    base_brand = [entry for entry in reversed(sorted(
+        potential_bases,
+        key=lambda item: item['activity_volume'] / item['brand_volume']
+        if item['activity_volume'] is not None else 0
+    ))][0]
+
+    base_brand_county = list(utils.DB_REGIONS.find({
+        "type": "county", "geometry": {"$near": {
+            "$geometry": base_brand['location'],
+            "$maxDistance": 10000}}
+    }))[0]['name'].replace(" -", ",")  # TODO: may need to error check if counties are blank
 
     rent_comp_searches = []
     rent_comp_searches.append({
@@ -484,27 +493,40 @@ def process_landlord(address, city, location):
         'business_tag': {'type': 'CATEGORY', 'params': base_brand['type']}
     })
 
-    # Add the activity and performance breakdown for a brand that is likely doing well in the shopping center
+    # Add the activity and performance breakdown for a brand
+    # that is likely doing well in the shopping center
     query_list.append(("ACTIVITY", {"searches": rent_comp_searches}))
-    text_list.append(
-        "SECT: How do I put myself in the best position possible when dealing with tenants?")
-    text_list.append("Whether you're negotiating rent, tracking percentage rent deals, or deciding whether to continue "
-                     "spending on a particular tenant, it's best to be informed on their current customer draw. Here, "
-                     "we use mobile and web data to provide insight on how customers are attending this {} compared to "
-                     "other {} in {}. Typically, when a retailer's one location is higher than it's average, they "
-                     "may pay a higher rent to keep the strong unit.".format(base_brand['name'], base_brand['type'], base_brand_county))
+    query_list.append(("NOTE", {
+        "title": "How do I put myself in the best position possible when dealing with tenants?",
+        "content": ("Whether you're negotiating rent, tracking percentage rent deals, or deciding "
+                    "whether to continue pending on a particular tenant, it's best to be informed "
+                    "on their current customer draw. Here, we use mobile and web data to provide "
+                    "insight on how customers are attending this {} compared to other {} in {}. "
+                    "Typically, when a retailer's one location is higher than it's average, they "
+                    "may pay a higher rent to keep the strong unit."
+                    .format(base_brand['name'], base_brand['type'], base_brand_county))
+    }))
+
     query_list.append(
         ("PERFORMANCE", {"searches": rent_comp_searches, "performance_type": "OVERALL"}))
-    text_list.append(
-        "SECT: How do I put myself in the best position possible when dealing with tenants?")
-    text_list.append("We even break it down further to show you how {} is performing at different scopes. You can "
-                     "hover over the information bubble at the top of the table for more detail.")
+    query_list.append(("NOTE", {
+        "title": "How do I put myself in the best position possible when dealing with tenants?",
+        "content": (f"We even break it down further to show you how {base_brand['name']} "
+                    "is performing at different scopes. You can hover over the information "
+                    "bubble at the top of the table for more detail.")
+    }))
 
-    #### How are customers going to my shopping area & where are the inefficiencies? What tenants to go after? ####
+    # How are customers going to my shopping area & where
+    # are the inefficiencies? What tenants to go after? ####
     # find the retail near initial brand
-    near_base_matches = utils.DB_TERMINAL_PLACES.find(
-        {"location": {"$near": {"$geometry": base_brand['location'], "$maxDistance": SEARCH_RADIUS}}})
-    nearby_brands = first_with_activity(near_base_matches, NUM_CENTER_COMPS)
+    near_base_matches = utils.DB_TERMINAL_PLACES.find({
+        "location": {"$near": {
+            "$geometry": base_brand['location'],
+            "$maxDistance": SEARCH_RADIUS
+        }},
+        "activity_volume": {"$gt": 0}
+    })
+    nearby_brands = near_base_matches[:NUM_CENTER_COMPS]
 
     # add to query list
     print("Adding desired tenant queries")
@@ -517,13 +539,15 @@ def process_landlord(address, city, location):
         })
 
     query_list.append(("MAP", {"searches": nearby_retail_searches}))
-    text_list.append("SECT: Map")
-    text_list.append(
-        "Similarly for surrounding retail, we can analyze customer flow through a shopping area.")
-    query_list.append(("ACTIVITY", {"searches": nearby_retail_searches}))
+    query_list.append(("NOTE", {
+        "title": "Map",
+        "content": ("Similarly for surrounding retail, we can analyze customer "
+                    "flow through a shopping area.")
+    }))
 
     activity_id = helper.activity_graph(nearby_retail_searches)
     activity_data = gql.get_activity(table_id=activity_id, poll=True)
+    query_list.append(("ACTIVITY", activity_id))
 
     base_data = activity_data['table']['data']
     compare_data = activity_data['table']['compareData']
@@ -560,27 +584,31 @@ def process_landlord(address, city, location):
         hours_sentance = ', '.join(hours_sentance[:-1])
         hours_sentance += ', and ' + hours_sentance[-1]
 
-    text_list.append(
-        "SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
-    text_list.append("Here you'll see some stores near our initial {base_brand} that may have "
-                     "some customer overlap. Most of the customers here are coming {hours_sentance}, "
-                     "and the largest contributor of customers on an average day in 2020 is "
-                     "{largest_contributer}. Anyone sourcing tenants for this shopping area may "
-                     "want to find a similar brand as {largest_contributer}, a cotenant of theirs, "
-                     "or brands that have presence in the {suggested_time} to compliment the "
-                     "customer traffic in the shopping center".format(
-                         base_brand=base_brand['name'],
-                         hours_sentance=hours_sentance,
-                         largest_contributer=largest_contributor,
-                         suggested_time=suggested_time
-                     ))
+    query_list.append(("NOTE", {
+        "title": "How are customers moving through my shopping center, and what tenants should I be seeking out?",
+        "content": ("Here you'll see some stores near our initial {base_brand} that may have "
+                    "some customer overlap. Most of the customers here are coming {hours_sentance}, "
+                    "and the largest contributor of customers on an average day in 2020 is "
+                    "{largest_contributer}. Anyone sourcing tenants for this shopping area may "
+                    "want to find a similar brand as {largest_contributer}, a cotenant of theirs, "
+                    "or brands that have presence in the {suggested_time} to compliment the "
+                    "customer traffic in the shopping center".format(
+                        base_brand=base_brand['name'],
+                        hours_sentance=hours_sentance,
+                        largest_contributer=largest_contributor,
+                        suggested_time=suggested_time
+                    ))
+    }))
 
     query_list.append(
         ("PERFORMANCE", {"searches": nearby_retail_searches, "performance_type": "OVERALL"}))
-    text_list.append(
-        "SECT: How are customers moving through my shopping center, and what tenants should I be seeking out?")
-    text_list.append("Here we can see the stats broken down further for retail near {} at {}".format(base_brand['name'],
-                                                                                                     base_brand['address']))
+
+    query_list.append(("NOTE", {
+        "title": ("How are customers moving through my shopping center, and what "
+                  "tenants should I be seeking out?"),
+        "content": ("Here we can see the stats broken down further for retail "
+                    "near {} at {}".format(base_brand['name'], base_brand['address']))
+    }))
 
     #### Who are the best tenants to go after in the market? ####
     # TODO: make this depend on the category that's missing based on activity profile
@@ -597,13 +625,18 @@ def process_landlord(address, city, location):
         'business_tag': {'type': 'CATEGORY', 'params': category2}
     })
     query_list.append(("PERFORMANCE", {"searches": desired_tenants, "performance_type": "BRAND"}))
-    text_list.append(
-        "SECT: Who are the best {} and {} tenants in the market?".format(category1, category2))
-    text_list.append("If we want to find and contact tenants who are performing well during these times, we can "
-                     "actually look them up and see how their brand is doing in {} here. Again, the performance is "
-                     "based on mobile data and web traffic from consumers, so you're always quick to know how they're "
-                     "currently doing. The Insemble Terminal platform itself has contact information for the tenants "
-                     "as well, if you'd like to reach out to them via phone or email.".format(base_brand_county))
+
+    query_list.append(("NOTE", {
+        "title": "Who are the best {} and {} tenants in the market?".format(category1, category2),
+        "content": ("If we want to find and contact tenants who are performing well "
+                    "during these times, we can actually look them up and see how "
+                    "their brand is doing in {} here. Again, the performance is "
+                    "based on mobile data and web traffic from consumers, so you're "
+                    "always quick to know how they're currently doing. The Insemble "
+                    "Terminal platform itself has contact information for the tenants "
+                    "as well, if you'd like to reach out to them via phone or email."
+                    .format(base_brand_county))
+    }))
 
     #### Where should I invest in new property? ####
 
@@ -639,15 +672,27 @@ def process_landlord(address, city, location):
     text_list.append("SECT: Where may I want to invest in new property or businesses?")
     text_list.append("This is a map of {}s, one of the top performing retail categories in {} currently".format(
         top_category, center_city))  # TODO: descriptions
+
+    query_list.append(("NOTE", {
+        "title": "Where may I want to invest in new property or businesses?",
+        "content": ("This is a map of {}s, one of the top performing "
+                    "retail categories in {} currently".format(top_category, center_city))
+    }))
+
     query_list.append(
         ("PERFORMANCE", {"searches": [category_search], "performance_type": "CATEGORY"}))
-    text_list.append("SECT: Where may I want to invest in new property or businesses?")
-    text_list.append("Here we can see the various retail categories present in {}, sorted by which brands "
-                     "are drawing the most consumers during this part of the year. An item with a higher Volume index "
-                     "typically is doing pretty well compared to others. As before, these categories can also be "
-                     "expanded for specific brands and contact information".format(center_city))
 
-    return (query_list, text_list)
+    query_list.append(("NOTE", {
+        "title": "Where may I want to invest in new property or businesses?",
+        "content": ("Here we can see the various retail categories present in "
+                    "{}, sorted by which brands are drawing the most consumers "
+                    "during this part of the year. An item with a higher Volume "
+                    "index typically is doing pretty well compared to others. As "
+                    "before, these categories can also be expanded for specific "
+                    "brands and contact information".format(center_city))
+    }))
+
+    return query_list
 
 
 def process_broker(location):
@@ -929,9 +974,9 @@ if __name__ == "__main__":
         print(find_nearby_competitor_with_activity(brand, category, location))
 
     # test_find_competitor_with_activity()
-    # filename = THIS_DIR + '/files/icsc_emails_short_owner.csv'
+    filename = THIS_DIR + '/files/icsc_emails_short_owner_test.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
-    filename = THIS_DIR + '/files/icsc_emails_short_retailer_test.csv'
+    # filename = THIS_DIR + '/files/icsc_emails_short_retailer_test.csv'
     personal_reports(filename)
 
     # test_activity_dict = {'Subway': [{'name': '4AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 25}, {'name': '10AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 44}, {'name': '11AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '12PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 72}, {'name': '1PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '2PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 63}, {'name': '3PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 64}, {'name': '4PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '5PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 68}, {'name': '6PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 58}, {'name': '7PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 46}, {'name': '8PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 32}, {'name': '9PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Subway (74 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Rocksalt Grille': [{'name': '4AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '7AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '8AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '9AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 14}, {'name': '12PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 22}, {'name': '1PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 26}, {'name': '2PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 28}, {'name': '3PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 31}, {'name': '4PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 39}, {'name': '5PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '6PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 48}, {'name': '7PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 36}, {'name': '8PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 20}, {'name': '9PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '10PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '11PM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '12AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '1AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '2AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}, {'name': '3AM', 'business': 'Rocksalt Grille (65 W Main St, Westminster, MD 21157)', 'amount': 0}], 'Esquire Hair Replacement Center LLC': [{'name': '4AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '5AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {'name': '6AM', 'business': 'Esquire Hair Replacement Center LLC (83 W Main St #2, Westminster, MD 21157)', 'amount': 0}, {
