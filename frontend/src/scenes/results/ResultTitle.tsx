@@ -220,12 +220,12 @@ export default function ResultTitle(props: Props) {
         )}
         {isTerminalScene && resultTitle && (
           <>
-            <Title> | </Title>
+            <Title style={{ paddingLeft: 8, paddingRight: 8 }}>|</Title>
             <SubTitle>{resultTitle}</SubTitle>
           </>
         )}
       </Row>
-      <Row flex style={{ justifyContent: 'flex-end' }}>
+      <Row style={{ minWidth: 100, justifyContent: 'flex-end' }}>
         {isDesktop && formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
@@ -357,6 +357,7 @@ const Container = styled(View)<ContainerProps>`
   justify-content: space-between;
   align-items: center;
   position: relative;
+  flex: 1;
 `;
 
 const Title = styled(Text)<TitleProps>`
