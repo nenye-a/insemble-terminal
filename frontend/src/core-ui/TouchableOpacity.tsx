@@ -39,6 +39,7 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
       {...otherProps}
       onClick={(event: MouseEvent) => {
         if (stopPropagation) {
+          event.preventDefault();
           event.stopPropagation();
         }
         if (isLocalLink && !(event.metaKey || event.ctrlKey)) {
