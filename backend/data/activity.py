@@ -17,7 +17,6 @@ def activity(name, address):
     if place and place['google_details']['activity']:
         activity = place['google_details']['activity']
     else:
-        print('here')
         return None
 
     name = place['name']
