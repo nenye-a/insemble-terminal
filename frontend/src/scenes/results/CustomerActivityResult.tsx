@@ -62,9 +62,7 @@ export default function CustomerActivityResult(props: Props) {
     sortOrder,
     true,
   );
-  let noData =
-    !data?.activityTable.table?.data ||
-    data?.activityTable.table.data.length === 0;
+  let noData = coloredData.length === 0;
 
   useEffect(() => {
     if (
