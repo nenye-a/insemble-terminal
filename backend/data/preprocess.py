@@ -20,8 +20,8 @@ def preprocess(business_name):
         return utils.adjust_case(business_name)
 
 
-def get_matching_name(word):
-    word = utils.alpanumeric(word)
+def get_matching_name(original_word):
+    word = utils.alpanumeric(original_word)
     matches = process.extractBests(word, NAMES, score_cutoff=80)
     for match in matches.copy():
         # Remove any words that do not start with this item.
@@ -29,10 +29,17 @@ def get_matching_name(word):
             matches.remove(match)
     if matches:
         word_length = len(word)
-        best_word = "word".join([word for x in range(14)])
+        best_word_length = 2000
+        best_word = None
         for match in matches:
-            if abs(len(match[0]) - word_length) < abs(len(best_word) - word_length):
+            match_length = len(utils.alpanumeric(match[0]))
+            if abs(match_length - word_length) < abs(best_word_length - word_length):
                 best_word = match[0]
+                best_word_length = match_length
+        word_diff = word_length - best_word_length
+        if word_diff < -2 or word_diff > 5:
+            return None
+
         return best_word
     return None
 
@@ -118,6 +125,8 @@ if __name__ == "__main__":
     print(preprocess('Pap[]a Jo-hn\'s'))
     print(preprocess('Retail'))
     print(preprocess('California Pizza'))
+    print(preprocess('Sandwich Shop'))
+    print(preprocess('Chinese Cafe'))
     # # print(process.extractBests("Papa Johns", NAMES))
     # print(time.time() - start)
     # pass

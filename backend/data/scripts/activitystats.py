@@ -8,8 +8,6 @@ sys.path.append(BASE_DIR)
 import requests
 import utils
 import pandas as pd
-import pprint
-from billiard.pool import Pool
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 GENERATED_PATH = THIS_DIR + '/files/activity_generated/'

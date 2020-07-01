@@ -23,7 +23,7 @@ MILES_TO_METERS_FACTOR = 1609.34
 EARTHS_RADIUS_MILES = 3958.8
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
-ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
+ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})?'
 AMPERSAND = '\\\\u0026'
 AMPERSAND2 = '&amp;'
 APOSTROPHE = '&#39;'
@@ -47,6 +47,7 @@ DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
 DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
 DB_UNSUBSCRIBED = SYSTEM_MONGO.get_collection(mongo.UNSUBSCRIBED)
 DB_FEEDS = SYSTEM_MONGO.get_collection(mongo.FEEDS)
+DB_DOMAINS = SYSTEM_MONGO.get_collection(mongo.DOMAINS)
 BWE = mongo.BulkWriteError
 
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
@@ -181,6 +182,21 @@ def create_index(collection):
         DB_STATS.create_index([('stat_name', 1)], unique=True)
     if collection.lower() == 'misc':
         DB_MISC.create_index([('name', 1)], unique=True)
+    if collection.lower() == 'domains':
+        DB_DOMAINS.create_index([('domain', 1)], unique=True)
+        DB_DOMAINS.create_index([('companies', 1)])
+
+
+def db_index(collection, *indices, **kwargs):
+    """
+    Provided a collection object and a list of index strings, will create indexes.
+    supports both compound and singular indexes. supports all native pymongo
+    keyword arguments (i.e. unique, partialFilterExpression, background, sparse, etc.)
+    """
+    index_request = []
+    for index in indices:
+        index_request.append((index, 1))
+    collection.create_index(index_request, **kwargs)
 
 
 def meters_to_miles(meters):
@@ -378,7 +394,7 @@ def get_alternative_source(key, preffered_dict, default_dict):
 
 def fuzzy_match(query, target):
     ratio = fuzz.WRatio(query, target)
-    if ratio > 80:
+    if ratio >= 80:
         return True
     else:
         print("Fuzzymatch failed. Ratio: {} | Query: {} | Target: {}".format(ratio, query, target))
@@ -448,6 +464,26 @@ def extract_state(address):
         return None
 
 
+def extract_city_state(address, mode='all'):
+    finder = re.compile(ADDRESS_END_REGEX)
+    match_list = finder.findall(address)
+    if not match_list:
+        return None
+
+    match = [word.strip() for word in match_list[-1]]
+
+    if mode == 'all':
+        return '{city}, {state}'.format(
+            city=match[0], state=match[1]
+        )
+    elif mode == 'city':
+        return match[0]
+    elif mode == 'state':
+        return match[1]
+    else:
+        return None
+
+
 def state_code_to_name(state_code):
     return STATE_DICT.loc[state_code]['State']
 
@@ -463,6 +499,11 @@ def unsubscribe(email_list):
             '$each': email_list
         }
     }})
+
+
+def strip_parantheses_context(word):
+    matcher = re.compile(r' \([^\(]+\)$')
+    return matcher.sub('', word)
 
 
 def dictionary_diff(previous, new, replaced=True):
@@ -553,7 +594,7 @@ def remove_name_ats(name):
 
 def inbool(item: dict, key: str):
     """Will check if key id in dict and contains a valid item"""
-    return key in item and item[key]
+    return item and key in item and item[key]
 
 
 def section_by_key(list_items, key):
@@ -638,3 +679,8 @@ if __name__ == "__main__":
         print("1 -> 2\n{}\n".format(dictionary_diff(dict1, dict2)))
         print("2 -> 1\n{}\n".format(dictionary_diff(dict2, dict1)))
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
+
+    def test_extract_city_state():
+        print(extract_city_state('Los Angeles, CA 902123, USA'))
+        print(extract_city_state('Los Angeles, CA 902123, USA', 'city'))
+        print(extract_city_state('Los Angeles, CA 901293', 'state'))

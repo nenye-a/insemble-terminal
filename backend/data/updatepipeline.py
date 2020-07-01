@@ -160,3 +160,4 @@ if __name__ == "__main__":
     # setup_confidence()
     # proximity_update('confidence', wait=False)
     proximity_update('volume', wait=False)
+    # merge_update()
