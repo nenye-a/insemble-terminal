@@ -96,6 +96,7 @@ export default function TerminalCard(props: Props) {
         }}
         href={`/terminals/${id}`}
         disabled={isLandingPage}
+        stopPropagation={true}
         {...otherProps}
       >
         <TitleContainer>

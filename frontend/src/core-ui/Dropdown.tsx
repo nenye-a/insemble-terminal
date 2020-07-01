@@ -82,10 +82,10 @@ export default function Dropdown<T>(props: Props<T>) {
       let foundObj = options.find(
         (item) => optionExtractor(item) === inputValue,
       );
-      if (foundObj) {
-        closeMenu();
-      }
       onOptionSelected(foundObj || inputValue || null);
+    },
+    onSelectedItemChange: () => {
+      closeMenu();
     },
   });
 
