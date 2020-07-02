@@ -48,7 +48,8 @@ def google_detail_parser(response):
     NAME_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+<'
 
     try:
-        name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+        name = re.search(NAME_RX, re.search(NAME_NARROW_RX, re.search(
+            NAME_LOCATOR_RX, stew).group()).group()).group()[1:-1]
     except Exception:
         name = None
 
@@ -56,7 +57,8 @@ def google_detail_parser(response):
     CLOSE_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
-        closed_indicator = re.search(CLOSE_NARROW_RX, re.search(CLOSED_LOCATOR_RX, stew).group()).group()[1:]
+        closed_indicator = re.search(CLOSE_NARROW_RX, re.search(
+            CLOSED_LOCATOR_RX, stew).group()).group()[1:]
     except Exception:
         closed_indicator = None
 
@@ -64,7 +66,8 @@ def google_detail_parser(response):
     WEBSITE_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
     WEBSITE_RX = r'"[\'"]?([^\'" >]+)"'
     try:
-        website = re.search(WEBSITE_RX, re.search(WEBSITE_NARROW_RX, re.search(WEBSITE_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+        website = re.search(WEBSITE_RX, re.search(WEBSITE_NARROW_RX, re.search(
+            WEBSITE_LOCATOR_RX, stew).group()).group()).group()[1:-1]
     except Exception:
         website = None
 
@@ -78,7 +81,8 @@ def google_detail_parser(response):
     NUM_REVIEWS_LOCATOR_RX = r'<span>[\d\,\s]+Google reviews<\/span>'
     NUM_REVIEWS_RX = r'[\d\,]+'
     try:
-        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(NUM_REVIEWS_LOCATOR_RX, stew).group()).group().replace(",", ""))
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.search(
+            NUM_REVIEWS_LOCATOR_RX, stew).group()).group().replace(",", ""))
     except Exception:
         num_reviews = None
 
@@ -93,7 +97,8 @@ def google_detail_parser(response):
     TYPE_NARROW_RX = r'>[\w\s\,\-]+<'
     TYPE_RX = r'[\w\s\,\-]+'
     try:
-        type = re.search(TYPE_RX, re.search(TYPE_NARROW_RX, re.search(TYPE_LOCATOR_RX, stew).group()).group()).group()
+        type = re.search(TYPE_RX, re.search(TYPE_NARROW_RX, re.search(
+            TYPE_LOCATOR_RX, stew).group()).group()).group()
     except Exception:
         type = None
 
@@ -130,7 +135,8 @@ def google_detail_parser(response):
         OPERATIONS_LOCATOR_RX = r'class="A4D4f" aria-label="[\w\-\s\=]+"'
         try:
             operations_options = [
-                re.search(OPERATIONS_RX, re.search(OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
+                re.search(OPERATIONS_RX, re.search(
+                    OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
                 for located_rx in re.findall(OPERATIONS_LOCATOR_RX, stew)]
             operations = {"dine_in": operations_options[0],
                           "takeout": operations_options[1],
@@ -148,7 +154,8 @@ def google_detail_parser(response):
     HOURS_LOCATOR_RX = r'<td class="SKNSIb">[\w\']+<\/td><td>[\w\–\:]+<\/td>'
     HOURS_NARROWER_RX = r'>[\w\–\'\:]+<'
     try:
-        bracket_schedule = [tuple(re.findall(HOURS_NARROWER_RX, day_schedule)) for day_schedule in re.findall(HOURS_LOCATOR_RX, stew)]
+        bracket_schedule = [tuple(re.findall(HOURS_NARROWER_RX, day_schedule))
+                            for day_schedule in re.findall(HOURS_LOCATOR_RX, stew)]
         hours = {day[1:-1]: opentime[1:-1] for (day, opentime) in bracket_schedule}
     except Exception:
         hours = None
@@ -157,7 +164,8 @@ def google_detail_parser(response):
     MENU_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
     MENU_RX = r'"[\'"]?([^\'" >]+)"'
     try:
-        menu_link = re.search(MENU_RX, re.search(MENU_NARROW_RX, re.search(MENU_LOCATOR_RX, stew).group()).group()).group()[1:-1]
+        menu_link = re.search(MENU_RX, re.search(MENU_NARROW_RX, re.search(
+            MENU_LOCATOR_RX, stew).group()).group()).group()[1:-1]
     except Exception:
         menu_link = None
 
@@ -170,7 +178,8 @@ def google_detail_parser(response):
         PHONE_LOCATOR_RX = r'Phone<\/a>(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$])|(\>)|(<a )|(<\/a>)|(<span)|(<\/span))+'
         PHONE_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$]+'
         try:
-            phone = re.search(PHONE_NARROW_RX, re.search(PHONE_LOCATOR_RX, stew).group()).group()[1:]
+            phone = re.search(PHONE_NARROW_RX, re.search(
+                PHONE_LOCATOR_RX, stew).group()).group()[1:]
         except Exception:
             phone = None
 
@@ -215,13 +224,17 @@ def google_detail_parser(response):
         # find the 18, 20, 22 or 24 hour activity distribution,depending on which is present
         data = []
         hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_18_HOURS, stew)]
-        if hour_list: data.append(hour_list)
+        if hour_list:
+            data.append(hour_list)
         hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_20_HOURS, stew)]
-        if hour_list: data.append(hour_list)
+        if hour_list:
+            data.append(hour_list)
         hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_22_HOURS, stew)]
-        if hour_list: data.append(hour_list)
+        if hour_list:
+            data.append(hour_list)
         hour_list = [list(ast.literal_eval(item)) for item in re.findall(REGEX_24_HOURS, stew)]
-        if hour_list: data.append(hour_list)
+        if hour_list:
+            data.append(hour_list)
 
         activity = data
     except Exception:
@@ -291,14 +304,16 @@ def google_company_parser(response):
     CATEGORY_NARROW_RX = r'>[\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#]+<'
 
     try:
-        category = re.search(CATEGORY_NARROW_RX, re.search(CATEGORY_LOCATOR_RX, stew).group()).group()[1:-1]
+        category = re.search(CATEGORY_NARROW_RX, re.search(
+            CATEGORY_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
         category = None
 
     WEBSITE_LOCATOR_RX = r'class="ellip">[\'"]?([^\'" >]+)'
     WEBSITE_NARROW_RX = r'>[\'"]?([^\'" >]+)<'
     try:
-        website = re.search(WEBSITE_NARROW_RX, re.search(WEBSITE_LOCATOR_RX, stew).group()).group()[1:-1]
+        website = re.search(WEBSITE_NARROW_RX, re.search(
+            WEBSITE_LOCATOR_RX, stew).group()).group()[1:-1]
     except Exception:
         website = None
 
@@ -316,7 +331,8 @@ def google_company_parser(response):
     HEADQUARTERS_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/\']+'
 
     try:
-        headquarters = re.search(HEADQUARTERS_NARROW_RX, re.search(HEADQUARTERS_LOCATOR_RX, stew).group()).group()[1:]
+        headquarters = re.search(HEADQUARTERS_NARROW_RX, re.search(
+            HEADQUARTERS_LOCATOR_RX, stew).group()).group()[1:]
     except:
         headquarters = None
 
@@ -324,7 +340,8 @@ def google_company_parser(response):
     REVENUE_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
 
     try:
-        revenue = utils.format_punct(re.search(REVENUE_NARROW_RX, re.search(REVENUE_LOCATOR_RX, stew).group()).group()[1:])
+        revenue = utils.format_punct(re.search(REVENUE_NARROW_RX, re.search(
+            REVENUE_LOCATOR_RX, stew).group()).group()[1:])
     except:
         revenue = None
 
@@ -332,7 +349,8 @@ def google_company_parser(response):
     EMPLOYEES_NARROW_RX = r'>[\s\w\=\"\;\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\/]+'
 
     try:
-        num_employees = re.search(EMPLOYEES_NARROW_RX, re.search(EMPLOYEES_LOCATOR_RX, stew).group()).group()[1:]
+        num_employees = re.search(EMPLOYEES_NARROW_RX, re.search(
+            EMPLOYEES_LOCATOR_RX, stew).group()).group()[1:]
     except:
         num_employees = None
 
@@ -429,7 +447,8 @@ def opentable_parser(response):
     RATING_RX = r'"[\w\s\.]+"'
     try:
         # TODO: check that ratings are always out of 5 stars
-        rating = re.search(RATING_RX, re.search(RATING_NARROW_RX, re.findall(RATING_LOCATOR_RX, stew)[0]).group()).group()[1:-1]
+        rating = re.search(RATING_RX, re.search(RATING_NARROW_RX, re.findall(
+            RATING_LOCATOR_RX, stew)[0]).group()).group()[1:-1]
         rating = utils.get_one_float_from_str(rating)
     except Exception:
         rating = None
@@ -443,14 +462,16 @@ def opentable_parser(response):
     NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
     NUM_REVIEWS_RX = r'\(\d+\)'
     try:
-        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1].replace(",", ""))
+        num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(
+            NUM_REVIEWS_LOCATOR, stew)[0]).group()[1:-1].replace(",", ""))
     except Exception:
         num_reviews = None
 
     PRICE_LOCATOR_RX = r'class="pricing--the-price">[\$\s]+'
     PRICE_RX = r'>[\$\s]+'
     try:
-        price_tier = re.search(PRICE_RX, re.findall(PRICE_LOCATOR_RX, stew)[0]).group()[1:].replace(" ", "")
+        price_tier = re.search(PRICE_RX, re.findall(PRICE_LOCATOR_RX, stew)
+                               [0]).group()[1:].replace(" ", "")
     except Exception:
         price_tier = None
 
@@ -469,7 +490,8 @@ def opentable_parser(response):
         neighborhood = None
 
     try:
-        dist_from_query = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[1]).group()[1:]
+        dist_from_query = re.search(LOCATION_RX, re.findall(
+            LOCATION_LOCATOR_RX, stew)[1]).group()[1:]
     except Exception:
         dist_from_query = None
 
@@ -552,7 +574,8 @@ def opentable_parser_all(response):
         RATING_RX = r'"[\w\s\.]+"'
         try:
             # TODO: check that ratings are always out of 5 stars
-            rating = re.search(RATING_RX, re.search(RATING_NARROW_RX, re.findall(RATING_LOCATOR_RX, stew)[i]).group()).group()[1:-1]
+            rating = re.search(RATING_RX, re.search(RATING_NARROW_RX, re.findall(
+                RATING_LOCATOR_RX, stew)[i]).group()).group()[1:-1]
             rating = utils.get_one_float_from_str(rating)
         except Exception:
             rating = None
@@ -566,14 +589,16 @@ def opentable_parser_all(response):
         NUM_REVIEWS_LOCATOR = r'class="underline-hover">\(\d+\)'
         NUM_REVIEWS_RX = r'\(\d+\)'
         try:
-            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1].replace(",", ""))
+            num_reviews = int(re.search(NUM_REVIEWS_RX, re.findall(
+                NUM_REVIEWS_LOCATOR, stew)[i]).group()[1:-1].replace(",", ""))
         except Exception:
             num_reviews = None
 
         PRICE_LOCATOR_RX = r'class="pricing--the-price">[\$\s]+'
         PRICE_RX = r'>[\$\s]+'
         try:
-            price_tier = re.search(PRICE_RX, re.findall(PRICE_LOCATOR_RX, stew)[i]).group()[1:].replace(" ", "")
+            price_tier = re.search(PRICE_RX, re.findall(PRICE_LOCATOR_RX, stew)[
+                                   i]).group()[1:].replace(" ", "")
         except Exception:
             price_tier = None
 
@@ -587,12 +612,14 @@ def opentable_parser_all(response):
         LOCATION_LOCATOR_RX = r'class="rest-row-meta--location rest-row-meta-text sfx1388addContent">[\w\s\,\-\&\'\.\/]+'
         LOCATION_RX = r'>[\w\s\,\-\&\'\.\/]+'
         try:
-            neighborhood = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2 * i]).group()[1:]
+            neighborhood = re.search(LOCATION_RX, re.findall(
+                LOCATION_LOCATOR_RX, stew)[2 * i]).group()[1:]
         except Exception:
             neighborhood = None
 
         try:
-            dist_from_query = re.search(LOCATION_RX, re.findall(LOCATION_LOCATOR_RX, stew)[2 * i + 1]).group()[1:]
+            dist_from_query = re.search(LOCATION_RX, re.findall(
+                LOCATION_LOCATOR_RX, stew)[2 * i + 1]).group()[1:]
         except Exception:
             dist_from_query = None
 
@@ -652,7 +679,8 @@ def google_news_parser(response):
         beef = match.group()
 
         try:
-            og_title = re.search(TITLE_NARROW_RX, re.search(TITLE_LOCATOR_RX, beef).group()).group()[1:]
+            og_title = re.search(TITLE_NARROW_RX, re.search(
+                TITLE_LOCATOR_RX, beef).group()).group()[1:]
             title = utils.format_punct(og_title)
         except Exception:
             title = None
@@ -664,18 +692,24 @@ def google_news_parser(response):
             link = None
 
         try:
-            source = utils.format_punct(re.search(SOURCE_NARROW_RX, re.search(SOURCE_LOCATOR_RX, beef).group()).group()[1:])
+            source = utils.format_punct(re.search(SOURCE_NARROW_RX, re.search(
+                SOURCE_LOCATOR_RX, beef).group()).group()[1:])
+            if source.lower() in ['3rd watch news', 'cole of duty', 'marijuana moment']:
+                # Banned News. NOTE: should potentially move list to database
+                continue
         except Exception:
             source = None
 
         try:
-            published = tparser.parse(re.search(PUBLISHED_NARROW_RX, re.search(PUBLISHED_LOCATOR_RX, beef).group()).group()[1:])
+            published = tparser.parse(re.search(PUBLISHED_NARROW_RX, re.search(
+                PUBLISHED_LOCATOR_RX, beef).group()).group()[1:])
         except Exception:
             # TODO: Do we actually continue if we don't have a published date?
             continue
 
         try:
-            description = utils.format_punct(re.search(DESCRIPTION_NARROW_RX, re.search(DESCRIPTION_LOCATOR_RX, beef).group()).group()[1:])
+            description = utils.format_punct(re.search(DESCRIPTION_NARROW_RX, re.search(
+                DESCRIPTION_LOCATOR_RX, beef).group()).group()[1:])
         except Exception:
             description = None
 
@@ -688,7 +722,7 @@ def google_news_parser(response):
             "description": description,
         }
         results.append(item)
-    # return remove_old_news(results)
+
     return results
 
 
@@ -724,11 +758,13 @@ def california_entity_parser(response):
 
     for beef in re.finditer(ENTITY_LOCATOR_RX, stew):
         entry = {}
-        columns = iter(["entity_number", "registration_date", "status", "entity_name", "jurisdiction", "agent"])
+        columns = iter(["entity_number", "registration_date", "status",
+                        "entity_name", "jurisdiction", "agent"])
         for tomato in re.finditer(TABLE_CONTENT_RX, beef.group()):
             rice = tomato.group()[4:].strip()
             try:
-                item = re.search(ENTITY_NAME_NARROW_RX, re.search(ENTITY_NAME_LOCATOR_RX, rice).group()).group()[1:]
+                item = re.search(ENTITY_NAME_NARROW_RX, re.search(
+                    ENTITY_NAME_LOCATOR_RX, rice).group()).group()[1:]
             except:
                 item = rice
 
