@@ -1,6 +1,8 @@
 import React, { useState, useEffect, ComponentProps, ReactNode } from 'react';
 import { useCombobox } from 'downshift';
 import styled, { css } from 'styled-components';
+import VirtualList from 'react-tiny-virtual-list';
+import { ALIGNMENT } from 'react-tiny-virtual-list/types/constants';
 
 import {
   HIGHLIGHTED_DROPDOWN,
@@ -21,6 +23,7 @@ import { useViewport } from '../helpers';
 import TextInput from './TextInput';
 import TouchableOpacity from './TouchableOpacity';
 import Text from './Text';
+import View from './View';
 
 type Props<T> = {
   options: Array<T>;
@@ -60,6 +63,7 @@ export default function Dropdown<T>(props: Props<T>) {
     getInputProps,
     getComboboxProps,
     openMenu,
+    closeMenu,
   } = useCombobox({
     items: inputItems,
     itemToString: optionExtractor,
@@ -80,6 +84,9 @@ export default function Dropdown<T>(props: Props<T>) {
       );
       onOptionSelected(foundObj || inputValue || null);
     },
+    onSelectedItemChange: () => {
+      closeMenu();
+    },
   });
 
   useEffect(() => {
@@ -87,77 +94,90 @@ export default function Dropdown<T>(props: Props<T>) {
   }, [selectedOption, optionExtractor]);
 
   return (
-    <TouchableOpacity
-      flex
-      {...getComboboxProps()}
-      onPress={openMenu}
-      disabled={disabled}
-      style={{ zIndex: 9999 }}
-    >
-      <InputContainer
-        {...getInputProps({
-          onChange: (e) => {
-            setInputValue(e.currentTarget.value);
-          },
-          value: inputValue,
-          onKeyDown: (e) => {
-            if (
-              e.keyCode === 8 &&
-              selectedOption != null &&
-              typeof selectedOption === 'object' &&
-              ((selectedOption as unknown) as object).hasOwnProperty('id')
-            ) {
-              onOptionSelected(null);
-            }
-          },
-        })}
-        placeholder={placeholder}
-        hasSelection={!!selectedOption}
-        {...(selectedOption && {
-          style: {
-            caretColor: 'transparent',
-            backgroundColor: disabled ? DISABLED_PILL_COLOR : THEME_COLOR,
-            minWidth: 40,
-            maxWidth: 200,
-            color: WHITE,
-            textAlign: 'center',
-            height: 28,
-            margin: 4,
-          },
-        })}
-        containerStyle={{
-          flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: BACKGROUND_COLOR,
-        }}
-      />
-      <ListContainer {...getMenuProps()} isDesktop={isDesktop}>
-        {isOpen
-          ? inputItems.map((item, index) => (
-              <OptionList
-                key={index}
-                {...getItemProps({
-                  key: index,
-                  index,
-                  item,
-                  style: {
-                    backgroundColor:
-                      highlightedIndex === index ? HIGHLIGHTED_DROPDOWN : WHITE,
-                  },
-                })}
-                isDesktop={isDesktop}
-              >
-                {renderCustomList ? (
-                  renderCustomList(item)
-                ) : (
-                  <Text>{optionExtractor(item)}</Text>
-                )}
-              </OptionList>
-            ))
-          : null}
-      </ListContainer>
-    </TouchableOpacity>
+    <View flex style={{ zIndex: 999 }}>
+      <TouchableOpacity
+        {...getComboboxProps()}
+        onPress={openMenu}
+        disabled={disabled}
+      >
+        <InputContainer
+          {...getInputProps({
+            onChange: (e) => {
+              setInputValue(e.currentTarget.value);
+            },
+            value: inputValue,
+            onKeyDown: (e) => {
+              if (
+                e.keyCode === 8 &&
+                selectedOption != null &&
+                typeof selectedOption === 'object' &&
+                ((selectedOption as unknown) as object).hasOwnProperty('id')
+              ) {
+                onOptionSelected(null);
+                setInputItems(options);
+              }
+            },
+            placeholder,
+            ...(selectedOption && {
+              style: {
+                caretColor: 'transparent',
+                backgroundColor: disabled ? DISABLED_PILL_COLOR : THEME_COLOR,
+                minWidth: 40,
+                maxWidth: 200,
+                color: WHITE,
+                textAlign: 'center',
+                height: 28,
+                margin: 4,
+              },
+            }),
+          })}
+          hasSelection={!!selectedOption}
+          containerStyle={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: BACKGROUND_COLOR,
+          }}
+        />
+        <ListContainer isDesktop={isDesktop}>
+          {isOpen && inputItems.length > 0 ? (
+            <VirtualList
+              width={isDesktop ? 400 : '100%'}
+              scrollToIndex={highlightedIndex || 0}
+              scrollToAlignment={'auto' as ALIGNMENT}
+              height={inputItems.length < 5 ? inputItems.length * 36 : 180}
+              itemCount={inputItems.length}
+              itemSize={36}
+              {...getMenuProps()}
+              renderItem={({ index, style }) => (
+                <OptionList
+                  key={'option' + index}
+                  {...getItemProps({
+                    key: index,
+                    index,
+                    item: inputItems[index],
+                    style: {
+                      ...style,
+                      backgroundColor:
+                        highlightedIndex === index
+                          ? HIGHLIGHTED_DROPDOWN
+                          : WHITE,
+                    },
+                  })}
+                  isDesktop={isDesktop}
+                >
+                  {renderCustomList ? (
+                    renderCustomList(inputItems[index])
+                  ) : (
+                    <Text>{optionExtractor(inputItems[index])}</Text>
+                  )}
+                </OptionList>
+              )}
+            />
+          ) : null}
+        </ListContainer>
+      </TouchableOpacity>
+    </View>
   );
 }
 

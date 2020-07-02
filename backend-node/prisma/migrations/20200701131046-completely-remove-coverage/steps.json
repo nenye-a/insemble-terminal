@@ -1,0 +1,24 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "UpdateEnum",
+      "enum": "TableType",
+      "deletedValues": [
+        "COVERAGE"
+      ]
+    },
+    {
+      "tag": "DeleteModel",
+      "model": "CoverageData"
+    },
+    {
+      "tag": "DeleteModel",
+      "model": "CompareCoverageData"
+    },
+    {
+      "tag": "DeleteModel",
+      "model": "Coverage"
+    }
+  ]
+}

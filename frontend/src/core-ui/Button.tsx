@@ -30,6 +30,8 @@ type Props = ComponentProps<typeof TouchableOpacity> & {
   badgeText?: string;
   loading?: boolean;
   stopPropagation?: boolean;
+  preventDefault?: boolean;
+  iconPlacement?: 'start' | 'end';
 };
 
 export default function Button(props: Props) {
@@ -44,11 +46,26 @@ export default function Button(props: Props) {
     loading,
     disabled,
     stopPropagation,
+    iconPlacement = 'end',
     ...otherProps
   } = props;
+  let isLink = otherProps.href != null;
+  let buttonContent = [
+    <Text
+      key={`button-text-${text}`}
+      as="span"
+      color="white"
+      fontWeight={FONT_WEIGHT_MEDIUM}
+      fontSize={FONT_SIZE_SMALL}
+      {...textProps}
+    >
+      {text}
+    </Text>,
+    icon,
+  ];
   return (
     <Container
-      forwardedAs="button"
+      forwardedAs={isLink ? 'a' : 'button'}
       type="button"
       disabled={loading || disabled}
       mode={mode}
@@ -61,16 +78,7 @@ export default function Button(props: Props) {
         <LoadingIndicator color={mode === 'primary' ? 'white' : 'purple'} />
       ) : (
         <>
-          <Text
-            as="span"
-            color="white"
-            fontWeight={FONT_WEIGHT_MEDIUM}
-            fontSize={FONT_SIZE_SMALL}
-            {...textProps}
-          >
-            {text}
-          </Text>
-          {icon}
+          {iconPlacement === 'start' ? buttonContent.reverse() : buttonContent}
         </>
       )}
     </Container>
@@ -84,6 +92,7 @@ const Container = styled(TouchableOpacity)<Props>`
   flex-direction: row;
   align-items: center;
   outline: none;
+  text-decoration: none;
   border-radius: ${(props) =>
     props.shape === 'round' ? '14px' : DEFAULT_BORDER_RADIUS};
     height: ${(props) =>

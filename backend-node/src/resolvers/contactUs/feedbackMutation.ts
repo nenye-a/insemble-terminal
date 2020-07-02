@@ -34,8 +34,8 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
           },
         });
         break;
-      case 'COVERAGE':
-        table = await context.prisma.coverage.findOne({
+      case 'MAP':
+        table = await context.prisma.map.findOne({
           where: { id: tableId },
           include: {
             businessTag: true,

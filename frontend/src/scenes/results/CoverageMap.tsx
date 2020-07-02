@@ -3,19 +3,24 @@ import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY, THEME_COLOR } from '../../constants/colors';
-import { MergedCoverageData, LocationLatLng } from '../../types/types';
-import { GetCoverage_coverageTable_data_coverageData as CoverageBusiness } from '../../generated/GetCoverage';
+import {
+  MergedMapData,
+  LocationLatLng,
+  MapInfoboxPressParam,
+} from '../../types/types';
+import { GetMap_mapTable_data_coverageData as MapBusiness } from '../../generated/GetMap';
 import { PinInfoBox } from '../../components';
 
 type LatLng = google.maps.LatLng;
 
 type Props = {
-  data: Array<MergedCoverageData>;
-  selectedBusiness?: CoverageBusiness;
+  data: Array<MergedMapData>;
+  selectedBusiness?: MapBusiness;
+  onInfoBoxPress?: (param: MapInfoboxPressParam) => void;
 };
 
 function CoverageMap(props: Props) {
-  let { data, selectedBusiness, ...otherProps } = props;
+  let { data, selectedBusiness, onInfoBoxPress, ...otherProps } = props;
   let mapRef = useRef<GoogleMap | null>(null);
   let [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
   let [selectedPinLatLng, setSelectedPinLatLng] = useState<LatLng | null>(null);
@@ -59,7 +64,6 @@ function CoverageMap(props: Props) {
       }}
       defaultCenter={defaultCenter}
       zoom={0}
-      onClick={closePinInfo}
       onMouseOut={closePinInfo}
       {...otherProps}
     >
@@ -96,6 +100,15 @@ function CoverageMap(props: Props) {
                   rating={rating || 0}
                   markerPosition={latLng}
                   onClose={closePinInfo}
+                  onInfoboxPress={() => {
+                    onInfoBoxPress &&
+                      onInfoBoxPress({
+                        newTag: {
+                          businessName: name,
+                          address,
+                        },
+                      });
+                  }}
                 />
               </Marker>
             );
@@ -119,9 +132,7 @@ function pinSymbol(color: string) {
   };
 }
 
-function getFlatLocations(
-  data: Array<MergedCoverageData>,
-): Array<LocationLatLng> {
+function getFlatLocations(data: Array<MergedMapData>): Array<LocationLatLng> {
   let locations: Array<LocationLatLng> = [];
 
   data.forEach((item) =>

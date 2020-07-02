@@ -12,7 +12,7 @@ import {
   LoadingIndicator,
   Card,
 } from '../../core-ui';
-import { ComparisonPopover, PinPopover } from '../../components';
+import { PinPopover } from '../../components';
 import {
   THEME_COLOR,
   DISABLED_TEXT_COLOR,
@@ -48,20 +48,21 @@ import {
   RemovePinnedTableVariables,
 } from '../../generated/RemovePinnedTable';
 import SvgPin from '../../components/icons/pin';
-import SvgRoundAdd from '../../components/icons/round-add';
 import SvgRoundClose from '../../components/icons/round-close';
 import SvgClose from '../../components/icons/close';
-import SvgQuestionMark from '../../components/icons/question-mark';
+import InfoboxPopover from '../../components/InfoboxPopover';
+import AddComparisonButton from '../../components/AddComparisonButton';
+import TripleDotsButton from '../../components/TripleDotsButton';
 
 type Props = {
   title: string;
   noData?: boolean;
-  reviewTag: ReviewTag;
-  tableId: string;
+  reviewTag?: ReviewTag;
+  tableId?: string;
   onTableIdChange?: (tableId: string) => void;
   comparisonTags?: Array<ComparationTagWithFill>;
   canCompare?: boolean;
-  tableType: TableType;
+  tableType?: TableType;
   businessTag?: {
     type: BusinessType;
     params: string;
@@ -72,6 +73,7 @@ type Props = {
   sortOrder?: Array<string>;
   onSortOrderChange?: (newSortOrder: Array<string>) => void;
   readOnly?: boolean;
+  onClosePress?: () => void;
 };
 
 type Params = {
@@ -97,6 +99,7 @@ export default function ResultTitle(props: Props) {
     sortOrder,
     onSortOrderChange,
     readOnly,
+    onClosePress,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -138,31 +141,21 @@ export default function ResultTitle(props: Props) {
     },
   });
 
-  let infoboxPopover = (
-    <PopoverContainer>{infoboxContent && infoboxContent()}</PopoverContainer>
-  );
-  let pinPopover = (
-    <PinPopover
-      tableId={tableId}
-      tableType={tableType}
-      onClickAway={() => setPinPopoverOpen(false)}
-    />
-  );
-  let comparisonPopover = (
-    <ComparisonPopover
-      reviewTag={reviewTag}
-      tableId={tableId}
-      onTableIdChange={onTableIdChange}
-      activeComparison={comparisonTags}
-      sortOrder={sortOrder}
-      onSortOrderChange={onSortOrderChange}
-      pinId={pinTableId}
-      terminalId={params.terminalId}
-    />
-  );
+  let pinPopover =
+    tableType && tableId ? (
+      <PinPopover
+        tableId={tableId}
+        tableType={tableType}
+        onClickAway={() => setPinPopoverOpen(false)}
+      />
+    ) : (
+      <View />
+    );
 
   let compareLocationText =
-    comparisonTags && comparisonTags.length > 0
+    comparisonTags &&
+    comparisonTags.length > 0 &&
+    comparisonTags[0].businessTag?.params
       ? comparisonTags.length === 1 && comparisonTags[0].locationTag
         ? comparisonTags[0].locationTag.type === LocationTagType.ADDRESS
           ? `near ${comparisonTags[0].locationTag.params}`
@@ -172,11 +165,15 @@ export default function ResultTitle(props: Props) {
 
   let formattedCompareText =
     comparisonTags?.length === 1
-      ? `Comparing with ${comparisonTags[0].businessTag?.params} ${compareLocationText}`
+      ? `Comparing with ${
+          comparisonTags[0].businessTag?.params ||
+          comparisonTags[0].locationTag?.params
+        } ${compareLocationText}`
       : comparisonTags && comparisonTags?.length > 0
       ? `Comparing with ${comparisonTags.length} queries`
       : '';
 
+  let resultTitle = getResultTitle({ reviewTag, businessTag, locationTag });
   let showAuthAlert = () => {
     alert.show('You need to sign in to access this feature');
   };
@@ -185,47 +182,51 @@ export default function ResultTitle(props: Props) {
     alert.show('This is a read-only page');
   };
 
+  let removePin = () => {
+    if (pinTableId) {
+      removePinnedTable({
+        variables: {
+          pinTableId,
+        },
+        awaitRefetchQueries: true,
+        refetchQueries: [
+          {
+            query: GET_TERMINAL,
+            variables: {
+              terminalId: params?.terminalId || '',
+            },
+          },
+          { query: GET_TERMINAL_LIST },
+        ],
+      });
+    }
+  };
   return (
     <Container isDesktop={isDesktop}>
       <Row flex>
         <Title noData={noData}>{title}</Title>
         {infoboxContent && (
-          <Popover
+          <InfoboxPopover
             isOpen={infoPopoverOpen}
-            content={infoboxPopover}
-            position={['bottom']}
-            onClickOutside={() => setInfoPopoverOpen(false)}
-            align="start"
-          >
-            {(ref) => (
-              <View
-                ref={ref}
-                onMouseEnter={() => {
-                  setInfoPopoverOpen(true);
-                }}
-                onMouseLeave={() => {
-                  setInfoPopoverOpen(false);
-                }}
-                style={{ marginLeft: 4, marginRight: 4 }}
-              >
-                <SvgQuestionMark
-                  style={{ color: noData ? DISABLED_TEXT_COLOR : THEME_COLOR }}
-                />
-              </View>
+            onChange={setInfoPopoverOpen}
+            content={() => (
+              <PopoverContainer>
+                {infoboxContent ? infoboxContent() : null}
+              </PopoverContainer>
             )}
-          </Popover>
+            disabled={noData}
+            isDesktop={isDesktop}
+          />
         )}
-        {isTerminalScene && (
+        {isTerminalScene && resultTitle && (
           <>
-            <Title> | </Title>
-            <SubTitle>
-              {getResultTitle({ reviewTag, businessTag, locationTag })}
-            </SubTitle>
+            <Title style={{ paddingLeft: 8, paddingRight: 8 }}>|</Title>
+            <SubTitle>{resultTitle}</SubTitle>
           </>
         )}
       </Row>
-      <Row flex style={{ justifyContent: 'flex-end' }}>
-        {formattedCompareText ? (
+      <Row style={{ minWidth: 100, justifyContent: 'flex-end' }}>
+        {isDesktop && formattedCompareText ? (
           loading ? (
             <LoadingIndicator />
           ) : (
@@ -234,16 +235,18 @@ export default function ResultTitle(props: Props) {
               {!readOnly && (
                 <Touchable
                   onPress={() => {
-                    updateComparison({
-                      variables: {
-                        actionType: CompareActionType.DELETE_ALL,
-                        tableId,
-                        reviewTag,
-                        pinId: pinTableId,
-                      },
-                      awaitRefetchQueries: true,
-                      refetchQueries: refetchTerminalQueries,
-                    });
+                    if (reviewTag && tableId) {
+                      updateComparison({
+                        variables: {
+                          actionType: CompareActionType.DELETE_ALL,
+                          tableId,
+                          reviewTag,
+                          pinId: pinTableId,
+                        },
+                        awaitRefetchQueries: true,
+                        refetchQueries: refetchTerminalQueries,
+                      });
+                    }
                   }}
                 >
                   <SvgRoundClose />
@@ -252,94 +255,91 @@ export default function ResultTitle(props: Props) {
             </>
           )
         ) : null}
-        {canCompare && !readOnly && (
-          <Popover
-            isOpen={comparisonPopoverOpen}
-            content={comparisonPopover}
-            position={['bottom']}
-            onClickOutside={() => setComparisonPopoverOpen(false)}
-            align="end"
-          >
-            {(ref) => (
-              <Touchable
-                ref={ref}
-                onPress={() => {
-                  if (isAuthenticated) {
-                    if (readOnly) {
-                      showReadOnlyAlert();
-                    } else {
-                      setComparisonPopoverOpen(true);
-                    }
-                  } else {
-                    showAuthAlert();
-                  }
-                }}
+        {(isDesktop && !readOnly) || onClosePress ? (
+          <>
+            {canCompare && reviewTag && tableId && (
+              <AddComparisonButton
+                isOpen={comparisonPopoverOpen}
+                onChange={setComparisonPopoverOpen}
                 disabled={noData}
-              >
-                <SvgRoundAdd {...(noData && { fill: DISABLED_TEXT_COLOR })} />
-              </Touchable>
+                reviewTag={reviewTag}
+                tableId={tableId}
+                onTableIdChange={onTableIdChange}
+                comparisonTags={comparisonTags}
+                sortOrder={sortOrder}
+                onSortOrderChange={onSortOrderChange}
+                pinTableId={pinTableId}
+                terminalId={params.terminalId}
+                readOnly={readOnly}
+              />
             )}
-          </Popover>
-        )}
-        {readOnly ? null : isTerminalScene ? (
-          removePinnedTableLoading ? (
-            <LoadingIndicator />
-          ) : (
-            <Touchable
-              onPress={() => {
-                if (pinTableId) {
-                  removePinnedTable({
-                    variables: {
-                      pinTableId,
-                    },
-                    awaitRefetchQueries: true,
-                    refetchQueries: [
-                      {
-                        query: GET_TERMINAL,
-                        variables: {
-                          terminalId: params?.terminalId || '',
-                        },
-                      },
-                      { query: GET_TERMINAL_LIST },
-                    ],
-                  });
-                }
-              }}
-              disabled={noData}
-            >
-              <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
-            </Touchable>
-          )
-        ) : (
-          <Popover
-            isOpen={pinPopoverOpen}
-            content={pinPopover}
-            position={['bottom']}
-            onClickOutside={() => setPinPopoverOpen(false)}
-            align="end"
-            containerStyle={{ overflow: 'visible' }}
-          >
-            {(ref) => (
-              <Touchable
-                ref={ref}
-                onPress={() => {
-                  if (isAuthenticated) {
-                    if (readOnly) {
-                      showReadOnlyAlert();
+            {isTerminalScene ? (
+              removePinnedTableLoading ? (
+                <LoadingIndicator />
+              ) : (
+                <Touchable
+                  onPress={() => {
+                    if (onClosePress) {
+                      onClosePress();
                     } else {
-                      setPinPopoverOpen(true);
+                      removePin();
                     }
-                  } else {
-                    showAuthAlert();
-                  }
-                }}
-                disabled={noData}
+                  }}
+                  disabled={noData}
+                >
+                  <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+                </Touchable>
+              )
+            ) : (
+              <Popover
+                isOpen={pinPopoverOpen}
+                content={pinPopover}
+                position={['bottom']}
+                onClickOutside={() => setPinPopoverOpen(false)}
+                align="end"
+                containerStyle={{ overflow: 'visible' }}
               >
-                <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
-              </Touchable>
+                {(ref) => (
+                  <Touchable
+                    ref={ref}
+                    onPress={() => {
+                      if (isAuthenticated) {
+                        if (readOnly) {
+                          showReadOnlyAlert();
+                        } else {
+                          setPinPopoverOpen(true);
+                        }
+                      } else {
+                        showAuthAlert();
+                      }
+                    }}
+                    disabled={noData}
+                  >
+                    <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+                  </Touchable>
+                )}
+              </Popover>
             )}
-          </Popover>
-        )}
+          </>
+        ) : !isDesktop && !readOnly && tableType ? (
+          <TripleDotsButton
+            disabled={noData}
+            reviewTag={reviewTag}
+            tableId={tableId}
+            onTableIdChange={onTableIdChange}
+            comparisonTags={comparisonTags}
+            sortOrder={sortOrder}
+            onSortOrderChange={onSortOrderChange}
+            pinTableId={pinTableId}
+            terminalId={params.terminalId}
+            readOnly={readOnly}
+            tableType={tableType}
+            isTerminalScene={isTerminalScene}
+            removePinFn={removePin}
+            removePinLoading={removePinnedTableLoading}
+            canCompare={canCompare}
+          />
+        ) : null}
       </Row>
     </Container>
   );
@@ -358,6 +358,7 @@ const Container = styled(View)<ContainerProps>`
   justify-content: space-between;
   align-items: center;
   position: relative;
+  flex: 1;
 `;
 
 const Title = styled(Text)<TitleProps>`

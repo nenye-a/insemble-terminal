@@ -94,7 +94,9 @@ export default function TerminalCard(props: Props) {
         onPress={() => {
           history.push(`/terminals/${id}`);
         }}
+        href={`/terminals/${id}`}
         disabled={isLandingPage}
+        stopPropagation={true}
         {...otherProps}
       >
         <TitleContainer>
@@ -103,6 +105,7 @@ export default function TerminalCard(props: Props) {
             text="Delete"
             mode="transparent"
             stopPropagation={true}
+            preventDefault={true}
             onPress={() => {
               if (!isLandingPage) {
                 setDeletePopupVisible(true);

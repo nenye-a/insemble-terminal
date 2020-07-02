@@ -34,7 +34,7 @@ enum ReviewTag {
   NEWS
   ACTIVITY
   CONTACT
-  COVERAGE
+  MAP
 }
 
 enum TableType {
@@ -43,7 +43,8 @@ enum TableType {
   ACTIVITY
   OWNERSHIP_INFO
   OWNERSHIP_CONTACT
-  COVERAGE
+  MAP
+  NOTE
 }
 
 enum OwnershipType {
@@ -66,6 +67,13 @@ model BusinessTag {
   id     String       @default(cuid()) @id
   type   BusinessType
   params String
+}
+
+model Note {
+  id      String @default(cuid()) @id
+  title   String
+  content String
+  user    User
 }
 
 model PinnedFeed {
@@ -173,7 +181,7 @@ model ComparationTag {
   performance Performance[]
   news        News[]
   activity    Activity[]
-  coverage    Coverage[]
+  Map         Map[]
 }
 
 model Performance {
@@ -272,30 +280,30 @@ model Activity {
   updatedAt       DateTime              @updatedAt
 }
 
-model CoverageData {
+model MapData {
   id           String             @default(cuid()) @id
   name         String
   location     String
-  numLocations Int?
+  numLocations String?
   coverageData String
 }
 
-model CompareCoverageData {
+model CompareMapData {
   id           String             @default(cuid()) @id
   name         String
   location     String
-  numLocations Int?
+  numLocations String?
   coverageData String
   compareId    String
 }
 
-model Coverage {
+model Map {
   id              String                @default(cuid()) @id
   locationTag     LocationTag?
   businessTag     BusinessTag?
   comparationTags ComparationTag[]
-  data            CoverageData[]
-  compareData     CompareCoverageData[]
+  data            MapData[]
+  compareData     CompareMapData[]
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 }

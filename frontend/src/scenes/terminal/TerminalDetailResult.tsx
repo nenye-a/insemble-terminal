@@ -7,14 +7,22 @@ import {
   TableType,
   PerformanceTableType,
   OwnershipType,
+  BusinessTagType,
+  LocationTagType,
 } from '../../generated/globalTypes';
+import {
+  PerformanceRowPressParam,
+  MapInfoboxPressParam,
+} from '../../types/types';
 import PerformanceResult from '../results/PerformanceResult';
 import LatestNewsResult from '../results/LatestNewsResult';
 import CustomerActivityResult from '../results/CustomerActivityResult';
-import CoverageResult from '../results/CoverageResult';
+import MapResult from '../results/MapResult';
 import ContactsResult from '../results/ContactsResult';
 import OwnershipInformationResult from '../results/OwnershipInformationResult';
-import { PerformanceRowPressParam } from '../../types/types';
+
+import NoteResult from './NoteResult';
+import AddNoteButton from './AddNoteButton';
 
 type Props = {
   data: Array<PinnedFeeds>;
@@ -53,6 +61,25 @@ export default function TerminalDataResult(props: Props) {
         },
       });
     }
+  };
+  let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
+    let { businessName, address } = params.newTag;
+    history.push('/results', {
+      search: {
+        businessTag: businessName
+          ? {
+              params: businessName,
+              type: BusinessTagType.BUSINESS,
+            }
+          : undefined,
+        locationTag: address
+          ? {
+              params: address,
+              type: LocationTagType.ADDRESS,
+            }
+          : undefined,
+      },
+    });
   };
   return (
     <View>
@@ -174,12 +201,15 @@ export default function TerminalDataResult(props: Props) {
                 />
               );
             }
-          } else if (tableType === TableType.COVERAGE) {
-            return <CoverageResult {...props} />;
+          } else if (tableType === TableType.MAP) {
+            return <MapResult onInfoBoxPress={onMapInfoboxPress} {...props} />;
+          } else if (tableType === TableType.NOTE) {
+            return <NoteResult {...props} />;
           }
           return null;
         },
       )}
+      {!readOnly && <AddNoteButton />}
     </View>
   );
 }

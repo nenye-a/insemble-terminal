@@ -23,7 +23,7 @@ MILES_TO_METERS_FACTOR = 1609.34
 EARTHS_RADIUS_MILES = 3958.8
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
-ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})'
+ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})?'
 AMPERSAND = '\\\\u0026'
 AMPERSAND2 = '&amp;'
 APOSTROPHE = '&#39;'
@@ -47,6 +47,7 @@ DB_STATS = SYSTEM_MONGO.get_collection(mongo.STATS)
 DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
 DB_UNSUBSCRIBED = SYSTEM_MONGO.get_collection(mongo.UNSUBSCRIBED)
 DB_FEEDS = SYSTEM_MONGO.get_collection(mongo.FEEDS)
+DB_DOMAINS = SYSTEM_MONGO.get_collection(mongo.DOMAINS)
 BWE = mongo.BulkWriteError
 
 DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
@@ -68,39 +69,83 @@ def create_index(collection):
         DB_TERMINAL_PLACES.create_index([('location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('nearby_location.location', "2dsphere")])
         DB_TERMINAL_PLACES.create_index([('name', "text"),
-                                         ('google_details.name', "text"),
-                                         ('yelp_details.name', "text")])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.rating', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.neighborhood', 1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_details.bookings', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.price_tier', -1)])
-        DB_TERMINAL_PLACES.create_index([('opentable_detials.category', 1)])
+                                         ('google_details.name', "text")])
         DB_TERMINAL_PLACES.create_index([('city', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('name', 1)])
         DB_TERMINAL_PLACES.create_index([('state', 1), ('city', 1), ('type', 1)])
-        DB_TERMINAL_PLACES.create_index([('google_details', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('county', 1), ('name', 1)])
+        DB_TERMINAL_PLACES.create_index([('state', 1), ('county', 1), ('type', 1)])
+        DB_TERMINAL_PLACES.create_index([('google_details.activity', 1)])
         DB_TERMINAL_PLACES.create_index([('activity_volume', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('avg_activity', 1)], background=True)
         DB_TERMINAL_PLACES.create_index([('brand_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_retail_volume', -1)])
         DB_TERMINAL_PLACES.create_index([('local_category_volume', -1)])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('address', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('city', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('county', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('county', 1),
+            ('state', 1),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+            ('google_details.activity', -1),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('name', 1),
+            ('location', "2dsphere"),
+        ])
+        DB_TERMINAL_PLACES.create_index([
+            ('type', 1),
+            ('location', "2dsphere"),
+        ])
     if collection.lower() == 'places_history':
-        DB_PLACES_HISTORY.create_index([('place_id', 1)], unique=True,)
         DB_PLACES_HISTORY.create_index([('revisions.google_details', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.version', 1)])
         DB_PLACES_HISTORY.create_index([('revisions.revised_time', 1)])
     if collection.lower() == 'coordinates':
         DB_COORDINATES.create_index([('center', 1)])
         DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_COORDINATES.create_index([('center', 1), ('viewport', 1),
+                                     ('zoom', 1), ('query_point', 1)], unique=True)
         DB_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_COORDINATES.create_index([('processed_terms', 1)])
         DB_COORDINATES.create_index([('stage', 1)])
         DB_COORDINATES.create_index([('ran', 1), ('stage', 1)])
         DB_COORDINATES.create_index([('ran', 1)])
     if collection.lower() == 'log':
-        DB_LOG.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('method', 1)], unique=True)
+        DB_LOG.create_index([('center', 1), ('viewport', 1),
+                             ('zoom', 1), ('method', 1)], unique=True)
     if collection.lower() == 'regions':
         DB_REGIONS.create_index([('name', 1)], unique=True)
         DB_REGIONS.create_index([('geometry', "2dsphere")])
@@ -117,7 +162,8 @@ def create_index(collection):
     if collection.lower() == 'ms_coordinates':
         DB_MS_COORDINATES.create_index([('center', 1)])
         DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
+        DB_MS_COORDINATES.create_index(
+            [('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
         DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
         DB_MS_COORDINATES.create_index([('processed_terms', 1)])
     if collection.lower() == 'minesweeper_places':
@@ -136,6 +182,21 @@ def create_index(collection):
         DB_STATS.create_index([('stat_name', 1)], unique=True)
     if collection.lower() == 'misc':
         DB_MISC.create_index([('name', 1)], unique=True)
+    if collection.lower() == 'domains':
+        DB_DOMAINS.create_index([('domain', 1)], unique=True)
+        DB_DOMAINS.create_index([('companies', 1)])
+
+
+def db_index(collection, *indices, **kwargs):
+    """
+    Provided a collection object and a list of index strings, will create indexes.
+    supports both compound and singular indexes. supports all native pymongo
+    keyword arguments (i.e. unique, partialFilterExpression, background, sparse, etc.)
+    """
+    index_request = []
+    for index in indices:
+        index_request.append((index, 1))
+    collection.create_index(index_request, **kwargs)
 
 
 def meters_to_miles(meters):
@@ -316,10 +377,14 @@ def format_search(name, address):
 
 
 def format_punct(text):
-    text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
-    text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
-    text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
-    return text
+    try:
+        text = text.replace(AMPERSAND, "&").replace(AMPERSAND2, "&")
+        text = text.replace(APOSTROPHE, "'").replace(SPACE, " ")
+        text = text.replace(LEFT_QUOTE, '"').replace(RIGHT_QUOTE, '"')
+        return text
+    except Exception as e:
+        print(e)
+        return text
 
 
 def get_alternative_source(key, preffered_dict, default_dict):
@@ -329,7 +394,7 @@ def get_alternative_source(key, preffered_dict, default_dict):
 
 def fuzzy_match(query, target):
     ratio = fuzz.WRatio(query, target)
-    if ratio > 80:
+    if ratio >= 80:
         return True
     else:
         print("Fuzzymatch failed. Ratio: {} | Query: {} | Target: {}".format(ratio, query, target))
@@ -399,6 +464,26 @@ def extract_state(address):
         return None
 
 
+def extract_city_state(address, mode='all'):
+    finder = re.compile(ADDRESS_END_REGEX)
+    match_list = finder.findall(address)
+    if not match_list:
+        return None
+
+    match = [word.strip() for word in match_list[-1]]
+
+    if mode == 'all':
+        return '{city}, {state}'.format(
+            city=match[0], state=match[1]
+        )
+    elif mode == 'city':
+        return match[0]
+    elif mode == 'state':
+        return match[1]
+    else:
+        return None
+
+
 def state_code_to_name(state_code):
     return STATE_DICT.loc[state_code]['State']
 
@@ -414,6 +499,11 @@ def unsubscribe(email_list):
             '$each': email_list
         }
     }})
+
+
+def strip_parantheses_context(word):
+    matcher = re.compile(r' \([^\(]+\)$')
+    return matcher.sub('', word)
 
 
 def dictionary_diff(previous, new, replaced=True):
@@ -493,6 +583,38 @@ def remove_old_items(items, time_key, date=None):
     return recent_items
 
 
+def remove_name_ats(name):
+    new_name = None
+    while " at " in name:
+        new_name = name.split(" at ")[0]
+    while " At " in name:
+        new_name = name.split(" At ")[0]
+    return new_name or name
+
+
+def inbool(item: dict, key: str):
+    """Will check if key id in dict and contains a valid item"""
+    return item and key in item and item[key]
+
+
+def section_by_key(list_items, key):
+    """
+    Given a list of items, will section them off by the provided key.
+    Will return a dictionary of the following form:
+
+    {
+        val1 : [sublist with item[key] == val1],
+        val2: [sublist with item[key] == val2]
+    }
+    """
+
+    my_dict = {}
+    for item in list_items:
+        if key in item:
+            my_dict[item[key]] = my_dict.get(item[key], []) + [item]
+    return my_dict
+
+
 if __name__ == "__main__":
 
     def test_to_snake_case():
@@ -503,7 +625,8 @@ if __name__ == "__main__":
 
     def test_round_object():
         print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello"]))
-        print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756, "hello", [1.213, 23.423, 345.3409089]], 3))
+        print(round_object([1.2, 2.3, 5.4, 4.56423, 7.756,
+                            "hello", [1.213, 23.423, 345.3409089]], 3))
         print(round_object({
             'pie': 1.2334,
             'hell': 'hate',
@@ -557,17 +680,7 @@ if __name__ == "__main__":
         print("2 -> 1\n{}\n".format(dictionary_diff(dict2, dict1)))
         print("1 -> 1\n{}\n".format(dictionary_diff(dict1, dict1)))
 
-    # RUN
-    # create_index("stats")
-
-    # TESTS
-
-    # test_state_code_to_name()
-    # test_parse_city()
-    # test_to_snake_case()
-    # test_snake_to_word()
-    # test_round_object()
-    # test_extract_city()
-    # test_extract_state()
-    # test_chunks()
-    # test_dictionary_diff()
+    def test_extract_city_state():
+        print(extract_city_state('Los Angeles, CA 902123, USA'))
+        print(extract_city_state('Los Angeles, CA 902123, USA', 'city'))
+        print(extract_city_state('Los Angeles, CA 901293', 'state'))

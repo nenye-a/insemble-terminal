@@ -23,8 +23,8 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
         where: { id: tableId },
       });
       break;
-    case 'COVERAGE':
-      table = await context.prisma.coverage.findOne({
+    case 'MAP':
+      table = await context.prisma.map.findOne({
         where: { id: tableId },
       });
       break;

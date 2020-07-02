@@ -79,7 +79,7 @@ export type PyActivityResponse = {
   data: Array<PyActivityData>;
 };
 
-export type PyCoverageLocations = {
+export type PyMapLocations = {
   lat: number;
   lng: number;
   name: string;
@@ -88,23 +88,23 @@ export type PyCoverageLocations = {
   num_reviews: number;
 };
 
-export type PyCoverageBusiness = {
+export type PyMapBusiness = {
   business_name: string;
   num_locations: number;
-  locations: Array<PyCoverageLocations>;
+  locations: Array<PyMapLocations>;
 };
 
-export type PyCoverageData = {
+export type PyMapData = {
   name: string;
   location: string;
   num_locations: number;
-  coverage: Array<PyCoverageBusiness>;
+  coverage: Array<PyMapBusiness>;
 };
 
-export type PyCoverageResponse = {
+export type PyMapResponse = {
   createdAt: Date;
   updatedAt: Date;
-  data: PyCoverageData[];
+  data: PyMapData[];
 };
 
 export type PyContactData = {
@@ -155,7 +155,7 @@ export type LocationPin = {
 
 export type BusinessData = {
   businessName?: string;
-  numLocations?: number;
+  numLocations?: string;
   locations: Array<LocationPin>;
 };
 
