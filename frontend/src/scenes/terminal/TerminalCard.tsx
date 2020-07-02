@@ -105,6 +105,7 @@ export default function TerminalCard(props: Props) {
             text="Delete"
             mode="transparent"
             stopPropagation={true}
+            preventDefault={true}
             onPress={() => {
               if (!isLandingPage) {
                 setDeletePopupVisible(true);
