@@ -5,10 +5,6 @@ import styled from 'styled-components';
 import { View, Text, Card, TouchableOpacity } from '../../core-ui';
 import { DataTable } from '../../components';
 import {
-  GetPerformanceTable_performanceTable_table_data as PerformanceTableData,
-  GetPerformanceTable_performanceTable_table_compareData as PerformanceTableCompareData,
-} from '../../generated/GetPerformanceTable';
-import {
   useSortableData,
   lightenOrDarkenColor,
   getTextColor,
@@ -18,6 +14,7 @@ import {
   Direction,
   PerformanceRowPressParam,
   ComparationTagWithFill,
+  MergedPerformanceData,
 } from '../../types/types';
 import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
@@ -29,18 +26,8 @@ import {
 import SvgArrowLeft from '../../components/icons/arrow-left';
 import SvgArrowRight from '../../components/icons/arrow-right';
 
-type MergedPerformanceTableData = (
-  | PerformanceTableData
-  | PerformanceTableCompareData
-) & {
-  isComparison: boolean;
-  fill?: string;
-  hasAsterisk: boolean;
-};
-
 type Props = {
-  data: Array<MergedPerformanceTableData>;
-  compareData?: Array<PerformanceTableCompareData>;
+  data: Array<MergedPerformanceData>;
   showNumLocation?: boolean;
   headerTitle?: string;
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
@@ -72,7 +59,7 @@ export default function PerformanceTable(props: Props) {
   let [headerIndex, setHeaderIndex] = useState(0);
 
   let { sortedData, requestSort, sortConfig } = useSortableData<
-    MergedPerformanceTableData
+    MergedPerformanceData
   >(data, {
     key: 'customerVolumeIndex',
     direction: Direction.DESCENDING,
@@ -231,7 +218,7 @@ export default function PerformanceTable(props: Props) {
 }
 
 type TableRowProps = {
-  datum: MergedPerformanceTableData;
+  datum: MergedPerformanceData;
   mobile: boolean;
   businessTag?: {
     type: BusinessType;
