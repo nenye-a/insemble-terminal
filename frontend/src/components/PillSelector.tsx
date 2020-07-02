@@ -42,6 +42,7 @@ export default function PillSelector<T>(props: Props<T>) {
               }
             }}
             style={{ margin: 4 }}
+            primary={isSelected}
           >
             {label}
           </SelectionPill>
