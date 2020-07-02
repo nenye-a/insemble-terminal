@@ -18,7 +18,7 @@ from rss import feeds
 from google import GoogleNewsScraper
 from billiard.pool import Pool
 
-from emailer import email_report
+from newsemailer import email_report
 from decouple import config
 
 '''
@@ -163,7 +163,8 @@ class NewsManager():
                         'data_type': 'city',
                     }
                 }, upsert=True)
-                print('{} updated with content. {} modified.'.format(city, city_update.modified_count))
+                print('{} updated with content. {} modified.'.format(
+                    city, city_update.modified_count))
 
                 people_update = self.collection.update_many({
                     'city': {'$regex': r'^' + city},
@@ -338,12 +339,15 @@ class NewsManager():
             my_pool = Pool(min(len(locations), 20))
             print('Getting Regional Relevance...')
             if self.regional_news:
-                regional_news = utils.flatten(my_pool.map(NewsManager.relevant_regional_news, locations))
+                regional_news = utils.flatten(my_pool.map(
+                    NewsManager.relevant_regional_news, locations))
             print('Getting National Relevance...')
             if self.national_news:
-                national_news = utils.flatten(my_pool.map(NewsManager.relevant_national_news, locations))
+                national_news = utils.flatten(my_pool.map(
+                    NewsManager.relevant_national_news, locations))
             print('Getting Google Relevance...')
-            google_news = utils.flatten(my_pool.map(NewsManager.relevant_google_news, organized_news.items()))
+            google_news = utils.flatten(my_pool.map(
+                NewsManager.relevant_google_news, organized_news.items()))
             print('Relevance completed...')
         except Exception as e:
             print(e)
@@ -460,7 +464,8 @@ class NewsManager():
                 if len(matching_word[0]) < 3:
                     # remove potential filler matches
                     continue
-                relevance_score = relevance_score + float(weight_word(matching_word[1])) / 10 * this_scorer[word]
+                relevance_score = relevance_score + \
+                    float(weight_word(matching_word[1])) / 10 * this_scorer[word]
 
         return round(relevance_score, 1)
 
@@ -491,7 +496,8 @@ class NewsManager():
         update_source.loc[:, email_index] = update_source.loc[:, email_index].apply(
             lambda email: email.lower() if isinstance(email, str) else None
         )
-        update_source.loc[:, city_index] = update_source.loc[:, city_index].apply(NewsManager.format_city)
+        update_source.loc[:, city_index] = update_source.loc[:,
+                                                             city_index].apply(NewsManager.format_city)
         update_source = update_source[~update_source[email_index].isin(self.unsubscribed)]
 
         update_source["content_generated"] = False
@@ -603,7 +609,8 @@ def parse_city(location) -> dict:
             remaining_details = location[1].strip().split(" ")
             result['city'] = location[0]  # the first item in the list is the city
             result['state'] = remaining_details[0]
-            result['zipcode'] = remaining_details[1].split("-")[0]  # remove any trailing zip code details
+            result['zipcode'] = remaining_details[1].split(
+                "-")[0]  # remove any trailing zip code details
         else:
             # if not in regular format, just do this based off the zip code
             num_match = re.findall(r'\d{5}(?:[-\s]\d{4})?', location)
@@ -631,24 +638,14 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-6/25', national_news=False)
-    # my_generator.convert_links()
+    my_generator = NewsManager('Official-7/2', 'terminal_sources.csv', national_news=False)
+    my_generator.generate()
+    my_generator.convert_links()
+    # my_generator.email(update=True)
 
-    # my_generator.generate()
     # print(my_generator.collection.count_documents({
     #     # 'data_type': 'contact',
     #     # 'content_generated': True
     #     # 'links_processed': True,
     #     'data_type': 'city',
-    # }))
-    my_generator.email(update=True)
-    # my_generator._update_contact_cities()
-
-    # test_generator = NewsManager('Test-5', national_news=False)
-    # test_generator.generate()
-    # test_generator.convert_links(old_link=True)
-    # test_generator.email(update=True)
-    # print(test_generator.collection.count_documents({
-    #     # 'data_type': 'contact'
-    #     # 'content_generated': True
     # }))

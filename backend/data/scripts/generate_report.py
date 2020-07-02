@@ -48,7 +48,8 @@ def generate_report(brand_name, custom_query=None):
 
     file_name = brand_name.lower()
     my_dataframe = pd.DataFrame(results_list)
-    my_dataframe.sort_values('customerVolumeIndex', ascending=False).reset_index(drop=True).to_csv(file_name + '_report_values.csv')
+    my_dataframe.sort_values('customerVolumeIndex', ascending=False).reset_index(
+        drop=True).to_csv(file_name + '_report_values.csv')
     my_dataframe.describe().to_csv(file_name + '_report_stats.csv')
 
 
@@ -227,7 +228,8 @@ def categories():
         if counter % 1000 == 0:
             print("{} matching items found.".format(counter))
 
-    categories = {k: v for k, v in sorted(categories.items(), key=lambda item: item[1], reverse=True)}
+    categories = {k: v for k, v in sorted(
+        categories.items(), key=lambda item: item[1], reverse=True)}
     print(categories)
 
 
@@ -259,7 +261,8 @@ def categories_terminal():
         if counter % 1000 == 0:
             print("{} matching items found.".format(counter))
 
-    categories = {k: v for k, v in sorted(categories.items(), key=lambda item: item[1], reverse=True)}
+    categories = {k: v for k, v in sorted(
+        categories.items(), key=lambda item: item[1], reverse=True)}
     print(categories)
 
 
@@ -279,7 +282,8 @@ def get_stage_locations():
             {'stage': 3}
         ]
     })
-    pd.DataFrame([utils.from_geojson(location['query_point'], as_dict=True) for location in locations]).to_csv('new_items.csv')
+    pd.DataFrame([utils.from_geojson(location['query_point'], as_dict=True)
+                  for location in locations]).to_csv('new_items.csv')
 
 
 def view_locations(query):
