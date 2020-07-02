@@ -7,8 +7,6 @@ import {
   WHITE,
   DISABLED_PILL_COLOR,
   SHADOW_COLOR,
-  LIGHT_PURPLE,
-  SEMI_PURPLE,
   MEDIUM_PURPLE,
 } from '../constants/colors';
 import {
