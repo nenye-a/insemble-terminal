@@ -12,7 +12,7 @@ import traceback
 from emailer import send_email
 from personal_reports import generate_report
 
-import ContactManager as cm
+import contactmanager as cm
 import utils
 
 MAIN_DB = cm.get_contacts_collection('main_contact_db')
