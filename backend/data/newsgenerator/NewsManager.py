@@ -11,15 +11,17 @@ import datetime as dt
 import pandas as pd
 import dateutil.parser as tparser
 import pytz
+from billiard.pool import Pool
+from functools import partial
+from decouple import config
+
 from postgres import PostConnect
 from graphql import gql
 from fuzzywuzzy import process
 from rss import feeds
 from google import GoogleNewsScraper
-from billiard.pool import Pool
-
 from newsemailer import email_report
-from decouple import config
+
 
 '''
 Generates file of content the be delivered to users via email.
@@ -295,6 +297,98 @@ class NewsManager():
             })
 
             print("{}: News emailed to {}".format(self.name, email))
+
+    def email_aync(self, enforce_conversion=True, update=False):
+        """
+        Emails all the subscribed folks in the list with generated emails.
+        """
+
+        while True:
+
+            people = len(self.collection.find({
+                'content_generated': True,
+                'content_emailed': False,
+                'email': {'$nin': self.unsubscribed}
+            }).limit(100))
+
+            if not people:
+                print("All emails completed!")
+                break
+
+            pool_exists = False
+
+            try:
+                email_pool, pool_exists = Pool(min(15, len(people))), True
+                updated_people = email_pool.map(partial(
+                    self.push_email,
+                    enforce_conversion=enforce_conversion,
+                    update=update
+                ), people)
+            except KeyError as key_e:
+                print(f'Key Error: {key_e}')
+                updated_people = []
+            except Exception as e:
+                print(f'Observed: \n{type(e)}: {e}')
+                updated_people = []
+            finally:
+                if pool_exists:
+                    email_pool.close()
+                    email_pool.terminate()
+
+            modified_count = 0
+            for person in updated_people:
+                modified_count += self.collection.update_one({
+                    '_id': person['_id']
+                }, {'$set': person}).modified_count
+                print('Emailed {}({}) with a report!'.format(person['email'], person['_id']))
+            print(f'\n{modified_count} contacts updated!\n')
+
+            for person in people:
+
+                self.collection.update_one({
+                    '_id': person['_id']
+                }, {
+                    '$set': {
+                        'content_emailed': True
+                    }
+                })
+
+                print("{}: News emailed to {}".format(self.name, person['email']))
+
+    def push_email(self, person, enforce_conversion, update):
+
+        query = {'name': person['parsed_city'], 'data_type': 'city'}
+        if enforce_conversion:
+            query.update({'links_processed': True})
+        content = self.collection.find_one(query)
+        if not content or not content['news']:
+            print("No content available for {}. Moving on.".format(
+                person['email'] + str(person['_id'])
+            ))
+            return None
+
+        news_list = []
+        for news in content['news']:
+            temp_timezone = pytz.UTC.localize(
+                news['published']).astimezone(pytz.timezone("America/Los_Angeles"))
+            news['published'] = temp_timezone.strftime("%a %b %d") + " (PT)"
+            news['title'] = utils.format_punct(news['title'])
+            news['description'] = utils.format_punct(news['description'])
+            if not news['title'] or not news['description']:
+                continue
+            news_list.append(news)
+
+        email = person['email']
+        email_report(
+            to_email=email,
+            header_text="{} News Report".format(
+                person['parsed_city']
+            ),
+            linear_entries=news_list[:3],
+            grid_entries=news_list[3:7],
+            update=update
+        )
+        return True
 
     def get_many_news(self, locations):
 
@@ -638,14 +732,14 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-7/2', 'terminal_sources.csv', national_news=False)
-    my_generator.generate()
-    my_generator.convert_links()
-    # my_generator.email(update=True)
+    my_generator = NewsManager('Official-7/2', national_news=False)
+    # my_generator.generate()
+    # my_generator.convert_links()
+    my_generator.email(update=True)
 
     # print(my_generator.collection.count_documents({
-    #     # 'data_type': 'contact',
-    #     # 'content_generated': True
+    #     'data_type': 'contact',
+    #     'content_generated': True
     #     # 'links_processed': True,
-    #     'data_type': 'city',
+    #     # 'data_type': 'city',
     # }))
