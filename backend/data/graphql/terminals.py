@@ -15,8 +15,8 @@ TERMINAL = """
 """
 
 GET_TERMINAL_LIST = """
-    query GetTerminalList {
-        userTerminals {
+    query GetTerminalList($search: String, $first: Int, $skip: Int) {
+        userTerminals(search: $search, first: $first, skip: $skip) {
             id
             name
             description
