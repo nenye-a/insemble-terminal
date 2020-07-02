@@ -30,6 +30,7 @@ type Props = ComponentProps<typeof TouchableOpacity> & {
   badgeText?: string;
   loading?: boolean;
   stopPropagation?: boolean;
+  preventDefault?: boolean;
   iconPlacement?: 'start' | 'end';
 };
 

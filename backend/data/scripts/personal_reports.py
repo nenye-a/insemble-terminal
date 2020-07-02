@@ -103,7 +103,7 @@ def generate_report(name, company, address, city, contact_type,
     query_list.extend(queries)
     print(f'Queries collection. Generating personal report for {name}')
 
-    report_name = f"{name}'s report for {company}"
+    report_name = f"{company} report for {name}"
     report, terminal_id = helper.create_shared_report(
         *query_list,
         name=report_name,
@@ -524,7 +524,6 @@ def process_landlord(address, city, location, database=utils.SYSTEM_MONGO):
         return []
     potential_bases = matches[:25]
     print(potential_bases)
-    print('HIHIHIHIHI')
     base_brand = [entry for entry in reversed(sorted(
         potential_bases,
         key=lambda item: item['activity_volume'] / item['brand_volume']

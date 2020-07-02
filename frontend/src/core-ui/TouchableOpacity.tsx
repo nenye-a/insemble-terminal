@@ -10,10 +10,18 @@ type PressHandler = () => void;
 type Props = Omit<ViewProps, 'onClick'> & {
   onPress?: PressHandler;
   stopPropagation?: boolean;
+  preventDefault?: boolean;
 };
 
 export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
-  let { onPress, href, stopPropagation, disabled, ...otherProps } = props;
+  let {
+    onPress,
+    href,
+    stopPropagation,
+    disabled,
+    preventDefault,
+    ...otherProps
+  } = props;
   let isLink = href != null;
   let isLocalLink = isLink && isLocalUrl(href);
   let [metaOrCtrlActive, setMetaOrCtrlActive] = useState(false);
@@ -38,7 +46,10 @@ export default forwardRef((props: Props, forwardedRef: Ref<HTMLDivElement>) => {
       tabIndex={0}
       {...otherProps}
       onClick={(event: MouseEvent) => {
-        if (!isLink || (isLocalLink && !(event.metaKey || event.ctrlKey))) {
+        if (
+          preventDefault ||
+          (isLocalLink && !(event.metaKey || event.ctrlKey))
+        ) {
           event.preventDefault();
         }
         if (stopPropagation) {
