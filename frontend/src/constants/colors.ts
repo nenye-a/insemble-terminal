@@ -46,7 +46,7 @@ export const SHADOW_COLOR = '0px 0px 6px 0px rgba(0, 0, 0, 0.1)';
 export const HIGHLIGHTED_DROPDOWN = LIGHT_PURPLE;
 
 // TextInput colors
-export const TEXT_INPUT_BORDER_COLOR = SLIGHT_GRAY;
+export const TEXT_INPUT_BORDER_COLOR = LIGHT_GRAY;
 export const DISABLED_TEXT_INPUT_BACKGROUND = LIGHTER_GRAY;
 
 // Button colors
