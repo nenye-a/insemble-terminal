@@ -6,6 +6,7 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import json
 import utils
+import mongo
 import pandas as pd
 
 states = pd.read_csv(THIS_DIR + '/files/Statefps.csv').set_index('fp')
@@ -34,7 +35,7 @@ def import_regions():
         #     utils.DB_REGIONS.insert_one(item)
         #     print("Successfully inserted {} county".format(item['name']))
         utils.DB_REGIONS.insert_many(data['features'], ordered=False)
-    except utils.BWE as bwe:
+    except mongo.BWE as bwe:
         print(bwe.details['nInserted'])
 
 

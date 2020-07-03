@@ -18,10 +18,11 @@ def get_california_entity(legal_business_name):
 
 # Classes
 
+
 class CaliforniaEntity(GenericScraper):
 
     BASE_URL = 'https://businesssearch.sos.ca.gov/CBS/SearchResults?filing=&SearchType=CORP&SearchCriteria={}' \
-          '&SearchSubType=Keyword'
+        '&SearchSubType=Keyword'
 
     @ staticmethod
     def build_request(name):
@@ -32,7 +33,7 @@ class CaliforniaEntity(GenericScraper):
         return url
 
     def get_details(self, name, projection=None):
-        #TODO: make sure projections work here, since output is list
+        # TODO: make sure projections work here, since output is list
         """
         Parse California business search site for search of a business entity,
         ex: https://businesssearch.sos.ca.gov/CBS/SearchResults?filing=&SearchType=CORP&SearchCriteria=ARROWHEAD+BRASS+PRODUCTS+LLC&SearchSubType=Keyword
@@ -92,6 +93,7 @@ class CaliforniaEntity(GenericScraper):
             return [result for result in results if utils.fuzzy_match(meta['name'], result['entity_name'])]
         return None
 
+
 if __name__ == "__main__":
 
     def get_california_entities_test():
@@ -102,4 +104,3 @@ if __name__ == "__main__":
         print(len(entities), entities)
 
     get_california_entities_test()
-

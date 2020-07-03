@@ -569,8 +569,10 @@ def get_viewport(lat, lng, goog_size_var):
     state when loading google maps for a particular region
     """
     # TODO: pull this into the lat, lng or add helper function
-    nw = (lat + goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng - goog_size_var * LNG_VIEWPORT_MULTIPLIER)
-    se = (lat - goog_size_var * LAT_VIEWPORT_MULTIPLIER, lng + goog_size_var * LNG_VIEWPORT_MULTIPLIER)
+    nw = (lat + goog_size_var * LAT_VIEWPORT_MULTIPLIER,
+          lng - goog_size_var * LNG_VIEWPORT_MULTIPLIER)
+    se = (lat - goog_size_var * LAT_VIEWPORT_MULTIPLIER,
+          lng + goog_size_var * LNG_VIEWPORT_MULTIPLIER)
     return nw, se
 
 
@@ -587,11 +589,14 @@ if __name__ == "__main__":
                  {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'},
                  {'name': 'Kroger', 'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'},
                  {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'},
-                 {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'},
-                 {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'},
+                 {'name': "Nino's Italian Restaurant",
+                     'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'},
+                 {'name': 'Sally Beauty Clearance Store',
+                     'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'},
                  {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'},
                  {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'},
-                 {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'},
+                 {'name': 'Top Spice Thai & Malaysian Cuisine',
+                     'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'},
                  {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'},
                  {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
 
