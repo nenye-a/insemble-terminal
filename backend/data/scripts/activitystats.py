@@ -20,24 +20,6 @@ TEST = "terminal.test"
 TEST_DB = utils.SYSTEM_MONGO.get_collection(TEST)
 
 
-def activity_statistics(num_results=50):
-
-    sample = utils.DB_TERMINAL_PLACES.aggregate([
-        {'$sample': {
-            'size': num_results
-        }},
-        {'$match': {
-            '$and': [{'address': {'$ne': None}},
-                     {'address': {'$exists': True}}],
-            'name': {'$ne': None}
-        }},
-        {'$project': {
-            'address': 1,
-            'name': 1
-        }}
-    ])
-
-
 def generate_dataframe(results):
 
     time = dt.datetime.utcnow().replace(microsecond=0).isoformat()
@@ -50,164 +32,6 @@ def generate_dataframe(results):
 
     result_dataframe.to_csv(GENERATED_PATH + 'result_df_' + time + '.csv')
     stats_dataframe.to_csv(GENERATED_PATH + 'stats_df_' + time + '.csv')
-
-
-def update_activity(query=None):
-    pipeline = [
-        # # SIMPLE SAMPLE (Temporary)
-        # {'$match': {
-        #     'google_details.activity.0.0': {
-        #         '$type': 'array'
-        #     }
-        # }},
-        # {'$sample': {
-        #     'size': 50
-        # }},
-        ##############
-        {'$unwind': {'path': '$google_details.activity',
-                     'preserveNullAndEmptyArrays': True}},
-        {'$unwind': {'path': '$google_details.activity',
-                     'preserveNullAndEmptyArrays': True}},
-        # INCLUDE TO PARSE NEW STYLE LIST:
-        {'$set': {
-            'google_details.activity': {
-                '$arrayElemAt': [
-                    '$google_details.activity', 1
-                ]
-            }
-        }},
-        {'$unwind': {'path': '$google_details.activity',
-                     'preserveNullAndEmptyArrays': True}},
-        #######
-        {'$group': {
-            '_id': '$_id',
-            'activity': {'$addToSet': '$google_details.activity'},
-            'activity_volume': {'$sum': '$google_details.activity'}}},
-        {'$set': {
-            'avg_activity': {
-                '$filter': {
-                    'input': '$activity',
-                    'as': 'num',
-                    'cond': {'$gt': ['$$num', 0]}
-                }
-            }
-        }},
-        {'$project': {
-            'activity_volume': {
-                '$cond': [{'$eq': ['$activity_volume', 0]}, -1, '$activity_volume']
-            },
-            'avg_activity': {
-                '$round': [
-                    {
-                        '$cond': [
-                            {'$gt': [{'$size': '$avg_activity'}, 0]},
-                            {'$divide': [
-                                {'$sum': '$avg_activity'},
-                                {'$size': '$avg_activity'}
-                            ]}, -1
-                        ]
-                    }, 2
-                ]
-            }
-        }},
-        {"$merge": "activity-levels"}
-    ]
-
-    if query:
-        pipeline.insert(0, {
-            '$match': query
-        })
-
-    utils.DB_TERMINAL_PLACES.aggregate(pipeline, allowDiskUse=True)
-    print("Finished creating all the activities. Now migrating them to db.")
-    activity_db = utils.SYSTEM_MONGO.get_collection("terminal.activity-levels")
-    activity_db.aggregate([
-        {"$merge": {"into": "places"}}
-    ])
-    activity_db.drop()
-
-
-def revise_activity():
-    # Make revisions for the activity of places.
-    pass
-
-
-def update_brand_volume():
-
-    utils.DB_TERMINAL_PLACES.aggregate(
-        [
-            {
-                '$group': {
-                    '_id': '$name',
-                    'ids': {
-                        '$push': '$_id'
-                    },
-                    'total_volume': {
-                        '$sum': {
-                            '$cond': [
-                                {
-                                    '$gt': [
-                                        '$activity_volume', 0
-                                    ]
-                                }, '$activity_volume', 0
-                            ]
-                        }
-                    },
-                    'total_count': {
-                        '$sum': {
-                            '$cond': [
-                                {
-                                    '$gt': [
-                                        '$activity_volume', 0
-                                    ]
-                                }, 1, 0
-                            ]
-                        }
-                    }
-                }
-            }, {
-                '$project': {
-                    '_id': '$ids',
-                    'name': '$_id',
-                    'brand_volume': {
-                        '$cond': [
-                            {
-                                '$gt': [
-                                    '$total_count', 0
-                                ]
-                            }, {
-                                '$divide': [
-                                    '$total_volume', '$total_count'
-                                ]
-                            }, -1
-                        ]
-                    }
-                }
-            }, {
-                '$unwind': {
-                    'path': '$_id'
-                }
-            }, {
-                '$sort': {
-                    'brand_volume': -1
-                }
-            }, {
-                '$merge': 'brand_activity'
-            }
-        ], allowDiskUse=True
-    )
-
-    print('Done aggregating brand activity, beginning merge.')
-
-    update_db = utils.SYSTEM_MONGO.get_collection("terminal.brand_activity")
-    update_db.aggregate([
-        {"$project": {
-            "_id": 1,
-            "brand_volume": 1
-        }},
-        {"$merge": {"into": "places"}}
-    ])
-    update_db.drop()
 
 
 def stats_by_key(key):
@@ -354,33 +178,6 @@ def stats_by_key(key):
     pd.DataFrame(places).set_index('_id').to_csv(GENERATED_PATH + key[1:] + '_stats.csv')
 
 
-def test_activity():
-
-    places = list(utils.DB_TERMINAL_PLACES.aggregate([
-        {
-            '$match': {
-                'avg_activity': {'$ne': -1}
-            }},
-        {'$project': {
-            'name': 1,
-            '_id': 0,
-            'avg_activity': 1,
-            'activity_volume': 1,
-            'length': {
-                '$cond': [
-                    {'$ne': ["$google_details.activity", None]},
-                    {"$size": "$google_details.activity"},
-                    None
-                ]
-            }
-        }}
-    ]))
-
-    place_df = pd.DataFrame(places)
-    place_df.to_csv(GENERATED_PATH + 'places_activity.csv')
-    place_df.describe().to_csv(GENERATED_PATH + 'place_activity_stats.csv')
-
-
 def remove_long_items():
 
     for item in [10, 15, 20, 25, 30, 35, 40, 50, 60, 70]:
@@ -394,17 +191,6 @@ def remove_long_items():
         }})
 
         print(places.modified_count)
-
-
-def refactor_activities():
-
-    utils.DB_TERMINAL_PLACES.update_many({
-        'google_details.activity': None
-    }, {
-        '$set': {
-            'google_details.activity': []
-        }
-    })
 
 
 def fill_population():
@@ -478,6 +264,4 @@ if __name__ == "__main__":
     # get_one_mile()
     # update_activity()
     # merge_activity()
-    update_brand_volume()
-    # merge_brand_activity()
     pass

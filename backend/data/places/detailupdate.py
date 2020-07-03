@@ -165,6 +165,78 @@ def setup(query={}):
     utils.DB_TERMINAL_PLACES.aggregate(pipeline)
 
 
+def add_city_state(scope='all'):
+    """
+    Use mongodb aggregation to add cities to all the details
+    within the terminal database, assuming that the address
+    includes a 'city, state zip' structure. Example:
+    'Los Angeles, CA 90012'
+
+    Parameters:
+    ==========
+        scope (string) - 'all' (city and state), 'city' (city alone), 'state' (state alone)
+    """
+
+    print(utils.DB_TERMINAL_PLACES.update_many({
+        'city': {'$exists': False}
+    }, [
+        {'$set': {
+            'city_state': {'$regexFind': {
+                'input': '$address',
+                'regex': r'([^,]+), ([A-Z]{2}) (\d{5})'
+            }}
+        }},
+        {'$set': {
+            'city': {
+                '$substr': [
+                    {
+                        '$arrayElemAt': ["$city_state.captures", 0]
+                    }, 1, -1
+                ]
+            },
+            'state': {
+                '$arrayElemAt': ["$city_state.captures", 1]
+            }
+        }},
+        {'$unset': 'city_state'}
+    ]).modified_count)
+
+
+def apply_county_tags():
+    regions = utils.DB_REGIONS.find({
+        'type': "county",
+        'processed': None
+    }, {
+        'name': 1,
+        'geometry': 1,
+        'rank': 1
+    })
+
+    for region in regions:
+        county_name = region['name'].split(' - ')[0]
+        update = utils.DB_TERMINAL_PLACES.update_many({
+            'location': {
+                '$geoWithin': {
+                    '$geometry': region['geometry']
+                }
+            }
+        }, {
+            '$set': {
+                'county': county_name
+            }
+        })
+
+        utils.DB_REGIONS.update_one({
+            '_id': region['_id']
+        }, {
+            '$set': {
+                'processed': True
+            }
+        })
+
+        print(f"{update.modified_count} updated with {county_name} as county.")
+
+
 if __name__ == "__main__":
 
     # setup()
