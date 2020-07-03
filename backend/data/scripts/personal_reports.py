@@ -101,7 +101,7 @@ def generate_report(name, company, address, city, contact_type,
         return None
 
     query_list.extend(queries)
-    print(f'Queries collection. Generating personal report for {name}')
+    print(f'Queries collected. Generating personal report for {name}')
 
     report_name = f"{company} report for {name}"
     report, terminal_id = helper.create_shared_report(
@@ -158,39 +158,42 @@ def logic_handler(company, address, city, contact_type,
     print(coords)
     print()
 
+    matches_type = lambda term: term.lower() in contact_type.lower()
+    contains_type = lambda *term_list: any(map(matches_type, term_list))
+
     # if type retailer
-    if 'retailer' in contact_type:
+    if contains_type('retailer'):
         return process_retailer(company, location, database=database)
 
     # if type landlord
-    if ('owner' or 'hospitality industry' or 'shopping center management') in contact_type:
+    if contains_type('owner', 'hospitality industry', 'shopping center management'):
         return process_landlord(address, city, location, database=database)
         # return process_broker(location)
 
     # if type broker
-    if ('real estate services' or 'retail broker' or 'tenant services') in contact_type:
+    if contains_type('real estate services', 'retail broker', 'tenant services'):
         return process_broker(location, database=database)
 
     # if type municipality
-    if 'public sector' in contact_type:
+    if contains_type('public sector'):
         return None
 
     # if type scholar
-    if ('academic institution' or 'student') in contact_type:
+    if contains_type('academic institution', 'student'):
         return None
 
     # if type people researcher
-    if ('Consumer/Market Research'.lower() or 'Financial/Investment Services'.lower() or
-            'Parking and Traffic'.lower()) in contact_type:
+    if contains_type('Consumer/Market Research', 'Financial/Investment Services',
+                     'Parking and Traffic'):
         return None
 
     # if type services
-    if ('advertising/marketing/pr' or 'architecture/design/engineering' or
-            'Building Materials/Structural'.lower() or 'Computer Software/Hardware'.lower() or
-            'Construction'.lower() or 'insurance' or 'law firm' or 'lending institution' or
-            'maintenance' or 'other business services' or 'personell services' or
-            'press/media' or 'publications/publishers' or 'trade association' or
-            'utilities/telecommunication') in contact_type:
+    if contains_type('advertising/marketing/pr', 'architecture/design/engineering',
+                     'Building Materials/Structural', 'Computer Software/Hardware',
+                     'Construction', 'insurance', 'law firm', 'lending institution',
+                     'maintenance', 'other business services', 'personell services',
+                     'press/media', 'publications/publishers', 'trade association',
+                     'utilities/telecommunication'):
         return None
 
     # TODO check to see if city is something within our viewports
@@ -1094,5 +1097,15 @@ if __name__ == "__main__":
     # test_find_competitor_with_activity()
     # filename = THIS_DIR + '/files/icsc_emails_short_retailer_owner.csv'
     # filename = THIS_DIR + '/files/test_emails.csv'
-    filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
-    report_from_csv(filename)
+    # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
+    # report_from_csv(filename)
+
+    print(generate_report(
+        name=None,
+        company="Volk Company",
+        address='10230 N 32nd St, Phoenix, AZ',
+        city='Phoenix, AZ',
+        contact_type='retail broker',
+        first_name='Terry',
+        last_name='Dahlstrom'
+    ))
