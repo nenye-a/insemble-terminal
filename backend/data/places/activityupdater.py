@@ -2,6 +2,10 @@ import utils
 
 
 def revise_activity():
+    """
+    Takes the existing activity indicators and stores in places history as a
+    revision.
+    """
 
     utils.DB_TERMINAL_PLACES.aggregate([
         {'$project': {
