@@ -11,15 +11,17 @@ import datetime as dt
 import pandas as pd
 import dateutil.parser as tparser
 import pytz
+from billiard.pool import Pool
+from functools import partial
+from decouple import config
+
 from postgres import PostConnect
 from graphql import gql
 from fuzzywuzzy import process
 from rss import feeds
 from google import GoogleNewsScraper
-from billiard.pool import Pool
+from newsemailer import email_report
 
-from emailer import email_report
-from decouple import config
 
 '''
 Generates file of content the be delivered to users via email.
@@ -163,7 +165,8 @@ class NewsManager():
                         'data_type': 'city',
                     }
                 }, upsert=True)
-                print('{} updated with content. {} modified.'.format(city, city_update.modified_count))
+                print('{} updated with content. {} modified.'.format(
+                    city, city_update.modified_count))
 
                 people_update = self.collection.update_many({
                     'city': {'$regex': r'^' + city},
@@ -295,6 +298,98 @@ class NewsManager():
 
             print("{}: News emailed to {}".format(self.name, email))
 
+    def email_aync(self, enforce_conversion=True, update=False):
+        """
+        Emails all the subscribed folks in the list with generated emails.
+        """
+
+        while True:
+
+            people = len(self.collection.find({
+                'content_generated': True,
+                'content_emailed': False,
+                'email': {'$nin': self.unsubscribed}
+            }).limit(100))
+
+            if not people:
+                print("All emails completed!")
+                break
+
+            pool_exists = False
+
+            try:
+                email_pool, pool_exists = Pool(min(15, len(people))), True
+                updated_people = email_pool.map(partial(
+                    self.push_email,
+                    enforce_conversion=enforce_conversion,
+                    update=update
+                ), people)
+            except KeyError as key_e:
+                print(f'Key Error: {key_e}')
+                updated_people = []
+            except Exception as e:
+                print(f'Observed: \n{type(e)}: {e}')
+                updated_people = []
+            finally:
+                if pool_exists:
+                    email_pool.close()
+                    email_pool.terminate()
+
+            modified_count = 0
+            for person in updated_people:
+                modified_count += self.collection.update_one({
+                    '_id': person['_id']
+                }, {'$set': person}).modified_count
+                print('Emailed {}({}) with a report!'.format(person['email'], person['_id']))
+            print(f'\n{modified_count} contacts updated!\n')
+
+            for person in people:
+
+                self.collection.update_one({
+                    '_id': person['_id']
+                }, {
+                    '$set': {
+                        'content_emailed': True
+                    }
+                })
+
+                print("{}: News emailed to {}".format(self.name, person['email']))
+
+    def push_email(self, person, enforce_conversion, update):
+
+        query = {'name': person['parsed_city'], 'data_type': 'city'}
+        if enforce_conversion:
+            query.update({'links_processed': True})
+        content = self.collection.find_one(query)
+        if not content or not content['news']:
+            print("No content available for {}. Moving on.".format(
+                person['email'] + str(person['_id'])
+            ))
+            return None
+
+        news_list = []
+        for news in content['news']:
+            temp_timezone = pytz.UTC.localize(
+                news['published']).astimezone(pytz.timezone("America/Los_Angeles"))
+            news['published'] = temp_timezone.strftime("%a %b %d") + " (PT)"
+            news['title'] = utils.format_punct(news['title'])
+            news['description'] = utils.format_punct(news['description'])
+            if not news['title'] or not news['description']:
+                continue
+            news_list.append(news)
+
+        email = person['email']
+        email_report(
+            to_email=email,
+            header_text="{} News Report".format(
+                person['parsed_city']
+            ),
+            linear_entries=news_list[:3],
+            grid_entries=news_list[3:7],
+            update=update
+        )
+        return True
+
     def get_many_news(self, locations):
 
         news_scraper = GoogleNewsScraper(self.name)
@@ -338,12 +433,15 @@ class NewsManager():
             my_pool = Pool(min(len(locations), 20))
             print('Getting Regional Relevance...')
             if self.regional_news:
-                regional_news = utils.flatten(my_pool.map(NewsManager.relevant_regional_news, locations))
+                regional_news = utils.flatten(my_pool.map(
+                    NewsManager.relevant_regional_news, locations))
             print('Getting National Relevance...')
             if self.national_news:
-                national_news = utils.flatten(my_pool.map(NewsManager.relevant_national_news, locations))
+                national_news = utils.flatten(my_pool.map(
+                    NewsManager.relevant_national_news, locations))
             print('Getting Google Relevance...')
-            google_news = utils.flatten(my_pool.map(NewsManager.relevant_google_news, organized_news.items()))
+            google_news = utils.flatten(my_pool.map(
+                NewsManager.relevant_google_news, organized_news.items()))
             print('Relevance completed...')
         except Exception as e:
             print(e)
@@ -460,7 +558,8 @@ class NewsManager():
                 if len(matching_word[0]) < 3:
                     # remove potential filler matches
                     continue
-                relevance_score = relevance_score + float(weight_word(matching_word[1])) / 10 * this_scorer[word]
+                relevance_score = relevance_score + \
+                    float(weight_word(matching_word[1])) / 10 * this_scorer[word]
 
         return round(relevance_score, 1)
 
@@ -491,7 +590,8 @@ class NewsManager():
         update_source.loc[:, email_index] = update_source.loc[:, email_index].apply(
             lambda email: email.lower() if isinstance(email, str) else None
         )
-        update_source.loc[:, city_index] = update_source.loc[:, city_index].apply(NewsManager.format_city)
+        update_source.loc[:, city_index] = update_source.loc[:,
+                                                             city_index].apply(NewsManager.format_city)
         update_source = update_source[~update_source[email_index].isin(self.unsubscribed)]
 
         update_source["content_generated"] = False
@@ -603,7 +703,8 @@ def parse_city(location) -> dict:
             remaining_details = location[1].strip().split(" ")
             result['city'] = location[0]  # the first item in the list is the city
             result['state'] = remaining_details[0]
-            result['zipcode'] = remaining_details[1].split("-")[0]  # remove any trailing zip code details
+            result['zipcode'] = remaining_details[1].split(
+                "-")[0]  # remove any trailing zip code details
         else:
             # if not in regular format, just do this based off the zip code
             num_match = re.findall(r'\d{5}(?:[-\s]\d{4})?', location)
@@ -631,24 +732,14 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-6/25', national_news=False)
-    # my_generator.convert_links()
-
+    my_generator = NewsManager('Official-7/2', national_news=False)
     # my_generator.generate()
-    # print(my_generator.collection.count_documents({
-    #     # 'data_type': 'contact',
-    #     # 'content_generated': True
-    #     # 'links_processed': True,
-    #     'data_type': 'city',
-    # }))
+    # my_generator.convert_links()
     my_generator.email(update=True)
-    # my_generator._update_contact_cities()
 
-    # test_generator = NewsManager('Test-5', national_news=False)
-    # test_generator.generate()
-    # test_generator.convert_links(old_link=True)
-    # test_generator.email(update=True)
-    # print(test_generator.collection.count_documents({
-    #     # 'data_type': 'contact'
-    #     # 'content_generated': True
+    # print(my_generator.collection.count_documents({
+    #     'data_type': 'contact',
+    #     'content_generated': True
+    #     # 'links_processed': True,
+    #     # 'data_type': 'city',
     # }))

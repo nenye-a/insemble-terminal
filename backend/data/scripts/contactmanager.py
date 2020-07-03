@@ -128,15 +128,24 @@ def get_contacts_collection(collection_name):
 
 def prune_bad_apples(collection_name):
     collection = get_contacts_collection(collection_name)
+    remove_regex = (
+        r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
+        r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
+        r'(?:site( ?)zeus)|(?:buxton)'
+    )
     deleted = collection.delete_many({
-        'company': {
-            '$regex': (
-                r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
-                r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
-                r'(?:site( ?)zeus)|(?:buxton)'
-            ),
-            '$options': "i"
-        }
+        '$or': [
+            {'company': {
+                '$regex': remove_regex,
+                '$options': "i"
+            }},
+            {'email': {
+                '$regex': remove_regex,
+                '$options': "i"
+            }}
+
+        ]
+
     })
 
     print("Deleted {} bad apples.".format(deleted.deleted_count))
@@ -536,7 +545,7 @@ def print_to_csv(collection_name):
 
     contacts = pd.DataFrame(get_contacts_collection(collection_name).find({
         'email': {'$ne': None},
-        'address_street': {'$ne': None},
+        # 'address_street': {'$ne': None},
         'address_city_state': {'$ne': None}
     }, {
         '_id': 0
@@ -751,4 +760,4 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    create_prelight_collection()
+    # create_prelight_collection()
