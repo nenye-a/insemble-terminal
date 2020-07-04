@@ -4,7 +4,6 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.extend([THIS_DIR, BASE_DIR])
 
-import utils
 import re
 import json
 import datetime as dt
@@ -15,6 +14,8 @@ from billiard.pool import Pool
 from functools import partial
 from decouple import config
 
+import utils
+import mongo
 from postgres import PostConnect
 from graphql import gql
 from fuzzywuzzy import process
@@ -649,7 +650,7 @@ class NewsManager():
         try:
             self.collection.insert_many(source.to_dict(orient='records'), ordered=False)
             self._update_contact_cities()
-        except utils.BWE as bwe:
+        except mongo.BWE as bwe:
             if bwe.details['nInserted'] > 0:
                 self._update_contact_cities()
 

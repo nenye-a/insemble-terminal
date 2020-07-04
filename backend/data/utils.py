@@ -17,10 +17,14 @@ import mongo
 Utility methods for this project
 '''
 
-# getting the absolute path of this directory to ensure we can alwauys find our fiels
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+STATE_DICT = pd.read_csv(THIS_DIR + '/util/stateabbreviations.csv').set_index("Code")
+
+# Scalers
 MILES_TO_METERS_FACTOR = 1609.34
 EARTHS_RADIUS_MILES = 3958.8
+
+# Regexes & Patterns
 TAG_RE = re.compile(r'<[^>]+>')
 SPACE_RE = re.compile(r' +')
 ADDRESS_END_REGEX = r'([^,]+), ([A-Z]{2}) (\d{5})?'
@@ -31,6 +35,7 @@ LEFT_QUOTE = '&#8220;'
 RIGHT_QUOTE = '&#8221;'
 SPACE = '\xa0'
 
+# Databases
 SYSTEM_MONGO = mongo.Connect()  # client, MongoDB connection
 DB_PLACES = SYSTEM_MONGO.get_collection(mongo.PLACES)
 DB_BRANDS = SYSTEM_MONGO.get_collection(mongo.BRANDS)
@@ -48,12 +53,6 @@ DB_ZIPS = SYSTEM_MONGO.get_collection(mongo.ZIPS)
 DB_UNSUBSCRIBED = SYSTEM_MONGO.get_collection(mongo.UNSUBSCRIBED)
 DB_FEEDS = SYSTEM_MONGO.get_collection(mongo.FEEDS)
 DB_DOMAINS = SYSTEM_MONGO.get_collection(mongo.DOMAINS)
-BWE = mongo.BulkWriteError
-
-DB_MS_COORDINATES = SYSTEM_MONGO.get_collection(mongo.MS_COORDINATES)
-DB_MINESWEEPER_PLACES = SYSTEM_MONGO.get_collection(mongo.MINESWEEPER_PLACES)
-
-STATE_DICT = pd.read_csv(THIS_DIR + '/util/stateabbreviations.csv').set_index("Code")
 
 
 def create_index(collection):
@@ -158,26 +157,6 @@ def create_index(collection):
             unique=True,
             partialFilterExpression={'rank': {'$exists': True}, 'type': {'$exists': True}}
         )
-    # TODO: Remove or Archive Minesweeper items.
-    if collection.lower() == 'ms_coordinates':
-        DB_MS_COORDINATES.create_index([('center', 1)])
-        DB_MS_COORDINATES.create_index([('center', 1), ('viewport', 1), ('zoom', 1)])
-        DB_MS_COORDINATES.create_index(
-            [('center', 1), ('viewport', 1), ('zoom', 1), ('query_point', 1)], unique=True)
-        DB_MS_COORDINATES.create_index([('query_point', "2dsphere")])
-        DB_MS_COORDINATES.create_index([('processed_terms', 1)])
-    if collection.lower() == 'minesweeper_places':
-        DB_MINESWEEPER_PLACES.create_index([('name', 1), ('address', 1)], unique=True, sparse=True)
-        DB_MINESWEEPER_PLACES.create_index([('location', "2dsphere")])
-        DB_MINESWEEPER_PLACES.create_index([('nearby_location.location', "2dsphere")])
-        DB_MINESWEEPER_PLACES.create_index([('name', "text"),
-                                            ('google_details.name', "text"),
-                                            ('yelp_details.name', "text")])
-        DB_MINESWEEPER_PLACES.create_index([('opentable_details.rating', -1)])
-        DB_MINESWEEPER_PLACES.create_index([('opentable_details.neighborhood', 1)])
-        DB_MINESWEEPER_PLACES.create_index([('opentable_details.bookings', -1)])
-        DB_MINESWEEPER_PLACES.create_index([('opentable_detials.price_tier', -1)])
-        DB_MINESWEEPER_PLACES.create_index([('opentable_detials.category', 1)])
     if collection.lower() == 'stats':
         DB_STATS.create_index([('stat_name', 1)], unique=True)
     if collection.lower() == 'misc':
@@ -389,7 +368,7 @@ def format_punct(text):
 
 def get_alternative_source(key, preffered_dict, default_dict):
     """pull detail from a preferred dict, if not will pull from default dict or return none"""
-    return preffered_dict[key] if key in preffered_dict and preffered_dict[key] else default_dict.get(key, None)
+    return preffered_dict[key] if inbool(preffered_dict, key) else default_dict.get(key, None)
 
 
 def fuzzy_match(query, target):
@@ -397,7 +376,7 @@ def fuzzy_match(query, target):
     if ratio >= 80:
         return True
     else:
-        print("Fuzzymatch failed. Ratio: {} | Query: {} | Target: {}".format(ratio, query, target))
+        print(f"Fuzzymatch failed. Ratio: {ratio} | Query: {query} | Target: {target}")
         return False
 
 
@@ -535,7 +514,7 @@ def dictionary_diff(previous, new, replaced=True):
 
 def alpanumeric(string):
     """Strips string of non alphanumeric characters"""
-    pattern = re.compile('[\W_]+')
+    pattern = re.compile(r'[\W_]+')
     return pattern.sub('', string)
 
 

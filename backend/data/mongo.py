@@ -10,6 +10,9 @@ as well as actual connection to the databases that are used.
 
 '''
 
+# Errors
+BWE = BulkWriteError
+
 # Authentication
 MONGO_USER = config('MONGO_USER')
 MONGO_PASS = config('MONGO_DB_PASS')
@@ -31,12 +34,7 @@ ZIPS = "news.zipcodes"
 UNSUBSCRIBED = "news.unsubscribed"
 FEEDS = "news.feeds"
 DOMAINS = "contacts.domains"
-
 MISC = "terminal.misc"
-
-# TODO: Remove or Archive
-MINESWEEPER_PLACES = "terminal.minesweeper_places"
-MS_COORDINATES = "terminal.ms_coordinates"
 
 
 class Connect(object):

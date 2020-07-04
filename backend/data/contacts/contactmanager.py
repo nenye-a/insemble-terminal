@@ -15,6 +15,7 @@ from billiard.pool import Pool
 from fuzzywuzzy import fuzz
 
 import utils
+import mongo
 import contact as contact_funcs
 
 DB_DOMAINS = utils.SYSTEM_MONGO.get_collection("contacts.domains")
@@ -72,7 +73,7 @@ def insert_from_pdf(collection_name, pdf, replace=False):
     try:
         collection.insert_many(contacts, ordered=False)
         number_inserted = len(contacts)
-    except utils.BWE as bwe:
+    except mongo.BWE as bwe:
         number_inserted = bwe.details['nInserted']
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
@@ -192,7 +193,7 @@ def insert_from_csv(collection_name, csv, replace=False):
         insert_docs = insert_df.to_dict(orient='records')
         collection.insert_many(insert_docs, ordered=False)
         number_inserted = len(insert_docs)
-    except utils.BWE as bwe:
+    except mongo.BWE as bwe:
         number_inserted = bwe.details['nInserted']
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
