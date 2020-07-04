@@ -4,9 +4,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(THIS_DIR)
 sys.path.extend([THIS_DIR, BASE_DIR])
 
-import performance
 import performancev2
-import re
 import utils
 import pandas as pd
 from fuzzywuzzy import fuzz
@@ -23,36 +21,25 @@ def generate_report(brand_name, custom_query=None):
     if custom_query:
         query.update(custom_query)
 
-    items = utils.DB_TERMINAL_PLACES.find(query)
+    places = utils.DB_TERMINAL_PLACES.find(query)
     results_list = []
-    all_retail_volume = utils.DB_STATS.find_one({'stat_name': 'activity_stats'})['avg_total_volume']
-    for item in items:
-        if fuzz.WRatio(brand_name, item['name']) < 80:
+    for place in places:
+        if fuzz.WRatio(brand_name, place['name']) < 80:
             continue
-        if 'google_details' in item:
-            volume = item['activity_volume']
-            results_list.append({
-                'name': item['name'],
-                'address': item['address'],
-                'customerVolumeIndex': round(performancev2.BASELINE * volume / all_retail_volume) if all_retail_volume else None,
-
-                'localRetailIndex': round(performancev2.BASELINE * volume / item['local_retail_volume'])
-                if (volume != 0 and 'local_retail_volume' in item and item['local_retail_volume'] != -1) else None,
-
-                'localCategoryIndex': round(performancev2.BASELINE * volume / item['local_category_volume'])
-                if (volume != 0 and 'local_category_volume' in item and item['local_category_volume'] != -1) else None,
-
-                'nationalIndex': round(performancev2.BASELINE * volume / item['brand_volume'])
-                if (volume != 0 and 'brand_volume' in item and item['brand_volume'] != -1) else None,
-            })
+        results_list.append(performancev2.parse_details(place))
 
     file_name = brand_name.lower()
     my_dataframe = pd.DataFrame(results_list)
-    my_dataframe.sort_values('customerVolumeIndex', ascending=False).reset_index(drop=True).to_csv(file_name + '_report_values.csv')
+    my_dataframe.sort_values('customerVolumeIndex', ascending=False).reset_index(
+        drop=True).to_csv(file_name + '_report_values.csv')
     my_dataframe.describe().to_csv(file_name + '_report_stats.csv')
 
 
 def compare_bookings_activity():
+
+    # TODO:
+    # Needs to be refactored to use the latest and greatest database and
+    # activity fields.
 
     total_items = utils.DB_CITY_TEST.count_documents({})
     with_opentable = total_items - utils.DB_CITY_TEST.count_documents({'opentable_results': None})
@@ -100,101 +87,6 @@ def compare_bookings_activity():
     my_dataframe.to_csv('bookings_activity')
 
 
-def compare_locations_terminal():
-    terminal_items = list(utils.DB_TERMINAL_itemS.find({
-        'location': {
-            '$geoWithin': {
-                '$geometry': {
-                    "type": "Polygon",
-                    "coordinates": [[
-                        [-118.716606, 34.236143],
-                        [-118.106859, 34.236143],
-                        [-118.106859, 33.804815],
-                        [-118.716606, 33.804815],
-                        [-118.716606, 34.236143]
-                    ]]
-                }
-            }
-        },
-    }, {
-        'name': 1,
-        'location': 1
-    }))
-    count = 0
-    matching_count = 0
-    for item in terminal_items:
-        matching_item = utils.DB_itemS.find_one({
-            'location': {
-                '$near': {
-                    '$geometry': item['location'],
-                    '$maxDistance': 3
-                }
-            }
-        })
-        if matching_item:
-            count += 1
-            if fuzz.WRatio(matching_item['name'], item['name']) > 0:
-                matching_count += 1
-        if count % 100 == 0:
-            print("{} matching items found.".format(count))
-
-    print("Total Count:", count)
-    print("Total Matching Count:", matching_count)
-
-
-def compare_locations_fast():
-    terminal_items = list(utils.DB_TERMINAL_itemS.find(
-        {'location': {'$exists': True}},
-        {'location': 1}
-    ))
-    locations = [terminal_item['location'] for terminal_item in terminal_items]
-    diff_list = list(utils.DB_itemS.find({
-        '$and': [
-            {'location': {
-                '$geoWithin': {
-                    '$geometry': {
-                        "type": "Polygon",
-                        "coordinates": [[
-                            [-118.716606, 34.236143],
-                            [-118.106859, 34.236143],
-                            [-118.106859, 33.804815],
-                            [-118.716606, 33.804815],
-                            [-118.716606, 34.236143]
-                        ]]
-                    }
-                }
-            }},
-            {'location': {'$nin': locations}}
-        ]
-    }, {
-        'name': 1, 'address': 1, 'categories': 1, 'location': 1
-    }))
-    print(len(diff_list))
-    pd.DataFrame(diff_list).to_csv('diff.csv')
-
-
-def num_insemble_in_viewport():
-    insemble_items = list(utils.DB_itemS.find({
-        'location': {
-            '$geoWithin': {
-                '$geometry': {
-                    "type": "Polygon",
-                    "coordinates": [[
-                        [-118.716606, 34.236143],
-                        [-118.106859, 34.236143],
-                        [-118.106859, 33.804815],
-                        [-118.716606, 33.804815],
-                        [-118.716606, 34.236143]
-                    ]]
-                }
-            }
-        },
-        "name": {"$regex": "^Popeyes Louisiana"}
-    }))
-    num_items_in_insemble = len(insemble_items)
-    print(num_items_in_insemble)
-
-
 def categories():
     sorted_items = utils.DB_itemS.find({
         'location': {
@@ -227,59 +119,9 @@ def categories():
         if counter % 1000 == 0:
             print("{} matching items found.".format(counter))
 
-    categories = {k: v for k, v in sorted(categories.items(), key=lambda item: item[1], reverse=True)}
+    categories = {k: v for k, v in sorted(
+        categories.items(), key=lambda item: item[1], reverse=True)}
     print(categories)
-
-
-def categories_terminal():
-    sorted_items = utils.DB_TERMINAL_itemS.find({
-        'location': {
-            '$geoWithin': {
-                '$geometry': {
-                    "type": "Polygon",
-                    "coordinates": [[
-                        [-118.716606, 34.236143],
-                        [-118.106859, 34.236143],
-                        [-118.106859, 33.804815],
-                        [-118.716606, 33.804815],
-                        [-118.716606, 34.236143]
-                    ]]
-                }
-            }
-        },
-        'google_details.type': {'$ne': None}
-    })
-
-    categories = {}
-    counter = 0
-    for item in sorted_items:
-        category = item['google_details']['type'].split(" in ")[0]
-        categories[category] = categories.get(category, 0) + 1
-        counter += 1
-        if counter % 1000 == 0:
-            print("{} matching items found.".format(counter))
-
-    categories = {k: v for k, v in sorted(categories.items(), key=lambda item: item[1], reverse=True)}
-    print(categories)
-
-
-def deterimine_cities():
-
-    cities = list(set([utils.extract_city(item['address']) for item in
-                       utils.DB_TERMINAL_itemS.find({'address': {'$exists': True}}, {'address': 1})]))
-    pd.Series(list(set(cities))).to_csv('cities.csv')
-
-
-def get_stage_locations():
-
-    locations = utils.DB_COORDINATES.find({
-        'zoom': 15,
-        '$or': [
-            {'stage': 2},
-            {'stage': 3}
-        ]
-    })
-    pd.DataFrame([utils.from_geojson(location['query_point'], as_dict=True) for location in locations]).to_csv('new_items.csv')
 
 
 def view_locations(query):
@@ -328,27 +170,4 @@ def observe_activity():
 
 
 if __name__ == "__main__":
-    # generate_report('Great Clips', custom_query={'address': {
-    #     '$regex': ".*FL",
-    #     "$options": "i"
-    # }})
-    generate_report('Dunkin', custom_query={
-        'state': 'CA'
-        # '$or': [
-        #     {'city': 'Los Angeles'},
-        #     {'city': 'Los Angeles'}
-        # ]
-    })
-    # compare_bookings_activity()
-    # compare_locations()
-    # categories()
-    # compare_locations_fast()
-    # num_insemble_in_viewport()
-    # categories_terminal()
-    # deterimine_cities()
-    # determine_overlap()
-    # view_locations({
-    #     'address': {"$regex": "NY"}
-    # })
-    # deterimine_cities()
-    # observe_activity()
+    pass

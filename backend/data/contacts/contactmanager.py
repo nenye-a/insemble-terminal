@@ -15,6 +15,7 @@ from billiard.pool import Pool
 from fuzzywuzzy import fuzz
 
 import utils
+import mongo
 import contact as contact_funcs
 
 DB_DOMAINS = utils.SYSTEM_MONGO.get_collection("contacts.domains")
@@ -72,7 +73,7 @@ def insert_from_pdf(collection_name, pdf, replace=False):
     try:
         collection.insert_many(contacts, ordered=False)
         number_inserted = len(contacts)
-    except utils.BWE as bwe:
+    except mongo.BWE as bwe:
         number_inserted = bwe.details['nInserted']
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
@@ -128,15 +129,24 @@ def get_contacts_collection(collection_name):
 
 def prune_bad_apples(collection_name):
     collection = get_contacts_collection(collection_name)
+    remove_regex = (
+        r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
+        r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
+        r'(?:site( ?)zeus)|(?:buxton)'
+    )
     deleted = collection.delete_many({
-        'company': {
-            '$regex': (
-                r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
-                r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
-                r'(?:site( ?)zeus)|(?:buxton)'
-            ),
-            '$options': "i"
-        }
+        '$or': [
+            {'company': {
+                '$regex': remove_regex,
+                '$options': "i"
+            }},
+            {'email': {
+                '$regex': remove_regex,
+                '$options': "i"
+            }}
+
+        ]
+
     })
 
     print("Deleted {} bad apples.".format(deleted.deleted_count))
@@ -183,7 +193,7 @@ def insert_from_csv(collection_name, csv, replace=False):
         insert_docs = insert_df.to_dict(orient='records')
         collection.insert_many(insert_docs, ordered=False)
         number_inserted = len(insert_docs)
-    except utils.BWE as bwe:
+    except mongo.BWE as bwe:
         number_inserted = bwe.details['nInserted']
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
@@ -536,7 +546,7 @@ def print_to_csv(collection_name):
 
     contacts = pd.DataFrame(get_contacts_collection(collection_name).find({
         'email': {'$ne': None},
-        'address_street': {'$ne': None},
+        # 'address_street': {'$ne': None},
         'address_city_state': {'$ne': None}
     }, {
         '_id': 0
@@ -751,4 +761,4 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    create_prelight_collection()
+    # create_prelight_collection()

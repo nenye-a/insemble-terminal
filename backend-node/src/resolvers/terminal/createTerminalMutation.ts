@@ -16,7 +16,7 @@ export let createTerminalResolver: FieldResolver<
     throw new Error('User not found!');
   }
 
-  await context.prisma.terminal.create({
+  let terminal = await context.prisma.terminal.create({
     data: {
       name,
       description,
@@ -27,18 +27,7 @@ export let createTerminalResolver: FieldResolver<
       },
     },
   });
-
-  let terminals = await context.prisma.terminal.findMany({
-    where: {
-      user: {
-        id: user.id,
-      },
-    },
-    orderBy: {
-      createdAt: 'asc',
-    },
-  });
-  return terminals;
+  return terminal;
 };
 
 export let createTerminal = mutationField('createTerminal', {
@@ -47,6 +36,5 @@ export let createTerminal = mutationField('createTerminal', {
     name: stringArg({ required: true }),
     description: stringArg(),
   },
-  list: true,
   resolve: createTerminalResolver,
 });
