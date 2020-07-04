@@ -485,6 +485,15 @@ def strip_parantheses_context(word):
     return matcher.sub('', word)
 
 
+def extract_domain(website):
+    domain_reg = r'([^\/w.]+\.[^\.\/]+)\/?'
+    match = re.findall(domain_reg, website)
+    if match:
+        return match[0]
+    else:
+        return None
+
+
 def dictionary_diff(previous, new, replaced=True):
     """
     Provided a dictionary, will return a dictionary of the values that have
@@ -663,3 +672,8 @@ if __name__ == "__main__":
         print(extract_city_state('Los Angeles, CA 902123, USA'))
         print(extract_city_state('Los Angeles, CA 902123, USA', 'city'))
         print(extract_city_state('Los Angeles, CA 901293', 'state'))
+
+    def test_extract_domain():
+        print(extract_domain('http://www.76.com/'))
+
+    test_extract_domain()
