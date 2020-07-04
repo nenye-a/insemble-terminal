@@ -174,7 +174,4 @@ class PostConnect(object):
 
 
 if __name__ == "__main__":
-
-    h = PostConnect()
-    print(h.insert_many("BusinessTag", [{"params": "Hello23", "type": "BUSINESS"}, {
-        "params": "Hello25", "type": "BUSINESS"}, {"params": "Hello31", "type": "BUSINESS"}]))
+    pass
