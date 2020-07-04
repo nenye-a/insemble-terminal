@@ -1,14 +1,13 @@
 import re
-import opentable
-from parsers import opentable_parser_all
-import datetime as dt
-import google
-import utils
 import time
-import pandas
 import numpy as np
-from bson import ObjectId
-from pprint import pprint
+import datetime as dt
+
+import opentable
+import google
+import mongo
+import utils
+from parsers import opentable_parser_all
 
 
 NUM_REGEX = r'[-+]?\d*\.?\d*'
@@ -32,11 +31,14 @@ TEST_LIST = [{'name': 'The UPS Store', 'address': '2897 N Druid Hills Rd NE, Atl
              {'name': 'Monterrey Of Smyrna', 'address': '3326 S Cobb Dr SE, Smyrna, GA 30080'},
              {'name': 'Kroger', 'address': '4715 S Atlanta Rd SE, Smyrna, GA 30080'},
              {'name': 'Rainbow Shops', 'address': '2685 Metropolitan Pkwy SW, Atlanta, GA 30315'},
-             {'name': "Nino's Italian Restaurant", 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'},
-             {'name': 'Sally Beauty Clearance Store', 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'},
+             {'name': "Nino's Italian Restaurant",
+                 'address': '1931 Cheshire Bridge Rd NE, Atlanta, GA 30324'},
+             {'name': 'Sally Beauty Clearance Store',
+                 'address': '3205 S Cobb Dr SE Ste E1, Smyrna, GA 30080'},
              {'name': 'Vickery Hardware', 'address': '881 Concord Rd SE, Smyrna, GA 30082'},
              {'name': 'Advance Auto Parts', 'address': '3330 S Cobb Dr SE, Smyrna, GA 30080'},
-             {'name': 'Top Spice Thai & Malaysian Cuisine', 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'},
+             {'name': 'Top Spice Thai & Malaysian Cuisine',
+                 'address': '3007 N Druid Hills Rd NE Space 70, Atlanta, GA 30329'},
              {'name': 'Uph', 'address': '1140 Logan Cir NW, Atlanta, GA 30318'},
              {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
 
@@ -69,7 +71,8 @@ def get_locations_random(region, terms, num_results, batchsize=300):
             } for lat, lng in coords))
 
         # Getting all the stores in the places in the vicinity
-        place_strings = [place_string for place_string in google.get_many_nearby(locations) if place_string not in seen]
+        place_strings = [place_string for place_string in google.get_many_nearby(
+            locations) if place_string not in seen]
         seen.update(place_strings)
         places = [
             dict(zip(
@@ -155,7 +158,8 @@ def get_locations_recursively(term, lat, lng, zoom, results):
     zoom_result, nearby_results, (lat_result, lng_result, sizevar) = nearby_package
 
     viewport = google.get_viewport(lat_result, lng_result, sizevar)
-    print("latlng: ({},{}), nw: {}, se: {}, zoom_result: {}".format(lat, lng, viewport[0], viewport[1], zoom_result))
+    print("latlng: ({},{}), nw: {}, se: {}, zoom_result: {}".format(
+        lat, lng, viewport[0], viewport[1], zoom_result))
 
     # add results to nearby result set
     prev_len = len(results)
@@ -167,14 +171,16 @@ def get_locations_recursively(term, lat, lng, zoom, results):
     if len(nearby_results) >= 15 and num_unique_results >= 5:
         # get 4 new latlng's
         corners = lambda nw, se: [(nw[0], nw[1]), (se[0], se[1]), (nw[0], se[1]), (se[0], nw[1])]
-        new_coords = [((corner[0] + lat) / 2, (corner[1] + lng) / 2) for corner in corners(viewport[0], viewport[1])]
+        new_coords = [((corner[0] + lat) / 2, (corner[1] + lng) / 2)
+                      for corner in corners(viewport[0], viewport[1])]
         print("recursing with new coords: {}".format(new_coords))
 
         # get new zoom
         zoom += 2
 
         # for each of the 4 regions, get locations recursively and add results to the set of results
-        [results.update(get_locations_recursively(term, new_lat, new_lng, zoom, results) or [None]) for (new_lat, new_lng) in new_coords]
+        [results.update(get_locations_recursively(term, new_lat, new_lng, zoom,
+                                                  results) or [None]) for (new_lat, new_lng) in new_coords]
 
     # return results
     results.remove(None) if None in results else ''
@@ -191,7 +197,8 @@ def collect_locations(run_ID=None, run_details=None):
 
     if run_ID is not None:
         run_details = utils.DB_TERMINAL_RUNS.find_one({"_id": run_ID})
-        print("Using details from existing db object for {} in {}".format(run_details['term'], run_details['region']))
+        print("Using details from existing db object for {} in {}".format(
+            run_details['term'], run_details['region']))
     else:
         run_details = run_details
     term = run_details['term']
@@ -222,14 +229,15 @@ def collect_locations(run_ID=None, run_details=None):
     zoom_result, nearby_results, (lat_result, lng_result, sizevar) = nearby_package
 
     viewport = google.get_viewport(lat_result, lng_result, sizevar)
-    print("latlng: ({},{}), nw: {}, se: {}, zoom_result: {}".format(lat, lng, viewport[0], viewport[1], zoom_result))
+    print("latlng: ({},{}), nw: {}, se: {}, zoom_result: {}".format(
+        lat, lng, viewport[0], viewport[1], zoom_result))
 
     # add results to nearby result set
     nearby_results.remove(None) if None in nearby_results else ''
     try:
         num_unique_results = len(utils.DB_TERMINAL_PLACES.insert_many([utils.split_name_address(name_address, as_dict=True)
                                                                        for name_address in nearby_results], ordered=False).inserted_ids)
-    except utils.BWE as bwe:
+    except mongo.BWE as bwe:
         num_unique_results = bwe.details['nInserted']
 
     print("got {} nearby results. {} are new".format(len(nearby_results), num_unique_results))
@@ -240,7 +248,8 @@ def collect_locations(run_ID=None, run_details=None):
     if len(nearby_results) >= 15 and num_unique_results >= 5:
         # get 4 new latlng's
         corners = lambda nw, se: [(nw[0], nw[1]), (se[0], se[1]), (nw[0], se[1]), (se[0], nw[1])]
-        new_coords = [((corner[0] + lat) / 2, (corner[1] + lng) / 2) for corner in corners(viewport[0], viewport[1])]
+        new_coords = [((corner[0] + lat) / 2, (corner[1] + lng) / 2)
+                      for corner in corners(viewport[0], viewport[1])]
         print("recursing with new coords: {}".format(new_coords))
 
         # get new zoom
@@ -250,7 +259,8 @@ def collect_locations(run_ID=None, run_details=None):
         [stack.append((new_lat, new_lng, zoom)) for (new_lat, new_lng) in new_coords]
         run_details['stack'] = stack
 
-    utils.DB_TERMINAL_RUNS.replace_one({"term": run_details['term'], "region": run_details['region']}, run_details, upsert=True)
+    utils.DB_TERMINAL_RUNS.replace_one(
+        {"term": run_details['term'], "region": run_details['region']}, run_details, upsert=True)
 
     # recurse until stack is empty
     collect_locations(run_details=run_details)
@@ -286,7 +296,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             batches = utils.chunks(coords, 100000)
             for batch in batches:
                 utils.DB_COORDINATES.insert_many(batch, ordered=False)
-        except utils.BWE:
+        except mongo.BWE:
             print('Center, viewport, zoom, combo already in databasw, please check.')
             raise
 
@@ -347,7 +357,7 @@ def collect_random_expansion(region, term, zoom=18, batch_size=100):
             if places:
                 utils.DB_TERMINAL_PLACES.insert_many(places, ordered=False)
             number_inserted = len(places) if places else 0
-        except utils.BWE as bwe:
+        except mongo.BWE as bwe:
             number_inserted = bwe.details['nInserted']
         print('Inserted {} new items into the database.'.format(number_inserted))
         utils.DB_COORDINATES.update_many({'_id': {'$in': list(disposable_coord_ids)}}, {'$push': {
@@ -426,7 +436,7 @@ def collect_minesweeper(region, term, zoom=18, batch_size=100):
             batches = utils.chunks(coords, 100000)
             for batch in batches:
                 utils.DB_MS_COORDINATES.insert_many(batch, ordered=False)
-        except utils.BWE:
+        except mongo.BWE:
             print('Center, viewport, zoom, combo already in database, please check.')
             raise
 
@@ -489,7 +499,7 @@ def collect_minesweeper(region, term, zoom=18, batch_size=100):
             if places:
                 utils.DB_MINESWEEPER_PLACES.insert_many(places, ordered=False)
             number_inserted = len(places) if places else 0
-        except utils.BWE as bwe:
+        except mongo.BWE as bwe:
             number_inserted = bwe.details['nInserted']
         print('Inserted {} new items into the database.'.format(number_inserted))
 
@@ -571,7 +581,8 @@ def divide_region(center, viewport, ground_zoom):
     diameter = {"vertical": abs(nw[0] - se[0]), "horizontal": abs(nw[1] - se[1])}
     print("nw {} se {}".format(nw, se))
 
-    sky_diameter = {"vertical": abs(sky_nw[0] - sky_se[0]), "horizontal": abs(sky_nw[1] - sky_se[1])}
+    sky_diameter = {"vertical": abs(sky_nw[0] - sky_se[0]),
+                    "horizontal": abs(sky_nw[1] - sky_se[1])}
     print("sky_nw {} sky_se {}".format(sky_nw, sky_se))
 
     print("assigning new coordinates".format())
@@ -648,7 +659,8 @@ def opentable_detailer(batch_size=300, wait=True):
             else:
                 if not details['dist_from_query']:
                     continue
-                distance = utils.miles_to_meters(utils.get_one_float_from_str(details['dist_from_query']))
+                distance = utils.miles_to_meters(
+                    utils.get_one_float_from_str(details['dist_from_query']))
                 already_has_details = utils.DB_TERMINAL_PLACES.count_documents({
                     # if the opentable details are already in here, then there's
                     # no need to update at all.
@@ -785,7 +797,8 @@ if __name__ == "__main__":
         results = get_locations_recursively(term, lat, lng, zoom, results)
         print(results)
         if results is not None:
-            print("Obtained {} results in {} seconds".format(len(results), time.time() - start_time))
+            print("Obtained {} results in {} seconds".format(
+                len(results), time.time() - start_time))
 
     def collect_locations_test():
         start_count = utils.DB_TERMINAL_PLACES.count_documents({})
@@ -793,12 +806,14 @@ if __name__ == "__main__":
         region = "Orange County"
         term = "Dunkin"
         term, lat, lng, zoom, results = build_location_collect(region, term)
-        run_details = {"term": term, "region": region, "init_stack": [(lat, lng, zoom)], "stack": [(lat, lng, zoom)]}
+        run_details = {"term": term, "region": region, "init_stack": [(lat, lng, zoom)], "stack": [
+            (lat, lng, zoom)]}
         # run_ID = ObjectId("5ec4c72369b2f6c6d4c0c7ba")
         collect_locations(run_details=run_details)
         delta = time.time() - start_time
         if results is not None:
-            print("Obtained {} results in {} seconds".format(utils.DB_TERMINAL_PLACES.count_documents({}) - start_count, delta))
+            print("Obtained {} results in {} seconds".format(
+                utils.DB_TERMINAL_PLACES.count_documents({}) - start_count, delta))
 
     def divide_region_test():
         region = "Los Angeles"

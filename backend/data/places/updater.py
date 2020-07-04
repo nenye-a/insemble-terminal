@@ -1,13 +1,20 @@
-'''
-
-Crawler that searches for all the locations that it sshould update.
-
-'''
+import sys
+import os
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.extend([THIS_DIR, BASE_DIR])
 
 import utils
+import mongo
 import google
 import searcher
 import datetime as dt
+
+'''
+
+Updates existing msa regions. 
+
+'''
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 RUN_TIME = dt.datetime.utcnow()
@@ -67,7 +74,7 @@ def update_locations(batch_size=100):
             try:
                 results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
                 results_inserted = len(results)
-            except utils.BWE as bwe:
+            except mongo.BWE as bwe:
                 results_inserted = bwe.details['nInserted']
 
             TEMP_DB.update_many({'_id': {'$in': queried_ids}}, {'$addToSet': {

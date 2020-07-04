@@ -1,15 +1,25 @@
-'''
 
-Crawler that searches for all the locations that it sshould update.
+import sys
+import os
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.extend([THIS_DIR, BASE_DIR])
 
-'''
+import pymongo.errors
 
 import utils
 import time
 import google
-import pymongo.errors
 import datetime as dt
 from locations import divide_region
+
+
+'''
+
+Crawler that searches for all the locations that it should update.
+
+'''
+
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 RUN_TIME = dt.datetime.utcnow()
@@ -139,7 +149,7 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
             log_identifier.pop('created_at')
             log_identifier.pop('1st_stage_points')
             log_identifier.pop('_id')
-        except utils.BWE:
+        except pymongo.errors.BulkWriteError:
             print('Many of these points allready exist!. Updating these points.')
 
     if eliminated_regions:
@@ -192,12 +202,12 @@ def stage_caller(run_identifier, term, stage, batch_size, zoom, log):
         try:
             results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
             results_inserted = len(results)
-        except utils.BWE as bwe:
+        except pymongo.errors.BulkWriteError as bwe:
             results_inserted = bwe.details['nInserted']
         try:
             new_locations and utils.DB_COORDINATES.insert_many(new_locations, ordered=False)
             locations_inserted = len(new_locations)
-        except utils.BWE as bwe:
+        except pymongo.errors.BulkWriteError as bwe:
             locations_inserted = bwe.details['nInserted']
 
         utils.DB_COORDINATES.update_many({'_id': {'$in': queried_ids}}, {'$addToSet': {
@@ -358,7 +368,7 @@ def targeted_update(msa_name, batch_size=100):
         try:
             results and utils.DB_TERMINAL_PLACES.insert_many(results, ordered=False)
             results_inserted = len(results)
-        except utils.BWE as bwe:
+        except pymongo.errors.BulkWriteError as bwe:
             results_inserted = bwe.details['nInserted']
 
         utils.DB_COORDINATES.update_many({'_id': {'$in': queried_ids}}, {'$set': {
