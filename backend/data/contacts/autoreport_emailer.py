@@ -281,6 +281,25 @@ def get_tags(campaign_name):
     return report_tag, email_tag
 
 
+def clear_report(collection_name, campaign_name, mode='all'):
+    collection = cm.get_contacts_collection('collection_name')
+    report_tag, email_tag = get_tags(campaign_name)
+
+    unset_query = {}
+    if mode == 'all' or mode == 'report':
+        unset_query[report_tag] = ""
+    if mode == 'all' or mode == 'email':
+        unset_query[email_tag] = ""
+
+    modified_count = 0
+    if unset_query:
+        modified_count += collection.update_many({}, {
+            '$unset': unset_query
+        }).modified_count
+
+    return modified_count
+
+
 if __name__ == "__main__":
     def test_build_emailer():
         email = build_email(
@@ -309,4 +328,6 @@ if __name__ == "__main__":
     def test_report_emailer():
         send_emails('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
     # test_report_generator()
-    test_report_emailer()
+    # test_report_emailer()
+
+    generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
