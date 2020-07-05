@@ -762,3 +762,7 @@ if __name__ == "__main__":
         print([contact_block_to_dict(block) for block in blocks])
 
     # create_prelight_collection()
+    print(get_contacts_collection('main_contact_db').count_documents({
+        # 'campaign-1-report': {'$exists': True}
+        'campaign-1-report': {'$exists': True, '$ne': None}
+    }))
