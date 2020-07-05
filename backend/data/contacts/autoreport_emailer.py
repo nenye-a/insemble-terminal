@@ -101,6 +101,14 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
         }
 
     """
+    if followup_stage:
+        choice = input('\n\nYou are about to send out followup emails. Have you made sure to prune '
+                       'remove all the folks that have responded to the first email? [Y/N]\n\n')
+
+        if choice.lower() != 'y':
+            print("Make sure to prune replies first, before proceeding with followups.\n\n")
+            return
+
     if not sender:
         sender = {
             'name': 'Colin',
