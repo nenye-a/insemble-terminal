@@ -12,7 +12,7 @@ import {
   LabelProps,
 } from 'recharts';
 
-import { View, Text, TouchableOpacity } from '../../core-ui';
+import { View, Text, Button } from '../../core-ui';
 import { ScrollMenu } from '../../components';
 import {
   WHITE,
@@ -34,12 +34,13 @@ import {
   FONT_FAMILY_NORMAL,
 } from '../../constants/theme';
 import { camelCaseToCapitalCase, useSortableData } from '../../helpers';
-import SvgChart from '../../components/icons/chart';
+import SvgTable from '../../components/icons/table';
 
-type Mode = 'merged' | 'split';
+type TableMode = 'merged' | 'split';
 type Props = {
   data: Array<MergedPerformanceData>;
-  mode?: Mode;
+  tableMode?: TableMode;
+  onViewModeChange: (viewMode: 'table' | 'graph') => void;
 };
 
 const BAR_HEIGHT = 40;
@@ -79,7 +80,7 @@ let INDEX_OPTIONS = [
 ];
 
 export default function PerformanceChart(props: Props) {
-  let { data, mode = 'split' } = props;
+  let { data, tableMode = 'split', onViewModeChange } = props;
   let [selectedIndexKey, setSelectedIndexKey] = useState(0);
 
   let { sortedData } = useSortableData(data, {
@@ -88,7 +89,7 @@ export default function PerformanceChart(props: Props) {
   });
 
   let chartData =
-    mode === 'merged'
+    tableMode === 'merged'
       ? prepareMergedChartData(data)
       : prepareSplitChartData(sortedData);
 
@@ -114,12 +115,14 @@ export default function PerformanceChart(props: Props) {
     return (
       <text
         x={x - 220}
-        y={mode === 'split' ? y + 3 : y - 30 * (data.length / 2)}
+        y={tableMode === 'split' ? y + 3 : y - 30 * (data.length / 2)}
         dy={dy}
-        fontSize={mode === 'split' ? 10 : FONT_SIZE_XSMALL}
+        fontSize={tableMode === 'split' ? 10 : FONT_SIZE_XSMALL}
         fontFamily={FONT_FAMILY_NORMAL}
-        fill={mode === 'split' ? DEFAULT_TEXT_COLOR : THEME_COLOR}
-        fontWeight={mode === 'split' ? FONT_WEIGHT_NORMAL : FONT_WEIGHT_MEDIUM}
+        fill={tableMode === 'split' ? DEFAULT_TEXT_COLOR : THEME_COLOR}
+        fontWeight={
+          tableMode === 'split' ? FONT_WEIGHT_NORMAL : FONT_WEIGHT_MEDIUM
+        }
         textAnchor="start"
       >
         {trimText(camelCaseToCapitalCase(value), 50)}
@@ -150,8 +153,7 @@ export default function PerformanceChart(props: Props) {
 
   let bars = [];
   let i = 0;
-  console.log(chartData, 'CHART');
-  if (mode === 'split') {
+  if (tableMode === 'split') {
     bars.push(
       <Bar
         dataKey={INDEX_OPTIONS[selectedIndexKey].value}
@@ -161,7 +163,7 @@ export default function PerformanceChart(props: Props) {
         isAnimationActive={false}
       />,
     );
-  } else if (mode === 'merged') {
+  } else if (tableMode === 'merged') {
     for (let [key, value] of Object.entries(chartData[0])) {
       if (key.includes('value_')) {
         bars.push(
@@ -185,11 +187,19 @@ export default function PerformanceChart(props: Props) {
 
   return (
     <Container>
-      <TouchableOpacity onPress={() => {}}>
-        <SvgChart style={{ color: THEME_COLOR }} />
-      </TouchableOpacity>
+      <Button
+        text="Table"
+        onPress={() => {
+          onViewModeChange('table');
+        }}
+        style={{ alignSelf: 'flex-start', padding: 5, height: 20 }}
+        iconPlacement="start"
+        size="small"
+        icon={<SvgTable style={{ color: WHITE, marginRight: 8 }} />}
+      />
+
       <View>
-        {mode === 'split' && (
+        {tableMode === 'split' && (
           <View style={{ position: 'absolute', zIndex: 99, top: 10 }}>
             <ScrollMenu<{ label: string; value: string }>
               selectedOption={INDEX_OPTIONS[selectedIndexKey]}
@@ -204,7 +214,7 @@ export default function PerformanceChart(props: Props) {
           height={
             calculatedHeight < 500
               ? 500
-              : mode === 'split'
+              : tableMode === 'split'
               ? 20 * data.length
               : calculatedHeight
           }
@@ -226,24 +236,11 @@ export default function PerformanceChart(props: Props) {
               tickFormatter={(val) => val + 'x'}
             />
             <YAxis
-              dataKey={mode === 'merged' ? 'label' : 'name'}
+              dataKey={tableMode === 'merged' ? 'label' : 'name'}
               type="category"
               width={230}
               axisLine={false}
-              tick={<CustomizedTick data={data} mode={mode} />}
-              // {...(mode === 'merged'
-              //   ? { tick: <CustomizedTick data={data} /> }
-              //   : {
-              //     tick: <CustomizedSplitChartTick/>,
-              //       // style: {
-              //       //   fontFamily: FONT_FAMILY_NORMAL,
-              //       //   fontSize: 10,
-              //       //   color: DEFAULT_TEXT_COLOR,
-              //       //   // width: 230,
-
-              //       //   backgroundColor: 'tomato',
-              //       // },
-              //     })}
+              tick={<CustomizedTick data={data} mode={tableMode} />}
               interval={0}
               tickLine={false}
             />

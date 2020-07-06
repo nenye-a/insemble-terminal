@@ -62,6 +62,7 @@ export default function PerformanceResult(props: Props) {
     readOnly,
   } = props;
   let alert = useAlert();
+  let [viewMode, setViewMode] = useState('table');
   let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
@@ -216,53 +217,57 @@ export default function PerformanceResult(props: Props) {
             data.performanceTable.table.data.length > 0) ||
           prevData.length > 0 ? (
           performanceType ? (
-            <PerformanceChart
-              data={loading ? prevData : dataWithAsterisk}
-              mode={
-                performanceType === PerformanceTableType.OVERALL
-                  ? 'merged'
-                  : 'split'
-              }
-            />
-          ) : (
-            <PerformanceTable
-              data={loading ? prevData : dataWithAsterisk}
-              showNumLocation={showNumLocation}
-              headerTitle={headerTitle}
-              onPerformanceRowPress={(param) => {
-                if (!readOnly) {
-                  onPerformanceRowPress && onPerformanceRowPress(param);
-                } else {
-                  history.push('/contact-us');
+            viewMode === 'graph' ? (
+              <PerformanceChart
+                data={loading ? prevData : dataWithAsterisk}
+                tableMode={
+                  performanceType === PerformanceTableType.OVERALL && isDesktop
+                    ? 'merged'
+                    : 'split'
                 }
-              }}
-              performanceType={performanceType}
-              mobile={!isDesktop}
-              comparisonTags={comparisonTags}
-              inTerminal={isTerminalScene}
-              /**
-               * will be used when user is on other scene than results scene (terminal)
-               * to get the business/location tag when user clicking on table row.
-               * the location/businessTag will be passed ro '/results' as state
-               */
+                onViewModeChange={setViewMode}
+              />
+            ) : (
+              <PerformanceTable
+                data={loading ? prevData : dataWithAsterisk}
+                showNumLocation={showNumLocation}
+                headerTitle={headerTitle}
+                onPerformanceRowPress={(param) => {
+                  if (!readOnly) {
+                    onPerformanceRowPress && onPerformanceRowPress(param);
+                  } else {
+                    history.push('/contact-us');
+                  }
+                }}
+                performanceType={performanceType}
+                mobile={!isDesktop}
+                comparisonTags={comparisonTags}
+                onViewModeChange={setViewMode}
+                inTerminal={isTerminalScene}
+                /**
+                 * will be used when user is on other scene than results scene (terminal)
+                 * to get the business/location tag when user clicking on table row.
+                 * the location/businessTag will be passed ro '/results' as state
+                 */
 
-              {...(isTerminalScene &&
-                data?.performanceTable.table?.businessTag && {
-                  businessTag: {
-                    params: data.performanceTable.table.businessTag.params,
-                    type: data.performanceTable.table.businessTag.type,
-                    id: data.performanceTable.table.businessTag.id,
-                  },
-                })}
-              {...(isTerminalScene &&
-                data?.performanceTable.table?.locationTag && {
-                  locationTag: {
-                    params: data.performanceTable.table.locationTag.params,
-                    type: data.performanceTable.table.locationTag.type,
-                  },
-                })}
-            />
-          )
+                {...(isTerminalScene &&
+                  data?.performanceTable.table?.businessTag && {
+                    businessTag: {
+                      params: data.performanceTable.table.businessTag.params,
+                      type: data.performanceTable.table.businessTag.type,
+                      id: data.performanceTable.table.businessTag.id,
+                    },
+                  })}
+                {...(isTerminalScene &&
+                  data?.performanceTable.table?.locationTag && {
+                    locationTag: {
+                      params: data.performanceTable.table.locationTag.params,
+                      type: data.performanceTable.table.locationTag.type,
+                    },
+                  })}
+              />
+            )
+          ) : null
         ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : null}
