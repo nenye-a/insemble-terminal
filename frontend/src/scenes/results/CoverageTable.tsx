@@ -53,7 +53,9 @@ export default function MapTable(props: Props) {
             Number Locations
           </DataTable.HeaderCell>
         </DataTable.HeaderRow>
-        <DataTable.Body style={{ height: 'fit-content', maxHeight: 260 }}>
+        <DataTable.Body
+          style={{ height: 'fit-content', maxHeight: isDesktop ? 260 : 130 }}
+        >
           {sortedData.map((row, index) => (
             <DataTable.Row
               key={'coverage-table-' + row.businessName + index}
