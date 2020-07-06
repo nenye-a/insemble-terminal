@@ -28,13 +28,12 @@ export default function TerminalHomeScene() {
   let [page, setPage] = useState(0);
   const numberPerPage = 10;
 
-  let { loading, error, fetchMore, refetch } = useQuery<
+  let { loading, error, fetchMore } = useQuery<
     GetTerminalList,
     GetTerminalListVariables
   >(GET_TERMINAL_LIST, {
     variables: {
       first: numberPerPage,
-      skip: page * numberPerPage,
       search: searchTerminal,
     },
     fetchPolicy: 'network-only',
@@ -45,10 +44,30 @@ export default function TerminalHomeScene() {
   let { isDesktop } = useViewport();
 
   let refetchFunction = async () => {
-    let { data: newData } = await refetch();
+    let { data: newData } = await fetchMore({
+      variables: {
+        skip: page * numberPerPage,
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return Object.assign({}, prev, {
+          feed: [...prev.userTerminals, ...fetchMoreResult.userTerminals],
+        });
+      },
+    });
     if (newData.userTerminals.length === 0 && newData.dataCount > 0) {
       setPage(page - 1);
-      let backData = await refetch();
+      let backData = await fetchMore({
+        variables: {
+          skip: page - 1 * numberPerPage,
+        },
+        updateQuery: (prev, { fetchMoreResult }) => {
+          if (!fetchMoreResult) return prev;
+          return Object.assign({}, prev, {
+            feed: [...prev.userTerminals, ...fetchMoreResult.userTerminals],
+          });
+        },
+      });
       newData = backData.data;
     }
     setData(newData);
@@ -134,6 +153,7 @@ export default function TerminalHomeScene() {
               breakLabel={'...'}
               breakClassName={'break-me'}
               pageCount={data ? Math.ceil(data.dataCount / numberPerPage) : 1}
+              forcePage={page}
               marginPagesDisplayed={2}
               pageRangeDisplayed={5}
               onPageChange={handlePageClick}
