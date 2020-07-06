@@ -8,7 +8,6 @@ import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
 import {
   CREATE_TERMINAL,
-  GET_TERMINAL_LIST,
   EDIT_TERMINAL,
   GET_TERMINAL,
 } from '../../graphql/queries/server/terminals';
@@ -86,16 +85,16 @@ export default function ManageTerminalForm(props: Props) {
           description,
           terminalId,
         },
-        // awaitRefetchQueries: true,
-        // refetchQueries: [
-        //   { query: GET_TERMINAL_LIST },
-        //   {
-        //     query: GET_TERMINAL,
-        //     variables: {
-        //       terminalId,
-        //     },
-        //   },
-        // ],
+        awaitRefetchQueries: true,
+        refetchQueries: [
+          // { query: GET_TERMINAL_LIST },
+          {
+            query: GET_TERMINAL,
+            variables: {
+              terminalId,
+            },
+          },
+        ],
       });
       refetchCurrentPage && refetchCurrentPage();
     }

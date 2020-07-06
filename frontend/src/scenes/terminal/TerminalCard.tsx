@@ -22,10 +22,7 @@ import {
   DeleteTerminal,
   DeleteTerminalVariables,
 } from '../../generated/DeleteTerminal';
-import {
-  DELETE_TERMINAL,
-  GET_TERMINAL_LIST,
-} from '../../graphql/queries/server/terminals';
+import { DELETE_TERMINAL } from '../../graphql/queries/server/terminals';
 
 type Props = ViewProps & {
   id: string;
