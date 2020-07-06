@@ -39,8 +39,11 @@ export default function useSortableData<T extends Obj>(
     return sortableData;
   }, [items, sortConfig]);
 
-  let requestSort = (key: string, type: 'number' | 'date' = 'number') => {
-    let direction: Direction = Direction.ASCENDING;
+  let requestSort = (
+    key: string,
+    type: 'number' | 'date' = 'number',
+    direction: Direction = Direction.ASCENDING,
+  ) => {
     if (
       sortConfig &&
       sortConfig.key === key &&

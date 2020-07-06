@@ -10,13 +10,13 @@ import {
   ResponsiveContainer,
   ReferenceLine,
   LabelProps,
+  ReferenceLineProps,
 } from 'recharts';
 
 import { View, Text, Button } from '../../core-ui';
 import { ScrollMenu } from '../../components';
 import {
   WHITE,
-  COLORS,
   GREY_DIVIDER,
   THEME_COLOR,
   LIGHT_GRAY,
@@ -24,6 +24,7 @@ import {
   LIGHTER_GRAY,
   BORDER_COLOR,
   DEFAULT_TEXT_COLOR,
+  GRAY_TEXT,
 } from '../../constants/colors';
 import { MergedPerformanceData, Direction } from '../../types/types';
 import {
@@ -33,7 +34,11 @@ import {
   FONT_SIZE_XSMALL,
   FONT_FAMILY_NORMAL,
 } from '../../constants/theme';
-import { camelCaseToCapitalCase, useSortableData } from '../../helpers';
+import {
+  camelCaseToCapitalCase,
+  useSortableData,
+  useViewport,
+} from '../../helpers';
 import SvgTable from '../../components/icons/table';
 
 type TableMode = 'merged' | 'split';
@@ -43,24 +48,12 @@ type Props = {
   onViewModeChange: (viewMode: 'table' | 'graph') => void;
 };
 
-const BAR_HEIGHT = 40;
-const TICKS_VALUE = [
-  // 0,
-  // 0.25,
-  0.5,
-  0.75,
-  1,
-  1.25,
-  1.5,
-  1.75,
-  2,
-  2.25,
-  2.5,
-  2.75,
-  3,
-];
+const MAX_BAR_SIZE = 42;
+const NORMAL_BAR_SIZE = 24;
+const MIN_BAR_SIZE = 15;
+const TICKS_VALUE = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3];
 
-let INDEX_OPTIONS = [
+const INDEX_OPTIONS = [
   {
     label: 'Average Volume',
     value: 'customerVolumeIndex',
@@ -82,155 +75,105 @@ let INDEX_OPTIONS = [
 export default function PerformanceChart(props: Props) {
   let { data, tableMode = 'split', onViewModeChange } = props;
   let [selectedIndexKey, setSelectedIndexKey] = useState(0);
+  let { isDesktop } = useViewport();
 
-  let { sortedData } = useSortableData(data, {
+  let { sortedData, requestSort } = useSortableData(data, {
     key: INDEX_OPTIONS[selectedIndexKey].value,
     direction: Direction.DESCENDING,
   });
 
   let chartData =
     tableMode === 'merged'
-      ? prepareMergedChartData(data)
+      ? prepareMergedChartData(sortedData)
       : prepareSplitChartData(sortedData);
 
-  let CustomizedLabel = (props: LabelProps & { label: string }) => {
-    let { x, y, height, label } = props;
-    return (
-      <text
-        x={x}
-        y={(y || 0) + (height || 0) * 0.75}
-        dx={-228}
-        fontFamily={FONT_FAMILY_NORMAL}
-        fontSize={FONT_SIZE_XSMALL}
-        textAnchor="start"
-      >
-        {trimText(label.replace('value_', ''), 40)}
-      </text>
-    );
-  };
+  let calculatedHeight =
+    tableMode === 'split'
+      ? NORMAL_BAR_SIZE * data.length
+      : 4 * MAX_BAR_SIZE * data.length;
 
-  let CustomizedTick = (props: any) => {
-    let { x, y, dy, payload, mode, data } = props;
-    let { value } = payload;
-    return (
-      <text
-        x={x - 220}
-        y={tableMode === 'split' ? y + 3 : y - 30 * (data.length / 2)}
-        dy={dy}
-        fontSize={tableMode === 'split' ? 10 : FONT_SIZE_XSMALL}
-        fontFamily={FONT_FAMILY_NORMAL}
-        fill={tableMode === 'split' ? DEFAULT_TEXT_COLOR : THEME_COLOR}
-        fontWeight={
-          tableMode === 'split' ? FONT_WEIGHT_NORMAL : FONT_WEIGHT_MEDIUM
+  let stillHaveSpace = calculatedHeight < 450;
+
+  let getBars = () => {
+    let bars = [];
+    if (tableMode === 'split') {
+      bars.push(
+        <Bar
+          dataKey={INDEX_OPTIONS[selectedIndexKey].value}
+          fill={THEME_COLOR}
+          {...(!stillHaveSpace && { barSize: MIN_BAR_SIZE })}
+          radius={[5, 24, 24, 5]}
+          isAnimationActive={false}
+          maxBarSize={MAX_BAR_SIZE}
+        />,
+      );
+    } else if (tableMode === 'merged') {
+      for (let [key] of Object.entries(chartData[0] as ChartData)) {
+        if (key.includes('value_')) {
+          let name = key.replace('value_', '');
+          let fill = (chartData[0] as ChartData)[`fill_${name}`];
+          bars.push(
+            <Bar
+              dataKey={key}
+              fill={fill ? fill.toString() : THEME_COLOR}
+              {...(!stillHaveSpace && { barSize: NORMAL_BAR_SIZE })}
+              radius={[5, 24, 24, 5]}
+              maxBarSize={MAX_BAR_SIZE}
+              label={<CustomizedLabel label={key} />}
+              isAnimationActive={false}
+            />,
+          );
         }
-        textAnchor="start"
-      >
-        {trimText(camelCaseToCapitalCase(value), 50)}
-      </text>
-    );
-  };
-
-  let CustomReferenceLabel = (props: any) => {
-    const { viewBox, dy, dx } = props;
-    const x = viewBox.width + viewBox.x + 20;
-    const y = viewBox.y - 6;
-    return (
-      <text
-        x={x - 22}
-        y={y - 20}
-        dy={dy}
-        dx={dx}
-        fill={THEME_COLOR}
-        fontSize={FONT_SIZE_SMALL}
-        fontFamily={FONT_FAMILY_NORMAL}
-        fontWeight={FONT_WEIGHT_MEDIUM}
-        textAnchor="middle"
-      >
-        Average
-      </text>
-    );
-  };
-
-  let bars = [];
-  let i = 0;
-  if (tableMode === 'split') {
-    bars.push(
-      <Bar
-        dataKey={INDEX_OPTIONS[selectedIndexKey].value}
-        fill={THEME_COLOR}
-        barSize={15}
-        radius={[5, 12, 12, 5]}
-        isAnimationActive={false}
-      />,
-    );
-  } else if (tableMode === 'merged') {
-    for (let [key, value] of Object.entries(chartData[0])) {
-      if (key.includes('value_')) {
-        bars.push(
-          <Bar
-            dataKey={key}
-            fill={COLORS[i]}
-            barSize={20}
-            radius={[5, 12, 12, 5]}
-            maxBarSize={24}
-            label={<CustomizedLabel label={key} />}
-            isAnimationActive={false}
-          />,
-        );
-        i++;
       }
     }
-  }
+    return bars;
+  };
 
-  // 4 as in numIndex, 40 as in barSize + margin
-  let calculatedHeight = 4 * BAR_HEIGHT * data.length;
+  let onIndexChange = (newIdx: number) => {
+    setSelectedIndexKey(newIdx);
+    requestSort(INDEX_OPTIONS[newIdx].value, 'number', Direction.DESCENDING);
+  };
 
   return (
     <Container>
-      <Button
+      <TableButton
         text="Table"
         onPress={() => {
           onViewModeChange('table');
         }}
-        style={{ alignSelf: 'flex-start', padding: 5, height: 20 }}
         iconPlacement="start"
         size="small"
         icon={<SvgTable style={{ color: WHITE, marginRight: 8 }} />}
       />
-
       <View>
         {tableMode === 'split' && (
-          <View style={{ position: 'absolute', zIndex: 99, top: 10 }}>
+          <ScrollContainer>
             <ScrollMenu<{ label: string; value: string }>
               selectedOption={INDEX_OPTIONS[selectedIndexKey]}
               options={INDEX_OPTIONS}
-              onSelectionChange={setSelectedIndexKey}
+              onSelectionChange={onIndexChange}
               optionExtractor={(option) => option.label}
             />
-          </View>
+          </ScrollContainer>
         )}
-
-        <ResponsiveContainer
-          height={
-            calculatedHeight < 500
-              ? 500
-              : tableMode === 'split'
-              ? 20 * data.length
-              : calculatedHeight
-          }
-        >
-          <BarChart data={chartData} layout="vertical">
+        <AboveAverageText>Above Average</AboveAverageText>
+        <ResponsiveContainer height={stillHaveSpace ? 450 : calculatedHeight}>
+          <BarChart
+            data={chartData}
+            layout="vertical"
+            margin={{ right: 10, top: 20 }}
+          >
             <CartesianGrid horizontal={false} stroke={LIGHTER_GRAY} />
             <XAxis
               type="number"
               orientation="top"
               axisLine={false}
-              ticks={TICKS_VALUE}
               tickLine={false}
+              ticks={TICKS_VALUE}
               tick={{
                 color: LIGHT_GRAY,
                 fontSize: FONT_SIZE_SMALL,
-                fontFamily: 'Avenir',
+                fontFamily: FONT_FAMILY_NORMAL,
               }}
               interval={1}
               tickFormatter={(val) => val + 'x'}
@@ -238,9 +181,9 @@ export default function PerformanceChart(props: Props) {
             <YAxis
               dataKey={tableMode === 'merged' ? 'label' : 'name'}
               type="category"
-              width={230}
+              width={isDesktop ? 230 : 120}
               axisLine={false}
-              tick={<CustomizedTick data={data} mode={tableMode} />}
+              tick={<CustomizedTick size={data.length} mode={tableMode} />}
               interval={0}
               tickLine={false}
             />
@@ -256,7 +199,7 @@ export default function PerformanceChart(props: Props) {
               cursor={{ fill: LIGHTEST_GRAY, opacity: 0.5 }}
               content={(args: TooltipProps) => <CustomTooltip {...args} />}
             />
-            {bars}
+            {getBars()}
           </BarChart>
         </ResponsiveContainer>
       </View>
@@ -278,6 +221,7 @@ function prepareSplitChartData(data: Array<MergedPerformanceData>) {
     nationalIndex: (item.nationalIndex || 0) / 100,
   }));
 }
+
 function prepareMergedChartData(data: Array<MergedPerformanceData>) {
   let chartData: Array<ChartData> = [];
 
@@ -316,6 +260,7 @@ function prepareMergedChartData(data: Array<MergedPerformanceData>) {
 }
 
 type TooltipProps = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   payload: Array<{ [key: string]: any }>;
   label: string;
   dataKeyLabel?: { [key: string]: string };
@@ -324,6 +269,7 @@ type TooltipProps = {
 
 function CustomTooltip(props: TooltipProps) {
   let { payload, label, valueFormatter } = props;
+
   if (payload == null) {
     return null;
   }
@@ -332,17 +278,84 @@ function CustomTooltip(props: TooltipProps) {
       <TooltipTitle>{camelCaseToCapitalCase(label)}</TooltipTitle>
       {payload.map((data, index) => {
         let color = data.fill;
+        let key = data.dataKey.includes('value_')
+          ? data.dataKey.replace('value_', '')
+          : camelCaseToCapitalCase(data.dataKey);
         if (typeof data.fill === 'function') {
           color = data.fill(data.payload);
         }
         return (
           <Text key={index} color={color}>
-            {data.dataKey.replace('value_', '')}:{' '}
-            {valueFormatter ? valueFormatter(data.value) : data.value}
+            {key}: {valueFormatter ? valueFormatter(data.value) : data.value}
           </Text>
         );
       })}
     </TooltipContainer>
+  );
+}
+
+function CustomReferenceLabel(props: ReferenceLineProps) {
+  let { viewBox = { x: 0, y: 0, width: 0 }, dy, dx } = props;
+  let { x = 0, y = 0, width = 0 } = viewBox;
+  return (
+    <text
+      x={width + x - 2}
+      y={y - 6 - 20}
+      dy={dy}
+      dx={dx}
+      fill={THEME_COLOR}
+      fontSize={FONT_SIZE_SMALL}
+      fontFamily={FONT_FAMILY_NORMAL}
+      fontWeight={FONT_WEIGHT_MEDIUM}
+      textAnchor="middle"
+    >
+      Average
+    </text>
+  );
+}
+
+type TickProps = {
+  x?: number;
+  y?: number;
+  payload?: { value: string };
+  mode: string;
+  size: number;
+};
+
+function CustomizedTick(props: TickProps) {
+  let { x = 0, y = 0, payload = { value: '' }, size, mode } = props;
+  let { value } = payload;
+  let splitMode = mode === 'split';
+  let { isDesktop } = useViewport();
+  return (
+    <text
+      x={isDesktop ? x - 220 : x - 110}
+      y={splitMode ? y + 3 : y - 30 * (size / 2)}
+      fontSize={splitMode ? 10 : FONT_SIZE_XSMALL}
+      fill={splitMode ? DEFAULT_TEXT_COLOR : THEME_COLOR}
+      fontWeight={splitMode ? FONT_WEIGHT_NORMAL : FONT_WEIGHT_MEDIUM}
+      textAnchor="start"
+      fontFamily={FONT_FAMILY_NORMAL}
+    >
+      {trimText(camelCaseToCapitalCase(value), isDesktop ? 50 : 20)}
+    </text>
+  );
+}
+
+function CustomizedLabel(props: LabelProps & { label: string }) {
+  let { x = 0, y = 0, height = 0, label } = props;
+  let { isDesktop } = useViewport();
+
+  return (
+    <text
+      x={isDesktop ? x - 228 : x - 128}
+      y={y + height * 0.75}
+      fontFamily={FONT_FAMILY_NORMAL}
+      fontSize={FONT_SIZE_XSMALL}
+      textAnchor="start"
+    >
+      {trimText(label.replace('value_', ''), isDesktop ? 40 : 25)}
+    </text>
   );
 }
 
@@ -370,4 +383,25 @@ const TooltipContainer = styled(View)`
 const TooltipTitle = styled(Text)`
   font-weight: ${FONT_WEIGHT_MEDIUM};
   margin-bottom: 5px;
+`;
+
+const TableButton = styled(Button)`
+  align-self: flex-start;
+  padding: 2px 5px;
+  height: 20px;
+  margin-bottom: 8px;
+`;
+
+const ScrollContainer = styled(View)`
+  position: absolute;
+  z-index: 99;
+  top: 10;
+`;
+
+const AboveAverageText = styled(Text)`
+  font-size: ${FONT_SIZE_SMALL};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
+  position: absolute;
+  right: 0px;
+  color: ${GRAY_TEXT};
 `;
