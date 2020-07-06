@@ -49,7 +49,9 @@ export default function TerminalHomeScene() {
         skip: page * numberPerPage,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
+        if (!fetchMoreResult) {
+          return prev;
+        }
         return Object.assign({}, prev, {
           feed: [...prev.userTerminals, ...fetchMoreResult.userTerminals],
         });
@@ -62,7 +64,9 @@ export default function TerminalHomeScene() {
           skip: page - 1 * numberPerPage,
         },
         updateQuery: (prev, { fetchMoreResult }) => {
-          if (!fetchMoreResult) return prev;
+          if (!fetchMoreResult) {
+            return prev;
+          }
           return Object.assign({}, prev, {
             feed: [...prev.userTerminals, ...fetchMoreResult.userTerminals],
           });
@@ -80,7 +84,9 @@ export default function TerminalHomeScene() {
         skip: selected * numberPerPage,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
-        if (!fetchMoreResult) return prev;
+        if (!fetchMoreResult) {
+          return prev;
+        }
         return Object.assign({}, prev, {
           feed: [...prev.userTerminals, ...fetchMoreResult.userTerminals],
         });
