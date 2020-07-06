@@ -27,16 +27,24 @@ const server = new GraphQLServer({
   middlewares: [permissions],
 });
 
-
-
 server.express.get('/register-verification/:token', registerHandler);
 server.express.get('/email-verification/:token', emailVerificationHandler);
 
-
-server.express.use(express.static(path.join(path.dirname(path.dirname(__dirname)), 'frontend', 'build')));
+server.express.use(
+  express.static(
+    path.join(path.dirname(path.dirname(__dirname)), 'frontend', 'build'),
+  ),
+);
 server.express.get('/*', (req, res) => {
-  res.sendFile(path.join(path.dirname(path.dirname(__dirname)), 'frontend', 'build', 'index.html'));
-})
+  res.sendFile(
+    path.join(
+      path.dirname(path.dirname(__dirname)),
+      'frontend',
+      'build',
+      'index.html',
+    ),
+  );
+});
 
 server.start({ port }, () => {
   // eslint-disable-next-line no-console

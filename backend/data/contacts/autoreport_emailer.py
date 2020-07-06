@@ -85,7 +85,7 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
         print(f'\n{modified_count} contacts updated!\n')
 
 
-def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200):
+def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, followup_stage=None):
     """
     Send Emaols
 
@@ -101,6 +101,14 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200):
         }
 
     """
+    if followup_stage:
+        choice = input('\n\nYou are about to send out followup emails. Have you made sure to prune '
+                       'remove all the folks that have responded to the first email? [Y/N]\n\n')
+
+        if choice.lower() != 'y':
+            print("Make sure to prune replies first, before proceeding with followups.\n\n")
+            return
+
     if not sender:
         sender = {
             'name': 'Colin',
@@ -117,14 +125,26 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200):
 
     while True:
 
-        contacts = list(database.aggregate([
-            {'$match': {
+        if followup_stage == 1:
+            query = {
+                email_tag: True,
+                email_tag + '_followup_stage': None
+            }
+        elif followup_stage == 2:
+            query = {
+                email_tag + '_followup_stage': 1
+            }
+        else:
+            query = {
                 report_tag: {'$exists': True, '$ne': None},
                 '$or': [
                     {email_tag: {'$exists': False}},
                     {email_tag: False}
                 ]
-            }},
+            }
+
+        contacts = list(database.aggregate([
+            {'$match': query},
             {'$sample': {
                 'size': batchsize
             }}
@@ -141,7 +161,8 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200):
                 push_email,
                 report_tag=report_tag,
                 email_tag=email_tag,
-                sender=sender
+                sender=sender,
+                followup_stage=followup_stage
             ), contacts)
         except KeyError as key_e:
             print(f'Key Error: {key_e}')
@@ -177,38 +198,62 @@ def get_report(contact, report_tag):
         return contact
 
 
-def push_email(contact, report_tag, email_tag, sender):
-    try:
-        conference = CONTACT_SOURCE_MAP[contact["source"]]
-    except KeyError:
-        conference = None
-    report = contact[report_tag]
-    city = utils.extract_city(contact['address_city_state'])
-    email_html = build_email(
-        first_name=contact['first_name'],
-        company=contact['company'],
-        report_title=report['report_title'],
-        report_link=report['report_link'],
-        sender_name=sender['name'],
-        sender_title=sender['title'],
-        city=city,
-        conference=conference,
-        abbv_sender_title=sender['abbv_title']
-        if utils.inbool(sender, 'abbv_title')
-        else None,
-        sender_full_name=sender['full_name']
-        if utils.inbool(sender, 'full_name')
-        else None,
-        met=contact['met'] if utils.inbool(contact, 'met')
-        else None
-    )
-    email_result = send_email(
-        from_email=sender['email'],
-        to_emails=contact['email'],
-        subject="Your Report",
-        html_text=email_html
-    )
-    contact[email_tag] = email_result
+def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
+    if followup_stage:
+        email_html = build_followup_email(
+            followup_stage,
+            first_name=contact['first_name'],
+            sender_name=sender['name'],
+            sender_title=sender['title'],
+            abbv_sender_title=sender['abbv_title']
+            if utils.inbool(sender, 'abbv_title')
+            else None,
+            sender_full_name=sender['full_name']
+            if utils.inbool(sender, 'full_name')
+            else None
+        )
+        email_result = send_email(
+            from_email=sender['email'],
+            to_emails=contact['email'],
+            subject="Re: Your Report",
+            html_text=email_html
+        )
+        if email_result:
+            contact[email_tag + '_followup_stage'] = followup_stage
+    else:
+        # Generate the first email.
+        try:
+            conference = CONTACT_SOURCE_MAP[contact["source"]]
+        except KeyError:
+            conference = None
+        report = contact[report_tag]
+        city = utils.extract_city(contact['address_city_state'])
+        email_html = build_email(
+            first_name=contact['first_name'],
+            company=contact['company'],
+            report_title=report['report_title'],
+            report_link=report['report_link'],
+            sender_name=sender['name'],
+            sender_title=sender['title'],
+            city=city,
+            conference=conference,
+            abbv_sender_title=sender['abbv_title']
+            if utils.inbool(sender, 'abbv_title')
+            else None,
+            sender_full_name=sender['full_name']
+            if utils.inbool(sender, 'full_name')
+            else None,
+            met=contact['met'] if utils.inbool(contact, 'met')
+            else None
+        )
+        email_result = send_email(
+            from_email=sender['email'],
+            to_emails=contact['email'],
+            subject="Your Report",
+            html_text=email_html
+        )
+        contact[email_tag] = email_result
+
     return contact
 
 
@@ -224,11 +269,6 @@ def build_email(first_name, company, report_title, report_link,
         company: string - name of the recepients company (ex. Trade Water Associates)
         report_title: string - name of the custom report to send to user. (George's Report on LA)
         report_link: url - link to the personal report. (https://insemble.co/shared/Aijaiusih323)
-        location_context: string - contacts that explains the location ex (California Pizza
-                                Kitchen location in Los Angeles County)
-        report_description: string - a custom description of what will be provided in the report
-                        ex. ('In this report we include a comparison to Pizza Restaurants, and
-                              have noticed some interesting insights.')
         met: whether or not we met the target of the emailer.
 
 
@@ -264,13 +304,73 @@ def build_email(first_name, company, report_title, report_link,
 
         with tag('p'):
             if not signature:
-                signature = "All the best,"
+                signature = "Best,"
             text(signature)
             doc.stag('br')
             doc.stag('br')
             text(sender_full_name if sender_full_name else sender_name)
             doc.stag('br')
             text(abbv_sender_title if abbv_sender_title else sender_title)
+
+    return doc.getvalue()
+
+
+def build_followup_email(followup_stage, first_name, sender_name, sender_title,
+                         signature=None, abbv_sender_title=None, sender_full_name=None):
+
+    doc, tag, text = Doc().tagtext()
+
+    if followup_stage == 1:
+
+        with tag('div'):
+            with tag('p'):
+                text(f'Hey {first_name},')
+            with tag('p'):
+                text("Just reaching out again. Hope you and your family are safe and "
+                     "well during this time.  Got some time to speak soon? ")
+
+            with tag('p'):
+                text("Wanted to know what you thought of the report. I'd love to share  "
+                     "more on how we can help you get performance for retail sites nationwide.")
+
+            with tag('p'):
+                text("Any chance you have time in the next few days?")
+
+            with tag('p'):
+                if not signature:
+                    signature = "Best,"
+                text(signature)
+                doc.stag('br')
+                doc.stag('br')
+                text(sender_full_name if sender_full_name else sender_name)
+                doc.stag('br')
+                text(abbv_sender_title if abbv_sender_title else sender_title)
+    elif followup_stage == 2:
+        with tag('div'):
+            with tag('p'):
+                text(f'Hi {first_name},')
+            with tag('p'):
+                text("Just a friendly ping since I haven’t heard from you. "
+                     "Would you be able to talk soon? ")
+
+            with tag('p'):
+                text("I’d love to hear how you're doing. Please let me know if you have "
+                     "a moment to catch up.")
+
+            with tag('p'):
+                text("Also, the existing report may have expired since I created it last. "
+                     "Please let me know if you'd like another, and I can prepare one right "
+                     "away for our call.")
+
+            with tag('p'):
+                if not signature:
+                    signature = "Best,"
+                text(signature)
+                doc.stag('br')
+                doc.stag('br')
+                text(sender_full_name if sender_full_name else sender_name)
+                doc.stag('br')
+                text(abbv_sender_title if abbv_sender_title else sender_title)
 
     return doc.getvalue()
 
@@ -326,7 +426,8 @@ if __name__ == "__main__":
         generate_reports('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
 
     def test_report_emailer():
-        send_emails('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
+        send_emails('pre-flight-2', cm.get_contacts_collection('preflight-collection'),
+                    followup_stage=2)
     # test_report_generator()
     # test_report_emailer()
 

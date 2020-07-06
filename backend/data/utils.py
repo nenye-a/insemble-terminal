@@ -473,7 +473,7 @@ def unsubscribe(email_list):
         email_list = [email_list]
 
     email_list = [word.strip().lower() for word in email_list]
-    DB_UNSUBSCRIBED.update({'name': 'unsubscribed'}, {'$push': {
+    DB_UNSUBSCRIBED.update_one({'name': 'unsubscribed'}, {'$addToSet': {
         'unsubscribed': {
             '$each': email_list
         }
@@ -675,5 +675,3 @@ if __name__ == "__main__":
 
     def test_extract_domain():
         print(extract_domain('http://www.76.com/'))
-
-    test_extract_domain()

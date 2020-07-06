@@ -132,7 +132,7 @@ def prune_bad_apples(collection_name):
     remove_regex = (
         r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
         r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
-        r'(?:site( ?)zeus)|(?:buxton)'
+        r'(?:site( ?)zeus)|(?:buxton)|(?:gravy( ?)analytics)'
     )
     deleted = collection.delete_many({
         '$or': [
