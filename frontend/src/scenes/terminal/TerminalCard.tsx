@@ -34,6 +34,7 @@ type Props = ViewProps & {
   description?: string;
   lastUpdate?: string;
   isLandingPage?: boolean;
+  refetchCurrentPage?: () => void;
 };
 
 export default function TerminalCard(props: Props) {
@@ -45,6 +46,7 @@ export default function TerminalCard(props: Props) {
     description,
     lastUpdate,
     isLandingPage = false,
+    refetchCurrentPage,
     ...otherProps
   } = props;
   let [deletePopupVisible, setDeletePopupVisible] = useState(false);
@@ -70,14 +72,22 @@ export default function TerminalCard(props: Props) {
         buttons={[
           {
             text: 'Yes',
-            onPress: () => {
-              deleteTerminal({
+            onPress: async () => {
+              await deleteTerminal({
                 variables: {
                   terminalId: id,
                 },
-                refetchQueries: [{ query: GET_TERMINAL_LIST }],
-                awaitRefetchQueries: true,
+                // refetchQueries: [
+                //   {
+                //     query: GET_TERMINAL_LIST,
+                //     variables: {
+                //       first: 10,
+                //     },
+                //   },
+                // ],
+                // awaitRefetchQueries: true,
               });
+              refetchCurrentPage && refetchCurrentPage();
             },
           },
           {

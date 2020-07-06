@@ -27,10 +27,18 @@ type Props = {
   prevName?: string;
   prevDescription?: string | null;
   terminalId?: string;
+  refetchCurrentPage?: () => void;
 };
 
 export default function ManageTerminalForm(props: Props) {
-  let { onClose, mode, prevName, prevDescription, terminalId } = props;
+  let {
+    onClose,
+    mode,
+    prevName,
+    prevDescription,
+    terminalId,
+    refetchCurrentPage,
+  } = props;
   let [
     addTerminal,
     { loading: addTerminalLoading, error: addTerminalError },
@@ -52,35 +60,44 @@ export default function ManageTerminalForm(props: Props) {
   let isEditMode = mode === 'edit';
   let containerStyle = { paddingTop: 6, paddingBottom: 6 };
 
-  let onSubmit = (data: FieldValues) => {
+  let onSubmit = async (data: FieldValues) => {
     let { name, description } = data;
     if (mode === 'add') {
-      addTerminal({
+      await addTerminal({
         variables: {
           name,
           description,
         },
-        awaitRefetchQueries: true,
-        refetchQueries: [{ query: GET_TERMINAL_LIST }],
+        // awaitRefetchQueries: true,
+        // refetchQueries: [
+        //   {
+        //     query: GET_TERMINAL_LIST,
+        //     variables: {
+        //       first: 10,
+        //     },
+        //   },
+        // ],
       });
+      refetchCurrentPage && refetchCurrentPage();
     } else if (mode === 'edit' && terminalId) {
-      editTerminal({
+      await editTerminal({
         variables: {
           name,
           description,
           terminalId,
         },
-        awaitRefetchQueries: true,
-        refetchQueries: [
-          { query: GET_TERMINAL_LIST },
-          {
-            query: GET_TERMINAL,
-            variables: {
-              terminalId,
-            },
-          },
-        ],
+        // awaitRefetchQueries: true,
+        // refetchQueries: [
+        //   { query: GET_TERMINAL_LIST },
+        //   {
+        //     query: GET_TERMINAL,
+        //     variables: {
+        //       terminalId,
+        //     },
+        //   },
+        // ],
       });
+      refetchCurrentPage && refetchCurrentPage();
     }
   };
   return (
