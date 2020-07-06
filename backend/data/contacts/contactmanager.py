@@ -281,7 +281,7 @@ def pull_email(contact):
     return contact
 
 
-def get_contacts_emails(collection_name, batchsize=150):
+def get_contacts_emails(collection_name, batchsize=20):
 
     collection = get_contacts_collection(collection_name)
 
@@ -321,6 +321,12 @@ def get_contacts_emails(collection_name, batchsize=150):
                 except mongoerrors.DuplicateKeyError as e:
                     print(e)
                     print('User with the same email already exists.')
+                    print('Update email with none!')
+                    collection.update_one({'_id': contact['_id']}, {
+                        '$set': {
+                            'email': None
+                        }
+                    })
                     # collection.delete_one({
                     #     '_id': contact['_id']
                     # })
@@ -771,4 +777,4 @@ if __name__ == "__main__":
     #     # 'campaign-1-report': {'$exists': True}
     #     'campaign-1-report': {'$exists': True, '$ne': None}
     # }))
-    get_contacts_domains('main_contact_db')
+    get_contacts_emails('main_contact_db')
