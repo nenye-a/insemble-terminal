@@ -215,8 +215,15 @@ export default function PerformanceResult(props: Props) {
             data?.performanceTable.table &&
             data.performanceTable.table.data.length > 0) ||
           prevData.length > 0 ? (
-          performanceType === PerformanceTableType.OVERALL ? (
-            <PerformanceChart data={loading ? prevData : dataWithAsterisk} />
+          performanceType ? (
+            <PerformanceChart
+              data={loading ? prevData : dataWithAsterisk}
+              mode={
+                performanceType === PerformanceTableType.OVERALL
+                  ? 'merged'
+                  : 'split'
+              }
+            />
           ) : (
             <PerformanceTable
               data={loading ? prevData : dataWithAsterisk}
