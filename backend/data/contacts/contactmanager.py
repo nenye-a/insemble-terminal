@@ -68,7 +68,7 @@ def insert_from_pdf(collection_name, pdf, replace=False):
     for contact in contacts:
         contact['source'] = pdf
 
-    create_collection_indices(collection_name)
+    # create_collection_indices(collection_name)
 
     try:
         collection.insert_many(contacts, ordered=False)
@@ -91,12 +91,15 @@ def create_collection_indices(collection_name):
             [('first_name', 1), ('last_name', 1), ('company', 1)],
             unique=True,
             partialFilterExpression={
-                'first_name': {'$exists': True},
-                'last_name': {'$exists': True},
-                'company': {'$exists': True},
+                'first_name': {'$exists': True, "$type": "string"},
+                'last_name': {'$exists': True, "$type": "string"},
+                'company': {'$exists': True, "$type": string},
             })
-        collection.create_index([('email', 1)], unique=True,
-                                partialFilterExpression={'email': {'$exists': True}}),
+        collection.create_index(
+            [('email', 1)],
+            unique=True,
+            partialFilterExpression={'email': {'$exists': True, '$type': "string"}}
+        ),
         collection.create_index([('domain', 1)])
         collection.create_index([('company', 1)])
         collection.create_index([('domain_processed', 1)])
@@ -194,7 +197,9 @@ def insert_from_csv(collection_name, csv, replace=False):
         collection.insert_many(insert_docs, ordered=False)
         number_inserted = len(insert_docs)
     except mongo.BWE as bwe:
+        print('BWE: {}'.format(bwe))
         number_inserted = bwe.details['nInserted']
+
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
     prune_bad_apples(collection_name)
@@ -592,9 +597,9 @@ def remove_email_dupes(collection_name):
         candidates = list(collection.find({'email': email}))
 
         for candidate in candidates:
-            if not (candidate['address_street'] or
-                    candidate['address_unit'] or
-                    candidate['address_city_state']):
+            if not (utils.inbool(candidate, 'address_street') or
+                    utils.inbool(candidate, 'address_unit') or
+                    utils.inbool(candidate, 'address_city_state')):
                 candidate['has_details'] = False
             else:
                 candidate['has_details'] = True
@@ -762,7 +767,17 @@ if __name__ == "__main__":
         print([contact_block_to_dict(block) for block in blocks])
 
     # create_prelight_collection()
-    print(get_contacts_collection('main_contact_db').count_documents({
-        # 'campaign-1-report': {'$exists': True}
-        'campaign-1-report': {'$exists': True, '$ne': None}
-    }))
+    # print(get_contacts_collection('main_contact_db').count_documents({
+    #     # 'campaign-1-report': {'$exists': True}
+    #     'campaign-1-report': {'$exists': True, '$ne': None}
+    # }))
+
+    insert_from_csv('main_contact_db', 'icsc_web_contacts_db_prepped.csv')
+    insert_from_csv('main_contact_db', 'IFA_contacts.csv')
+    # create_collection_indices('main_contact_db-1')
+    # get_contacts_collection('main_contact_db').create_index(
+    #     [('email', 1)],
+    #     unique=True,
+    #     partialFilterExpression={'email': {'$exists': True, '$type': "string"}}),
+
+    # remove_email_dupes('main_contact_db')
