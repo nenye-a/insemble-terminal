@@ -14,6 +14,7 @@ from personal_reports import generate_report
 
 import contactmanager as cm
 import utils
+import time
 
 MAIN_DB = cm.get_contacts_collection('main_contact_db')
 MAIN_DB.create_index([('report_generated', 1)])
@@ -137,6 +138,7 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
         else:
             query = {
                 report_tag: {'$exists': True, '$ne': None},
+                'email': {'$ne': None, '$nin': unsubscribed_list},
                 '$or': [
                     {email_tag: {'$exists': False}},
                     {email_tag: False}
@@ -182,6 +184,10 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
             }, {'$set': contact}).modified_count
             print('Emailed {}({}) with a report!'.format(contact['email'], contact['_id']))
         print(f'\n{modified_count} contacts updated!\n')
+        print('Pausing for 5 seconds to allow for stopping of emails.')
+        time.sleep(5)
+
+        # return
 
 
 def get_report(contact, report_tag):
@@ -202,7 +208,7 @@ def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
     if followup_stage:
         email_html = build_followup_email(
             followup_stage,
-            first_name=contact['first_name'],
+            first_name=utils.adjust_case(contact['first_name']),
             sender_name=sender['name'],
             sender_title=sender['title'],
             abbv_sender_title=sender['abbv_title']
@@ -246,13 +252,17 @@ def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
             met=contact['met'] if utils.inbool(contact, 'met')
             else None
         )
-        email_result = send_email(
-            from_email=sender['email'],
-            to_emails=contact['email'],
-            subject="Your Report",
-            html_text=email_html
-        )
-        contact[email_tag] = email_result
+        if ('gabes.net' in contact['email'] or 'aromajoes.com' in contact['email'] or
+                'ngkf.com' in contact['email'] or 'dunkinbrands' in contact['email']):
+            contact[email_tag] = "Skipped"
+        else:
+            email_result = send_email(
+                from_email=sender['email'],
+                to_emails=contact['email'],
+                subject="Your Report",
+                html_text=email_html
+            )
+            contact[email_tag] = email_result
 
     return contact
 
@@ -431,4 +441,5 @@ if __name__ == "__main__":
     # test_report_generator()
     # test_report_emailer()
 
-    generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))

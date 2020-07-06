@@ -321,9 +321,9 @@ def get_contacts_emails(collection_name, batchsize=150):
                 except mongoerrors.DuplicateKeyError as e:
                     print(e)
                     print('User with the same email already exists.')
-                    collection.delete_one({
-                        '_id': contact['_id']
-                    })
+                    # collection.delete_one({
+                    #     '_id': contact['_id']
+                    # })
                     continue
         except Exception as e:
             print(e)
@@ -771,13 +771,4 @@ if __name__ == "__main__":
     #     # 'campaign-1-report': {'$exists': True}
     #     'campaign-1-report': {'$exists': True, '$ne': None}
     # }))
-
-    insert_from_csv('main_contact_db', 'icsc_web_contacts_db_prepped.csv')
-    insert_from_csv('main_contact_db', 'IFA_contacts.csv')
-    # create_collection_indices('main_contact_db-1')
-    # get_contacts_collection('main_contact_db').create_index(
-    #     [('email', 1)],
-    #     unique=True,
-    #     partialFilterExpression={'email': {'$exists': True, '$type': "string"}}),
-
-    # remove_email_dupes('main_contact_db')
+    get_contacts_domains('main_contact_db')
