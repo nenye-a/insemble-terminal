@@ -108,7 +108,10 @@ export default function TerminalHomeScene() {
               containerStyle={{ marginRight: 8 }}
               icon={true}
               iconStyle={{ top: 2, right: 3 }}
-              onChange={(e) => setSearchTerminal(e.target.value)}
+              onChange={(e) => {
+                setSearchTerminal(e.target.value);
+                setPage(0);
+              }}
               value={searchTerminal}
             />
             <Button
