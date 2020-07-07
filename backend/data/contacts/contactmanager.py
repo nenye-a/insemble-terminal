@@ -78,6 +78,7 @@ def insert_from_pdf(collection_name, pdf, replace=False):
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
     prune_bad_apples(collection_name)
+    reflect_domains(collection_name)
 
     return collection
 
@@ -93,7 +94,7 @@ def create_collection_indices(collection_name):
             partialFilterExpression={
                 'first_name': {'$exists': True, "$type": "string"},
                 'last_name': {'$exists': True, "$type": "string"},
-                'company': {'$exists': True, "$type": string},
+                'company': {'$exists': True, "$type": "string"},
             })
         collection.create_index(
             [('email', 1)],
@@ -155,6 +156,19 @@ def prune_bad_apples(collection_name):
     print("Deleted {} bad apples.".format(deleted.deleted_count))
 
 
+def reflect_domains(collection_name):
+    collection = get_contacts_collection(collection_name)
+
+    count_updated = collection.update_many({
+        'domain': {'$exists': True, '$ne': None},
+        'domain_processed': None
+    }, {'$set': {
+        'domain_processed': True
+    }}).modified_count
+
+    print(f"Updated {count_updated} with domain_processed=True.")
+
+
 def insert_from_csv(collection_name, csv, replace=False):
     """
     Inserts a csv of contacts into a specified collection.
@@ -203,6 +217,7 @@ def insert_from_csv(collection_name, csv, replace=False):
     print('Successfully inserted {} contacts into database'.format(number_inserted))
 
     prune_bad_apples(collection_name)
+    reflect_domains(collection_name)
 
 
 def get_contacts_domains(collection_name, batchsize=100):
@@ -762,6 +777,37 @@ def create_prelight_collection():
     ])
 
 
+def get_collection_stats(collection_name, print_out=True):
+    collection = get_contacts_collection(collection_name)
+    stats = {}
+    stats['number_contacts'] = collection.count_documents({})
+    stats['unprocessed_contacts'] = collection.count_documents(
+        {'domain_processed': None})
+    stats['domain_processed_contacts'] = collection.count_documents(
+        {'domain_processed': {'$exists': True, '$ne': None}})
+    stats['contacts_with_domains'] = collection.count_documents(
+        {'domain': {'$exists': True, '$ne': None}})
+    stats['email_processed_contacts'] = collection.count_documents({'email': {'$exists': True}})
+    stats['unprocessed_contacts_with_domains'] = stats['email_processed_contacts'] - \
+        stats['contacts_with_domains']
+    stats['contacts_with_emails'] = collection.count_documents(
+        {'email': {'$exists': True, '$ne': None}})
+
+    if print_out:
+        for k, v in stats.items():
+            print(utils.snake_case_to_word(k), ':', v)
+
+    stats['unprocessed_contacts'] and print("Run domain collector to process {} contacts".format(
+        stats['unprocessed_contacts']
+    ))
+    stats['unprocessed_contacts_with_domains'] and print(
+        "Run email collector for {} contacts".format(
+            stats['unprocessed_contacts_with_domains']
+        ))
+
+    return stats
+
+
 if __name__ == "__main__":
     def test_contact_block_to_dict():
         blocks = [('Andrew Corno', 'Senior Vice President', 'JLL', '3854 Beecher Street',
@@ -771,10 +817,3 @@ if __name__ == "__main__":
                    '(443) 621-6555', 'Owner/Developer')]
 
         print([contact_block_to_dict(block) for block in blocks])
-
-    # create_prelight_collection()
-    # print(get_contacts_collection('main_contact_db').count_documents({
-    #     # 'campaign-1-report': {'$exists': True}
-    #     'campaign-1-report': {'$exists': True, '$ne': None}
-    # }))
-    get_contacts_emails('main_contact_db')

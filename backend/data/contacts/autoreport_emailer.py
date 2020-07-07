@@ -410,6 +410,56 @@ def clear_report(collection_name, campaign_name, mode='all'):
     return modified_count
 
 
+def get_email_stats(collection_name, campaign_name):
+
+    stats = cm.get_collection_stats(collection_name, print_out=False)
+    report_tag, email_tag = get_tags(campaign_name)
+
+    collection = cm.get_contacts_collection(collection_name)
+    stats[report_tag + '_ineligible'] = collection.count_documents({
+        '$or': [
+            {'email': {'$in': unsubscribed_list}},
+            {'address_street': None},
+        ]
+    })
+    stats[report_tag + '_eligible_unprocessed'] = collection.count_documents({
+        'email': {'$ne': None, '$nin': unsubscribed_list},
+        'address_street': {'$ne': None},
+        report_tag: {'$exists': False}
+    })
+    stats[report_tag + '_processed'] = collection.count_documents({
+        report_tag: {'$exists': True}
+    })
+    stats[report_tag + '_available'] = collection.count_documents({
+        report_tag: {'$exists': True, '$ne': None}
+    })
+    stats[email_tag + '_eligible_for_email'] = collection.count_documents({
+        report_tag: {'$exists': True, '$ne': None},
+        'email': {'$ne': None, '$nin': unsubscribed_list},
+        '$or': [
+            {email_tag: {'$exists': False}},
+            {email_tag: False}
+        ]
+    })
+    stats['skipped_emails'] = collection.count_documents({
+        email_tag: "Skipped"
+    })
+    stats[email_tag] = collection.count_documents({
+        email_tag: True
+    })
+    stats[email_tag + '_first_followup_sent'] = collection.count_documents({
+        email_tag + '_followup_stage': 1
+    })
+    stats[email_tag + '_second_followup_sent'] = collection.count_documents({
+        email_tag + '_followup_stage': 2
+    })
+
+    for k, v in stats.items():
+        print(utils.snake_case_to_word(k), ':', v)
+
+    return stats
+
+
 if __name__ == "__main__":
     def test_build_emailer():
         email = build_email(
@@ -442,4 +492,5 @@ if __name__ == "__main__":
     # test_report_emailer()
 
     # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
-    send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    get_email_stats('main_contact_db', 'campaign-1')
