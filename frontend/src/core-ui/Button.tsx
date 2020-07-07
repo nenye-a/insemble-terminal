@@ -7,6 +7,8 @@ import {
   DARK_TEXT_COLOR,
   MUTED_TEXT_COLOR,
   BUTTON_BORDER_COLOR,
+  SHADOW_COLOR,
+  BUTTON_ACTIVE_COLOR,
 } from '../constants/colors';
 import {
   DEFAULT_BORDER_RADIUS,
@@ -97,18 +99,21 @@ const Container = styled(TouchableOpacity)<Props>`
     props.shape === 'round' ? '14px' : DEFAULT_BORDER_RADIUS};
     height: ${(props) =>
       props.size === 'default' && props.shape === 'block' ? '36px' : '28px'};
+
   ${(props) =>
     props.mode === 'primary' &&
     css`
+      border: 1px solid ${THEME_COLOR};
       &:disabled {
         background-color: ${MUTED_TEXT_COLOR};
+        border: 1px solid ${MUTED_TEXT_COLOR};
       }
     `}
   ${(props) =>
     props.mode === 'secondary' &&
     css`
       background-color: ${WHITE};
-      border: 0.8px solid ${BUTTON_BORDER_COLOR};
+      border: 1px solid ${BUTTON_BORDER_COLOR};
       ${Text} {
         color: ${DARK_TEXT_COLOR};
       }
@@ -137,10 +142,21 @@ const Container = styled(TouchableOpacity)<Props>`
           color: ${MUTED_TEXT_COLOR};
         }
       `}
-  &:hover, &:not():disabled {
+  &:hover {
     opacity: 0.9;
+    ${({ mode }) =>
+      mode !== 'transparent' &&
+      css`
+        box-shadow: ${SHADOW_COLOR};
+      `}
   }
   &:active {
     opacity: 0.5;
+    ${(props) =>
+      props.mode === 'primary' &&
+      css`
+        background-color: ${BUTTON_ACTIVE_COLOR};
+        border: 1px solid ${THEME_COLOR};
+      `}
   }
 `;

@@ -16,8 +16,9 @@ const TERMINAL = gql`
   }
 `;
 export const GET_TERMINAL_LIST = gql`
-  query GetTerminalList {
-    userTerminals {
+  query GetTerminalList($search: String, $first: Int, $skip: Int) {
+    userTerminals(search: $search, first: $first, skip: $skip)
+      @connection(key: "terminals") {
       id
       name
       description
@@ -26,6 +27,7 @@ export const GET_TERMINAL_LIST = gql`
       }
       updatedAt
     }
+    dataCount(node: TERMINALS, terminalSearch: $search)
   }
 `;
 

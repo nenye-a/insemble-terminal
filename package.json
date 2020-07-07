@@ -13,6 +13,7 @@
     "clean": "yarn clean:frontend && yarn clean:backend",
     "clean:backend": "if [ -d \"backend-node/dist\" ]; then rm -r backend-node/dist; fi",
     "clean:frontend": "if [ -d \"frontend/build\" ]; then rm -r frontend/build; fi",
+    "format": "yarn --cwd frontend format && yarn --cwd backend-node format",
     "test": "yarn --cwd backend-node test && yarn --cwd frontend test",
     "postinstall": "yarn --cwd backend-node install --production=false && yarn --cwd frontend install --production=false"
   },
