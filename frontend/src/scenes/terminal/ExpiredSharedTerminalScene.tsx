@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { View, Text, Link } from '../../core-ui';
-import { Background } from '../../components';
 import {
   FONT_WEIGHT_BOLD,
   FONT_SIZE_XLARGE,
@@ -39,6 +38,7 @@ const Container = styled(View)`
   padding: 24px;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
 `;
 
 const Title = styled(Text)<WithViewport>`

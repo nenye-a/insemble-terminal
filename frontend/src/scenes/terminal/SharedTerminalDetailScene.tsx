@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@apollo/react-hooks';
 import styled from 'styled-components';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import {
@@ -25,12 +25,18 @@ type Params = {
 
 export default function SharedTerminalDetailScene() {
   let params = useParams<Params>();
+  let history = useHistory();
   let { loading, data, error } = useQuery<
     GetSharedTerminal,
     GetSharedTerminalVariables
   >(GET_SHARED_TERMINAL, {
     variables: {
       sharedTerminalId: params.sharedTerminalId,
+    },
+    onError: (e) => {
+      if (e.message.includes('expired')) {
+        history.push('/shared-expired');
+      }
     },
   });
 
