@@ -164,7 +164,7 @@ export default function TerminalHomeScene() {
               pageCount={data ? Math.ceil(data.dataCount / numberPerPage) : 1}
               forcePage={page}
               marginPagesDisplayed={2}
-              pageRangeDisplayed={5}
+              pageRangeDisplayed={isDesktop ? 4 : 2}
               onPageChange={handlePageClick}
               containerClassName={'pagination'}
               activeClassName={'active'}

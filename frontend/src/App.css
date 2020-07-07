@@ -57,6 +57,9 @@ body.tab-pressed *:focus {
 .pagination {
   margin: 15px auto;
   display: flex;
+  align-content: center;
+  align-items: center;
+  padding: 15px;
   list-style: none;
   outline: none;
 }
