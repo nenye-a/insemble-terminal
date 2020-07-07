@@ -19,6 +19,7 @@ import {
   UserHomeScene,
   SharedTerminalDetailScene,
   ExpiredSharedTerminalScene,
+  ReferralScene,
 } from '../scenes';
 import ReferralVerificationFailedScene from '../scenes/auth/ReferralVerificationFailedScene';
 
@@ -165,6 +166,7 @@ export const authenticatedRoutes: Array<RouteType> = [
   },
   { path: '/edit-profile', component: EditProfileScene },
   { path: '/send-feedback', component: ContactUsScene },
+  { path: '/referral', component: ReferralScene },
 ];
 
 export const authenticatedAdminRoutes: Array<RouteType> = [
