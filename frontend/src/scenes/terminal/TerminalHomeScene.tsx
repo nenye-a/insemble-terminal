@@ -45,6 +45,7 @@ export default function TerminalHomeScene() {
 
   let refetchFunction = async () => {
     let { data: newData } = await fetchMore({
+      // TODO: using fetchMore correctly without setData(newData)
       variables: {
         skip: page * numberPerPage,
       },
@@ -131,7 +132,9 @@ export default function TerminalHomeScene() {
           <LoadingIndicator />
         ) : error ? (
           <ErrorComponent />
-        ) : data?.userTerminals.length === 0 ? (
+        ) : data?.userTerminals.length === 0 && searchTerminal !== '' ? (
+          <NoDataText>Search not found.</NoDataText>
+        ) : data?.dataCount === 0 ? (
           <NoDataText>
             Add a terminal to begin using customizable data feeds.
           </NoDataText>
@@ -157,17 +160,17 @@ export default function TerminalHomeScene() {
                 )}
             </CardContainer>
             <ReactPaginate
-              previousLabel={'previous'}
-              nextLabel={'next'}
-              breakLabel={'...'}
-              breakClassName={'break-me'}
+              previousLabel="previous"
+              nextLabel="next"
+              breakLabel="..."
+              breakClassName="break-me"
               pageCount={data ? Math.ceil(data.dataCount / numberPerPage) : 1}
               forcePage={page}
               marginPagesDisplayed={2}
               pageRangeDisplayed={isDesktop ? 4 : 2}
               onPageChange={handlePageClick}
-              containerClassName={'pagination'}
-              activeClassName={'active'}
+              containerClassName="pagination"
+              activeClassName="active"
             />
           </>
         )}

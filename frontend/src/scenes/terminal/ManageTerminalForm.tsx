@@ -67,15 +67,6 @@ export default function ManageTerminalForm(props: Props) {
           name,
           description,
         },
-        // awaitRefetchQueries: true,
-        // refetchQueries: [
-        //   {
-        //     query: GET_TERMINAL_LIST,
-        //     variables: {
-        //       first: 10,
-        //     },
-        //   },
-        // ],
       });
       refetchCurrentPage && refetchCurrentPage();
     } else if (mode === 'edit' && terminalId) {
@@ -87,7 +78,6 @@ export default function ManageTerminalForm(props: Props) {
         },
         awaitRefetchQueries: true,
         refetchQueries: [
-          // { query: GET_TERMINAL_LIST },
           {
             query: GET_TERMINAL,
             variables: {

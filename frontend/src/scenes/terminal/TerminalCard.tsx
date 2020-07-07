@@ -74,15 +74,6 @@ export default function TerminalCard(props: Props) {
                 variables: {
                   terminalId: id,
                 },
-                // refetchQueries: [
-                //   {
-                //     query: GET_TERMINAL_LIST,
-                //     variables: {
-                //       first: 10,
-                //     },
-                //   },
-                // ],
-                // awaitRefetchQueries: true,
               });
               refetchCurrentPage && refetchCurrentPage();
             },
