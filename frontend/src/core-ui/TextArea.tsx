@@ -14,6 +14,7 @@ import {
   FONT_FAMILY_NORMAL,
   FONT_SIZE_NORMAL,
   FONT_SIZE_SMALL,
+  FONT_WEIGHT_MEDIUM,
 } from '../constants/theme';
 import { useID } from '../helpers';
 
@@ -99,11 +100,19 @@ const TextAreaBox = styled.textarea`
   box-sizing: border-box;
   font-family: ${FONT_FAMILY_NORMAL};
   font-size: ${FONT_SIZE_NORMAL};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
   ${(props) =>
     props.disabled &&
     css`
       background-color: ${DISABLED_TEXT_INPUT_BACKGROUND};
     `}
+  &:focus {
+    border-color: ${THEME_COLOR};
+    outline: none;
+  }
+  &::placeholder {
+    color: ${MUTED_TEXT_COLOR};
+  }
 `;
 
 const RemainingCharacters = styled(Label)`
