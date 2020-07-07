@@ -62,7 +62,7 @@ export default function PerformanceResult(props: Props) {
     readOnly,
   } = props;
   let alert = useAlert();
-  let [viewMode, setViewMode] = useState('graph');
+  let [viewMode, setViewMode] = useState('table');
   let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
