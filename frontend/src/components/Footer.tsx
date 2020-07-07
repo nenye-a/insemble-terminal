@@ -1,22 +1,16 @@
 import React from 'react';
 import ReactGA from 'react-ga';
 import styled, { css } from 'styled-components';
-import { useHistory } from 'react-router-dom';
 
-import { View, Text, TouchableOpacity, Link as BaseLink } from '../core-ui';
+import { View, Text, Link as BaseLink } from '../core-ui';
 import { useViewport } from '../helpers';
 import { BLACK, WHITE } from '../constants/colors';
-import {
-  PRIVACY_POLICY_PDF,
-  TERMS_OF_SERVICE_PDF,
-  INSEMBLE_LEASING_URI,
-} from '../constants/uri';
+import { PRIVACY_POLICY_PDF, TERMS_OF_SERVICE_PDF } from '../constants/uri';
 import { VIEWPORT_TYPE } from '../constants/viewports';
 import { FONT_WEIGHT_MEDIUM, FONT_SIZE_MEDIUM } from '../constants/theme';
 import {
   TERMS_OF_SERVICE_ROUTE,
   PRIVACY_POLICY_ROUTE,
-  INSEMBLE_LEASING_ROUTE,
 } from '../constants/trackEvents';
 
 type ViewWithViewportType = ViewProps & {
@@ -24,7 +18,6 @@ type ViewWithViewportType = ViewProps & {
 };
 
 export default function Footer() {
-  let history = useHistory();
   let { viewportType } = useViewport();
   let isDesktop = viewportType === VIEWPORT_TYPE.DESKTOP;
 

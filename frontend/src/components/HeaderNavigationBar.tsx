@@ -7,7 +7,6 @@ import {
   WHITE,
   HEADER_SHADOW_COLOR,
   DARK_TEXT_COLOR,
-  LIGHT_PURPLE,
 } from '../constants/colors';
 import { useAuth } from '../context';
 import { useViewport } from '../helpers';

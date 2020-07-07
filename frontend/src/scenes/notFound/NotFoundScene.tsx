@@ -1,15 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { View, Text, Link } from '../../core-ui';
+import { View, Text } from '../../core-ui';
 import { Background, HeaderNavigationBar } from '../../components';
-import {
-  FONT_WEIGHT_BOLD,
-  FONT_SIZE_XLARGE,
-  FONT_SIZE_SEMI_MEDIUM,
-  NAVBAR_HEIGHT,
-} from '../../constants/theme';
-import { DARK_TEXT_COLOR, THEME_COLOR } from '../../constants/colors';
+import { FONT_WEIGHT_BOLD, FONT_SIZE_SEMI_MEDIUM } from '../../constants/theme';
+import { DARK_TEXT_COLOR } from '../../constants/colors';
 import { useViewport } from '../../helpers';
 
 export default function NotFoundScene() {

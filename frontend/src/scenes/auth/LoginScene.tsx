@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Card, Text, View, Link } from '../../core-ui';
-import { Background } from '../../components';
 import { NAVBAR_HEIGHT, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import { WHITE } from '../../constants/colors';
 
