@@ -70,12 +70,11 @@ export default function PerformanceTable(props: Props) {
   let firstColumnHeader = (
     <Row>
       {headerTitle}
-      <Button
+      <GraphButton
         text="Graph"
         iconPlacement="start"
         mode="secondary"
         size="small"
-        style={{ marginLeft: 8, height: 20, padding: 4, borderWidth: 0 }}
         icon={<SvgChart style={{ color: THEME_COLOR, marginRight: 8 }} />}
         onPress={() => onViewModeChange('graph')}
       />
@@ -483,4 +482,11 @@ const Next = styled(TouchableOpacity)`
 const Row = styled(View)`
   flex-direction: row;
   align-items: center;
+`;
+
+const GraphButton = styled(Button)`
+  padding: 2px 5px;
+  margin-left: 8px;
+  height: 20px;
+  border-width: 0px;
 `;
