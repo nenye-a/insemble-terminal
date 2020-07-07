@@ -20,7 +20,6 @@ import {
   SharedTerminalDetailScene,
   ExpiredSharedTerminalScene,
 } from '../scenes';
-import { BackgroundMode } from '../components';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

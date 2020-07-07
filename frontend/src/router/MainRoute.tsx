@@ -12,6 +12,7 @@ import { View } from '../core-ui';
 import { Footer, HeaderNavigationBar } from '../components';
 import { useAuth } from '../context';
 import { NewsPreviewModal, NotFoundScene } from '../scenes';
+import { HeaderMode } from '../components/HeaderNavigationBar';
 
 import {
   authenticatedRoutes,
@@ -20,7 +21,6 @@ import {
   RouteType,
   authenticatedAdminRoutes,
 } from './routes';
-import { HeaderMode } from '../components/HeaderNavigationBar';
 
 type State = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
