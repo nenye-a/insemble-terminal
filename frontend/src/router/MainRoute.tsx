@@ -8,6 +8,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 
+import { View } from '../core-ui';
 import {
   Footer,
   HeaderNavigationBar,
@@ -144,7 +145,9 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
           readOnly={readOnly}
         />
       )}
-      <Component />
+      <View flex style={{ minHeight: '90vh' }}>
+        <Component />
+      </View>
       <Footer />
     </Background>
   );

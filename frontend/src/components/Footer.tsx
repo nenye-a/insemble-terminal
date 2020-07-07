@@ -3,7 +3,7 @@ import ReactGA from 'react-ga';
 import styled, { css } from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
-import { View, Text, TouchableOpacity, Link } from '../core-ui';
+import { View, Text, TouchableOpacity, Link as BaseLink } from '../core-ui';
 import { useViewport } from '../helpers';
 import { BLACK, WHITE } from '../constants/colors';
 import {
@@ -12,7 +12,7 @@ import {
   INSEMBLE_LEASING_URI,
 } from '../constants/uri';
 import { VIEWPORT_TYPE } from '../constants/viewports';
-import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
+import { FONT_WEIGHT_MEDIUM, FONT_SIZE_MEDIUM } from '../constants/theme';
 import {
   TERMS_OF_SERVICE_ROUTE,
   PRIVACY_POLICY_ROUTE,
@@ -34,92 +34,56 @@ export default function Footer() {
 
   return (
     <Container isDesktop={isDesktop}>
-      <TouchableOpacity
+      <Link
+        href={PRIVACY_POLICY_PDF}
         onPress={() => {
-          history.push('/contact-us');
+          trackEvent(PRIVACY_POLICY_ROUTE);
         }}
-        href="/contact-us"
       >
-        <WhiteText fontWeight={FONT_WEIGHT_MEDIUM}>Contact us!</WhiteText>
-      </TouchableOpacity>
-      <Row isDesktop={isDesktop}>
-        {isDesktop && (
-          <CopyrightContainer isDesktop={isDesktop}>
-            <WhiteLink
-              href={TERMS_OF_SERVICE_PDF}
-              onPress={() => {
-                trackEvent(TERMS_OF_SERVICE_ROUTE);
-              }}
-            >
-              Terms of Service
-            </WhiteLink>
-            <WhiteLink
-              href={PRIVACY_POLICY_PDF}
-              onPress={() => {
-                trackEvent(PRIVACY_POLICY_ROUTE);
-              }}
-            >
-              Privacy Policy
-            </WhiteLink>
-            <WhiteLink
-              href={INSEMBLE_LEASING_URI}
-              onPress={() => {
-                trackEvent(INSEMBLE_LEASING_ROUTE);
-              }}
-            >
-              Insemble Leasing
-            </WhiteLink>
-          </CopyrightContainer>
-        )}
-        <CopyrightContainer isDesktop={isDesktop}>
-          <WhiteText>@2020 Insemble</WhiteText>
-          <WhiteText>Insemble Inc. All Rights Reserved.</WhiteText>
-        </CopyrightContainer>
-      </Row>
+        {isDesktop ? 'Privacy Policy' : 'Privacy'}
+      </Link>
+      <Spacing />
+      <Link
+        href={TERMS_OF_SERVICE_PDF}
+        onPress={() => {
+          trackEvent(TERMS_OF_SERVICE_ROUTE);
+        }}
+      >
+        {isDesktop ? 'Terms of Agreement' : 'Terms'}
+      </Link>
+      <Spacing />
+      <WhiteText>© Insemble, Inc</WhiteText>
     </Container>
   );
 }
 
-const Row = styled(View)<ViewWithViewportType>`
-  flex-direction: ${({ isDesktop }) => (isDesktop ? 'row' : 'column')};
-`;
 const Container = styled(View)<ViewWithViewportType>`
   align-items: center;
+  flex-direction: row;
   background-color: ${BLACK};
   padding: 20px 5vw;
   width: 100%;
-  height: 140px;
+  height: 70px;
   ${({ isDesktop }) =>
     isDesktop
       ? css`
-          flex-direction: row;
-          justify-content: space-between;
+          justify-content: flex-end;
         `
       : css`
-          flex-direction: column;
           justify-content: center;
-        `}
-`;
-
-const CopyrightContainer = styled(View)<ViewWithViewportType>`
-  ${({ isDesktop }) =>
-    !isDesktop
-      ? css`
-          align-items: center;
-          padding-top: 16px;
-        `
-      : css`
-          align-items: flex-start;
-          padding-left: 35px;
         `}
 `;
 
 const WhiteText = styled(Text)`
   color: ${WHITE};
-  line-height: 1.7;
+  font-size: ${FONT_SIZE_MEDIUM};
 `;
 
-const WhiteLink = styled(Link)`
-  color: ${WHITE};
-  line-height: 1.7;
+const Spacing = styled(View)`
+  width: 80px;
+`;
+
+const Link = styled(BaseLink)`
+  font-weight: ${FONT_WEIGHT_MEDIUM};
+  font-size: ${FONT_SIZE_MEDIUM};
 `;
