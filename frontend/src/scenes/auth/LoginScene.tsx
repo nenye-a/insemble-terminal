@@ -40,7 +40,7 @@ const NoAccountContainer = styled(RowView)`
   margin: 16px 0 0 0;
 `;
 
-const Container = styled(Background)`
+const Container = styled(View)`
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - ${NAVBAR_HEIGHT});

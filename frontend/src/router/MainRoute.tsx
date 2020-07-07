@@ -8,10 +8,14 @@ import {
   useLocation,
 } from 'react-router-dom';
 
-import { View } from '../core-ui';
-import { Footer, HeaderNavigationBar } from '../components';
+import {
+  Footer,
+  HeaderNavigationBar,
+  Background,
+  BackgroundMode,
+} from '../components';
 import { useAuth } from '../context';
-import { UserHomeScene, NewsPreviewModal } from '../scenes';
+import { NewsPreviewModal, NotFoundScene } from '../scenes';
 
 import {
   authenticatedRoutes,
@@ -46,6 +50,7 @@ function Routes() {
       showSearchBar = false,
       headerMode = 'default',
       readOnly = false,
+      backgroundMode,
       ...routeProps
     }: RouteType,
     index: number,
@@ -60,6 +65,7 @@ function Routes() {
             showSearchBar={showSearchBar}
             headerMode={headerMode}
             readOnly={readOnly}
+            backgroundMode={backgroundMode}
           />
         )}
         {...routeProps}
@@ -76,7 +82,7 @@ function Routes() {
               : authenticatedRoutes.map(mapFn)
             : authenticatedUnactiveRoutes.map(mapFn)
           : unAuthenticatedRoutes.map(mapFn)}
-        <Route component={UserHomeScene} />
+        <Route component={NotFoundScene} />
       </Switch>
       {background && (
         <>
@@ -106,7 +112,8 @@ type RouteWithTrackerProps = {
   showHeader: boolean;
   showSearchBar?: boolean;
   component: ComponentType;
-  headerMode?: 'default' | 'transparent' | 'lightPurple' | 'logoOnly';
+  headerMode?: 'default' | 'transparent' | 'logoOnly';
+  backgroundMode?: BackgroundMode;
   readOnly?: boolean;
 };
 
@@ -117,6 +124,7 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
     component: Component,
     headerMode,
     readOnly,
+    backgroundMode,
   } = props;
   let history = useHistory();
 
@@ -125,7 +133,7 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
   }, []);
 
   return (
-    <View>
+    <Background mode={backgroundMode}>
       {showHeader && (
         <HeaderNavigationBar
           showSearchBar={showSearchBar}
@@ -136,10 +144,8 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
           readOnly={readOnly}
         />
       )}
-      <View style={{ minHeight: '90vh' }}>
-        <Component />
-      </View>
+      <Component />
       <Footer />
-    </View>
+    </Background>
   );
 }

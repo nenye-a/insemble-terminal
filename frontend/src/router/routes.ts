@@ -20,18 +20,26 @@ import {
   SharedTerminalDetailScene,
   ExpiredSharedTerminalScene,
 } from '../scenes';
+import { BackgroundMode } from '../components';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   component: React.ComponentType<any>;
   showHeader?: boolean;
   showSearchBar?: boolean;
-  headerMode?: 'default' | 'transparent' | 'lightPurple' | 'logoOnly';
+  headerMode?: 'default' | 'transparent' | 'logoOnly';
+  backgroundMode?: BackgroundMode;
   readOnly?: boolean;
 };
 
 export const allAccessRoutes: Array<RouteType> = [
-  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
+  {
+    path: '/contact-us',
+    component: ContactUsScene,
+    showSearchBar: false,
+    headerMode: 'transparent',
+    backgroundMode: 'withBubble',
+  },
   {
     path: '/shared/:sharedTerminalId',
     component: SharedTerminalDetailScene,
@@ -61,6 +69,7 @@ export const allAccessRoutes: Array<RouteType> = [
     path: '/shared-expired',
     component: ExpiredSharedTerminalScene,
     headerMode: 'transparent',
+    backgroundMode: 'quarterPurple',
     exact: true,
   },
 ];
@@ -78,12 +87,14 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
     component: SignUpScene,
     showSearchBar: false,
     headerMode: 'logoOnly',
+    backgroundMode: 'halfPurple',
   },
   {
     path: '/login',
     component: LoginScene,
     showSearchBar: false,
     headerMode: 'logoOnly',
+    backgroundMode: 'halfPurple',
   },
   {
     path: '/email-verification/:verificationId',

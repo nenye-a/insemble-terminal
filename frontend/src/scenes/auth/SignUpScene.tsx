@@ -1,15 +1,12 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
 
-import { View, Text, Button, Card } from '../../core-ui';
-import { Background } from '../../components';
+import { View, Text, Link, Card } from '../../core-ui';
+import { WHITE, PURPLE_LINK } from '../../constants/colors';
 
 import SignUpForm from './SignUpForm';
 
 export default function SignUpScene() {
-  let history = useHistory();
-
   return (
     <Container>
       <Card title="Sign Up">
@@ -18,15 +15,10 @@ export default function SignUpScene() {
         </FormContainer>
       </Card>
       <RowView style={{ marginTop: 16 }}>
-        <Text>Already have an account? </Text>
-        <Button
-          mode="transparent"
-          text="Log in here"
-          onPress={() => {
-            history.push('/login');
-          }}
-          href="/login"
-        />
+        <Text color={WHITE}>Already have an account? </Text>
+        <Link href="/login" style={{ color: PURPLE_LINK, fontWeight: 500 }}>
+          Log in here
+        </Link>
       </RowView>
     </Container>
   );
@@ -43,7 +35,7 @@ const RowView = styled(View)`
   margin-top: 16px;
 `;
 
-const Container = styled(Background)`
+const Container = styled(View)`
   flex: 1;
   justify-content: center;
   align-items: center;

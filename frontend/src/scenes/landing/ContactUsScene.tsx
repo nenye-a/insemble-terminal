@@ -17,7 +17,7 @@ import { useAuth } from '../../context';
 import { validateEmail, useViewport } from '../../helpers';
 import { CONTACT_US } from '../../graphql/queries/server/contact';
 import { ContactUs, ContactUsVariables } from '../../generated/ContactUs';
-import { Background, SuccessFeedback } from '../../components';
+import { SuccessFeedback } from '../../components';
 import { GRAY_TEXT, WHITE } from '../../constants/colors';
 import SvgInsembleBullet from '../../components/icons/insemble-bullet';
 import { FONT_SIZE_SEMI_MEDIUM, FONT_SIZE_XLARGE } from '../../constants/theme';
@@ -64,7 +64,7 @@ export default function ContactUsScene() {
   };
 
   return (
-    <Container mode="withBubble">
+    <Container>
       {hasSubmitted ? (
         <SuccessFeedback>
           <Text fontSize={FONT_SIZE_XLARGE} color={GRAY_TEXT}>
@@ -201,7 +201,7 @@ export default function ContactUsScene() {
   );
 }
 
-const Container = styled(Background)`
+const Container = styled(View)`
   padding: 40px;
   align-items: center;
   justify-content: center;
@@ -246,6 +246,7 @@ const BenefitContainer = styled(RowedView)`
 `;
 
 const RightContainer = styled(View)`
-  justify-content: center;
+  justify-content: flex-end;
   margin-left: 40px;
+  padding-bottom: 80px;
 `;

@@ -14,32 +14,33 @@ const BG_SOURCE = {
   withBubble: withBubbleBackground,
 };
 
+export type BackgroundMode = keyof typeof BG_SOURCE;
+
 type Props = ViewProps & {
-  mode?: keyof typeof BG_SOURCE;
+  mode?: BackgroundMode;
 };
 
-const BackgroundBubble = ({
-  mode = 'halfPurple',
-  children,
-  ...props
-}: Props) => (
-  <Container {...props}>
-    <Img src={BG_SOURCE[mode]} />
-    {children}
-  </Container>
-);
+export const Background = ({ mode, children, ...props }: Props) => {
+  return mode ? (
+    <Container {...props}>
+      <Img src={BG_SOURCE[mode]} />
+      {children}
+    </Container>
+  ) : (
+    <View>{children}</View>
+  );
+};
 
 const Container = styled(View)`
   background-color: ${LIGHT_PURPLE};
-  overflow: hidden;
-  min-height: 90vh;
+  width: 100vw;
+  min-height: calc(100vh - ${NAVBAR_HEIGHT});
 `;
 const Img = styled.img`
   position: absolute;
-  bottom: -60px;
+  bottom: 0px;
   object-fit: cover;
-  height: 100%;
+  max-width: 100vw;
+  height: 100vh;
   z-index: 0;
 `;
-
-export default BackgroundBubble;

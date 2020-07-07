@@ -1,4 +1,4 @@
-export { default as Background } from './Background';
+export * from './Background';
 export { default as DataTable } from './DataTable';
 export { default as ComparisonPopover } from './ComparisonPopover';
 export { default as EmptyDataComponent } from './EmptyDataComponent';

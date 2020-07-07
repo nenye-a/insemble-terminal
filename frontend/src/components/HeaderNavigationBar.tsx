@@ -7,6 +7,7 @@ import {
   WHITE,
   HEADER_SHADOW_COLOR,
   DARK_TEXT_COLOR,
+  LIGHT_PURPLE,
 } from '../constants/colors';
 import { useAuth } from '../context';
 import { useViewport } from '../helpers';
@@ -21,7 +22,7 @@ import ReadOnlyBanner from './ReadOnlyBanner';
 import SearchFilterBarMobile from './SearchFilterBarMobile';
 
 type Props = {
-  mode?: 'default' | 'transparent';
+  mode?: 'default' | 'transparent' | 'logoOnly';
   onSearchPress?: (searchTags: SearchTag) => void;
   showSearchBar?: boolean;
   defaultReviewTag?: string;
@@ -60,87 +61,101 @@ export default function HeaderNavigationBar(props: Props) {
 
   return (
     <Container mode={mode}>
-      {readOnly && <ReadOnlyBanner />}
-      <Row>
+      {mode === 'logoOnly' ? (
         <TouchableOpacity
           onPress={() => {
             history.push('/');
           }}
           href="/"
+          style={{ paddingTop: 24, paddingBottom: 8 }}
         >
-          <InsembleLogo color="purple" />
+          <InsembleLogo color="purple" size="medium" />
         </TouchableOpacity>
-        {showSearchBar && isDesktop ? (
-          <SearchContainer flex>
-            <SearchFilterBar
-              onSearchPress={onSearchPress}
-              defaultReviewTag={defaultReviewTag}
-              defaultBusinessTag={defaultBusinessTag}
-              defaultLocationTag={defaultLocationTag}
-            />
-          </SearchContainer>
-        ) : (
-          <View flex />
-        )}
-        {isAuthenticated ? (
-          <RowEnd>
-            <TerminalButton
-              mode="transparent"
-              text="Terminals"
-              textProps={{ style: { color: DARK_TEXT_COLOR } }}
+      ) : (
+        <>
+          {readOnly && <ReadOnlyBanner />}
+          <Row>
+            <TouchableOpacity
               onPress={() => {
-                history.push('/terminals');
+                history.push('/');
               }}
-              href="/terminals"
-            />
-            <ProfileMenuDropdown />
-          </RowEnd>
-        ) : (
-          <RowEnd>
-            <Button
-              shape="round"
-              mode="secondary"
-              text="Sign in"
-              onPress={() => {
-                history.push('/login');
+              href="/"
+            >
+              <InsembleLogo color="purple" />
+            </TouchableOpacity>
+            {showSearchBar && isDesktop ? (
+              <SearchContainer flex>
+                <SearchFilterBar
+                  onSearchPress={onSearchPress}
+                  defaultReviewTag={defaultReviewTag}
+                  defaultBusinessTag={defaultBusinessTag}
+                  defaultLocationTag={defaultLocationTag}
+                />
+              </SearchContainer>
+            ) : (
+              <View flex />
+            )}
+            {isAuthenticated ? (
+              <RowEnd>
+                <TerminalButton
+                  mode="transparent"
+                  text="Terminals"
+                  textProps={{ style: { color: DARK_TEXT_COLOR } }}
+                  onPress={() => {
+                    history.push('/terminals');
+                  }}
+                  href="/terminals"
+                />
+                <ProfileMenuDropdown />
+              </RowEnd>
+            ) : (
+              <RowEnd>
+                <Button
+                  shape="round"
+                  mode="secondary"
+                  text="Sign in"
+                  onPress={() => {
+                    history.push('/login');
+                  }}
+                />
+                <SignUpButton
+                  shape="round"
+                  text="Contact us"
+                  onPress={() => {
+                    history.push('/contact-us');
+                  }}
+                />
+              </RowEnd>
+            )}
+          </Row>
+          {showSearchBar && !isDesktop && (
+            <SearchBarMobileContainer
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsFocus(true);
               }}
-            />
-            <SignUpButton
-              shape="round"
-              text="Contact us"
-              onPress={() => {
-                history.push('/contact-us');
-              }}
-            />
-          </RowEnd>
-        )}
-      </Row>
-      {showSearchBar && !isDesktop && (
-        <SearchBarMobileContainer
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsFocus(true);
-          }}
-        >
-          <ClickAway
-            onClickAway={() => {
-              setIsFocus(false);
-            }}
-          >
-            <SearchFilterBarMobile
-              focus={isFocus}
-              onSearchPress={(value) => {
-                if (onSearchPress) {
-                  onSearchPress(value);
+            >
+              <ClickAway
+                onClickAway={() => {
                   setIsFocus(false);
-                }
-              }}
-              defaultReviewTag={defaultReviewTag}
-              defaultBusinessTag={defaultBusinessTag}
-              defaultLocationTag={defaultLocationTag}
-            />
-          </ClickAway>
-        </SearchBarMobileContainer>
+                }}
+              >
+                <SearchFilterBarMobile
+                  focus={isFocus}
+                  onSearchPress={(value) => {
+                    if (onSearchPress) {
+                      onSearchPress(value);
+                      setIsFocus(false);
+                    }
+                  }}
+                  defaultReviewTag={defaultReviewTag}
+                  defaultBusinessTag={defaultBusinessTag}
+                  defaultLocationTag={defaultLocationTag}
+                />
+              </ClickAway>
+            </SearchBarMobileContainer>
+          )}
+        </>
       )}
     </Container>
   );
