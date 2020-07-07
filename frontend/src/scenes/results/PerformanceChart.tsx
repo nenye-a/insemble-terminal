@@ -41,17 +41,32 @@ import {
 } from '../../helpers';
 import SvgTable from '../../components/icons/table';
 
-type TableMode = 'merged' | 'split';
+type graphMode = 'merged' | 'split';
 type Props = {
   data: Array<MergedPerformanceData>;
-  tableMode?: TableMode;
+  graphMode?: graphMode;
   onViewModeChange: (viewMode: 'table' | 'graph') => void;
 };
 
 const MAX_BAR_SIZE = 42;
 const NORMAL_BAR_SIZE = 24;
 const MIN_BAR_SIZE = 15;
-const TICKS_VALUE = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3];
+const TICKS_VALUE = [
+  0.25,
+  0.5,
+  0.75,
+  1,
+  1.25,
+  1.5,
+  1.75,
+  2,
+  2.25,
+  2.5,
+  2.75,
+  3,
+];
+const Y_AXIS_WIDTH = 230;
+const Y_AXIS_WIDTH_MOBILE = 170;
 
 const INDEX_OPTIONS = [
   {
@@ -73,7 +88,7 @@ const INDEX_OPTIONS = [
 ];
 
 export default function PerformanceChart(props: Props) {
-  let { data, tableMode = 'split', onViewModeChange } = props;
+  let { data, graphMode = 'split', onViewModeChange } = props;
   let [selectedIndexKey, setSelectedIndexKey] = useState(0);
   let { isDesktop } = useViewport();
 
@@ -83,12 +98,12 @@ export default function PerformanceChart(props: Props) {
   });
 
   let chartData =
-    tableMode === 'merged'
+    graphMode === 'merged'
       ? prepareMergedChartData(sortedData)
       : prepareSplitChartData(sortedData);
 
   let calculatedHeight =
-    tableMode === 'split'
+    graphMode === 'split'
       ? NORMAL_BAR_SIZE * data.length
       : 4 * MAX_BAR_SIZE * data.length;
 
@@ -96,7 +111,7 @@ export default function PerformanceChart(props: Props) {
 
   let getBars = () => {
     let bars = [];
-    if (tableMode === 'split') {
+    if (graphMode === 'split') {
       bars.push(
         <Bar
           dataKey={INDEX_OPTIONS[selectedIndexKey].value}
@@ -107,7 +122,7 @@ export default function PerformanceChart(props: Props) {
           maxBarSize={MAX_BAR_SIZE}
         />,
       );
-    } else if (tableMode === 'merged') {
+    } else if (graphMode === 'merged') {
       for (let [key] of Object.entries(chartData[0] as ChartData)) {
         if (key.includes('value_')) {
           let name = key.replace('value_', '');
@@ -119,7 +134,7 @@ export default function PerformanceChart(props: Props) {
               {...(!stillHaveSpace && { barSize: NORMAL_BAR_SIZE })}
               radius={[5, 24, 24, 5]}
               maxBarSize={MAX_BAR_SIZE}
-              label={<CustomizedLabel label={key} />}
+              label={<CustomizedLabel label={key} mode={graphMode} />}
               isAnimationActive={false}
             />,
           );
@@ -146,13 +161,16 @@ export default function PerformanceChart(props: Props) {
         icon={<SvgTable style={{ color: WHITE, marginRight: 8 }} />}
       />
       <View>
-        {tableMode === 'split' && (
+        {graphMode === 'split' && (
           <ScrollContainer>
             <ScrollMenu<{ label: string; value: string }>
               selectedOption={INDEX_OPTIONS[selectedIndexKey]}
               options={INDEX_OPTIONS}
               onSelectionChange={onIndexChange}
               optionExtractor={(option) => option.label}
+              containerStyle={{
+                width: isDesktop ? Y_AXIS_WIDTH : Y_AXIS_WIDTH_MOBILE,
+              }}
             />
           </ScrollContainer>
         )}
@@ -169,21 +187,27 @@ export default function PerformanceChart(props: Props) {
               orientation="top"
               axisLine={false}
               tickLine={false}
-              ticks={TICKS_VALUE}
+              ticks={isDesktop ? TICKS_VALUE : TICKS_VALUE.slice(1)}
               tick={{
                 color: LIGHT_GRAY,
                 fontSize: FONT_SIZE_SMALL,
                 fontFamily: FONT_FAMILY_NORMAL,
               }}
-              interval={1}
-              tickFormatter={(val) => val + 'x'}
+              interval={isDesktop ? 0 : 1}
+              tickFormatter={(val) => {
+                if (val % 1 === 0 || (isDesktop && val % 0.5 === 0)) {
+                  return val + 'x';
+                } else {
+                  return '';
+                }
+              }}
             />
             <YAxis
-              dataKey={tableMode === 'merged' ? 'label' : 'name'}
+              dataKey={graphMode === 'merged' ? 'label' : 'name'}
               type="category"
-              width={isDesktop ? 230 : 120}
+              width={isDesktop ? Y_AXIS_WIDTH : Y_AXIS_WIDTH_MOBILE}
               axisLine={false}
-              tick={<CustomizedTick size={data.length} mode={tableMode} />}
+              tick={<CustomizedTick size={data.length} mode={graphMode} />}
               interval={0}
               tickLine={false}
             />
@@ -300,7 +324,7 @@ function CustomReferenceLabel(props: ReferenceLineProps) {
   return (
     <text
       x={width + x - 2}
-      y={y - 6 - 20}
+      y={y - 37}
       dy={dy}
       dx={dx}
       fill={THEME_COLOR}
@@ -329,7 +353,7 @@ function CustomizedTick(props: TickProps) {
   let { isDesktop } = useViewport();
   return (
     <text
-      x={isDesktop ? x - 220 : x - 110}
+      x={isDesktop ? x - Y_AXIS_WIDTH + 10 : x - Y_AXIS_WIDTH_MOBILE + 10}
       y={splitMode ? y + 3 : y - 30 * (size / 2)}
       fontSize={splitMode ? 10 : FONT_SIZE_XSMALL}
       fill={splitMode ? DEFAULT_TEXT_COLOR : THEME_COLOR}
@@ -337,29 +361,39 @@ function CustomizedTick(props: TickProps) {
       textAnchor="start"
       fontFamily={FONT_FAMILY_NORMAL}
     >
-      {trimText(camelCaseToCapitalCase(value), isDesktop ? 50 : 20)}
+      {trimText(camelCaseToCapitalCase(value), isDesktop ? 50 : 35)}
     </text>
   );
 }
 
-function CustomizedLabel(props: LabelProps & { label: string }) {
-  let { x = 0, y = 0, height = 0, label } = props;
+function CustomizedLabel(
+  props: LabelProps & { label: string; mode: 'split' | 'merged' },
+) {
+  let { x = 0, y = 0, height = 0, label, mode } = props;
   let { isDesktop } = useViewport();
+  let splitMode = mode === 'split';
 
   return (
     <text
-      x={isDesktop ? x - 228 : x - 128}
+      x={
+        !splitMode
+          ? x - Y_AXIS_WIDTH + 2
+          : isDesktop
+          ? x - Y_AXIS_WIDTH - 8
+          : x - Y_AXIS_WIDTH_MOBILE - 8
+      }
       y={y + height * 0.75}
       fontFamily={FONT_FAMILY_NORMAL}
       fontSize={FONT_SIZE_XSMALL}
       textAnchor="start"
     >
-      {trimText(label.replace('value_', ''), isDesktop ? 40 : 25)}
+      {trimText(label.replace('value_', ''), isDesktop ? 50 : 35)}
     </text>
   );
 }
 
 function trimText(text: string, threshold: number) {
+  // TODO: trim text by width
   if (text.length <= threshold) {
     return text;
   }
