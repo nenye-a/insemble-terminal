@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useHistory } from 'react-router-dom';
 
 import { View, Text, Button, Card } from '../../core-ui';
+import { Background } from '../../components';
 
 import SignUpForm from './SignUpForm';
 
@@ -42,7 +43,7 @@ const RowView = styled(View)`
   margin-top: 16px;
 `;
 
-const Container = styled(View)`
+const Container = styled(Background)`
   flex: 1;
   justify-content: center;
   align-items: center;

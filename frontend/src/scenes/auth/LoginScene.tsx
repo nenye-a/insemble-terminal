@@ -1,14 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useHistory } from 'react-router-dom';
 
-import { Card, Text, View, Button } from '../../core-ui';
-import { NAVBAR_HEIGHT } from '../../constants/theme';
+import { Card, Text, View, Link } from '../../core-ui';
+import { Background } from '../../components';
+import { NAVBAR_HEIGHT, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
+import { WHITE } from '../../constants/colors';
 
 import LoginForm from './LoginForm';
 
 export default function LoginScene() {
-  let history = useHistory();
   let noAccount = "Don't have an account?";
 
   return (
@@ -19,16 +19,12 @@ export default function LoginScene() {
         </FormContainer>
       </LoginCard>
       <NoAccountContainer>
-        <Text>{noAccount} </Text>
-        <Button
-          mode="transparent"
-          text="Sign Up here"
-          onPress={() => {
-            history.push('/signup');
-          }}
-          href="/signup"
-        />
+        <Text color={WHITE}>{noAccount} </Text>
+        <PurpleLink href="/signup">Sign up</PurpleLink>
+        <Text color={WHITE}> or </Text>
+        <PurpleLink href="/contact-us">Contact us</PurpleLink>
       </NoAccountContainer>
+
       {/* TODO: Forgot password scene */}
     </Container>
   );
@@ -44,7 +40,7 @@ const NoAccountContainer = styled(RowView)`
   margin: 16px 0 0 0;
 `;
 
-const Container = styled(View)`
+const Container = styled(Background)`
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - ${NAVBAR_HEIGHT});
@@ -56,4 +52,10 @@ const LoginCard = styled(Card)`
 
 const FormContainer = styled(View)`
   padding: 24px;
+`;
+
+// TODO: change color to variable. currently if we put variable, the color is not passed
+const PurpleLink = styled(Link)`
+  color: #c9cbff;
+  font-weight: ${FONT_WEIGHT_MEDIUM};
 `;
