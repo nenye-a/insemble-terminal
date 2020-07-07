@@ -11,6 +11,7 @@ export { default as NewsScene } from './news/NewsScene';
 export { default as NewsPreviewModal } from './results/NewsPreviewModal';
 export { default as EditProfileScene } from './profile/EditProfileScene';
 export { default as ResultsScene } from './results/ResultsScene';
+export { default as ExpiredSharedTerminalScene } from './terminal/ExpiredSharedTerminalScene';
 export { default as TerminalDetailScene } from './terminal/TerminalDetailScene';
 export { default as SharedTerminalDetailScene } from './terminal/SharedTerminalDetailScene';
 export { default as TerminalHomeScene } from './terminal/TerminalHomeScene';

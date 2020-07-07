@@ -6,10 +6,11 @@ import { NAVBAR_HEIGHT } from '../constants/theme';
 import { LIGHT_PURPLE } from '../constants/colors';
 import withBubbleBackground from '../assets/images/curve-background-bubble.svg';
 import halfPurpleBackground from '../assets/images/curve-background.svg';
+import quarterPurpleBackground from '../assets/images/quarter-curve-background.svg';
 
 const BG_SOURCE = {
   halfPurple: halfPurpleBackground,
-  quarterPurple: halfPurpleBackground,
+  quarterPurple: quarterPurpleBackground,
   withBubble: withBubbleBackground,
 };
 
@@ -31,6 +32,7 @@ const BackgroundBubble = ({
 const Container = styled(View)`
   background-color: ${LIGHT_PURPLE};
   overflow: hidden;
+  min-height: 90vh;
 `;
 const Img = styled.img`
   position: absolute;

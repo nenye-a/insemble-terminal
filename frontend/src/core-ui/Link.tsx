@@ -13,7 +13,7 @@ type Props = TextProps & {
 };
 
 export default function Link(props: Props) {
-  let { href = '', target = '_blank', style, ...otherProps } = props;
+  let { href = '', target, style, ...otherProps } = props;
   let isLocal = isLocalUrl(href);
   let onPress = (event: MouseEvent<HTMLAnchorElement>) => {
     if (isLocal && target == null) {
@@ -25,6 +25,8 @@ export default function Link(props: Props) {
   };
   if (!isLocal) {
     target = target || '_blank';
+  } else if (isLocal) {
+    target = target || '_self';
   }
 
   return (
@@ -33,6 +35,7 @@ export default function Link(props: Props) {
       href={href || '#'}
       target={target}
       onClick={onPress}
+      style={style}
     />
   );
 }

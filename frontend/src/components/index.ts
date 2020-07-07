@@ -13,5 +13,6 @@ export { default as Popup } from './Popup';
 export { default as SearchFilterBar } from './SearchFilterBar';
 export { default as SearchPlaceholder } from './SearchPlaceholder';
 export { default as ScrollMenu } from './ScrollMenu';
+export { default as SuccessFeedback } from './SuccessFeedback';
 export { default as Tab } from './Tab';
 export { default as PinInfoBox } from './PinInfoBox';

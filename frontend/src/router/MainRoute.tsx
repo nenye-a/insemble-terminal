@@ -106,7 +106,7 @@ type RouteWithTrackerProps = {
   showHeader: boolean;
   showSearchBar?: boolean;
   component: ComponentType;
-  headerMode?: 'default' | 'transparent';
+  headerMode?: 'default' | 'transparent' | 'lightPurple' | 'logoOnly';
   readOnly?: boolean;
 };
 
