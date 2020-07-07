@@ -7,6 +7,7 @@ import {
   WHITE,
   HEADER_SHADOW_COLOR,
   DARK_TEXT_COLOR,
+  LIGHT_PURPLE,
 } from '../constants/colors';
 import { useAuth } from '../context';
 import { useViewport } from '../helpers';
@@ -20,8 +21,10 @@ import ProfileMenuDropdown from './ProfileMenuDropdown';
 import ReadOnlyBanner from './ReadOnlyBanner';
 import SearchFilterBarMobile from './SearchFilterBarMobile';
 
+export type HeaderMode = 'default' | 'transparent' | 'logoOnly' | 'lightPurple';
+
 type Props = {
-  mode?: 'default' | 'transparent' | 'logoOnly';
+  mode?: HeaderMode;
   onSearchPress?: (searchTags: SearchTag) => void;
   showSearchBar?: boolean;
   defaultReviewTag?: string;
@@ -160,7 +163,9 @@ export default function HeaderNavigationBar(props: Props) {
   );
 }
 
-type ContainerProps = ViewProps & { mode: 'default' | 'transparent' };
+type ContainerProps = ViewProps & {
+  mode: HeaderMode;
+};
 
 const Container = styled(View)<ContainerProps>`
   width: 100vw;
@@ -169,6 +174,10 @@ const Container = styled(View)<ContainerProps>`
       ? css`
           background-color: ${WHITE};
           box-shadow: 0px 1px 1px 0px ${HEADER_SHADOW_COLOR};
+        `
+      : props.mode === 'logoOnly' || props.mode === 'lightPurple'
+      ? css`
+          background-color: ${LIGHT_PURPLE};
         `
       : css`
           background-color: transparent;

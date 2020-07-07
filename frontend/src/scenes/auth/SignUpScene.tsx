@@ -2,25 +2,28 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { View, Text, Link, Card } from '../../core-ui';
+import { Background } from '../../components';
 import { WHITE, PURPLE_LINK } from '../../constants/colors';
 
 import SignUpForm from './SignUpForm';
 
 export default function SignUpScene() {
   return (
-    <Container>
-      <Card title="Sign Up">
-        <FormContainer>
-          <SignUpForm />
-        </FormContainer>
-      </Card>
-      <RowView style={{ marginTop: 16 }}>
-        <Text color={WHITE}>Already have an account? </Text>
-        <Link href="/login" style={{ color: PURPLE_LINK, fontWeight: 500 }}>
-          Log in here
-        </Link>
-      </RowView>
-    </Container>
+    <Background mode="halfPurple">
+      <Container>
+        <Card title="Sign Up">
+          <FormContainer>
+            <SignUpForm />
+          </FormContainer>
+        </Card>
+        <RowView style={{ marginTop: 16 }}>
+          <Text color={WHITE}>Already have an account? </Text>
+          <Link href="/login" style={{ color: PURPLE_LINK, fontWeight: 500 }}>
+            Log in here
+          </Link>
+        </RowView>
+      </Container>
+    </Background>
   );
 }
 

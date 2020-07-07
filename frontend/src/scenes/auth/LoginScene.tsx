@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { Card, Text, View, Link } from '../../core-ui';
+import { Background } from '../../components';
 import { NAVBAR_HEIGHT, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import { WHITE } from '../../constants/colors';
 
@@ -11,21 +12,23 @@ export default function LoginScene() {
   let noAccount = "Don't have an account?";
 
   return (
-    <Container flex>
-      <LoginCard title="Log In">
-        <FormContainer>
-          <LoginForm />
-        </FormContainer>
-      </LoginCard>
-      <NoAccountContainer>
-        <Text color={WHITE}>{noAccount} </Text>
-        <PurpleLink href="/signup">Sign up</PurpleLink>
-        <Text color={WHITE}> or </Text>
-        <PurpleLink href="/contact-us">Contact us</PurpleLink>
-      </NoAccountContainer>
+    <Background mode="halfPurple">
+      <Container flex>
+        <LoginCard title="Log In">
+          <FormContainer>
+            <LoginForm />
+          </FormContainer>
+        </LoginCard>
+        <NoAccountContainer>
+          <Text color={WHITE}>{noAccount} </Text>
+          <PurpleLink href="/signup">Sign up</PurpleLink>
+          <Text color={WHITE}> or </Text>
+          <PurpleLink href="/contact-us">Contact us</PurpleLink>
+        </NoAccountContainer>
 
-      {/* TODO: Forgot password scene */}
-    </Container>
+        {/* TODO: Forgot password scene */}
+      </Container>
+    </Background>
   );
 }
 

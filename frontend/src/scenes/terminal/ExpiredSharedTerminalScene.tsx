@@ -9,28 +9,31 @@ import {
 } from '../../constants/theme';
 import { DARK_TEXT_COLOR, THEME_COLOR } from '../../constants/colors';
 import { useViewport } from '../../helpers';
+import { Background } from '../../components';
 
 export default function ExpiredSharedTerminalScene() {
   let { isDesktop } = useViewport();
   return (
-    <Container flex>
-      <Title isDesktop={isDesktop}>Expired Terminal Link</Title>
-      <Description isDesktop={isDesktop}>
-        Unfortunately, this shared terminal link is expired. Please contact the
-        sharer to receive another. If you received a link from our team, contact
-        us{' '}
-        <Link
-          style={{
-            color: THEME_COLOR,
-            fontWeight: 'bold',
-            fontSize: 'inherit',
-          }}
-          href="/contact-us"
-        >
-          here.
-        </Link>
-      </Description>
-    </Container>
+    <Background mode="quarterPurple">
+      <Container flex>
+        <Title isDesktop={isDesktop}>Expired Terminal Link</Title>
+        <Description isDesktop={isDesktop}>
+          Unfortunately, this shared terminal link is expired. Please contact
+          the sharer to receive another. If you received a link from our team,
+          contact us{' '}
+          <Link
+            style={{
+              color: THEME_COLOR,
+              fontWeight: 'bold',
+              fontSize: 'inherit',
+            }}
+            href="/contact-us"
+          >
+            here.
+          </Link>
+        </Description>
+      </Container>
+    </Background>
   );
 }
 

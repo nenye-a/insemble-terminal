@@ -9,12 +9,7 @@ import {
 } from 'react-router-dom';
 
 import { View } from '../core-ui';
-import {
-  Footer,
-  HeaderNavigationBar,
-  Background,
-  BackgroundMode,
-} from '../components';
+import { Footer, HeaderNavigationBar } from '../components';
 import { useAuth } from '../context';
 import { NewsPreviewModal, NotFoundScene } from '../scenes';
 
@@ -25,6 +20,7 @@ import {
   RouteType,
   authenticatedAdminRoutes,
 } from './routes';
+import { HeaderMode } from '../components/HeaderNavigationBar';
 
 type State = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -51,7 +47,6 @@ function Routes() {
       showSearchBar = false,
       headerMode = 'default',
       readOnly = false,
-      backgroundMode,
       ...routeProps
     }: RouteType,
     index: number,
@@ -66,7 +61,6 @@ function Routes() {
             showSearchBar={showSearchBar}
             headerMode={headerMode}
             readOnly={readOnly}
-            backgroundMode={backgroundMode}
           />
         )}
         {...routeProps}
@@ -113,8 +107,7 @@ type RouteWithTrackerProps = {
   showHeader: boolean;
   showSearchBar?: boolean;
   component: ComponentType;
-  headerMode?: 'default' | 'transparent' | 'logoOnly';
-  backgroundMode?: BackgroundMode;
+  headerMode?: HeaderMode;
   readOnly?: boolean;
 };
 
@@ -125,7 +118,6 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
     component: Component,
     headerMode,
     readOnly,
-    backgroundMode,
   } = props;
   let history = useHistory();
 
@@ -134,7 +126,7 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
   }, []);
 
   return (
-    <Background mode={backgroundMode}>
+    <View>
       {showHeader && (
         <HeaderNavigationBar
           showSearchBar={showSearchBar}
@@ -149,6 +141,6 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
         <Component />
       </View>
       <Footer />
-    </Background>
+    </View>
   );
 }

@@ -27,8 +27,7 @@ export type RouteType = Omit<RouteProps, 'component'> & {
   component: React.ComponentType<any>;
   showHeader?: boolean;
   showSearchBar?: boolean;
-  headerMode?: 'default' | 'transparent' | 'logoOnly';
-  backgroundMode?: BackgroundMode;
+  headerMode?: 'default' | 'transparent' | 'lightPurple' | 'logoOnly';
   readOnly?: boolean;
 };
 
@@ -37,8 +36,7 @@ export const allAccessRoutes: Array<RouteType> = [
     path: '/contact-us',
     component: ContactUsScene,
     showSearchBar: false,
-    headerMode: 'transparent',
-    backgroundMode: 'withBubble',
+    headerMode: 'lightPurple',
   },
   {
     path: '/shared/:sharedTerminalId',
@@ -68,8 +66,7 @@ export const allAccessRoutes: Array<RouteType> = [
   {
     path: '/shared-expired',
     component: ExpiredSharedTerminalScene,
-    headerMode: 'transparent',
-    backgroundMode: 'quarterPurple',
+    headerMode: 'lightPurple',
     exact: true,
   },
 ];
@@ -87,14 +84,12 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
     component: SignUpScene,
     showSearchBar: false,
     headerMode: 'logoOnly',
-    backgroundMode: 'halfPurple',
   },
   {
     path: '/login',
     component: LoginScene,
     showSearchBar: false,
     headerMode: 'logoOnly',
-    backgroundMode: 'halfPurple',
   },
   {
     path: '/email-verification/:verificationId',

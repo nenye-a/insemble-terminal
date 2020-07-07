@@ -13,11 +13,11 @@ import {
   Text,
   Alert,
 } from '../../core-ui';
+import { Background, SuccessFeedback } from '../../components';
 import { useAuth } from '../../context';
 import { validateEmail, useViewport } from '../../helpers';
 import { CONTACT_US } from '../../graphql/queries/server/contact';
 import { ContactUs, ContactUsVariables } from '../../generated/ContactUs';
-import { SuccessFeedback } from '../../components';
 import { GRAY_TEXT, WHITE } from '../../constants/colors';
 import SvgInsembleBullet from '../../components/icons/insemble-bullet';
 import { FONT_SIZE_SEMI_MEDIUM, FONT_SIZE_XLARGE } from '../../constants/theme';
@@ -64,140 +64,142 @@ export default function ContactUsScene() {
   };
 
   return (
-    <Container>
-      {hasSubmitted ? (
-        <SuccessFeedback>
-          <Text fontSize={FONT_SIZE_XLARGE} color={GRAY_TEXT}>
-            We’ll get back to you as soon as we can at
-          </Text>
-          <Text fontSize={FONT_SIZE_XLARGE} color={GRAY_TEXT}>
-            {user?.email || getValues('email')}
-          </Text>
-        </SuccessFeedback>
-      ) : (
-        <>
-          {!isAuthenticated && (
-            <TitleContainer>
-              <Title>Contact our sales team</Title>
-              <Description>
-                We’d love to answer your sales questions. Fill out the {'\n'}{' '}
-                form and we’ll get back to you as soon as possible.
-              </Description>
-            </TitleContainer>
-          )}
-
-          <RowedView>
-            <CardContainer title="Contact Us">
-              <Content onSubmit={handleSubmit(onSubmit)}>
-                {data ? (
-                  <Text>
-                    Your message has been received. We will get back to you
-                    soon.
-                  </Text>
-                ) : (
-                  <>
-                    <Alert
-                      visible={!!error?.message}
-                      text={error?.message || ''}
-                    />
-                    {!isAuthenticated && (
-                      <>
-                        <TextInput
-                          name="email"
-                          ref={register({
-                            required: 'Email should not be empty',
-                            validate: (val) =>
-                              validateEmail(val) || 'Incorrect email format',
-                          })}
-                          label="Email Address"
-                          placeholder="Your Email Address"
-                          {...(errors?.email?.message && {
-                            errorMessage: errors.email.message,
-                          })}
-                          containerStyle={inputContainerStyle}
-                        />
-                        <RowedView>
-                          <View flex style={{ marginRight: 10 }}>
-                            <TextInput
-                              name="firstName"
-                              ref={register({
-                                required: 'First name should not be empty',
-                              })}
-                              label="First Name"
-                              placeholder="Your First Name"
-                              {...(errors?.firstName?.message && {
-                                errorMessage: errors.firstName.message,
-                              })}
-                              containerStyle={inputContainerStyle}
-                            />
-                          </View>
-                          <View flex style={{ marginLeft: 10 }}>
-                            <TextInput
-                              name="lastName"
-                              ref={register({
-                                required: 'Last name should not be empty',
-                              })}
-                              label="Last Name"
-                              placeholder="Your Last Name"
-                              {...(errors?.lastName?.message && {
-                                errorMessage: errors.lastName.message,
-                              })}
-                              containerStyle={inputContainerStyle}
-                            />
-                          </View>
-                        </RowedView>
-                        <TextInput
-                          name="company"
-                          ref={register({
-                            required: 'Company name should not be empty',
-                          })}
-                          label="Company"
-                          placeholder="Your Company"
-                          {...(errors?.company?.message && {
-                            errorMessage: errors.company.message,
-                          })}
-                          containerStyle={inputContainerStyle}
-                        />
-                      </>
-                    )}
-                    <TextArea
-                      label="Message"
-                      name="message"
-                      ref={register({
-                        required: 'Message should not be empty',
-                      })}
-                      {...(errors?.message?.message && {
-                        errorMessage: errors.message.message,
-                      })}
-                      containerStyle={inputContainerStyle}
-                    />
-                    <SubmitButton
-                      text="Submit"
-                      type="submit"
-                      loading={loading}
-                    />
-                  </>
-                )}
-              </Content>
-            </CardContainer>
-            {isDesktop && !isAuthenticated && (
-              <RightContainer>
-                {BENEFITS.map((benefit) => (
-                  <BenefitContainer key={benefit}>
-                    <SvgInsembleBullet
-                      style={{ color: WHITE, marginRight: 12 }}
-                    />
-                    <Text color={WHITE} fontSize={FONT_SIZE_SEMI_MEDIUM}>
-                      {benefit}
-                    </Text>
-                  </BenefitContainer>
-                ))}
-              </RightContainer>
+    <Background mode="withBubble">
+      <Container>
+        {hasSubmitted ? (
+          <SuccessFeedback>
+            <Text fontSize={FONT_SIZE_XLARGE} color={GRAY_TEXT}>
+              We’ll get back to you as soon as we can at
+            </Text>
+            <Text fontSize={FONT_SIZE_XLARGE} color={GRAY_TEXT}>
+              {user?.email || getValues('email')}
+            </Text>
+          </SuccessFeedback>
+        ) : (
+          <>
+            {!isAuthenticated && (
+              <TitleContainer>
+                <Title>Contact our sales team</Title>
+                <Description>
+                  We’d love to answer your sales questions. Fill out the {'\n'}{' '}
+                  form and we’ll get back to you as soon as possible.
+                </Description>
+              </TitleContainer>
             )}
-          </RowedView>
-        </>
-      )}
-    </Container>
+
+            <RowedView>
+              <CardContainer title="Contact Us">
+                <Content onSubmit={handleSubmit(onSubmit)}>
+                  {data ? (
+                    <Text>
+                      Your message has been received. We will get back to you
+                      soon.
+                    </Text>
+                  ) : (
+                    <>
+                      <Alert
+                        visible={!!error?.message}
+                        text={error?.message || ''}
+                      />
+                      {!isAuthenticated && (
+                        <>
+                          <TextInput
+                            name="email"
+                            ref={register({
+                              required: 'Email should not be empty',
+                              validate: (val) =>
+                                validateEmail(val) || 'Incorrect email format',
+                            })}
+                            label="Email Address"
+                            placeholder="Your Email Address"
+                            {...(errors?.email?.message && {
+                              errorMessage: errors.email.message,
+                            })}
+                            containerStyle={inputContainerStyle}
+                          />
+                          <RowedView>
+                            <View flex style={{ marginRight: 10 }}>
+                              <TextInput
+                                name="firstName"
+                                ref={register({
+                                  required: 'First name should not be empty',
+                                })}
+                                label="First Name"
+                                placeholder="Your First Name"
+                                {...(errors?.firstName?.message && {
+                                  errorMessage: errors.firstName.message,
+                                })}
+                                containerStyle={inputContainerStyle}
+                              />
+                            </View>
+                            <View flex style={{ marginLeft: 10 }}>
+                              <TextInput
+                                name="lastName"
+                                ref={register({
+                                  required: 'Last name should not be empty',
+                                })}
+                                label="Last Name"
+                                placeholder="Your Last Name"
+                                {...(errors?.lastName?.message && {
+                                  errorMessage: errors.lastName.message,
+                                })}
+                                containerStyle={inputContainerStyle}
+                              />
+                            </View>
+                          </RowedView>
+                          <TextInput
+                            name="company"
+                            ref={register({
+                              required: 'Company name should not be empty',
+                            })}
+                            label="Company"
+                            placeholder="Your Company"
+                            {...(errors?.company?.message && {
+                              errorMessage: errors.company.message,
+                            })}
+                            containerStyle={inputContainerStyle}
+                          />
+                        </>
+                      )}
+                      <TextArea
+                        label="Message"
+                        name="message"
+                        ref={register({
+                          required: 'Message should not be empty',
+                        })}
+                        {...(errors?.message?.message && {
+                          errorMessage: errors.message.message,
+                        })}
+                        containerStyle={inputContainerStyle}
+                      />
+                      <SubmitButton
+                        text="Submit"
+                        type="submit"
+                        loading={loading}
+                      />
+                    </>
+                  )}
+                </Content>
+              </CardContainer>
+              {isDesktop && !isAuthenticated && (
+                <RightContainer>
+                  {BENEFITS.map((benefit) => (
+                    <BenefitContainer key={benefit}>
+                      <SvgInsembleBullet
+                        style={{ color: WHITE, marginRight: 12 }}
+                      />
+                      <Text color={WHITE} fontSize={FONT_SIZE_SEMI_MEDIUM}>
+                        {benefit}
+                      </Text>
+                    </BenefitContainer>
+                  ))}
+                </RightContainer>
+              )}
+            </RowedView>
+          </>
+        )}
+      </Container>
+    </Background>
   );
 }
 
