@@ -93,7 +93,9 @@ export type WithFillAndComparison = {
   isComparison: boolean;
 };
 export type MergedPerformanceData = (PerformanceData | PerformanceCompareData) &
-  WithFillAndComparison;
+  WithFillAndComparison & {
+    hasAsterisk: boolean;
+  };
 
 export type MergedNewsData = (NewsData | NewsCompareData) &
   WithFillAndComparison;

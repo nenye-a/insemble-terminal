@@ -22,10 +22,7 @@ import {
   DeleteTerminal,
   DeleteTerminalVariables,
 } from '../../generated/DeleteTerminal';
-import {
-  DELETE_TERMINAL,
-  GET_TERMINAL_LIST,
-} from '../../graphql/queries/server/terminals';
+import { DELETE_TERMINAL } from '../../graphql/queries/server/terminals';
 
 type Props = ViewProps & {
   id: string;
@@ -34,6 +31,7 @@ type Props = ViewProps & {
   description?: string;
   lastUpdate?: string;
   isLandingPage?: boolean;
+  refetchCurrentPage?: () => void;
 };
 
 export default function TerminalCard(props: Props) {
@@ -45,6 +43,7 @@ export default function TerminalCard(props: Props) {
     description,
     lastUpdate,
     isLandingPage = false,
+    refetchCurrentPage,
     ...otherProps
   } = props;
   let [deletePopupVisible, setDeletePopupVisible] = useState(false);
@@ -70,14 +69,13 @@ export default function TerminalCard(props: Props) {
         buttons={[
           {
             text: 'Yes',
-            onPress: () => {
-              deleteTerminal({
+            onPress: async () => {
+              await deleteTerminal({
                 variables: {
                   terminalId: id,
                 },
-                refetchQueries: [{ query: GET_TERMINAL_LIST }],
-                awaitRefetchQueries: true,
               });
+              refetchCurrentPage && refetchCurrentPage();
             },
           },
           {

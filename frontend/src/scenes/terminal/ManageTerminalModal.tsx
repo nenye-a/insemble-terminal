@@ -18,10 +18,17 @@ type Props = {
   onClose: () => void;
   mode?: 'add' | 'edit';
   terminalId?: string;
+  refetchCurrentPage?: () => void;
 };
 
 export default function ManageTerminalModal(props: Props) {
-  let { visible, onClose, mode = 'add', terminalId } = props;
+  let {
+    visible,
+    onClose,
+    mode = 'add',
+    terminalId,
+    refetchCurrentPage,
+  } = props;
   let [
     getTerminalBasicInfo,
     { data: terminalBasicInfoData, loading, error },
@@ -47,6 +54,7 @@ export default function ManageTerminalModal(props: Props) {
         <ErrorComponent text={error.message} />
       ) : (
         <ManageTerminalForm
+          refetchCurrentPage={refetchCurrentPage}
           onClose={onClose}
           mode={mode}
           {...(mode === 'edit' && {

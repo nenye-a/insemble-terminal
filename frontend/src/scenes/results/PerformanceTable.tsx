@@ -2,12 +2,8 @@ import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
 
-import { View, Text, Card, TouchableOpacity } from '../../core-ui';
+import { View, Text, Card, TouchableOpacity, Button } from '../../core-ui';
 import { DataTable } from '../../components';
-import {
-  GetPerformanceTable_performanceTable_table_data as PerformanceTableData,
-  GetPerformanceTable_performanceTable_table_compareData as PerformanceTableCompareData,
-} from '../../generated/GetPerformanceTable';
 import {
   useSortableData,
   lightenOrDarkenColor,
@@ -18,6 +14,7 @@ import {
   Direction,
   PerformanceRowPressParam,
   ComparationTagWithFill,
+  MergedPerformanceData,
 } from '../../types/types';
 import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
@@ -28,19 +25,10 @@ import {
 } from '../../generated/globalTypes';
 import SvgArrowLeft from '../../components/icons/arrow-left';
 import SvgArrowRight from '../../components/icons/arrow-right';
-
-type MergedPerformanceTableData = (
-  | PerformanceTableData
-  | PerformanceTableCompareData
-) & {
-  isComparison: boolean;
-  fill?: string;
-  hasAsterisk: boolean;
-};
+import SvgChart from '../../components/icons/chart';
 
 type Props = {
-  data: Array<MergedPerformanceTableData>;
-  compareData?: Array<PerformanceTableCompareData>;
+  data: Array<MergedPerformanceData>;
   showNumLocation?: boolean;
   headerTitle?: string;
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
@@ -54,6 +42,7 @@ type Props = {
   locationTag?: { type: LocationTagType; params: string };
   inTerminal?: boolean;
   comparisonTags?: Array<ComparationTagWithFill>;
+  onViewModeChange: (viewMode: 'graph' | 'table') => void;
 };
 
 export default function PerformanceTable(props: Props) {
@@ -68,16 +57,29 @@ export default function PerformanceTable(props: Props) {
     locationTag,
     inTerminal,
     comparisonTags,
+    onViewModeChange,
   } = props;
   let [headerIndex, setHeaderIndex] = useState(0);
 
   let { sortedData, requestSort, sortConfig } = useSortableData<
-    MergedPerformanceTableData
+    MergedPerformanceData
   >(data, {
     key: 'customerVolumeIndex',
     direction: Direction.DESCENDING,
   });
-
+  let firstColumnHeader = (
+    <Row>
+      {headerTitle}
+      <GraphButton
+        text="Graph"
+        iconPlacement="start"
+        mode="secondary"
+        size="small"
+        icon={<SvgChart style={{ color: THEME_COLOR, marginRight: 8 }} />}
+        onPress={() => onViewModeChange('graph')}
+      />
+    </Row>
+  );
   let headerCells = [
     <DataTable.HeaderCell
       width={mobile ? 120 : 90}
@@ -173,7 +175,7 @@ export default function PerformanceTable(props: Props) {
     <DataTable>
       {mobile ? (
         <DataTable.HeaderRow>
-          <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
+          <DataTable.HeaderCell>{firstColumnHeader}</DataTable.HeaderCell>
           <TouchableOpacity
             onPress={() => {
               setHeaderIndex(headerIndex - 1);
@@ -202,7 +204,7 @@ export default function PerformanceTable(props: Props) {
         </DataTable.HeaderRow>
       ) : (
         <DataTable.HeaderRow>
-          <DataTable.HeaderCell>{headerTitle}</DataTable.HeaderCell>
+          <DataTable.HeaderCell>{firstColumnHeader}</DataTable.HeaderCell>
           {headerCells}
         </DataTable.HeaderRow>
       )}
@@ -231,7 +233,7 @@ export default function PerformanceTable(props: Props) {
 }
 
 type TableRowProps = {
-  datum: MergedPerformanceTableData;
+  datum: MergedPerformanceData;
   mobile: boolean;
   businessTag?: {
     type: BusinessType;
@@ -475,4 +477,16 @@ const Times = styled(Text)`
 
 const Next = styled(TouchableOpacity)`
   margin-right: 18px;
+`;
+
+const Row = styled(View)`
+  flex-direction: row;
+  align-items: center;
+`;
+
+const GraphButton = styled(Button)`
+  padding: 2px 5px;
+  margin-left: 8px;
+  height: 20px;
+  border-width: 0px;
 `;

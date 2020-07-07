@@ -6,6 +6,7 @@ import {
   FONT_SIZE_NORMAL,
   DEFAULT_BORDER_RADIUS,
   FONT_SIZE_SMALL,
+  FONT_WEIGHT_MEDIUM,
 } from '../constants/theme';
 import {
   TEXT_INPUT_BORDER_COLOR,
@@ -13,6 +14,7 @@ import {
   RED_TEXT,
   DEFAULT_TEXT_COLOR,
   THEME_COLOR,
+  MUTED_TEXT_COLOR,
 } from '../constants/colors';
 import { useID } from '../helpers';
 import SvgSearch from '../components/icons/search';
@@ -117,11 +119,19 @@ const InputBox = styled.input<InputProps>`
   box-sizing: border-box;
   font-family: ${FONT_FAMILY_NORMAL};
   font-size: ${FONT_SIZE_NORMAL};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
   ${(props) =>
     props.disabled &&
     css`
       background-color: ${DISABLED_TEXT_INPUT_BACKGROUND};
     `}
+  &:focus {
+    border-color: ${THEME_COLOR};
+    outline: none;
+  }
+  &::placeholder {
+    color: ${MUTED_TEXT_COLOR};
+  }
 `;
 
 const ErrorMessage = styled(Text)`

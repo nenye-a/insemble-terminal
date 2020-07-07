@@ -42,3 +42,5 @@ export * from './contactUs/contactUsMutation';
 export * from './contactUs/feedbackMutation';
 
 export * from './openNews/openNewsQuery';
+
+export * from './dataCount/dataCountQuery';

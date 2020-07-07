@@ -8,7 +8,6 @@ import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import { THEME_COLOR } from '../../constants/colors';
 import {
   CREATE_TERMINAL,
-  GET_TERMINAL_LIST,
   EDIT_TERMINAL,
   GET_TERMINAL,
 } from '../../graphql/queries/server/terminals';
@@ -27,10 +26,18 @@ type Props = {
   prevName?: string;
   prevDescription?: string | null;
   terminalId?: string;
+  refetchCurrentPage?: () => void;
 };
 
 export default function ManageTerminalForm(props: Props) {
-  let { onClose, mode, prevName, prevDescription, terminalId } = props;
+  let {
+    onClose,
+    mode,
+    prevName,
+    prevDescription,
+    terminalId,
+    refetchCurrentPage,
+  } = props;
   let [
     addTerminal,
     { loading: addTerminalLoading, error: addTerminalError },
@@ -52,19 +59,18 @@ export default function ManageTerminalForm(props: Props) {
   let isEditMode = mode === 'edit';
   let containerStyle = { paddingTop: 6, paddingBottom: 6 };
 
-  let onSubmit = (data: FieldValues) => {
+  let onSubmit = async (data: FieldValues) => {
     let { name, description } = data;
     if (mode === 'add') {
-      addTerminal({
+      await addTerminal({
         variables: {
           name,
           description,
         },
-        awaitRefetchQueries: true,
-        refetchQueries: [{ query: GET_TERMINAL_LIST }],
       });
+      refetchCurrentPage && refetchCurrentPage();
     } else if (mode === 'edit' && terminalId) {
-      editTerminal({
+      await editTerminal({
         variables: {
           name,
           description,
@@ -72,7 +78,6 @@ export default function ManageTerminalForm(props: Props) {
         },
         awaitRefetchQueries: true,
         refetchQueries: [
-          { query: GET_TERMINAL_LIST },
           {
             query: GET_TERMINAL,
             variables: {
@@ -81,6 +86,7 @@ export default function ManageTerminalForm(props: Props) {
           },
         ],
       });
+      refetchCurrentPage && refetchCurrentPage();
     }
   };
   return (

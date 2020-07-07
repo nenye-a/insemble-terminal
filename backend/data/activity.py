@@ -104,10 +104,23 @@ def decode_activity(encoded_activity):
     starting_hour, activity = encoded_activity
     first_index = starting_hour - first_hour
     item_indexes = range(first_index, first_index + len(activity))
+
     indexed_activity = zip(item_indexes, activity)
 
     for index, hour_activity in indexed_activity:
-        final_activity[index] = hour_activity
+        try:
+            # NOTE: following code is erroring in production, but not in development
+            # adding print statements here upon exception for more accurate tracking
+            # of the issue. Sentry posts it's own values, but does not quite show the
+            # full story.
+            final_activity[index] = hour_activity
+        except Exception:
+            print('Decode Activity threw an error:')
+            print(f'Indexed Activity: {list(indexed_activity)}')
+            print(f'Index & Hour Activity: {indexed_activity} | {hour_activity}')
+            print(f'Final Activity: {final_activity}')
+            print(f'Encoded Activity: {encoded_activity}')
+            raise Exception
 
     return final_activity
 
@@ -203,7 +216,7 @@ if __name__ == "__main__":
             ]
         ])))
 
-    test_activity()
+    # test_activity()
     # test_decode_activity()
     # test_normalize_activity()
     # test_aggregate_activity()
