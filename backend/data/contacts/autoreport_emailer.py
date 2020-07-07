@@ -493,4 +493,4 @@ if __name__ == "__main__":
 
     # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
     # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
-    get_email_stats('main_contact_db', 'campaign-1')
+    # get_email_stats('main_contact_db', 'campaign-1')
