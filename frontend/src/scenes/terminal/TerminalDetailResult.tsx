@@ -40,8 +40,8 @@ export default function TerminalDataResult(props: Props) {
       history.push('/results', {
         search: {
           businessTagWithId: comparisonTag
-            ? comparisonTag.businessTag?.id
-            : prevTag?.businessTag?.id,
+            ? comparisonTag.businessTag
+            : prevTag?.businessTag,
           locationTag: {
             params: name,
             type: locationType,
