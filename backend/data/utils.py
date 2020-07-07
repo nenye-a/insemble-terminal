@@ -217,6 +217,9 @@ def adjust_case(word, caps='all', splitter=" ", joiner=None):
     splitter - the string term to split the word on. Defailt " "
     joiner - the string term to join the word if different from splitter
     """
+    if not word:
+        return word
+
     words = [w.strip() for w in word.split(splitter)]
     if caps == "first":
         words[0].capitalize()

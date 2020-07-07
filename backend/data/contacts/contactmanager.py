@@ -11,6 +11,7 @@ import re
 import string
 import pandas as pd
 import numpy as np
+import traceback
 from billiard.pool import Pool
 from fuzzywuzzy import fuzz
 
@@ -228,7 +229,8 @@ def get_contacts_domains(collection_name, batchsize=100):
 
         contacts = list(collection.aggregate([
             {'$match': {
-                'domain_processed': None
+                'domain_processed': None,
+                'company': {'$ne': None}
             }},
             {'$sample': {
                 'size': batchsize
@@ -260,6 +262,7 @@ def get_contacts_domains(collection_name, batchsize=100):
                         '$setOnInsert': {'domain': contact['domain']}
                     }, upsert=True)
         except Exception as e:
+            traceback.print_exc()
             print(e)
         finally:
             if pool_exists:
@@ -269,12 +272,17 @@ def get_contacts_domains(collection_name, batchsize=100):
 
 def pull_domain(contact):
 
-    domain = contact_funcs.get_domain(contact['company'], in_parallel=True)
-    if domain == np.nan:
-        domain = None
-    contact['domain'] = domain
-    print("Got domain {} for {}".format(
-        domain, contact["first_name"]))
+    try:
+
+        domain = contact_funcs.get_domain(contact['company'], in_parallel=True)
+        if domain == np.nan:
+            domain = None
+        contact['domain'] = domain
+        print("Got domain {} for {}".format(
+            domain, contact["first_name"]))
+    except Exception:
+        traceback.print_exc()
+        contact['domain'] = None
     time.sleep(2)
     return contact
 
@@ -781,15 +789,25 @@ def get_collection_stats(collection_name, print_out=True):
     collection = get_contacts_collection(collection_name)
     stats = {}
     stats['number_contacts'] = collection.count_documents({})
+
     stats['unprocessed_contacts'] = collection.count_documents(
-        {'domain_processed': None})
+        {'domain_processed': None, 'company': {'$ne': None}})
+
     stats['domain_processed_contacts'] = collection.count_documents(
         {'domain_processed': {'$exists': True, '$ne': None}})
+
     stats['contacts_with_domains'] = collection.count_documents(
-        {'domain': {'$exists': True, '$ne': None}})
-    stats['email_processed_contacts'] = collection.count_documents({'email': {'$exists': True}})
-    stats['unprocessed_contacts_with_domains'] = stats['email_processed_contacts'] - \
-        stats['contacts_with_domains']
+        {'domain': {'$ne': None}})
+
+    stats['eligible_contacts_with_domains'] = collection.count_documents({
+        'domain': {'$ne': None},
+        'domain_processed': True,
+        'email': {'$exists': False}
+    })
+
+    stats['email_processed_contacts'] = collection.count_documents(
+        {'email': {'$exists': True}})
+
     stats['contacts_with_emails'] = collection.count_documents(
         {'email': {'$exists': True, '$ne': None}})
 
@@ -800,9 +818,9 @@ def get_collection_stats(collection_name, print_out=True):
     stats['unprocessed_contacts'] and print("Run domain collector to process {} contacts".format(
         stats['unprocessed_contacts']
     ))
-    stats['unprocessed_contacts_with_domains'] and print(
+    stats['eligible_contacts_with_domains'] and print(
         "Run email collector for {} contacts".format(
-            stats['unprocessed_contacts_with_domains']
+            stats['eligible_contacts_with_domains']
         ))
 
     return stats
@@ -817,3 +835,7 @@ if __name__ == "__main__":
                    '(443) 621-6555', 'Owner/Developer')]
 
         print([contact_block_to_dict(block) for block in blocks])
+
+    # get_collection_stats('main_contact_db')
+    # get_contacts_domains('main_contact_db')
+    # get_contacts_emails('main_contact_db')

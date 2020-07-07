@@ -47,7 +47,10 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
         contacts = list(database.aggregate([
             {'$match': {
                 'email': {'$ne': None, '$nin': unsubscribed_list},
-                'address_street': {'$ne': None},
+                '$or': [
+                    {'address_street': {'$ne': None}},
+                    {'address_city_state': {'$ne': None}}
+                ],
                 report_tag: {'$exists': False}
             }},
             {'$sample': {
@@ -419,12 +422,21 @@ def get_email_stats(collection_name, campaign_name):
     stats[report_tag + '_ineligible'] = collection.count_documents({
         '$or': [
             {'email': {'$in': unsubscribed_list}},
-            {'address_street': None},
+            {'address_street': None, 'address_city_state': None},
+        ]
+    })
+    stats[report_tag + '_ineligible_with_email'] = collection.count_documents({
+        '$or': [
+            {'email': {'$in': unsubscribed_list}},
+            {'address_street': None, 'address_city_state': None, 'email': {'$ne': None}},
         ]
     })
     stats[report_tag + '_eligible_unprocessed'] = collection.count_documents({
         'email': {'$ne': None, '$nin': unsubscribed_list},
-        'address_street': {'$ne': None},
+        '$or': [
+            {'address_street': {'$ne': None}},
+            {'address_city_state': {'$ne': None}}
+        ],
         report_tag: {'$exists': False}
     })
     stats[report_tag + '_processed'] = collection.count_documents({
@@ -493,4 +505,4 @@ if __name__ == "__main__":
 
     # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
     # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
-    # get_email_stats('main_contact_db', 'campaign-1')
+    get_email_stats('main_contact_db', 'campaign-1')
