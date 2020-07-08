@@ -46,7 +46,7 @@ export default function PinInfoBox(props: Props) {
       defaultVisible={true}
       options={{
         disableAutoPan: false,
-        pixelOffset: new google.maps.Size(-150, -45 - infoBoxHeight),
+        pixelOffset: new google.maps.Size(-150, -10 - infoBoxHeight),
         infoBoxClearance: new google.maps.Size(1, 1),
         isHidden: false,
         pane: 'floatPane',

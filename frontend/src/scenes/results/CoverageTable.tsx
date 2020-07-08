@@ -65,6 +65,11 @@ export default function MapTable(props: Props) {
               onMouseLeave={() => {
                 hoverFunction(undefined);
               }}
+              onPress={() => {
+                // for mobile since they cannot hover
+                hoverFunction(row);
+              }}
+              style={{ cursor: 'pointer' }}
             >
               <DataTable.Cell width={200}>{row.businessName}</DataTable.Cell>
               <DataTable.Cell align="right">{row.numLocations}</DataTable.Cell>

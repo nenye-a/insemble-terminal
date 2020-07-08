@@ -1,8 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useMemo } from 'react';
 import { GoogleMap, withGoogleMap, Marker } from 'react-google-maps';
 
 import { View } from '../../core-ui';
 import { GRAY, THEME_COLOR } from '../../constants/colors';
+import { isEqual } from '../../helpers';
 import {
   MergedMapData,
   LocationLatLng,
@@ -22,9 +23,8 @@ type Props = {
 function CoverageMap(props: Props) {
   let { data, selectedBusiness, onInfoBoxPress, ...otherProps } = props;
   let mapRef = useRef<GoogleMap | null>(null);
-  let [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
   let [selectedPinLatLng, setSelectedPinLatLng] = useState<LatLng | null>(null);
-  let flatLocations = getFlatLocations(data);
+  let flatLocations = useMemo(() => getFlatLocations(data), [data]);
   let latArr = flatLocations.map(({ lat }) => lat);
   let lngArr = flatLocations.map(({ lng }) => lng);
 
@@ -34,10 +34,6 @@ function CoverageMap(props: Props) {
   };
 
   let onLocationMarkerClick = (latLng: LatLng) => {
-    // so only 1 InfoBox will be opened
-    if (markerPosition) {
-      setMarkerPosition(null);
-    }
     setSelectedPinLatLng(latLng);
   };
 
@@ -65,13 +61,15 @@ function CoverageMap(props: Props) {
       defaultCenter={defaultCenter}
       zoom={0}
       onMouseOut={closePinInfo}
+      {...(selectedPinLatLng && { center: selectedPinLatLng })}
       {...otherProps}
     >
       {data.map((item) => {
         return item.coverageData.map((covData) => {
           let { locations } = covData;
-          let businessSelected = covData === selectedBusiness;
-          let pinOpacity = businessSelected ? 1 : 0;
+          // when the table is hovered to a certain row
+          let businessSelected = isEqual(covData, selectedBusiness);
+
           return locations.map((location, index) => {
             let { lat, lng, address, name, numReviews, rating } = location;
             let pinColor = item.fill || THEME_COLOR;
@@ -87,9 +85,8 @@ function CoverageMap(props: Props) {
                 icon={pinSymbol(pinColor)}
                 onClick={() => {
                   onLocationMarkerClick(latLng);
-                  // e.stop(); // TODO: handle if click, not zoom back to default zoom. Stop doesn't work..
                 }}
-                opacity={selectedBusiness ? pinOpacity : 0.5} // NOTE: I don't know if I input 1 it won't change opacity
+                opacity={previewVisible || businessSelected ? 1 : 0.5}
                 zIndex={selectedBusiness ? (businessSelected ? 100 : 0) : 1}
               >
                 <PinInfoBox
