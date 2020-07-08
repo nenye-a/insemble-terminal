@@ -19,8 +19,9 @@ import {
   UserHomeScene,
   SharedTerminalDetailScene,
   ExpiredSharedTerminalScene,
+  ReferralScene,
+  ReferralVerificationFailedScene,
 } from '../scenes';
-import ReferralVerificationFailedScene from '../scenes/auth/ReferralVerificationFailedScene';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -165,6 +166,7 @@ export const authenticatedRoutes: Array<RouteType> = [
   },
   { path: '/edit-profile', component: EditProfileScene },
   { path: '/send-feedback', component: ContactUsScene },
+  { path: '/referral', component: ReferralScene, headerMode: 'lightPurple' },
 ];
 
 export const authenticatedAdminRoutes: Array<RouteType> = [

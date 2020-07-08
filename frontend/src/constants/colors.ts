@@ -44,6 +44,7 @@ export const BORDER_COLOR = SLIGHT_GRAY;
 export const BACKGROUND_COLOR = LIGHTER_GRAY;
 
 export const SHADOW_COLOR = '0px 0px 6px 0px rgba(0, 0, 0, 0.1)';
+export const DEPTH_SHADOW_COLOR = '0px 0px 10px 0px rgba(0, 0, 0, 0.22)';
 
 export const HIGHLIGHTED_DROPDOWN = LIGHT_PURPLE;
 
