@@ -30,7 +30,7 @@ const server = new GraphQLServer({
 
 server.express.get('/register-verification/:token', registerHandler);
 server.express.get('/email-verification/:token', emailVerificationHandler);
-server.express.get('/verfy-referral/:token', verifyReferralCodeHandler);
+server.express.get('/verify-referral/:token', verifyReferralCodeHandler);
 
 server.express.use(
   express.static(

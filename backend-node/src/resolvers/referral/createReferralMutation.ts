@@ -54,7 +54,7 @@ export let createReferralResolver: FieldResolver<
         email: `${user.email}`,
         name: `${user.firstName} ${user.lastName}`,
       },
-      `${HOST}/verfy-referral/${emailReferralCode}`,
+      `${HOST}/verify-referral/${emailReferralCode}`,
     );
   } else {
     // console the verification id so we could still test it on dev environment

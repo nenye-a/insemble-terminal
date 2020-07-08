@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useForm, FieldValues } from 'react-hook-form';
-import { useMutation, useQuery } from '@apollo/react-hooks';
+import { useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { Redirect } from 'react-router-dom';
 import ReactGA from 'react-ga';
 
@@ -14,6 +14,7 @@ import {
   Checkbox,
   Text,
   Link as BaseLink,
+  LoadingIndicator,
 } from '../../core-ui';
 import { WHITE, LINK_COLOR } from '../../constants/colors';
 import {
@@ -54,13 +55,15 @@ export default function SignUpForm(props: Props) {
     UserRegister,
     UserRegisterVariables
   >(USER_REGISTER);
-  useQuery<GetReferredData, GetReferredDataVariables>(GET_REFERRED_USER_DATA, {
+  let [getReferredData, { loading: loadingReferredData }] = useLazyQuery<
+    GetReferredData,
+    GetReferredDataVariables
+  >(GET_REFERRED_USER_DATA, {
     notifyOnNetworkStatusChange: true,
     fetchPolicy: 'network-only',
     variables: {
       referralCode: referralCode || '',
     },
-    skip: !referralCode,
     onCompleted: (data) => {
       if (data) {
         setDefaultForm({
@@ -72,6 +75,11 @@ export default function SignUpForm(props: Props) {
       }
     },
   });
+
+  useEffect(() => {
+    getReferredData();
+  }, [getReferredData]);
+
   let errorMessage = error?.message;
 
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
@@ -97,6 +105,10 @@ export default function SignUpForm(props: Props) {
       });
     }
   };
+
+  if (loadingReferredData) {
+    return <LoadingIndicator />;
+  }
 
   if (data) {
     if (data.register.message === 'success') {
