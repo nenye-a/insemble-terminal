@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useForm, FieldValues } from 'react-hook-form';
-import { useMutation } from '@apollo/react-hooks';
+import { useMutation, useQuery } from '@apollo/react-hooks';
 import { Redirect } from 'react-router-dom';
 import ReactGA from 'react-ga';
 
@@ -20,7 +20,14 @@ import {
   UserRegister,
   UserRegisterVariables,
 } from '../../generated/UserRegister';
-import { USER_REGISTER } from '../../graphql/queries/server/auth';
+import {
+  GetReferredData,
+  GetReferredDataVariables,
+} from '../../generated/GetReferredData';
+import {
+  USER_REGISTER,
+  GET_REFERRED_USER_DATA,
+} from '../../graphql/queries/server/auth';
 import { validateEmail } from '../../helpers';
 import { TERMS_OF_SERVICE_PDF, PRIVACY_POLICY_PDF } from '../../constants/uri';
 import {
@@ -28,14 +35,43 @@ import {
   PRIVACY_POLICY_ROUTE,
 } from '../../constants/trackEvents';
 
-export default function SignUpForm() {
+type Props = {
+  referralCode?: string;
+};
+
+export default function SignUpForm(props: Props) {
   let [hasAgreed, setHasAgreed] = useState(false);
+  let [defaultForm, setDefaultForm] = useState({
+    defaultEmail: '',
+    defaultFirstName: '',
+    defaultLastName: '',
+    defaultCompany: '',
+  });
+  let { referralCode } = props;
   let { register, handleSubmit, errors, watch } = useForm();
 
   let [registerUser, { data, loading, error }] = useMutation<
     UserRegister,
     UserRegisterVariables
   >(USER_REGISTER);
+  useQuery<GetReferredData, GetReferredDataVariables>(GET_REFERRED_USER_DATA, {
+    notifyOnNetworkStatusChange: true,
+    fetchPolicy: 'network-only',
+    variables: {
+      referralCode: referralCode || '',
+    },
+    skip: !referralCode,
+    onCompleted: (data) => {
+      if (data) {
+        setDefaultForm({
+          defaultEmail: data.referredData.email,
+          defaultFirstName: data.referredData.firstName,
+          defaultLastName: data.referredData.lastName,
+          defaultCompany: data.referredData.company,
+        });
+      }
+    },
+  });
   let errorMessage = error?.message;
 
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
@@ -56,6 +92,7 @@ export default function SignUpForm() {
             company,
             password,
           },
+          referralCode,
         },
       });
     }
@@ -78,6 +115,7 @@ export default function SignUpForm() {
             required: 'Email should not be empty',
             validate: (val) => validateEmail(val) || 'Incorrect email format',
           })}
+          defaultValue={defaultForm.defaultEmail}
           label="Email Address"
           placeholder="Your Email Address"
           {...(errors?.email?.message && {
@@ -92,6 +130,7 @@ export default function SignUpForm() {
               ref={register({
                 required: 'First name should not be empty',
               })}
+              defaultValue={defaultForm.defaultFirstName}
               label="First Name"
               placeholder="Your First Name"
               {...(errors?.firstName?.message && {
@@ -106,6 +145,7 @@ export default function SignUpForm() {
               ref={register({
                 required: 'Last name should not be empty',
               })}
+              defaultValue={defaultForm.defaultLastName}
               label="Last Name"
               placeholder="Your Last Name"
               {...(errors?.lastName?.message && {
@@ -120,6 +160,7 @@ export default function SignUpForm() {
           ref={register({
             required: 'Company name should not be empty',
           })}
+          defaultValue={defaultForm.defaultCompany}
           label="Company"
           placeholder="Your Company"
           {...(errors?.company?.message && {
