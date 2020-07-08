@@ -78,7 +78,8 @@ export default function SignUpForm(props: Props) {
 
   useEffect(() => {
     getReferredData();
-  }, [getReferredData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   let errorMessage = error?.message;
 
