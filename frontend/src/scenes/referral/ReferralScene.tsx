@@ -1,22 +1,52 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useForm } from 'react-hook-form';
+import { useForm, FieldValues } from 'react-hook-form';
+import { useMutation } from '@apollo/react-hooks';
+import { useAlert } from 'react-alert';
 
 import { View, Card, Form, TextInput, Button } from '../../core-ui';
 import { Background } from '../../components';
 import { WHITE } from '../../constants/colors';
 import { validateEmail } from '../../helpers';
+import { CREATE_REFERRAL } from '../../graphql/queries/server/referral';
 
 export default function ReferralScene() {
-  let { errors, register } = useForm();
+  let { errors, register, handleSubmit, reset } = useForm();
+  let alert = useAlert();
+
+  let [createReferral, { loading }] = useMutation(CREATE_REFERRAL, {
+    onCompleted: () => {
+      alert.show('You successfully referred your colleague');
+      reset();
+    },
+    onError: (e) => {
+      alert.show(e.message);
+    },
+  });
 
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
+
+  let onSubmit = (fieldValues: FieldValues) => {
+    if (Object.keys(errors).length === 0) {
+      let { email, firstName, lastName, company } = fieldValues;
+      createReferral({
+        variables: {
+          referredData: {
+            email,
+            firstName,
+            lastName,
+            company,
+          },
+        },
+      });
+    }
+  };
 
   return (
     <Background mode="halfPurple">
       <Container flex>
         <Card title="Refer a Colleague">
-          <Form>
+          <Form onSubmit={handleSubmit(onSubmit)}>
             <FormContent>
               <TextInput
                 name="email"
@@ -75,7 +105,7 @@ export default function ReferralScene() {
                 containerStyle={inputContainerStyle}
               />
 
-              <ReferButton text="Refer" type="submit" />
+              <ReferButton text="Refer" type="submit" loading={loading} />
             </FormContent>
           </Form>
         </Card>
