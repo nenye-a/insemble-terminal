@@ -202,7 +202,7 @@ def to_snake_case(word):
 
 
 def snake_case_to_word(snake_case_word, caps='all'):
-    return adjust_case(snake_case_word, caps, '_')
+    return adjust_case(snake_case_word, caps, '_', " ")
 
 
 def adjust_case(word, caps='all', splitter=" ", joiner=None):
@@ -217,6 +217,9 @@ def adjust_case(word, caps='all', splitter=" ", joiner=None):
     splitter - the string term to split the word on. Defailt " "
     joiner - the string term to join the word if different from splitter
     """
+    if not word:
+        return word
+
     words = [w.strip() for w in word.split(splitter)]
     if caps == "first":
         words[0].capitalize()
