@@ -20,8 +20,8 @@ import {
   SharedTerminalDetailScene,
   ExpiredSharedTerminalScene,
   ReferralScene,
+  ReferralVerificationFailedScene,
 } from '../scenes';
-import ReferralVerificationFailedScene from '../scenes/auth/ReferralVerificationFailedScene';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
