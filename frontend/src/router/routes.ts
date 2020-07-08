@@ -166,7 +166,7 @@ export const authenticatedRoutes: Array<RouteType> = [
   },
   { path: '/edit-profile', component: EditProfileScene },
   { path: '/send-feedback', component: ContactUsScene },
-  { path: '/referral', component: ReferralScene },
+  { path: '/referral', component: ReferralScene, headerMode: 'lightPurple' },
 ];
 
 export const authenticatedAdminRoutes: Array<RouteType> = [

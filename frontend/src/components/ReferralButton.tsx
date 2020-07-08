@@ -26,7 +26,7 @@ export default function ReferralButton(props: Props) {
       <Text fontWeight={FONT_WEIGHT_BOLD} style={{ textAlign: 'center' }}>
         Refer an Insemble Terminal Subscriber and you both get a month free.
       </Text>
-      <ReferLink>
+      <ReferLink href="/referral">
         Refer a colleague
         <SvgArrowRight
           style={{ marginLeft: 8 }}
