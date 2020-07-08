@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useParams } from 'react-router-dom';
 
 import { View, Text, Link, Card } from '../../core-ui';
 import { Background } from '../../components';
@@ -8,12 +9,13 @@ import { WHITE, PURPLE_LINK } from '../../constants/colors';
 import SignUpForm from './SignUpForm';
 
 export default function SignUpScene() {
+  let { referralCode } = useParams();
   return (
     <Background mode="halfPurple">
       <Container>
         <Card title="Sign Up">
           <FormContainer>
-            <SignUpForm />
+            <SignUpForm referralCode={referralCode} />
           </FormContainer>
         </Card>
         <RowView style={{ marginTop: 16 }}>

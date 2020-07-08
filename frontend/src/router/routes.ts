@@ -20,6 +20,7 @@ import {
   SharedTerminalDetailScene,
   ExpiredSharedTerminalScene,
 } from '../scenes';
+import ReferralVerificationFailedScene from '../scenes/auth/ReferralVerificationFailedScene';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,6 +84,12 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
     component: SignUpScene,
     showSearchBar: false,
     headerMode: 'logoOnly',
+    exact: true,
+  },
+  {
+    path: '/signup/:referralCode',
+    component: SignUpScene,
+    showSearchBar: false,
   },
   {
     path: '/login',
@@ -103,6 +110,11 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
   {
     path: '/verification-failed/:errorStatus',
     component: VerificationFailedScene,
+    showSearchBar: false,
+  },
+  {
+    path: '/verify-referral-code-failed/:errorStatus',
+    component: ReferralVerificationFailedScene,
     showSearchBar: false,
   },
 ];
