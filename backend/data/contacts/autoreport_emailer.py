@@ -47,10 +47,8 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
         contacts = list(database.aggregate([
             {'$match': {
                 'email': {'$ne': None, '$nin': unsubscribed_list},
-                '$or': [
-                    {'address_street': {'$ne': None}},
-                    {'address_city_state': {'$ne': None}}
-                ],
+                'type': {'$ne': None},
+                'address_city_state': {'$ne': None},
                 report_tag: {'$exists': False}
             }},
             {'$sample': {
@@ -64,15 +62,19 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
 
         pool_exists = False
         try:
-            report_pool, pool_exists = Pool(min(15, len(contacts))), True
-            updated_contacts = report_pool.map(partial(
-                get_report,
-                report_tag=report_tag
-            ), contacts)
+            if len(contacts) == 1:
+                update_contacts = [get_report(contacts[0], report_tag)]
+            else:
+                report_pool, pool_exists = Pool(min(15, len(contacts))), True
+                updated_contacts = report_pool.map(partial(
+                    get_report,
+                    report_tag=report_tag
+                ), contacts)
         except KeyError as key_e:
             print(f'Key Error: {key_e}')
             updated_contacts = []
         except Exception as e:
+            traceback.print_exc()
             print(f'Observed: \n{type(e)}: {e}')
             updated_contacts = []
         finally:
@@ -194,8 +196,8 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
 
 
 def get_report(contact, report_tag):
-    city = utils.extract_city(contact['address_city_state'])
     try:
+        city = utils.extract_city(contact['address_city_state'])
         report = generate_report(None, contact['company'], contact['address_street'],
                                  city, contact['type'], first_name=contact['first_name'],
                                  last_name=contact['last_name'], in_parallel=True)
@@ -203,6 +205,7 @@ def get_report(contact, report_tag):
         return contact
     except Exception as e:
         print(f'{type(e)}: {e} - Failed to add report to contact')
+        contact[report_tag] = None
         traceback.print_exc()
         return contact
 
@@ -422,21 +425,19 @@ def get_email_stats(collection_name, campaign_name):
     stats[report_tag + '_ineligible'] = collection.count_documents({
         '$or': [
             {'email': {'$in': unsubscribed_list}},
-            {'address_street': None, 'address_city_state': None},
+            {'address_city_state': None},
         ]
     })
     stats[report_tag + '_ineligible_with_email'] = collection.count_documents({
         '$or': [
             {'email': {'$in': unsubscribed_list}},
-            {'address_street': None, 'address_city_state': None, 'email': {'$ne': None}},
+            {'address_city_state': None, 'email': {'$ne': None}},
         ]
     })
     stats[report_tag + '_eligible_unprocessed'] = collection.count_documents({
         'email': {'$ne': None, '$nin': unsubscribed_list},
-        '$or': [
-            {'address_street': {'$ne': None}},
-            {'address_city_state': {'$ne': None}}
-        ],
+        'type': {'$ne': None},
+        'address_city_state': {'$ne': None},
         report_tag: {'$exists': False}
     })
     stats[report_tag + '_processed'] = collection.count_documents({
@@ -503,6 +504,6 @@ if __name__ == "__main__":
     # test_report_generator()
     # test_report_emailer()
 
-    # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
     # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
-    get_email_stats('main_contact_db', 'campaign-1')
+    # get_email_stats('main_contact_db', 'campaign-1')
