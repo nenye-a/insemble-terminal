@@ -14,6 +14,7 @@ import {
   Alert,
 } from '../../core-ui';
 import { ReferralButton } from '../../components';
+import { useViewport } from '../../helpers';
 import { THEME_COLOR } from '../../constants/colors';
 import { FONT_SIZE_LARGE, FONT_WEIGHT_BOLD } from '../../constants/theme';
 import {
@@ -28,6 +29,7 @@ import { GetUserProfile } from '../../generated/GetUserProfile';
 
 export default function EditProfileScene() {
   let { register, watch, handleSubmit, errors } = useForm();
+  let { isDesktop } = useViewport();
   let { data: userData, loading: userLoading, refetch: userRefetch } = useQuery<
     GetUserProfile
   >(GET_USER_PROFILE, {
@@ -93,8 +95,10 @@ export default function EditProfileScene() {
 
   return (
     <>
-      <ReferralButton style={{ position: 'absolute', right: 24, top: 36 }} />
-      <Container flex>
+      {isDesktop && (
+        <ReferralButton style={{ position: 'absolute', right: 24, top: 36 }} />
+      )}
+      <Container flex isDesktop={isDesktop}>
         {userLoading ? (
           <LoadingIndicator />
         ) : (
@@ -261,9 +265,9 @@ export default function EditProfileScene() {
 }
 
 const SPACING_WIDTH = 24;
-const Container = styled(Card)`
+const Container = styled(Card)<WithViewport>`
   padding: 12px 24px;
-  width: 700px;
+  width: ${(props) => (props.isDesktop ? '700px' : '100%')};
   align-self: center;
   margin: 24px;
 `;
