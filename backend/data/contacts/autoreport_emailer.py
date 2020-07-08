@@ -201,6 +201,7 @@ def get_report(contact, report_tag):
     except Exception as e:
         print(f'{type(e)}: {e} - Failed to add report to contact')
         traceback.print_exc()
+        contact[report_tag] = None
         return contact
 
 
