@@ -3,7 +3,11 @@ import styled from 'styled-components';
 import { useHistory, Redirect } from 'react-router-dom';
 
 import { View } from '../../core-ui';
-import { SearchPlaceholder, SearchFilterBar } from '../../components';
+import {
+  SearchPlaceholder,
+  SearchFilterBar,
+  ReferralButton,
+} from '../../components';
 import { useViewport } from '../../helpers';
 import { useAuth } from '../../context/AuthContext';
 import { WHITE } from '../../constants/colors';
@@ -27,6 +31,7 @@ export default function UserHomeScene() {
 
   return (
     <Container isDesktop={isDesktop}>
+      <ReferralButton style={{ position: 'absolute', right: 24, top: 36 }} />
       <InsembleLogo color="purple" size="big" />
       <SearchBarContainer>
         {isDesktop ? (
