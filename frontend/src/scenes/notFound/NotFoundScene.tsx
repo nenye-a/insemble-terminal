@@ -10,7 +10,7 @@ import { useViewport } from '../../helpers';
 export default function NotFoundScene() {
   let { isDesktop } = useViewport();
   return (
-    <Background mode={isDesktop ? 'quarterPurple' : 'halfPurple'}>
+    <Background mode="quarterPurple">
       <HeaderNavigationBar mode="transparent" />
       <Container flex>
         <Title>404</Title>
@@ -41,5 +41,6 @@ const Description = styled(Text)<WithViewport>`
   color: ${DARK_TEXT_COLOR};
   font-size: ${(props) => (props.isDesktop ? '20px' : FONT_SIZE_SEMI_MEDIUM)};
   max-width: 100vw;
+  width: 430px;
   text-align: center;
 `;

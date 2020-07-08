@@ -38,9 +38,9 @@ const Container = styled(View)`
 `;
 const Img = styled.img`
   position: absolute;
-  bottom: -60px;
+  bottom: 0px;
   object-fit: cover;
-  max-width: 100vw;
+  width: 100vw;
   height: 100vh;
   z-index: 0;
 `;

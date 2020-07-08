@@ -248,7 +248,7 @@ const BenefitContainer = styled(RowedView)`
 `;
 
 const RightContainer = styled(View)`
-  justify-content: flex-end;
+  justify-content: center;
   margin-left: 40px;
-  padding-bottom: 80px;
+  padding-top: 100px;
 `;
