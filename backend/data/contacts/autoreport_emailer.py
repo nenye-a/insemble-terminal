@@ -39,7 +39,7 @@ CONTACT_SOURCE_MAP = {
 
 def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
 
-    report_tag, email_tag = get_tags(campaign_name)
+    report_tag, email_tag, _ = get_tags(campaign_name)
     database.create_index([(report_tag, 1), (email_tag, 1)])
 
     while True:
@@ -127,18 +127,18 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
         print('Please send a correctly formatted sender')
         return None
 
-    report_tag, email_tag = get_tags(campaign_name)
+    report_tag, email_tag, followup_tag = get_tags(campaign_name)
 
     while True:
 
         if followup_stage == 1:
             query = {
                 email_tag: True,
-                email_tag + '_followup_stage': None
+                followup_tag: None
             }
         elif followup_stage == 2:
             query = {
-                email_tag + '_followup_stage': 1
+                followup_tag: 1
             }
         else:
             query = {
@@ -169,7 +169,8 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
                 report_tag=report_tag,
                 email_tag=email_tag,
                 sender=sender,
-                followup_stage=followup_stage
+                followup_stage=followup_stage,
+                followup_tag=followup_tag
             ), contacts)
         except KeyError as key_e:
             print(f'Key Error: {key_e}')
@@ -210,7 +211,7 @@ def get_report(contact, report_tag):
         return contact
 
 
-def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
+def push_email(contact, report_tag, email_tag, sender, followup_stage=None, followup_tag=None):
     if followup_stage:
         email_html = build_followup_email(
             followup_stage,
@@ -231,7 +232,7 @@ def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
             html_text=email_html
         )
         if email_result:
-            contact[email_tag + '_followup_stage'] = followup_stage
+            contact[followup_tag] = followup_stage
     else:
         # Generate the first email.
         try:
@@ -391,21 +392,44 @@ def build_followup_email(followup_stage, first_name, sender_name, sender_title,
     return doc.getvalue()
 
 
+def unfollow(collection_name, campaign_name, list_emails, stage):
+
+    _, _, followup_tag = get_tags(campaign_name)
+
+    list_emails = list(map(str.lower, list_emails))
+    collection = cm.get_contacts_collection(collection_name)
+    collection.update_many({
+        'email': {'$in': list_emails}
+    }, [
+        {'$set': {
+            followup_tag: {
+                "$concat": [
+                    {"$ifNull": [{"$toString": "$" + followup_tag}, "None"]},
+                    "-",
+                    "Replied"
+                ]
+            }
+        }}
+    ])
+
+
 def get_tags(campaign_name):
     report_tag = campaign_name + '-report'
     email_tag = campaign_name + '-emailed'
-    return report_tag, email_tag
+    followup_tag = email_tag + '_followup_stage'
+    return report_tag, email_tag, followup_tag
 
 
 def clear_report(collection_name, campaign_name, mode='all'):
-    collection = cm.get_contacts_collection('collection_name')
-    report_tag, email_tag = get_tags(campaign_name)
+    collection = cm.get_contacts_collection(collection_name)
+    report_tag, email_tag, followup_tag = get_tags(campaign_name)
 
     unset_query = {}
     if mode == 'all' or mode == 'report':
         unset_query[report_tag] = ""
     if mode == 'all' or mode == 'email':
         unset_query[email_tag] = ""
+        unset_query[followup_tag] = ""
 
     modified_count = 0
     if unset_query:
@@ -419,7 +443,7 @@ def clear_report(collection_name, campaign_name, mode='all'):
 def get_email_stats(collection_name, campaign_name):
 
     stats = cm.get_collection_stats(collection_name, print_out=False)
-    report_tag, email_tag = get_tags(campaign_name)
+    report_tag, email_tag, followup_tag = get_tags(campaign_name)
 
     collection = cm.get_contacts_collection(collection_name)
     stats[report_tag + '_ineligible'] = collection.count_documents({
@@ -461,10 +485,10 @@ def get_email_stats(collection_name, campaign_name):
         email_tag: True
     })
     stats[email_tag + '_first_followup_sent'] = collection.count_documents({
-        email_tag + '_followup_stage': 1
+        followup_tag: 1
     })
     stats[email_tag + '_second_followup_sent'] = collection.count_documents({
-        email_tag + '_followup_stage': 2
+        followup_tag: 2
     })
 
     for k, v in stats.items():
