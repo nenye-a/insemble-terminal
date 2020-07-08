@@ -18,6 +18,7 @@ import {
   ManageTokenScene,
   UserHomeScene,
   SharedTerminalDetailScene,
+  ExpiredSharedTerminalScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -25,12 +26,17 @@ export type RouteType = Omit<RouteProps, 'component'> & {
   component: React.ComponentType<any>;
   showHeader?: boolean;
   showSearchBar?: boolean;
-  headerMode?: 'default' | 'transparent';
+  headerMode?: 'default' | 'transparent' | 'lightPurple' | 'logoOnly';
   readOnly?: boolean;
 };
 
-export const allAccessRoutes = [
-  { path: '/contact-us', component: ContactUsScene, showSearchBar: false },
+export const allAccessRoutes: Array<RouteType> = [
+  {
+    path: '/contact-us',
+    component: ContactUsScene,
+    showSearchBar: false,
+    headerMode: 'lightPurple',
+  },
   {
     path: '/shared/:sharedTerminalId',
     component: SharedTerminalDetailScene,
@@ -56,9 +62,15 @@ export const allAccessRoutes = [
     component: NewsPreviewModal,
     showHeader: false,
   },
+  {
+    path: '/shared-expired',
+    component: ExpiredSharedTerminalScene,
+    headerMode: 'lightPurple',
+    exact: true,
+  },
 ];
 
-export const unAuthenticatedRoutes = [
+export const unAuthenticatedRoutes: Array<RouteType> = [
   ...allAccessRoutes,
   {
     path: '/',
@@ -66,8 +78,18 @@ export const unAuthenticatedRoutes = [
     component: LandingScene,
     showSearchBar: false,
   },
-  { path: '/signup', component: SignUpScene, showSearchBar: false },
-  { path: '/login', component: LoginScene, showSearchBar: false },
+  {
+    path: '/signup',
+    component: SignUpScene,
+    showSearchBar: false,
+    headerMode: 'logoOnly',
+  },
+  {
+    path: '/login',
+    component: LoginScene,
+    showSearchBar: false,
+    headerMode: 'logoOnly',
+  },
   {
     path: '/email-verification/:verificationId',
     component: EmailVerificationScene,
@@ -151,5 +173,10 @@ export const authenticatedUnactiveRoutes: Array<RouteType> = [
     headerMode: 'transparent',
   },
   { path: '/edit-profile', component: EditProfileScene },
-  { path: '/activation', component: ActivationScene, showSearchBar: false },
+  {
+    path: '/activation',
+    component: ActivationScene,
+    showSearchBar: false,
+    headerMode: 'logoOnly',
+  },
 ];

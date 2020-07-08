@@ -15,7 +15,7 @@ import {
   Text,
   Link as BaseLink,
 } from '../../core-ui';
-import { WHITE } from '../../constants/colors';
+import { WHITE, LINK_COLOR } from '../../constants/colors';
 import {
   UserRegister,
   UserRegisterVariables,
@@ -168,6 +168,7 @@ export default function SignUpForm() {
                 onPress={() => {
                   trackEvent(PRIVACY_POLICY_ROUTE);
                 }}
+                style={{ color: LINK_COLOR }}
               >
                 Privacy Policy
               </Link>
@@ -177,6 +178,7 @@ export default function SignUpForm() {
                 onPress={() => {
                   trackEvent(TERMS_OF_SERVICE_ROUTE);
                 }}
+                style={{ color: LINK_COLOR }}
               >
                 Terms of Service
               </Link>
