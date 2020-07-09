@@ -74,7 +74,6 @@ export default function PerformanceResult(props: Props) {
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let history = useHistory();
-  let isTerminalScene = history.location.pathname.includes('terminal');
 
   let { isDesktop } = useViewport();
   let {
@@ -252,28 +251,19 @@ export default function PerformanceResult(props: Props) {
                 mobile={!isDesktop}
                 comparisonTags={comparisonTags}
                 onViewModeChange={setViewMode}
-                inTerminal={isTerminalScene && !demoType}
-                /**
-                 * will be used when user is on other scene than results scene (terminal)
-                 * to get the business/location tag when user clicking on table row.
-                 * the location/businessTag will be passed ro '/results' as state
-                 */
-
-                {...(isTerminalScene &&
-                  data?.performanceTable.table?.businessTag && {
-                    businessTag: {
-                      params: data.performanceTable.table.businessTag.params,
-                      type: data.performanceTable.table.businessTag.type,
-                      id: data.performanceTable.table.businessTag.id,
-                    },
-                  })}
-                {...(isTerminalScene &&
-                  data?.performanceTable.table?.locationTag && {
-                    locationTag: {
-                      params: data.performanceTable.table.locationTag.params,
-                      type: data.performanceTable.table.locationTag.type,
-                    },
-                  })}
+                {...(data?.performanceTable.table?.businessTag && {
+                  businessTag: {
+                    params: data.performanceTable.table.businessTag.params,
+                    type: data.performanceTable.table.businessTag.type,
+                    id: data.performanceTable.table.businessTag.id,
+                  },
+                })}
+                {...(data?.performanceTable.table?.locationTag && {
+                  locationTag: {
+                    params: data.performanceTable.table.locationTag.params,
+                    type: data.performanceTable.table.locationTag.type,
+                  },
+                })}
               />
             )
           ) : null

@@ -22,6 +22,7 @@ import {
   PerformanceTableType,
   LocationTagType,
   BusinessType,
+  BusinessTagType,
 } from '../../generated/globalTypes';
 import SvgArrowLeft from '../../components/icons/arrow-left';
 import SvgArrowRight from '../../components/icons/arrow-right';
@@ -40,7 +41,6 @@ type Props = {
     id: string;
   };
   locationTag?: { type: LocationTagType; params: string };
-  inTerminal?: boolean;
   comparisonTags?: Array<ComparationTagWithFill>;
   onViewModeChange: (viewMode: 'graph' | 'table') => void;
 };
@@ -55,7 +55,6 @@ export default function PerformanceTable(props: Props) {
     mobile = false,
     businessTag,
     locationTag,
-    inTerminal,
     comparisonTags,
     onViewModeChange,
   } = props;
@@ -219,7 +218,6 @@ export default function PerformanceTable(props: Props) {
               showNumLocation={showNumLocation}
               businessTag={businessTag}
               locationTag={locationTag}
-              inTerminal={inTerminal}
               comparisonTags={comparisonTags}
               onPerformanceRowPress={onPerformanceRowPress}
               performanceType={performanceType}
@@ -241,7 +239,6 @@ type TableRowProps = {
     id: string;
   };
   locationTag?: { type: LocationTagType; params: string };
-  inTerminal?: boolean;
   comparisonTags?: Array<ComparationTagWithFill>;
   showNumLocation: boolean;
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
@@ -254,9 +251,7 @@ function TableRow(props: TableRowProps) {
   let {
     datum,
     mobile,
-    businessTag,
     locationTag,
-    inTerminal,
     comparisonTags,
     showNumLocation,
     onPerformanceRowPress,
@@ -351,50 +346,66 @@ function TableRow(props: TableRowProps) {
         backgroundColor: bgColor,
       }}
       onPress={() => {
-        let comparePrevTag;
-        if (isComparison && comparisonTags) {
-          let compareLocationAndBusinessTag = comparisonTags.find(
-            (tag) => tag.fill === fill,
-          );
-          if (compareLocationAndBusinessTag) {
-            let {
-              businessTag: compareBusinessTag,
-              locationTag: compareLocationTag,
-            } = compareLocationAndBusinessTag;
-            comparePrevTag = {
-              businessTag: compareBusinessTag,
-              locationTag: compareLocationTag,
-            };
-          }
-        }
         if (onPerformanceRowPress) {
+          let comparePrevTag;
+          if (isComparison && comparisonTags) {
+            let compareLocationAndBusinessTag = comparisonTags.find(
+              (tag) => tag.fill === fill,
+            );
+            if (compareLocationAndBusinessTag) {
+              let {
+                businessTag: compareBusinessTag,
+                locationTag: compareLocationTag,
+              } = compareLocationAndBusinessTag;
+              comparePrevTag = {
+                businessTag: compareBusinessTag,
+                locationTag: compareLocationTag,
+              };
+            }
+          }
           let newSearchTag = getPerformanceNewSearchTag(performanceType);
           if (Object.keys(newSearchTag).length > 0) {
-            let paranthesesRegex = /\([^\(]+\)$/g;
-            let nameWithoutParentheses = name.replace(paranthesesRegex, '');
-            if (inTerminal) {
-              onPerformanceRowPress({
-                newTag: { name: nameWithoutParentheses, ...newSearchTag },
-                prevTag: {
-                  locationTag,
-                  businessTag,
+            let parenthesesRegex = /\([^\(]+\)$/g;
+            let insideParenthesesTextRegex = /\(([^)]+)\)/;
+            let nameWithoutParentheses = name.replace(parenthesesRegex, '');
+
+            let params: PerformanceRowPressParam = {};
+            if (
+              performanceType === PerformanceTableType.BRAND ||
+              performanceType === PerformanceTableType.CATEGORY
+            ) {
+              params = {
+                businessTag: newSearchTag.businessType
+                  ? {
+                      params: nameWithoutParentheses,
+                      type: newSearchTag.businessType,
+                    }
+                  : undefined,
+                locationTag: isComparison
+                  ? comparePrevTag?.locationTag ?? undefined
+                  : locationTag,
+              };
+            } else if (performanceType !== PerformanceTableType.OVERALL) {
+              let matchArr = name.match(insideParenthesesTextRegex);
+              let stringInsideParentheses =
+                matchArr && matchArr.length > 1 ? matchArr[1] : '';
+
+              params = {
+                businessTag: {
+                  type: BusinessTagType.BUSINESS,
+                  params: stringInsideParentheses,
                 },
-                ...(isComparison && {
-                  comparisonTag: comparePrevTag,
-                }),
-              });
-            } else {
-              onPerformanceRowPress({
-                newTag: {
-                  name: nameWithoutParentheses,
-                  ...newSearchTag,
-                },
-                comparisonTag: comparePrevTag,
-                ...(isComparison && {
-                  comparisonTag: comparePrevTag,
-                }),
-              });
+                locationTag: newSearchTag.locationType
+                  ? {
+                      params: nameWithoutParentheses,
+                      type: newSearchTag.locationType,
+                    }
+                  : undefined,
+              };
             }
+            onPerformanceRowPress({
+              ...params,
+            });
           }
         }
       }}
