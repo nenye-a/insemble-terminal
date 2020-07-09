@@ -7,3 +7,4 @@ export * from './PerfromanceTableType';
 export * from './OwnershipType';
 export * from './TableType';
 export * from './DataCountNode';
+export * from './DemoType';
