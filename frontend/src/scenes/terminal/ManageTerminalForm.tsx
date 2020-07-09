@@ -10,6 +10,7 @@ import {
   CREATE_TERMINAL,
   EDIT_TERMINAL,
   GET_TERMINAL,
+  GET_TERMINAL_LIST,
 } from '../../graphql/queries/server/terminals';
 import {
   CreateTerminal,
@@ -67,6 +68,8 @@ export default function ManageTerminalForm(props: Props) {
           name,
           description,
         },
+        awaitRefetchQueries: true,
+        refetchQueries: [{ query: GET_TERMINAL_LIST }],
       });
       refetchCurrentPage && refetchCurrentPage();
     } else if (mode === 'edit' && terminalId) {
