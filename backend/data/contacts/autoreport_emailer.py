@@ -8,10 +8,10 @@ from yattag import Doc
 from billiard.pool import Pool
 from functools import partial
 import traceback
+import pandas as pd
 
 from emailer import send_email
 from personal_reports import generate_report
-
 import contactmanager as cm
 import utils
 import time
@@ -212,7 +212,11 @@ def get_report(contact, report_tag):
 
 
 def push_email(contact, report_tag, email_tag, sender, followup_stage=None, followup_tag=None):
-    if followup_stage:
+    if ('gabes.net' in contact['email'] or 'aromajoes.com' in contact['email'] or
+        'ngkf.com' in contact['email'] or 'dunkinbrands' in contact['email'] or
+            'homedepot' in contact['email'] or 'colliers' in contact['email']):
+        contact[email_tag] = "Skipped"
+    elif followup_stage:
         email_html = build_followup_email(
             followup_stage,
             first_name=utils.adjust_case(contact['first_name']),
@@ -259,17 +263,13 @@ def push_email(contact, report_tag, email_tag, sender, followup_stage=None, foll
             met=contact['met'] if utils.inbool(contact, 'met')
             else None
         )
-        if ('gabes.net' in contact['email'] or 'aromajoes.com' in contact['email'] or
-                'ngkf.com' in contact['email'] or 'dunkinbrands' in contact['email']):
-            contact[email_tag] = "Skipped"
-        else:
-            email_result = send_email(
-                from_email=sender['email'],
-                to_emails=contact['email'],
-                subject="Your Report",
-                html_text=email_html
-            )
-            contact[email_tag] = email_result
+        email_result = send_email(
+            from_email=sender['email'],
+            to_emails=contact['email'],
+            subject="Your Report",
+            html_text=email_html
+        )
+        contact[email_tag] = email_result
 
     return contact
 
@@ -392,13 +392,20 @@ def build_followup_email(followup_stage, first_name, sender_name, sender_title,
     return doc.getvalue()
 
 
-def unfollow(collection_name, campaign_name, list_emails, stage):
+def unfollow_list(csv, collection_name, campaign_name):
+    places = pd.read_csv(THIS_DIR + '/files/' + csv)
+    emails = list(places['email'].apply(str.lower))
+    print(emails)
+    answer = input('\n\nAre you sure you want to unfollow these emails? Y/N \n\n')
+    answer.lower() == 'y' and unfollow(collection_name, campaign_name, emails)
 
+
+def unfollow(collection_name, campaign_name, list_emails):
     _, _, followup_tag = get_tags(campaign_name)
 
     list_emails = list(map(str.lower, list_emails))
     collection = cm.get_contacts_collection(collection_name)
-    collection.update_many({
+    res = collection.update_many({
         'email': {'$in': list_emails}
     }, [
         {'$set': {
@@ -411,6 +418,8 @@ def unfollow(collection_name, campaign_name, list_emails, stage):
             }
         }}
     ])
+
+    print(res.modified_count, "Unfollowed!")
 
 
 def get_tags(campaign_name):
@@ -523,11 +532,18 @@ if __name__ == "__main__":
         generate_reports('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
 
     def test_report_emailer():
-        send_emails('pre-flight-2', cm.get_contacts_collection('preflight-collection'),
+        send_emails('pre-flight-5', cm.get_contacts_collection('preflight-collection'),
                     followup_stage=2)
+
+    def test_unfollow():
+        unfollow('preflight-collection', 'pre-flight-5',
+                 ['nenanagbogu@gmail.com', 'kevinwang@mit.edu'])
+
     # test_report_generator()
     # test_report_emailer()
+    # test_unfollow()
 
-    generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
     # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
+    # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'), followup_stage=1)
     # get_email_stats('main_contact_db', 'campaign-1')
