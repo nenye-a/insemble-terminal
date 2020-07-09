@@ -8,7 +8,6 @@ import { useViewport } from '../../helpers';
 import { PerformanceTableType, DemoType } from '../../generated/globalTypes';
 import searchBox from '../../assets/images/performance-searchbox-demo.svg';
 import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
-
 import PerformanceTablePopover from '../results/PerformanceTablePopover';
 import PerformanceResult from '../results/PerformanceResult';
 
@@ -41,9 +40,7 @@ export default function PerformanceContent() {
         Insemble supports multiple indicators of performance.
       </Paragraph>
       <InfoboxContainer>
-        <PerformanceTablePopover
-          isDesktop={isDesktop}
-        ></PerformanceTablePopover>
+        <PerformanceTablePopover isDesktop={isDesktop} />
       </InfoboxContainer>
       <Paragraph>You can also view data in graph form</Paragraph>
       <PerformanceResult
