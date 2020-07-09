@@ -12,9 +12,18 @@ let ownershipInfoTableResolver: FieldResolver<
   'ownershipInfoTable'
 > = async (
   _: Root,
-  { ownershipType, businessTagId, locationTagId, tableId },
+  { ownershipType, businessTagId, locationTagId, tableId, demo },
   context: Context,
 ) => {
+  if (demo) {
+    let demoTables = await context.prisma.ownershipInfo.findMany({
+      where: {
+        demo,
+      },
+    });
+    let demoTable = demoTables[0];
+    return demoTable;
+  }
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
@@ -41,6 +50,9 @@ let ownershipInfoTableResolver: FieldResolver<
     if (!selectedOwnershipInfoById) {
       throw new Error('Table not found');
     }
+    if (selectedOwnershipInfoById.demo) {
+      return selectedOwnershipInfoById;
+    }
     ownershipInfo = [selectedOwnershipInfoById];
   } else {
     ownershipInfo = await context.prisma.ownershipInfo.findMany({
@@ -48,6 +60,7 @@ let ownershipInfoTableResolver: FieldResolver<
         type: ownershipType,
         businessTag: businessTag ? { id: businessTag.id } : null,
         locationTag: locationTag ? { id: locationTag.id } : null,
+        demo: null,
       },
       include: {
         locationTag: true,
@@ -165,6 +178,7 @@ let ownershipInfoTable = queryField('ownershipInfoTable', {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
     tableId: stringArg(),
+    demo: arg({ type: 'DemoType' }),
   },
   resolve: ownershipInfoTableResolver,
 });

@@ -13,9 +13,23 @@ let performanceTableResolver: FieldResolver<
   'performanceTable'
 > = async (
   _: Root,
-  { performanceType, businessTagId, locationTagId, tableId },
+  { performanceType, businessTagId, locationTagId, tableId, demo },
   context: Context,
 ) => {
+  if (demo) {
+    let demoTables = await context.prisma.performance.findMany({
+      where: {
+        demo,
+        type: performanceType,
+      },
+    });
+    let demoTable = demoTables[0];
+    return {
+      table: demoTable,
+      polling: false,
+      error: null,
+    };
+  }
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
@@ -48,6 +62,13 @@ let performanceTableResolver: FieldResolver<
     if (!selectedPerformanceById) {
       throw new Error('Table not found');
     }
+    if (selectedPerformanceById.demo) {
+      return {
+        table: selectedPerformanceById,
+        polling: false,
+        error: null,
+      };
+    }
     performance = [selectedPerformanceById];
   } else {
     performance = await context.prisma.performance.findMany({
@@ -55,6 +76,7 @@ let performanceTableResolver: FieldResolver<
         type: performanceType,
         businessTag: businessTag ? { id: businessTag.id } : null,
         locationTag: locationTag ? { id: locationTag.id } : null,
+        demo: null,
       },
       include: {
         locationTag: true,
@@ -367,6 +389,7 @@ let performanceTable = queryField('performanceTable', {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
     tableId: stringArg(),
+    demo: arg({ type: 'DemoType' }),
   },
   resolve: performanceTableResolver,
 });
