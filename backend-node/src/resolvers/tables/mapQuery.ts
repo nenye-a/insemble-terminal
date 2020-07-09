@@ -1,4 +1,4 @@
-import { queryField, FieldResolver, stringArg } from 'nexus';
+import { queryField, FieldResolver, stringArg, arg } from 'nexus';
 import axios from 'axios';
 
 import { Root, Context } from 'serverTypes';
@@ -10,9 +10,18 @@ import { LocationTag, BusinessTag } from '@prisma/client';
 
 let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
   _: Root,
-  { businessTagId, locationTagId, tableId },
+  { businessTagId, locationTagId, tableId, demo },
   context: Context,
 ) => {
+  if (demo) {
+    let demoTables = await context.prisma.map.findMany({
+      where: {
+        demo,
+      },
+    });
+    let demoTable = demoTables[0];
+    return demoTable;
+  }
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
@@ -46,12 +55,16 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
     if (!selectedMapById) {
       throw new Error('Modal not Found.');
     }
+    if (selectedMapById.demo) {
+      return selectedMapById;
+    }
     map = [selectedMapById];
   } else {
     map = await context.prisma.map.findMany({
       where: {
         businessTag: businessTag ? { id: businessTag.id } : null,
         locationTag: locationTag ? { id: locationTag.id } : null,
+        demo: null,
       },
       include: {
         locationTag: true,
@@ -217,6 +230,7 @@ let mapTable = queryField('mapTable', {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
     tableId: stringArg(),
+    demo: arg({ type: 'DemoType' }),
   },
   resolve: mapResolver,
 });
