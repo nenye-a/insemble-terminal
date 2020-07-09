@@ -165,6 +165,7 @@ export let updateComparisonResolver: FieldResolver<
             locationTag: table.locationTag
               ? { id: table.locationTag.id }
               : null,
+            demo: null,
           },
           include: {
             locationTag: true,
@@ -215,6 +216,7 @@ export let updateComparisonResolver: FieldResolver<
           type: table.type,
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -353,6 +355,7 @@ export let updateComparisonResolver: FieldResolver<
             locationTag: table.locationTag
               ? { id: table.locationTag.id }
               : null,
+            demo: null,
           },
           include: {
             locationTag: true,
@@ -402,6 +405,7 @@ export let updateComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -538,6 +542,7 @@ export let updateComparisonResolver: FieldResolver<
             locationTag: table.locationTag
               ? { id: table.locationTag.id }
               : null,
+            demo: null,
           },
           include: {
             locationTag: true,
@@ -587,6 +592,7 @@ export let updateComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -723,6 +729,7 @@ export let updateComparisonResolver: FieldResolver<
             locationTag: table.locationTag
               ? { id: table.locationTag.id }
               : null,
+            demo: null,
           },
           include: {
             locationTag: true,
@@ -771,6 +778,7 @@ export let updateComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
