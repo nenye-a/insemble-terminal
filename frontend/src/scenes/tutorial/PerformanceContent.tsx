@@ -3,10 +3,10 @@ import styled from 'styled-components';
 
 import { Text as BaseText, View, Card } from '../../core-ui';
 import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
-import { DARK_TEXT_COLOR, GRAY } from '../../constants/colors';
+import { DARK_TEXT_COLOR, SLIGHT_GRAY } from '../../constants/colors';
 import { useViewport } from '../../helpers';
 import { PerformanceTableType, DemoType } from '../../generated/globalTypes';
-import searchBox from '../../assets/images/performance-searchbox-demo.svg';
+import performanceSearchbarDemo from '../../assets/images/performance-searchbox-demo.svg';
 import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import PerformanceTablePopover from '../results/PerformanceTablePopover';
 import PerformanceResult from '../results/PerformanceResult';
@@ -22,9 +22,14 @@ export default function PerformanceContent() {
         markets. We show you the performance of individual locations and also of
         the market as a whole.
       </Paragraph>
-      <img src={searchBox} alt="" />
+      <img src={performanceSearchbarDemo} alt="" />
       <SvgFourDotsArrow
-        style={{ marginBottom: 20, alignSelf: 'center', color: GRAY }}
+        style={{
+          marginBottom: 20,
+          marginTop: 20,
+          alignSelf: 'center',
+          color: SLIGHT_GRAY,
+        }}
       />
       <PerformanceResult
         title="Overall Performance"
