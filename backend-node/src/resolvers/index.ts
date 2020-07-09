@@ -44,3 +44,6 @@ export * from './contactUs/feedbackMutation';
 export * from './openNews/openNewsQuery';
 
 export * from './dataCount/dataCountQuery';
+
+export * from './referral/createReferralMutation';
+export * from './referral/referredDataQuery';

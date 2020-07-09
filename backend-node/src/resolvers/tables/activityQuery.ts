@@ -1,4 +1,4 @@
-import { queryField, FieldResolver, stringArg } from 'nexus';
+import { queryField, FieldResolver, stringArg, arg } from 'nexus';
 import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
@@ -6,15 +6,27 @@ import { PyActivityData, PyActivityResponse } from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
-import { LocationTag, BusinessTag } from '@prisma/client';
 import { objectToActivityGraph } from '../../helpers/objectToActivityGraph';
 import { todayMinXHour } from '../../helpers/todayMinXHour';
 
 let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
   _: Root,
-  { businessTagId, locationTagId, tableId },
+  { businessTagId, locationTagId, tableId, demo },
   context: Context,
 ) => {
+  if (demo) {
+    let demoTables = await context.prisma.activity.findMany({
+      where: {
+        demo,
+      },
+    });
+    let demoTable = demoTables[0];
+    return {
+      table: demoTable,
+      polling: false,
+      error: null,
+    };
+  }
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
@@ -49,6 +61,13 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
     if (!selectedActivityById) {
       throw new Error('Modal not Found.');
     }
+    if (selectedActivityById.demo) {
+      return {
+        table: selectedActivityById,
+        polling: false,
+        error: null,
+      };
+    }
     activity = [selectedActivityById];
   } else {
     // Grab the activity from tag, location combination
@@ -56,6 +75,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
       where: {
         businessTag: businessTag ? { id: businessTag.id } : null,
         locationTag: locationTag ? { id: locationTag.id } : null,
+        demo: null,
       },
       include: {
         locationTag: true,
@@ -331,6 +351,7 @@ let activityTable = queryField('activityTable', {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
     tableId: stringArg(),
+    demo: arg({ type: 'DemoType' }),
   },
   resolve: activityResolver,
 });

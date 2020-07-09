@@ -73,6 +73,7 @@ type Props = {
   sortOrder?: Array<string>;
   onSortOrderChange?: (newSortOrder: Array<string>) => void;
   readOnly?: boolean;
+  demo?: boolean;
   onClosePress?: () => void;
 };
 
@@ -100,6 +101,7 @@ export default function ResultTitle(props: Props) {
     onSortOrderChange,
     readOnly,
     onClosePress,
+    demo,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -218,7 +220,7 @@ export default function ResultTitle(props: Props) {
             isDesktop={isDesktop}
           />
         )}
-        {isTerminalScene && resultTitle && (
+        {isTerminalScene && !demo && resultTitle && (
           <>
             <Title style={{ paddingLeft: 8, paddingRight: 8 }}>|</Title>
             <SubTitle>{resultTitle}</SubTitle>
@@ -234,6 +236,7 @@ export default function ResultTitle(props: Props) {
               <CompareText>{formattedCompareText}</CompareText>
               {!readOnly && (
                 <Touchable
+                  disable={demo}
                   onPress={() => {
                     if (reviewTag && tableId) {
                       updateComparison({
@@ -271,9 +274,10 @@ export default function ResultTitle(props: Props) {
                 pinTableId={pinTableId}
                 terminalId={params.terminalId}
                 readOnly={readOnly}
+                demo={demo}
               />
             )}
-            {isTerminalScene ? (
+            {isTerminalScene && !demo ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
               ) : (
@@ -285,7 +289,7 @@ export default function ResultTitle(props: Props) {
                       removePin();
                     }
                   }}
-                  disabled={noData}
+                  disabled={noData || demo}
                 >
                   <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
                 </Touchable>
@@ -313,7 +317,7 @@ export default function ResultTitle(props: Props) {
                         showAuthAlert();
                       }
                     }}
-                    disabled={noData}
+                    disabled={noData || demo}
                   >
                     <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
                   </Touchable>
@@ -403,5 +407,6 @@ const SubTitle = styled(Text)`
 const PopoverContainer = styled(Card)`
   flex: 1;
   padding: 14px;
+  height: fit-content;
   max-width: 600px;
 `;

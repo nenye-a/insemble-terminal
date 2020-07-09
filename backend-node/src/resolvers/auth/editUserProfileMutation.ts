@@ -71,7 +71,7 @@ let editUserProfileResolver: FieldResolver<
     } else {
       // console the verification id so we could still test it on dev environment
       // eslint-disable-next-line no-console
-      console.log('Change Email Verfy code: ', emailVerifyCode);
+      console.log('Change Email verify code: ', emailVerifyCode);
     }
   }
 

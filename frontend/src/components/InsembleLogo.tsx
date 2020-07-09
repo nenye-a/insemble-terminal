@@ -7,6 +7,7 @@ import whitelogo from '../assets/images/insemble-logo-white.svg';
 const Size = {
   small: '18px',
   default: '36px',
+  medium: '48px',
   big: '70px',
 };
 

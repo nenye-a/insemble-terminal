@@ -51,3 +51,6 @@ export * from './Token';
 export * from './NewsPolling';
 export * from './ActivityPolling';
 export * from './PerformancePolling';
+
+export * from './ReferredDataInput';
+export * from './ReferredData';

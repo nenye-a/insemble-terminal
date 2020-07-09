@@ -57,6 +57,11 @@ enum UserRole {
   USER
 }
 
+enum DemoType {
+  BASIC
+  WITH_COMPARE
+}
+
 model LocationTag {
   id     String          @default(cuid()) @id
   type   LocationTagType
@@ -120,6 +125,8 @@ model User {
   license      License?
   searchLog    SearchLog[]
   pendingEmail Boolean     @default(false)
+  referrer     User?       @relation("Referral")
+  referred     User[]      @relation("Referral")
   createdAt    DateTime    @default(now())
 }
 
@@ -194,6 +201,7 @@ model Performance {
   compareData     ComparePerformanceData[]
   polling         Boolean                  @default(false)
   error           String?
+  demo            DemoType?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 }
@@ -228,6 +236,7 @@ model News {
   compareData     CompareNewsData[]
   polling         Boolean           @default(false)
   error           String?
+  demo            DemoType?
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
 }
@@ -276,6 +285,7 @@ model Activity {
   compareData     CompareActivityData[]
   polling         Boolean               @default(false)
   error           String?
+  demo            DemoType?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 }
@@ -304,6 +314,7 @@ model Map {
   comparationTags ComparationTag[]
   data            MapData[]
   compareData     CompareMapData[]
+  demo            DemoType?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 }
@@ -322,6 +333,7 @@ model OwnershipContact {
   locationTag LocationTag?
   businessTag BusinessTag?
   data        OwnershipContactData[]
+  demo        DemoType?
   createdAt   DateTime               @default(now())
   updatedAt   DateTime               @updatedAt
 }
@@ -341,6 +353,7 @@ model OwnershipInfo {
   locationTag LocationTag?
   businessTag BusinessTag?
   data        OwnershipInfoData
+  demo        DemoType?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 }
@@ -357,4 +370,11 @@ model SharedTerminal {
   id         String   @default(cuid()) @id
   terminal   Terminal
   expireDate DateTime
+}
+
+model ReferralInvitation {
+  id       String @default(cuid()) @id
+  referrer String
+  referred String
+  used     Boolean @default(false)
 }

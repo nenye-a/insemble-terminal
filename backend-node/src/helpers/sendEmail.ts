@@ -15,6 +15,9 @@ let emailVerificationTemplate = fs
   .toString();
 let contactUs = fs.readFileSync('src/emailTemplates/contactUs.html').toString();
 let feedback = fs.readFileSync('src/emailTemplates/feedback.html').toString();
+let referralEmail = fs
+  .readFileSync('src/emailTemplates/referralEmail.html')
+  .toString();
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
@@ -29,6 +32,27 @@ async function sendVerificationEmail(
     from: 'Insemble Terminal <no-reply@insemble.co>',
     subject: 'Verify your email with Insemble Terminal',
     text: `Please verify your email by clicking this link ${link}`,
+    html: htmlContent,
+  };
+  await sgMail.send(msg);
+}
+
+async function sendReferralEmail(
+  receiver: { email: string; name: string },
+  referrer: { email: string; name: string },
+  link: string,
+) {
+  let htmlContent = ejs.render(referralEmail, {
+    name: receiver.name,
+    referrerName: referrer.name,
+    referrerEmail: referrer.email,
+    url: link,
+  });
+  let msg = {
+    to: receiver.email,
+    from: 'Insemble Terminal <no-reply@insemble.co>',
+    subject: `${referrer.name} (${referrer.email}) invite you to join Insemble Terminal!`,
+    text: `Proceed register by clicking this: ${link}`,
     html: htmlContent,
   };
   await sgMail.send(msg);
@@ -98,4 +122,5 @@ export {
   sendForgotPasswordEmail,
   sendContactUsEmail,
   sendFeedbackEmail,
+  sendReferralEmail,
 };

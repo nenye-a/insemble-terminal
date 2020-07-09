@@ -11,7 +11,8 @@ import {
 import { View } from '../core-ui';
 import { Footer, HeaderNavigationBar } from '../components';
 import { useAuth } from '../context';
-import { UserHomeScene, NewsPreviewModal } from '../scenes';
+import { NewsPreviewModal, NotFoundScene } from '../scenes';
+import { HeaderMode } from '../components/HeaderNavigationBar';
 
 import {
   authenticatedRoutes,
@@ -76,7 +77,7 @@ function Routes() {
               : authenticatedRoutes.map(mapFn)
             : authenticatedUnactiveRoutes.map(mapFn)
           : unAuthenticatedRoutes.map(mapFn)}
-        <Route component={UserHomeScene} />
+        <Route component={NotFoundScene} />
       </Switch>
       {background && (
         <>
@@ -106,7 +107,7 @@ type RouteWithTrackerProps = {
   showHeader: boolean;
   showSearchBar?: boolean;
   component: ComponentType;
-  headerMode?: 'default' | 'transparent';
+  headerMode?: HeaderMode;
   readOnly?: boolean;
 };
 
@@ -136,7 +137,7 @@ function RouteWithTracker(props: RouteWithTrackerProps) {
           readOnly={readOnly}
         />
       )}
-      <View style={{ minHeight: '90vh' }}>
+      <View flex style={{ minHeight: '90vh' }}>
         <Component />
       </View>
       <Footer />

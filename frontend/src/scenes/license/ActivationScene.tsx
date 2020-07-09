@@ -5,7 +5,6 @@ import { useHistory } from 'react-router-dom';
 import { useMutation } from '@apollo/react-hooks';
 
 import {
-  View,
   Card,
   Form,
   TextInput,
@@ -14,6 +13,7 @@ import {
   Alert,
   Link,
 } from '../../core-ui';
+import { Background } from '../../components';
 import { ACTIVATE_ACCOUNT } from '../../graphql/queries/server/license';
 import {
   ActivateAccount,
@@ -79,7 +79,7 @@ export default function ActivationScene() {
   );
 }
 
-const Container = styled(View)`
+const Container = styled(Background)`
   padding: 40px;
   align-items: center;
   justify-content: center;

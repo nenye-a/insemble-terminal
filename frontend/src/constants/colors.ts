@@ -9,6 +9,7 @@ export const DARKER_GRAY = '#4B4B4B';
 export const BLACK = '#000000';
 
 export const LIGHT_PURPLE = '#ECE9F6';
+export const LILAC = '#C9CBFF';
 export const MEDIUM_PURPLE = '#8E79C6';
 export const SEMI_PURPLE = '#6749AA';
 export const PURPLE = '#674CA7';
@@ -28,6 +29,7 @@ export const MUTED_TEXT_COLOR = LIGHT_GRAY;
 export const DARK_TEXT_COLOR = DARK_GRAY;
 export const DISABLED_TEXT_COLOR = SLIGHT_GRAY;
 export const LINK_COLOR = BLUE;
+export const PURPLE_LINK = LILAC;
 export const GRAY_TEXT = GRAY;
 
 // DataTable colors
@@ -42,6 +44,7 @@ export const BORDER_COLOR = SLIGHT_GRAY;
 export const BACKGROUND_COLOR = LIGHTER_GRAY;
 
 export const SHADOW_COLOR = '0px 0px 6px 0px rgba(0, 0, 0, 0.1)';
+export const DEPTH_SHADOW_COLOR = '0px 0px 10px 0px rgba(0, 0, 0, 0.22)';
 
 export const HIGHLIGHTED_DROPDOWN = LIGHT_PURPLE;
 

@@ -1,4 +1,4 @@
-import { mutationField, arg } from 'nexus';
+import { mutationField, arg, stringArg } from 'nexus';
 import bcrypt from 'bcrypt';
 
 import { Context } from 'serverTypes';
@@ -10,8 +10,9 @@ export let register = mutationField('register', {
   type: 'UserRegisterResult',
   args: {
     user: arg({ type: 'UserRegisterInput', required: true }),
+    referralCode: stringArg(),
   },
-  resolve: async (_, { user }, context: Context) => {
+  resolve: async (_, { user, referralCode }, context: Context) => {
     let password = bcrypt.hashSync(user.password, 10);
     let lowerCasedEmail = user.email.toLocaleLowerCase();
     let exist = await context.prisma.user.findMany({
@@ -31,6 +32,7 @@ export let register = mutationField('register', {
           ...user,
           email: lowerCasedEmail,
           password,
+          referralCode,
         }),
         email: lowerCasedEmail,
         tokenEmail: bytesEmail.toString('base64'),

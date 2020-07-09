@@ -1,8 +1,8 @@
-import React, { useState, useEffect, CSSProperties } from 'react';
+import React, { useState, useEffect, CSSProperties, useCallback } from 'react';
 import styled from 'styled-components';
 
 import { View, Text, TouchableOpacity } from '../core-ui';
-import { THEME_COLOR, MUTED_TEXT_COLOR, GRAY } from '../constants/colors';
+import { THEME_COLOR, MUTED_TEXT_COLOR } from '../constants/colors';
 import {
   FONT_WEIGHT_MEDIUM,
   FONT_WEIGHT_NORMAL,
@@ -39,6 +39,8 @@ export default function ScrollMenu<T>(props: Props<T>) {
     ? options.indexOf(selectedOption)
     : 0;
 
+  let isLastIndex = selectedOptionIndex === options.length - 1;
+
   useEffect(() => {
     let allWidth = options.map((_, index) => {
       let target = document.getElementById('option-' + index);
@@ -51,21 +53,34 @@ export default function ScrollMenu<T>(props: Props<T>) {
     setSegmentsWidth(allWidth);
   }, [options]);
 
+  let onBackPress = useCallback(() => {
+    if (selectedOptionIndex === 0) {
+      onSelectionChange(options.length - 1);
+    } else {
+      onSelectionChange(selectedOptionIndex - 1);
+    }
+  }, [selectedOptionIndex, options, onSelectionChange]);
+
+  let onNextPress = useCallback(() => {
+    if (isLastIndex) {
+      onSelectionChange(0);
+    } else {
+      onSelectionChange(selectedOptionIndex + 1);
+    }
+  }, [selectedOptionIndex, isLastIndex, onSelectionChange]);
+
   let translatedWidth = allOptionsWidth
     .slice(0, selectedOptionIndex)
     .reduce((a, b) => a + b, 0);
 
   return (
     <Container style={containerStyle}>
-      <TouchableOpacity
-        disabled={selectedOptionIndex !== 0}
-        onPress={() => onSelectionChange(selectedOptionIndex - 1)}
-      >
+      <TouchableOpacity onPress={onBackPress}>
         <SvgArrowLeft
           width={12}
           height={12}
           style={{
-            color: selectedOptionIndex !== 0 ? THEME_COLOR : GRAY,
+            color: THEME_COLOR,
             marginRight: 8,
           }}
         />
@@ -97,16 +112,12 @@ export default function ScrollMenu<T>(props: Props<T>) {
           })}
         </OptionsContainer>
       </View>
-      <TouchableOpacity
-        disabled={selectedOptionIndex !== options.length - 1}
-        onPress={() => onSelectionChange(selectedOptionIndex + 1)}
-      >
+      <TouchableOpacity onPress={onNextPress}>
         <SvgArrowRight
           width={12}
           height={12}
           style={{
-            color:
-              selectedOptionIndex !== options.length - 1 ? THEME_COLOR : GRAY,
+            color: THEME_COLOR,
             marginRight: 8,
           }}
         />

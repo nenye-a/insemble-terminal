@@ -1,3 +1,4 @@
+export * from './Background';
 export { default as DataTable } from './DataTable';
 export { default as ComparisonPopover } from './ComparisonPopover';
 export { default as EmptyDataComponent } from './EmptyDataComponent';
@@ -9,8 +10,10 @@ export { default as PageTitle } from './PageTitle';
 export { default as PillSelector } from './PillSelector';
 export { default as PinPopover } from './PinPopover';
 export { default as Popup } from './Popup';
+export { default as ReferralButton } from './ReferralButton';
 export { default as SearchFilterBar } from './SearchFilterBar';
 export { default as SearchPlaceholder } from './SearchPlaceholder';
 export { default as ScrollMenu } from './ScrollMenu';
+export { default as SuccessFeedback } from './SuccessFeedback';
 export { default as Tab } from './Tab';
 export { default as PinInfoBox } from './PinInfoBox';

@@ -188,3 +188,10 @@ export type OpenNewsData = {
 };
 
 export type AllTableType = PerformanceType | OwnershipType;
+
+export type RefferedData = {
+  email: string;
+  firstName: string;
+  lastName: string;
+  company: string;
+};
