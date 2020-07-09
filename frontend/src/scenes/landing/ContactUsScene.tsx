@@ -81,8 +81,8 @@ export default function ContactUsScene() {
               <TitleContainer>
                 <Title>Contact our sales team</Title>
                 <Description>
-                  We’d love to answer your sales questions. Fill out the {'\n'}{' '}
-                  form and we’ll get back to you as soon as possible.
+                  We’d love to answer your sales questions. Fill out the form
+                  and we’ll get back to you as soon as possible.
                 </Description>
               </TitleContainer>
             )}
@@ -240,6 +240,8 @@ const TitleContainer = styled(View)`
 const Description = styled(Text)`
   font-size: 20px;
   color: ${GRAY_TEXT};
+  max-width: 600px;
+  text-align: center;
 `;
 
 const BenefitContainer = styled(RowedView)`
