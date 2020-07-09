@@ -52,6 +52,7 @@ export default function PerformanceContent() {
         demo={DemoType.BASIC}
         initialView="graph"
       />
+      {/* TODO: Scopes Tutorial */}
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons
       </SubTitle>
