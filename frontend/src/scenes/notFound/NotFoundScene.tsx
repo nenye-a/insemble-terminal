@@ -40,7 +40,7 @@ const Title = styled(Text)<WithViewport>`
 const Description = styled(Text)<WithViewport>`
   color: ${DARK_TEXT_COLOR};
   font-size: ${(props) => (props.isDesktop ? '20px' : FONT_SIZE_SEMI_MEDIUM)};
-  max-width: 100vw;
+  max-width: 90vw;
   width: 430px;
   text-align: center;
 `;
