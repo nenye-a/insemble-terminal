@@ -41,7 +41,9 @@ export default function PinPopover(props: Props) {
     loading: terminalsLoading,
     data: terminalsData,
     error: terminalsError,
-  } = useQuery<GetTerminalList>(GET_TERMINAL_LIST);
+  } = useQuery<GetTerminalList>(GET_TERMINAL_LIST, {
+    fetchPolicy: 'network-only',
+  });
   let [
     pinTable,
     { loading: pinTableLoading, data: pinTableData, error: pinTableError },
