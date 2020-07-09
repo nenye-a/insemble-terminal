@@ -12,7 +12,6 @@ import {
   SHADOW_COLOR,
   THEME_COLOR,
   WHITE,
-  BACKGROUND_COLOR,
   SLIGHT_GRAY,
 } from '../../constants/colors';
 import { useViewport } from '../../helpers';
@@ -23,7 +22,6 @@ import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import ResultTitle from '../results/ResultTitle';
 
 import { MENU } from './constants';
-import PerformanceResult from '../results/PerformanceResult';
 
 export default function OverviewContent() {
   let { isDesktop } = useViewport();
