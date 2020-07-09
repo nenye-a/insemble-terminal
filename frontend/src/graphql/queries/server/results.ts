@@ -130,11 +130,13 @@ export const GET_ACTIVITY_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     activityTable(
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       polling
       error

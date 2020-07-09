@@ -5,11 +5,13 @@ import { View } from '../../core-ui';
 import { BACKGROUND_COLOR } from '../../constants/colors';
 
 import OverviewContent from './OverviewContent';
+// import ActivityContent from './ActivityContent';
 
 export default function TutorialContent() {
   return (
     <Container flex>
       <OverviewContent />
+      {/* <ActivityContent /> */}
     </Container>
   );
 }
