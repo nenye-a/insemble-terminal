@@ -236,7 +236,7 @@ export default function ResultTitle(props: Props) {
               <CompareText>{formattedCompareText}</CompareText>
               {!readOnly && (
                 <Touchable
-                  disable={demo}
+                  disabled={demo}
                   onPress={() => {
                     if (reviewTag && tableId) {
                       updateComparison({
