@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 
 import { View } from '../core-ui';
-import { NAVBAR_HEIGHT } from '../constants/theme';
 import { LIGHT_PURPLE } from '../constants/colors';
 import withBubbleBackground from '../assets/images/curve-background-bubble.svg';
 import halfPurpleBackground from '../assets/images/curve-background.svg';
@@ -34,7 +33,7 @@ export const Background = ({ mode, children, ...props }: Props) => {
 const Container = styled(View)`
   background-color: ${LIGHT_PURPLE};
   width: 100vw;
-  min-height: calc(100vh - ${NAVBAR_HEIGHT});
+  min-height: 100vh;
 `;
 const Img = styled.img`
   position: absolute;
