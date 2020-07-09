@@ -42,7 +42,7 @@ type Props = {
   pinTableId?: string;
   readOnly?: boolean;
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
-  demo?: DemoType;
+  demoType?: DemoType;
   initialView?: ViewMode;
 };
 
@@ -65,7 +65,7 @@ export default function PerformanceResult(props: Props) {
     pinTableId,
     onPerformanceRowPress,
     readOnly,
-    demo,
+    demoType,
     initialView,
   } = props;
   let alert = useAlert();
@@ -92,7 +92,7 @@ export default function PerformanceResult(props: Props) {
         businessTagId,
         locationTagId,
         tableId,
-        demo,
+        demo: demoType,
       },
       fetchPolicy: 'network-only',
     },
@@ -176,7 +176,7 @@ export default function PerformanceResult(props: Props) {
     <Container>
       <ResultTitle
         title={title}
-        demo={!!demo}
+        demo={!!demoType}
         noData={noData}
         reviewTag={ReviewTag.PERFORMANCE}
         tableId={data?.performanceTable.table?.id || ''}
@@ -252,7 +252,7 @@ export default function PerformanceResult(props: Props) {
                 mobile={!isDesktop}
                 comparisonTags={comparisonTags}
                 onViewModeChange={setViewMode}
-                inTerminal={isTerminalScene && !demo}
+                inTerminal={isTerminalScene && !demoType}
                 /**
                  * will be used when user is on other scene than results scene (terminal)
                  * to get the business/location tag when user clicking on table row.
@@ -281,7 +281,7 @@ export default function PerformanceResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      {!readOnly && !demo && (
+      {!readOnly && !demoType && (
         <FeedbackButton
           tableId={data?.performanceTable.table?.id}
           tableType={TableType.PERFORMANCE}

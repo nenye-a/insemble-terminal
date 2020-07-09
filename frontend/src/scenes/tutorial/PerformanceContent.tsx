@@ -34,12 +34,12 @@ export default function PerformanceContent() {
       <PerformanceResult
         title="Overall Performance"
         performanceType={PerformanceTableType.OVERALL}
-        demo={DemoType.BASIC}
+        demoType={DemoType.BASIC}
       />
       <PerformanceResult
         title="By Location"
         performanceType={PerformanceTableType.ADDRESS}
-        demo={DemoType.BASIC}
+        demoType={DemoType.BASIC}
       />
       <Paragraph>
         Insemble supports multiple indicators of performance.
@@ -51,7 +51,7 @@ export default function PerformanceContent() {
       <PerformanceResult
         title="By Location"
         performanceType={PerformanceTableType.ADDRESS}
-        demo={DemoType.BASIC}
+        demoType={DemoType.BASIC}
         initialView="graph"
       />
       {/* TODO: Scopes Tutorial */}
@@ -65,7 +65,7 @@ export default function PerformanceContent() {
       <PerformanceResult
         title="Overall Performance"
         performanceType={PerformanceTableType.OVERALL}
-        demo={DemoType.WITH_COMPARE}
+        demoType={DemoType.WITH_COMPARE}
       />
     </View>
   );
