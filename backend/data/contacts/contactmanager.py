@@ -32,6 +32,7 @@ SEARCH_PATHS = ['', MAIN_PATH + '/', THIS_DIR + '/files/', THIS_DIR,
 EMAIL_RX = r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
 PHONE_RX = r'((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}'
 
+
 def parse_contacts(collection_name):
 
     # get_contacts_domains(collection_name)
@@ -475,6 +476,7 @@ def contact_block_to_dict(block):
     contact_dict['company'] = parse_company(contact_dict['company'])
     return contact_dict
 
+
 def crit_contact_block_to_dict(company, block):
     """
     Takes a crittenden contact company and block and turns it into a dictionary:
@@ -505,7 +507,7 @@ def crit_contact_block_to_dict(company, block):
     contact_dict['first_name'], contact_dict['last_name'] = split_name(block.pop(0))
     if bool(re.match(EMAIL_RX, block[-1])):
         contact_dict['email'] = block.pop()
-    if "Fax:" in block[-1]: # remove fax numbers
+    if "Fax:" in block[-1]:  # remove fax numbers
         block.pop()
     if bool(re.match(PHONE_RX, block[-1])):
         contact_dict['phone'] = block.pop()
@@ -904,6 +906,7 @@ def get_collection_stats(collection_name, print_out=True):
 
     return stats
 
+
 def parse_crit_csv(file):
     # parses crittenden scraped csvs into csv format uploadable to db
     df = pd.read_csv(file)
@@ -925,12 +928,11 @@ def parse_crit_csv(file):
 
     for index, row in df.iterrows():
         company = row['company']
-        [contact_list.append(crit_contact_block_to_dict(company, item)) for item in row['contacts']]
+        contact_list.extend([crit_contact_block_to_dict(company, item) for item in row['contacts']])
 
-    pprint(contact_list)
-    contact_df = pd.DataFrame(contact_list)
+    contact_df = pd.DataFrame(filter(None, contact_list))
+    return contact_df
 
-    return df, contact_df
 
 if __name__ == "__main__":
     def test_contact_block_to_dict():
@@ -945,4 +947,9 @@ if __name__ == "__main__":
     # get_collection_stats('main_contact_db')
     # get_contacts_domains('main_contact_db')
     # get_contacts_emails('main_contact_db')
-    prune_bad_apples('main_contact_db')
+    # prune_bad_apples('main_contact_db')
+
+    # from IPython import start_ipython
+    result = parse_crit_csv(THIS_DIR + '/files/crittenden_first_quarter.csv')
+
+    # start_ipython(result=result)
