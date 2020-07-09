@@ -20,7 +20,7 @@ import { SortConfig } from '../helpers/useSortableData';
 
 import SvgQuestionMark from './icons/question-mark';
 
-type Props = {
+type Props = ViewProps & {
   children?: ReactNode;
 };
 type RowProps = ViewProps & {
@@ -39,8 +39,8 @@ type HeaderCellProps = CellProps & {
   infoboxContent?: ReactNode;
 };
 
-function DataTable(props: Props) {
-  return <Container>{props.children}</Container>;
+function DataTable({ children, ...otherProps }: Props) {
+  return <Container {...otherProps}>{children}</Container>;
 }
 
 function HeaderCell({

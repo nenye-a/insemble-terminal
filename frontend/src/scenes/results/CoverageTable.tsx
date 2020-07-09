@@ -39,7 +39,7 @@ export default function MapTable(props: Props) {
           </Row>
         ))}
       </LegendContainer>
-      <DataTable>
+      <DataTable flex>
         <DataTable.HeaderRow>
           <DataTable.HeaderCell width={200}>Company</DataTable.HeaderCell>
           <DataTable.HeaderCell
@@ -53,9 +53,7 @@ export default function MapTable(props: Props) {
             Number Locations
           </DataTable.HeaderCell>
         </DataTable.HeaderRow>
-        <DataTable.Body
-          style={{ height: 'fit-content', maxHeight: isDesktop ? 260 : 130 }}
-        >
+        <DataTable.Body flex style={{ maxHeight: isDesktop ? 260 : 130 }}>
           {sortedData.map((row, index) => (
             <DataTable.Row
               key={'coverage-table-' + row.businessName + index}
