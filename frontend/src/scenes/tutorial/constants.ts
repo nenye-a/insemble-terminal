@@ -1,42 +1,38 @@
 export const MENU = [
   {
     subtitle: 'Overview & Search',
+    path: 'overview',
     options: [
       {
         label: 'Performance',
-        path: '',
+        path: 'performance',
         description: 'Retailer and restaurant consumer volumes',
       },
       {
         label: 'Activity',
-        path: '',
+        path: 'activity',
         description: 'Consumer activity graphed over each day',
       },
       {
         label: 'Map',
-        path: '',
+        path: 'map',
         description: 'Map view of retailer and restaurant locations',
       },
       {
         label: 'News',
-        path: '',
+        path: 'news',
         description: 'Latest, most relevant retailer/restaurant news',
       },
       {
         label: 'Contact',
-        path: '',
+        path: 'contact',
         description: 'Contact information for retailers/restaurants',
       },
     ],
   },
   {
     subtitle: 'Personal Terminals',
-    options: [
-      {
-        label: 'Pinning to Terminal',
-        path: '',
-        description: 'Contact information for retailers/restaurants',
-      },
-    ],
+    path: 'terminal',
+    options: [],
   },
 ];

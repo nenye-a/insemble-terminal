@@ -12,6 +12,7 @@ import {
   SHADOW_COLOR,
   THEME_COLOR,
   WHITE,
+  SLIGHT_GRAY,
 } from '../../constants/colors';
 import { useViewport } from '../../helpers';
 import { SearchFilterBar } from '../../components';
@@ -25,7 +26,7 @@ import { MENU } from './constants';
 export default function OverviewContent() {
   let { isDesktop } = useViewport();
   return (
-    <>
+    <View>
       <Title>Overview & Search</Title>
       <SubTitle>
         Finding data on the Insemble platform has never been easier.
@@ -63,6 +64,7 @@ export default function OverviewContent() {
         no indicator is provided, Insemble will data from all available
         indicators for the search.
       </Text>
+      {/* TODO: change to image */}
       <SearchBarContainer>
         <SearchFilterBar
           defaultReviewTag="Performance"
@@ -73,15 +75,21 @@ export default function OverviewContent() {
           }}
         />
       </SearchBarContainer>
-      <SvgFourDotsArrow width={30} height={30} />
+      <SvgFourDotsArrow style={{ alignSelf: 'center', color: SLIGHT_GRAY }} />
+
       {/* TODO: Performance demo */}
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons
       </SubTitle>
+      <Text>
+        Insemble allows you to quickly compare different items. When you do so,
+        you can see how the performance of one brand compares with others.
+      </Text>
       <ResultTitle title="By Location" noData={true} />
-      <SvgFourDotsArrow />
+      <SvgFourDotsArrow style={{ alignSelf: 'center', color: SLIGHT_GRAY }} />
+
       {/* TODO: Performance demo */}
-    </>
+    </View>
   );
 }
 

@@ -1,7 +1,6 @@
 import React, { SVGProps, CSSProperties } from 'react';
 
 const SvgArrowRight = ({
-  strokeWidth,
   pathStyle,
   ...props
 }: SVGProps<SVGSVGElement> & { pathStyle?: CSSProperties }) => (
