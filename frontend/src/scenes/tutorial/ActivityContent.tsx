@@ -11,12 +11,16 @@ import {
   SHADOW_COLOR,
   SLIGHT_GRAY,
 } from '../../constants/colors';
+import { useTutorialContext } from '../../context';
 import { DemoType } from '../../generated/globalTypes';
 import activitySearchbarDemo from '../../assets/images/activity-searchbox-demo.svg';
 import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import CustomerActivityResult from '../results/CustomerActivityResult';
 
+import BottomNavigation from './BottomNavigation';
+
 export default function ActivityContent() {
+  let { onPageChange } = useTutorialContext();
   let demonstrationText = (
     <Text color={DARK_TEXT_COLOR} style={{ alignSelf: 'flex-end' }}>
       * Data in this example data, for demonstration purposes only
@@ -47,6 +51,20 @@ export default function ActivityContent() {
         containerStyle={{ paddingBottom: 8 }}
       />
       {demonstrationText}
+      <BottomNavigation
+        leftButton={{
+          text: 'Performance',
+          onPress: () => {
+            onPageChange('performance');
+          },
+        }}
+        rightButton={{
+          text: 'Map',
+          onPress: () => {
+            onPageChange('map');
+          },
+        }}
+      />
     </View>
   );
 }
