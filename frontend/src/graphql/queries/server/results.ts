@@ -22,12 +22,14 @@ export const GET_PERFORMANCE_TABLE_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     performanceTable(
       performanceType: $performanceType
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       polling
       error
@@ -83,11 +85,13 @@ export const GET_NEWS_TABLE_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     newsTable(
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       polling
       error
@@ -130,11 +134,13 @@ export const GET_ACTIVITY_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     activityTable(
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       polling
       error
@@ -183,11 +189,13 @@ export const GET_MAP_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     mapTable(
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       id
       businessTag {
@@ -249,12 +257,14 @@ export const GET_OWNERSHIP_CONTACT_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     ownershipContactTable(
       ownershipType: $ownershipType
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       id
       type
@@ -284,12 +294,14 @@ export const GET_OWNERSHIP_INFO_DATA = gql`
     $businessTagId: String
     $locationTagId: String
     $tableId: String
+    $demo: DemoType
   ) {
     ownershipInfoTable(
       ownershipType: $ownershipType
       businessTagId: $businessTagId
       locationTagId: $locationTagId
       tableId: $tableId
+      demo: $demo
     ) {
       id
       type

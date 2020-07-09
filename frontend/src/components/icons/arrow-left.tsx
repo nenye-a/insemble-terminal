@@ -1,6 +1,9 @@
-import React, { SVGProps } from 'react';
+import React, { SVGProps, CSSProperties } from 'react';
 
-const SvgArrowLeft = (props: SVGProps<SVGSVGElement>) => (
+const SvgArrowLeft = ({
+  pathStyle,
+  ...props
+}: SVGProps<SVGSVGElement> & { pathStyle?: CSSProperties }) => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
     width="26.802"
@@ -23,6 +26,7 @@ const SvgArrowLeft = (props: SVGProps<SVGSVGElement>) => (
         d="M17.831,3.033a1.4,1.4,0,0,0-1.977,0l-9.28,9.28a1.112,1.112,0,0,0,0,1.575l9.28,9.28a1.4,1.4,0,0,0,1.977-1.977l-8.085-8.1,8.1-8.1A1.392,1.392,0,0,0,17.831,3.033Z"
         transform="translate(6.729 -2.694)"
         fill="currentColor"
+        style={pathStyle}
       />
     </g>
   </svg>

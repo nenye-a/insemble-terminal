@@ -57,6 +57,7 @@ export let deleteComparisonResolver: FieldResolver<
           type: table.type,
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -161,6 +162,7 @@ export let deleteComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -262,6 +264,7 @@ export let deleteComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -362,6 +365,7 @@ export let deleteComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,
@@ -463,6 +467,7 @@ export let deleteComparisonResolver: FieldResolver<
           },
           businessTag: table.businessTag ? { id: table.businessTag.id } : null,
           locationTag: table.locationTag ? { id: table.locationTag.id } : null,
+          demo: null,
         },
         select: {
           id: true,

@@ -10,6 +10,7 @@ import {
   CREATE_TERMINAL,
   EDIT_TERMINAL,
   GET_TERMINAL,
+  GET_TERMINAL_LIST,
 } from '../../graphql/queries/server/terminals';
 import {
   CreateTerminal,

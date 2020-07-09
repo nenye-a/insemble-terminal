@@ -30,10 +30,37 @@ export let registerHandler = async (req: Request, res: Response) => {
     res.redirect(`${FRONTEND_HOST}/verification-failed/invalid`);
     return;
   }
-  let user = JSON.parse(verification.userInput);
+  let { referralCode, ...user } = JSON.parse(verification.userInput);
+  let userReferrer;
+  if (referralCode) {
+    let invitationId = Base64.decode(referralCode);
+    let referralInvitation = await prisma.referralInvitation.findOne({
+      where: {
+        id: invitationId,
+      },
+    });
+    if (referralInvitation) {
+      userReferrer = await prisma.user.findOne({
+        where: {
+          id: referralInvitation.referrer,
+        },
+      });
+      await prisma.referralInvitation.update({
+        where: { id: referralInvitation.id },
+        data: {
+          used: true,
+        },
+      });
+    }
+  }
 
   await prisma.user.create({
     data: {
+      referrer: userReferrer
+        ? {
+            connect: { id: userReferrer.id },
+          }
+        : undefined,
       ...user,
     },
   });

@@ -1,4 +1,4 @@
-import { queryField, FieldResolver, stringArg } from 'nexus';
+import { queryField, FieldResolver, stringArg, arg } from 'nexus';
 import axios, { AxiosResponse } from 'axios';
 
 import { Root, Context } from 'serverTypes';
@@ -10,9 +10,22 @@ import { todayMinXHour } from '../../helpers/todayMinXHour';
 
 let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
   _: Root,
-  { businessTagId, locationTagId, tableId },
+  { businessTagId, locationTagId, tableId, demo },
   context: Context,
 ) => {
+  if (demo) {
+    let demoTables = await context.prisma.news.findMany({
+      where: {
+        demo,
+      },
+    });
+    let demoTable = demoTables[0];
+    return {
+      table: demoTable,
+      polling: false,
+      error: null,
+    };
+  }
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
@@ -45,12 +58,20 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
     if (!selectedNewsById) {
       throw new Error('Table not found');
     }
+    if (selectedNewsById.demo) {
+      return {
+        table: selectedNewsById,
+        polling: false,
+        error: null,
+      };
+    }
     news = [selectedNewsById];
   } else {
     news = await context.prisma.news.findMany({
       where: {
         businessTag: businessTag ? { id: businessTag.id } : null,
         locationTag: locationTag ? { id: locationTag.id } : null,
+        demo: null,
       },
       include: {
         locationTag: true,
@@ -321,6 +342,7 @@ let newsTable = queryField('newsTable', {
     businessTagId: stringArg(),
     locationTagId: stringArg(),
     tableId: stringArg(),
+    demo: arg({ type: 'DemoType' }),
   },
   resolve: newsTableResolver,
 });

@@ -32,6 +32,7 @@ let permissions = shield({
     feedback: isUserAuthenticated,
     createTerminalNote: isUserAuthenticated,
     editNote: isUserAuthenticated,
+    createReferral: isUserAuthenticated,
   },
 });
 

@@ -7,7 +7,8 @@ import { authSession } from './helpers/auth';
 import { permissions } from './middlewares/permission';
 import { registerHandler } from './controllers/registerController';
 import { emailVerificationHandler } from './controllers/emailVerificationController';
-import { port, hostname, NODE_ENV } from './constants/constants';
+import { verifyReferralCodeHandler } from './controllers/verifyReferralCodeController';
+import { port, hostname } from './constants/constants';
 
 import express from 'express';
 import path from 'path';
@@ -29,6 +30,7 @@ const server = new GraphQLServer({
 
 server.express.get('/register-verification/:token', registerHandler);
 server.express.get('/email-verification/:token', emailVerificationHandler);
+server.express.get('/verify-referral/:token', verifyReferralCodeHandler);
 
 server.express.use(
   express.static(

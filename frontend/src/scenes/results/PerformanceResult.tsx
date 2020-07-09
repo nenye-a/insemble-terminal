@@ -18,6 +18,7 @@ import {
   PerformanceTableType,
   ReviewTag,
   TableType,
+  DemoType,
 } from '../../generated/globalTypes';
 import { GET_PERFORMANCE_TABLE_DATA } from '../../graphql/queries/server/results';
 import { PerformanceRowPressParam } from '../../types/types';
@@ -27,6 +28,8 @@ import PerformanceTable from './PerformanceTable';
 import PerformanceTablePopover from './PerformanceTablePopover';
 import FeedbackButton from './FeedbackButton';
 import PerformanceChart from './PerformanceChart';
+
+type ViewMode = 'table' | 'graph';
 
 type Props = {
   businessTagId?: string;
@@ -39,6 +42,8 @@ type Props = {
   pinTableId?: string;
   readOnly?: boolean;
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
+  demoType?: DemoType;
+  initialView?: ViewMode;
 };
 
 type Data = (PerformanceData | PerformanceCompareData) & {
@@ -60,9 +65,11 @@ export default function PerformanceResult(props: Props) {
     pinTableId,
     onPerformanceRowPress,
     readOnly,
+    demoType,
+    initialView,
   } = props;
   let alert = useAlert();
-  let [viewMode, setViewMode] = useState('table');
+  let [viewMode, setViewMode] = useState(initialView || 'table');
   let [prevData, setPrevData] = useState<Array<Data>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
@@ -85,6 +92,7 @@ export default function PerformanceResult(props: Props) {
         businessTagId,
         locationTagId,
         tableId,
+        demo: demoType,
       },
       fetchPolicy: 'network-only',
     },
@@ -168,6 +176,7 @@ export default function PerformanceResult(props: Props) {
     <Container>
       <ResultTitle
         title={title}
+        demo={!!demoType}
         noData={noData}
         reviewTag={ReviewTag.PERFORMANCE}
         tableId={data?.performanceTable.table?.id || ''}
@@ -243,7 +252,7 @@ export default function PerformanceResult(props: Props) {
                 mobile={!isDesktop}
                 comparisonTags={comparisonTags}
                 onViewModeChange={setViewMode}
-                inTerminal={isTerminalScene}
+                inTerminal={isTerminalScene && !demoType}
                 /**
                  * will be used when user is on other scene than results scene (terminal)
                  * to get the business/location tag when user clicking on table row.
@@ -272,7 +281,7 @@ export default function PerformanceResult(props: Props) {
           <EmptyDataComponent />
         ) : null}
       </View>
-      {!readOnly && (
+      {!readOnly && !demoType && (
         <FeedbackButton
           tableId={data?.performanceTable.table?.id}
           tableType={TableType.PERFORMANCE}

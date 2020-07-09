@@ -1,0 +1,55 @@
+{
+  "version": "0.3.14-fixed",
+  "steps": [
+    {
+      "tag": "CreateEnum",
+      "enum": "DemoType",
+      "values": [
+        "BASIC",
+        "WITH_COMPARE"
+      ]
+    },
+    {
+      "tag": "CreateField",
+      "model": "Performance",
+      "field": "demo",
+      "type": "DemoType",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "News",
+      "field": "demo",
+      "type": "DemoType",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "Activity",
+      "field": "demo",
+      "type": "DemoType",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "OwnershipContact",
+      "field": "demo",
+      "type": "DemoType",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "OwnershipInfo",
+      "field": "demo",
+      "type": "DemoType",
+      "arity": "Optional"
+    },
+    {
+      "tag": "CreateField",
+      "model": "Map",
+      "field": "demo",
+      "type": "DemoType",
+      "arity": "Optional"
+    }
+  ]
+}
