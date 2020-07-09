@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="753" height="161" viewBox="0 0 753 161">
+  <defs>
+    <filter id="Rectangle_1571" x="0" y="0" width="753" height="161" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#525252" flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440" x="95" y="59" width="104" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-2"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-2" x="299" y="59" width="108" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-3"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-3" x="501" y="59" width="136" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-4"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-4"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_1035" data-name="Group 1035" transform="translate(-230 -58)">
+    <g transform="matrix(1, 0, 0, 1, 230, 58)" filter="url(#Rectangle_1571)">
+      <rect id="Rectangle_1571-2" data-name="Rectangle 1571" width="693" height="101" rx="2" transform="translate(30 30)" fill="#fff"/>
+    </g>
+    <g id="Group_1138" data-name="Group 1138" transform="translate(0 -169)">
+      <g id="Group_1026" data-name="Group 1026" transform="translate(-4905 393)">
+        <g id="Group_286" data-name="Group 286" transform="translate(4877 -153)">
+          <rect id="Rectangle_663" data-name="Rectangle 663" width="632" height="42" rx="5" transform="translate(318 47)" fill="#f7f7f7"/>
+          <path id="Path_67" data-name="Path 67" d="M15.5,14h-.79l-.28-.27a6.518,6.518,0,1,0-.7.7l.27.28v.79l4.25,4.25a1.054,1.054,0,0,0,1.49-1.49Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.494,4.494,0,0,1,9.5,14Z" transform="translate(918 57)" fill="#c5c5c5"/>
+          <text id="of" transform="translate(488 73)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">of</tspan></text>
+          <text id="in" transform="translate(722 73)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">in</tspan></text>
+          <g id="Group_989" data-name="Group 989" transform="translate(362 55)">
+            <g transform="matrix(1, 0, 0, 1, -104, -68)" filter="url(#Rectangle_1440)">
+              <rect id="Rectangle_1440-4" data-name="Rectangle 1440" width="86" height="28" rx="5" transform="translate(104 68)" fill="#6749aa"/>
+            </g>
+            <text id="Performance" transform="translate(8 18)" fill="#fff" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Performance</tspan></text>
+          </g>
+          <g id="Group_994" data-name="Group 994" transform="translate(568 55)">
+            <g transform="matrix(1, 0, 0, 1, -310, -68)" filter="url(#Rectangle_1440-2)">
+              <rect id="Rectangle_1440-5" data-name="Rectangle 1440" width="90" height="28" rx="5" transform="translate(308 68)" fill="#6749aa"/>
+            </g>
+            <text id="Starbucks" transform="translate(43 18)" fill="#fff" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-26.562" y="0">Starbucks</tspan></text>
+          </g>
+          <g id="Group_995" data-name="Group 995" transform="translate(784 55)">
+            <g transform="matrix(1, 0, 0, 1, -526, -68)" filter="url(#Rectangle_1440-3)">
+              <rect id="Rectangle_1440-6" data-name="Rectangle 1440" width="135" height="28" rx="5" transform="translate(502 68)" fill="#6749aa"/>
+            </g>
+            <text id="Los_Angeles_CA" data-name="Los Angeles, CA" transform="translate(30 18)" fill="#fff" font-size="12" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-31.896" y="0">Los Angeles, CA</tspan></text>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
