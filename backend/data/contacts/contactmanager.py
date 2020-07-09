@@ -6,6 +6,8 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 BASE_DIR = os.path.dirname(THIS_DIR)
 sys.path.extend([THIS_DIR, BASE_DIR])
 
+from pprint import pprint
+
 import pdfminer.high_level as pdf_hl
 import re
 import ast
@@ -497,7 +499,7 @@ def crit_contact_block_to_dict(company, block):
 
     # check if block as a region
 
-    if "," in block[0] or "region" in block[0].lower() or "area" in block[0].lower():
+    if "," in block[0] or "region" in block[0].lower() or "area" in block[0].lower() or "u.s." in block[0].lower():
         contact_dict['region'] = block.pop(0)
 
     contact_dict['first_name'], contact_dict['last_name'] = split_name(block.pop(0))
@@ -925,7 +927,7 @@ def parse_crit_csv(file):
         company = row['company']
         [contact_list.append(crit_contact_block_to_dict(company, item)) for item in row['contacts']]
 
-    print(contact_list)
+    pprint(contact_list)
     contact_df = pd.DataFrame(contact_list)
 
     return df, contact_df
