@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="799" height="351" viewBox="0 0 799 351">
+  <defs>
+    <filter id="Rectangle_2120" x="0" y="126" width="799" height="131" filterUnits="userSpaceOnUse">
+      <feOffset dy="1" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feFlood flood-color="#bababa" flood-opacity="0.192"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_1898" data-name="Group 1898" transform="translate(-472 -308)">
+    <g id="Group_1834" data-name="Group 1834" transform="translate(-6 262)">
+      <g transform="matrix(1, 0, 0, 1, 478, 46)" filter="url(#Rectangle_2120)">
+        <path id="Rectangle_2120-2" data-name="Rectangle 2120" d="M2,0H739a0,0,0,0,1,0,0V71a0,0,0,0,1,0,0H2a2,2,0,0,1-2-2V2A2,2,0,0,1,2,0Z" transform="translate(30 155)" fill="#fff"/>
+      </g>
+      <g id="Search_Bar" data-name="Search Bar" transform="translate(522 215)">
+        <rect id="Rectangle_663" data-name="Rectangle 663" width="706" height="42" rx="5" fill="#f7f7f7"/>
+        <text id="Search_for_data" data-name="Search for data" transform="translate(56 26)" fill="gray" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Search for data</tspan></text>
+        <text id="Any_business_category" data-name="Any business/category" transform="translate(329 26)" fill="gray" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-71.96" y="0">Any business/category</tspan></text>
+        <text id="Any_Location" data-name="Any Location" transform="translate(532 26)" fill="gray" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Any Location</tspan></text>
+        <path id="Path_67" data-name="Path 67" d="M15.5,14h-.79l-.28-.27a6.518,6.518,0,1,0-.7.7l.27.28v.79l4.25,4.25a1.054,1.054,0,0,0,1.49-1.49Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.494,4.494,0,0,1,9.5,14Z" transform="translate(674.73 10)" fill="#c5c5c5"/>
+        <text id="of" transform="translate(191 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">of</tspan></text>
+        <text id="in" transform="translate(452 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">in</tspan></text>
+      </g>
+    </g>
+    <text id="Choose_the_data_you_wish_to_see" data-name="Choose the data you wish to see" transform="translate(526 335)" fill="gray" font-size="16" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Choose the</tspan><tspan y="0" xml:space="preserve" fill="#6749aa" font-family="Avenir-Black, Avenir" font-weight="800"> data </tspan><tspan y="0">you wish to see</tspan></text>
+    <path id="Path_4098" data-name="Path 4098" d="M26.98-3.821S16.775,8.9,8.662,31.525,0,89.976,0,89.976" transform="translate(608.5 361.813)" fill="none" stroke="gray" stroke-linecap="round" stroke-width="2"/>
+    <text id="Select_businesses_ex._Starbucks_or_categories_ex._Coffee_Shop_" data-name="Select businesses (ex. Starbucks) or
+categories (ex. Coffee Shop)" transform="translate(851 631)" fill="gray" font-size="16" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Select </tspan><tspan y="0" fill="#6749aa" font-family="Avenir-Black, Avenir" font-weight="800">businesses</tspan><tspan y="0" xml:space="preserve"> (ex. Starbucks) or</tspan><tspan fill="#6749aa" font-family="Avenir-Black, Avenir" font-weight="800"><tspan x="0" y="22">categories</tspan><tspan y="22" xml:space="preserve" fill="gray" font-family="Avenir-Medium, Avenir" font-weight="500"> (ex. Coffee Shop)</tspan></tspan></text>
+    <path id="Path_4099" data-name="Path 4099" d="M37.888,54.39A98.579,98.579,0,0,1,12.164,32.454C.77,18.412,0-3.821,0-3.821" transform="translate(839.112 547.609)" fill="none" stroke="gray" stroke-linecap="round" stroke-width="2"/>
+    <text id="Select_the_location_ex._Los_Angeles_CA_or_address_ex._1401_Alameda_St_Los_Angeles_" data-name="Select the location (ex. Los Angeles, CA) or 
+address (ex. 1401 Alameda St, Los Angeles)" transform="translate(889 324)" fill="gray" font-size="16" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Select the</tspan><tspan y="0" xml:space="preserve" fill="#6749aa" font-family="Avenir-Black, Avenir" font-weight="800"> location</tspan><tspan y="0" xml:space="preserve"> (ex. Los Angeles, CA) or </tspan><tspan fill="#6749aa" font-family="Avenir-Black, Avenir" font-weight="800"><tspan x="0" y="22">address </tspan><tspan y="22" fill="#707070" font-family="Avenir-Medium, Avenir" font-weight="500">(ex. 1401 Alameda St, Los Angeles)</tspan></tspan></text>
+    <path id="Path_4100" data-name="Path 4100" d="M-24.886-15.19S-19.177,1.094-8.768,24.059,0,80.366,0,80.366" transform="translate(1091.112 379.822)" fill="none" stroke="gray" stroke-linecap="round" stroke-width="2"/>
+  </g>
+</svg>
