@@ -19,6 +19,7 @@ let ownershipInfoTableResolver: FieldResolver<
     let demoTables = await context.prisma.ownershipInfo.findMany({
       where: {
         demo,
+        type: ownershipType,
       },
     });
     let demoTable = demoTables[0];
