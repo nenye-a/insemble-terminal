@@ -26,6 +26,7 @@ type Props = {
   pinTableId?: string;
   terminalId?: string;
   readOnly?: boolean;
+  demo?: boolean;
 };
 export default function AddComparisonButton(props: Props) {
   let {
@@ -41,6 +42,7 @@ export default function AddComparisonButton(props: Props) {
     pinTableId,
     terminalId,
     readOnly,
+    demo,
   } = props;
   let { isAuthenticated } = useAuth();
   let alert = useAlert();
@@ -80,7 +82,7 @@ export default function AddComparisonButton(props: Props) {
               alert.show(MESSAGE.LoginNeeded);
             }
           }}
-          disabled={disabled}
+          disabled={disabled || demo}
         >
           <SvgRoundAdd {...(disabled && { fill: DISABLED_TEXT_COLOR })} />
         </Touchable>
