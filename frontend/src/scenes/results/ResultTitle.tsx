@@ -220,7 +220,7 @@ export default function ResultTitle(props: Props) {
             isDesktop={isDesktop}
           />
         )}
-        {isTerminalScene && resultTitle && (
+        {isTerminalScene && !demo && resultTitle && (
           <>
             <Title style={{ paddingLeft: 8, paddingRight: 8 }}>|</Title>
             <SubTitle>{resultTitle}</SubTitle>

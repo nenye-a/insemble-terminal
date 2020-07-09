@@ -252,7 +252,7 @@ export default function PerformanceResult(props: Props) {
                 mobile={!isDesktop}
                 comparisonTags={comparisonTags}
                 onViewModeChange={setViewMode}
-                inTerminal={isTerminalScene}
+                inTerminal={isTerminalScene && !demo}
                 /**
                  * will be used when user is on other scene than results scene (terminal)
                  * to get the business/location tag when user clicking on table row.
