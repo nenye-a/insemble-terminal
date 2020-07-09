@@ -17,6 +17,11 @@ import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import CustomerActivityResult from '../results/CustomerActivityResult';
 
 export default function ActivityContent() {
+  let demonstrationText = (
+    <Text color={DARK_TEXT_COLOR} style={{ alignSelf: 'flex-end' }}>
+      * Data in this example data, for demonstration purposes only
+    </Text>
+  );
   return (
     <View>
       <Title>Activity</Title>
@@ -27,13 +32,21 @@ export default function ActivityContent() {
       </Paragraph>
       <SearchBar src={activitySearchbarDemo} />
       <SvgFourDotsArrow style={{ alignSelf: 'center', color: SLIGHT_GRAY }} />
-      <CustomerActivityResult demoType={DemoType.BASIC} />
+      <CustomerActivityResult
+        demoType={DemoType.BASIC}
+        containerStyle={{ paddingBottom: 8 }}
+      />
+      {demonstrationText}
       <SubTitle>Comparisons</SubTitle>
       <Paragraph>
         As mentioned in the overview. You can compare the activity of one
         location with another. Here’s what the comparison view looks like.
       </Paragraph>
-      <CustomerActivityResult demoType={DemoType.WITH_COMPARE} />
+      <CustomerActivityResult
+        demoType={DemoType.WITH_COMPARE}
+        containerStyle={{ paddingBottom: 8 }}
+      />
+      {demonstrationText}
     </View>
   );
 }

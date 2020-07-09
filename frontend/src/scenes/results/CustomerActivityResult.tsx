@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, CSSProperties } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -27,6 +27,7 @@ type Props = {
   pinTableId?: string;
   readOnly?: boolean;
   demoType?: DemoType;
+  containerStyle?: CSSProperties;
 };
 
 type ColoredData = (ActivityData | ActivityCompareData) & {
@@ -43,6 +44,7 @@ export default function CustomerActivityResult(props: Props) {
     pinTableId,
     readOnly,
     demoType,
+    containerStyle,
   } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
@@ -125,7 +127,7 @@ export default function CustomerActivityResult(props: Props) {
   }, []);
 
   return (
-    <Container>
+    <Container style={containerStyle}>
       <ResultTitle
         title="Customer Activity"
         noData={noData}
