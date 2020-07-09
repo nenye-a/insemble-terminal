@@ -8,10 +8,10 @@ from yattag import Doc
 from billiard.pool import Pool
 from functools import partial
 import traceback
+import pandas as pd
 
 from emailer import send_email
 from personal_reports import generate_report
-
 import contactmanager as cm
 import utils
 import time
@@ -39,7 +39,7 @@ CONTACT_SOURCE_MAP = {
 
 def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
 
-    report_tag, email_tag = get_tags(campaign_name)
+    report_tag, email_tag, _ = get_tags(campaign_name)
     database.create_index([(report_tag, 1), (email_tag, 1)])
 
     while True:
@@ -47,10 +47,8 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
         contacts = list(database.aggregate([
             {'$match': {
                 'email': {'$ne': None, '$nin': unsubscribed_list},
-                '$or': [
-                    {'address_street': {'$ne': None}},
-                    {'address_city_state': {'$ne': None}}
-                ],
+                'type': {'$ne': None},
+                'address_city_state': {'$ne': None},
                 report_tag: {'$exists': False}
             }},
             {'$sample': {
@@ -64,15 +62,19 @@ def generate_reports(campaign_name, database=MAIN_DB, batchsize=50):
 
         pool_exists = False
         try:
-            report_pool, pool_exists = Pool(min(15, len(contacts))), True
-            updated_contacts = report_pool.map(partial(
-                get_report,
-                report_tag=report_tag
-            ), contacts)
+            if len(contacts) == 1:
+                update_contacts = [get_report(contacts[0], report_tag)]
+            else:
+                report_pool, pool_exists = Pool(min(15, len(contacts))), True
+                updated_contacts = report_pool.map(partial(
+                    get_report,
+                    report_tag=report_tag
+                ), contacts)
         except KeyError as key_e:
             print(f'Key Error: {key_e}')
             updated_contacts = []
         except Exception as e:
+            traceback.print_exc()
             print(f'Observed: \n{type(e)}: {e}')
             updated_contacts = []
         finally:
@@ -125,18 +127,18 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
         print('Please send a correctly formatted sender')
         return None
 
-    report_tag, email_tag = get_tags(campaign_name)
+    report_tag, email_tag, followup_tag = get_tags(campaign_name)
 
     while True:
 
         if followup_stage == 1:
             query = {
                 email_tag: True,
-                email_tag + '_followup_stage': None
+                followup_tag: None
             }
         elif followup_stage == 2:
             query = {
-                email_tag + '_followup_stage': 1
+                followup_tag: 1
             }
         else:
             query = {
@@ -167,7 +169,8 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
                 report_tag=report_tag,
                 email_tag=email_tag,
                 sender=sender,
-                followup_stage=followup_stage
+                followup_stage=followup_stage,
+                followup_tag=followup_tag
             ), contacts)
         except KeyError as key_e:
             print(f'Key Error: {key_e}')
@@ -194,8 +197,8 @@ def send_emails(campaign_name, database=MAIN_DB, sender=None, batchsize=200, fol
 
 
 def get_report(contact, report_tag):
-    city = utils.extract_city(contact['address_city_state'])
     try:
+        city = utils.extract_city(contact['address_city_state'])
         report = generate_report(None, contact['company'], contact['address_street'],
                                  city, contact['type'], first_name=contact['first_name'],
                                  last_name=contact['last_name'], in_parallel=True)
@@ -203,13 +206,18 @@ def get_report(contact, report_tag):
         return contact
     except Exception as e:
         print(f'{type(e)}: {e} - Failed to add report to contact')
+        contact[report_tag] = None
         traceback.print_exc()
         contact[report_tag] = None
         return contact
 
 
-def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
-    if followup_stage:
+def push_email(contact, report_tag, email_tag, sender, followup_stage=None, followup_tag=None):
+    if ('gabes.net' in contact['email'] or 'aromajoes.com' in contact['email'] or
+        'ngkf.com' in contact['email'] or 'dunkinbrands' in contact['email'] or
+            'homedepot' in contact['email'] or 'colliers' in contact['email']):
+        contact[email_tag] = "Skipped"
+    elif followup_stage:
         email_html = build_followup_email(
             followup_stage,
             first_name=utils.adjust_case(contact['first_name']),
@@ -229,7 +237,7 @@ def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
             html_text=email_html
         )
         if email_result:
-            contact[email_tag + '_followup_stage'] = followup_stage
+            contact[followup_tag] = followup_stage
     else:
         # Generate the first email.
         try:
@@ -256,17 +264,13 @@ def push_email(contact, report_tag, email_tag, sender, followup_stage=None):
             met=contact['met'] if utils.inbool(contact, 'met')
             else None
         )
-        if ('gabes.net' in contact['email'] or 'aromajoes.com' in contact['email'] or
-                'ngkf.com' in contact['email'] or 'dunkinbrands' in contact['email']):
-            contact[email_tag] = "Skipped"
-        else:
-            email_result = send_email(
-                from_email=sender['email'],
-                to_emails=contact['email'],
-                subject="Your Report",
-                html_text=email_html
-            )
-            contact[email_tag] = email_result
+        email_result = send_email(
+            from_email=sender['email'],
+            to_emails=contact['email'],
+            subject="Your Report",
+            html_text=email_html
+        )
+        contact[email_tag] = email_result
 
     return contact
 
@@ -389,21 +393,53 @@ def build_followup_email(followup_stage, first_name, sender_name, sender_title,
     return doc.getvalue()
 
 
+def unfollow_list(csv, collection_name, campaign_name):
+    places = pd.read_csv(THIS_DIR + '/files/' + csv)
+    emails = list(places['email'].apply(str.lower))
+    print(emails)
+    answer = input('\n\nAre you sure you want to unfollow these emails? Y/N \n\n')
+    answer.lower() == 'y' and unfollow(collection_name, campaign_name, emails)
+
+
+def unfollow(collection_name, campaign_name, list_emails):
+    _, _, followup_tag = get_tags(campaign_name)
+
+    list_emails = list(map(str.lower, list_emails))
+    collection = cm.get_contacts_collection(collection_name)
+    res = collection.update_many({
+        'email': {'$in': list_emails}
+    }, [
+        {'$set': {
+            followup_tag: {
+                "$concat": [
+                    {"$ifNull": [{"$toString": "$" + followup_tag}, "None"]},
+                    "-",
+                    "Replied"
+                ]
+            }
+        }}
+    ])
+
+    print(res.modified_count, "Unfollowed!")
+
+
 def get_tags(campaign_name):
     report_tag = campaign_name + '-report'
     email_tag = campaign_name + '-emailed'
-    return report_tag, email_tag
+    followup_tag = email_tag + '_followup_stage'
+    return report_tag, email_tag, followup_tag
 
 
 def clear_report(collection_name, campaign_name, mode='all'):
-    collection = cm.get_contacts_collection('collection_name')
-    report_tag, email_tag = get_tags(campaign_name)
+    collection = cm.get_contacts_collection(collection_name)
+    report_tag, email_tag, followup_tag = get_tags(campaign_name)
 
     unset_query = {}
     if mode == 'all' or mode == 'report':
         unset_query[report_tag] = ""
     if mode == 'all' or mode == 'email':
         unset_query[email_tag] = ""
+        unset_query[followup_tag] = ""
 
     modified_count = 0
     if unset_query:
@@ -417,27 +453,25 @@ def clear_report(collection_name, campaign_name, mode='all'):
 def get_email_stats(collection_name, campaign_name):
 
     stats = cm.get_collection_stats(collection_name, print_out=False)
-    report_tag, email_tag = get_tags(campaign_name)
+    report_tag, email_tag, followup_tag = get_tags(campaign_name)
 
     collection = cm.get_contacts_collection(collection_name)
     stats[report_tag + '_ineligible'] = collection.count_documents({
         '$or': [
             {'email': {'$in': unsubscribed_list}},
-            {'address_street': None, 'address_city_state': None},
+            {'address_city_state': None},
         ]
     })
     stats[report_tag + '_ineligible_with_email'] = collection.count_documents({
         '$or': [
             {'email': {'$in': unsubscribed_list}},
-            {'address_street': None, 'address_city_state': None, 'email': {'$ne': None}},
+            {'address_city_state': None, 'email': {'$ne': None}},
         ]
     })
     stats[report_tag + '_eligible_unprocessed'] = collection.count_documents({
         'email': {'$ne': None, '$nin': unsubscribed_list},
-        '$or': [
-            {'address_street': {'$ne': None}},
-            {'address_city_state': {'$ne': None}}
-        ],
+        'type': {'$ne': None},
+        'address_city_state': {'$ne': None},
         report_tag: {'$exists': False}
     })
     stats[report_tag + '_processed'] = collection.count_documents({
@@ -461,10 +495,10 @@ def get_email_stats(collection_name, campaign_name):
         email_tag: True
     })
     stats[email_tag + '_first_followup_sent'] = collection.count_documents({
-        email_tag + '_followup_stage': 1
+        followup_tag: 1
     })
     stats[email_tag + '_second_followup_sent'] = collection.count_documents({
-        email_tag + '_followup_stage': 2
+        followup_tag: 2
     })
 
     for k, v in stats.items():
@@ -499,11 +533,18 @@ if __name__ == "__main__":
         generate_reports('pre-flight-2', cm.get_contacts_collection('preflight-collection'))
 
     def test_report_emailer():
-        send_emails('pre-flight-2', cm.get_contacts_collection('preflight-collection'),
+        send_emails('pre-flight-5', cm.get_contacts_collection('preflight-collection'),
                     followup_stage=2)
+
+    def test_unfollow():
+        unfollow('preflight-collection', 'pre-flight-5',
+                 ['nenanagbogu@gmail.com', 'kevinwang@mit.edu'])
+
     # test_report_generator()
     # test_report_emailer()
+    # test_unfollow()
 
     # generate_reports('campaign-1', cm.get_contacts_collection('main_contact_db'))
     # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'))
-    get_email_stats('main_contact_db', 'campaign-1')
+    # send_emails('campaign-1', cm.get_contacts_collection('main_contact_db'), followup_stage=1)
+    # get_email_stats('main_contact_db', 'campaign-1')

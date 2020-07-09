@@ -140,7 +140,8 @@ def prune_bad_apples(collection_name):
     remove_regex = (
         r'(?:placer)|(?:icsc)|(?:costar)|(?:ten(-?)x)|'
         r'(?:tenantbase)|(?:crexi)|(?:a( ?)retail( ?)space)|'
-        r'(?:site( ?)zeus)|(?:buxton)|(?:gravy( ?)analytics)'
+        r'(?:site( ?)zeus)|(?:buxton)|(?:gravy( ?)analytics)|'
+        r'(?:unacast)|(?:esiteanalytics)|(?:intalytics)'
     )
     deleted = collection.delete_many({
         '$or': [
@@ -942,3 +943,4 @@ if __name__ == "__main__":
     # get_collection_stats('main_contact_db')
     # get_contacts_domains('main_contact_db')
     # get_contacts_emails('main_contact_db')
+    prune_bad_apples('main_contact_db')
