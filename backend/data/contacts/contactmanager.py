@@ -8,6 +8,7 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 
 import pdfminer.high_level as pdf_hl
 import re
+import ast
 import string
 import pandas as pd
 import numpy as np
@@ -26,6 +27,8 @@ MAIN_PATH = THIS_DIR + '/files/contact_related'
 SEARCH_PATHS = ['', MAIN_PATH + '/', THIS_DIR + '/files/', THIS_DIR,
                 BASE_DIR + '/newsgenerator/sources/']
 
+EMAIL_RX = r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
+PHONE_RX = r'((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}'
 
 def parse_contacts(collection_name):
 
@@ -469,6 +472,79 @@ def contact_block_to_dict(block):
     contact_dict['company'] = parse_company(contact_dict['company'])
     return contact_dict
 
+def crit_contact_block_to_dict(company, block):
+    """
+    Takes a crittenden contact company and block and turns it into a dictionary:
+    example block: ['Southeast Region', 'Kathy Hinkley', 'Sr. Director of Real Estate', 'Luxottica Retail', '4000 Luxottica Place',
+    'Mason, OH 45040', '(513) 765-6000', 'khinkley@luxotticaretail.com']
+    Example dict:
+      {'first_name': 'Kathy',
+      'last_name': 'Hinkley',
+      'title': 'Sr. Director of Real Estate',
+      'company': 'Luxottica Retail',
+      'address_street': '4000 Luxottica Place',
+      'address_unit': None,
+      'address_city_state': 'Mason, OH 45040',
+      'phone': '(513) 765-6000',
+      'email': 'khinkley@luxotticaretail.com',
+      'type': 'Retailer/Tenant'}
+      """
+
+    contact_dict = {"first_name": None, "last_name": None, "title": None,
+                    "company": parse_company(company), "address_street": None, "address_unit": None,
+                    "address_city_state": None, "phone": None, "email": None, "type": 'Retailer/Tenant', "region": None}
+
+    # check if block as a region
+
+    if "," in block[0] or "region" in block[0].lower() or "area" in block[0].lower():
+        contact_dict['region'] = block.pop(0)
+
+    contact_dict['first_name'], contact_dict['last_name'] = split_name(block.pop(0))
+    if bool(re.match(EMAIL_RX, block[-1])):
+        contact_dict['email'] = block.pop()
+    if "Fax:" in block[-1]: # remove fax numbers
+        block.pop()
+    if bool(re.match(PHONE_RX, block[-1])):
+        contact_dict['phone'] = block.pop()
+
+    # assign address
+    address_end = None
+    for i in range(len(block)):
+        if bool(re.search(r'\s\w{2}\s\d{5}', block[i])):
+            address_end = i
+            break
+
+    if not address_end:
+        return None
+
+    address_start = None
+    for i in reversed(range(address_end)):
+        if bool(re.match(r'[\d\-]+[\s]+[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+', block[i])) or \
+                ('pobox' in block[i].translate(str.maketrans('', '', string.punctuation)).lower().replace(" ", "")):
+            address_start = i
+            break
+    if not address_start:
+        return None
+
+    address_blocks = [block.pop(address_start) for i in range(address_start, address_end + 1)]
+
+    for i in range(len(address_blocks)):
+        item = address_blocks.pop(0)
+        if not contact_dict["address_street"] and (
+                bool(re.match(r'[\d\-]+[\s]+[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+', item)) or
+                ('pobox' in item.translate(str.maketrans('', '', string.punctuation)).lower().replace(" ", ""))):
+            contact_dict["address_street"] = item
+        elif not contact_dict["address_city_state"] and "," in item:
+            contact_dict["address_city_state"] = item
+        elif "United States" in item and contact_dict["address_city_state"]:
+            contact_dict["address_city_state"] = contact_dict["address_city_state"] + ", " + item
+        elif not contact_dict["address_unit"] and len(item) <= 11:
+            contact_dict["address_unit"] = item
+
+    contact_dict['title'] = block.pop(0)
+
+    return contact_dict
+
 
 def split_name(name):
     first = name.split(",")[0].split(" ")[0]
@@ -825,6 +901,33 @@ def get_collection_stats(collection_name, print_out=True):
 
     return stats
 
+def parse_crit_csv(file):
+    # parses crittenden scraped csvs into csv format uploadable to db
+    df = pd.read_csv(file)
+    contact_list = []
+
+    # currently unused, but could be
+    df['parent_company'] = df['parent_company'].apply(lambda x: x.replace("Parent Company:", "").strip())
+    df['headquarters'] = df['headquarters'].apply(lambda x: x.replace("Headquarters:", "").strip())
+    df['num_locations'] = df['num_locations'].apply(lambda x: int(x.replace("Locations:", "").strip()))
+    df['bus_type'] = df['bus_type'].apply(lambda x: x.replace("Business:", "").strip())
+    df['property_pref'] = df['property_pref'].apply(
+        lambda x: re.sub(' +', ' ', x.replace('\n', '')).replace('Property: ', ''))
+
+    # used for populating contacts
+    df['company'] = df['company'].apply(lambda x: str(x))
+    df['contacts'] = df['contacts'].apply(
+        lambda x: [list(item.values())[0].split('\n') for item in ast.literal_eval(re.sub(' +', ' ', x))])
+    df['contacts'] = df['contacts'].apply(lambda a: [[y.strip() for y in x if y.strip() != ''] for x in a])
+
+    for index, row in df.iterrows():
+        company = row['company']
+        [contact_list.append(crit_contact_block_to_dict(company, item)) for item in row['contacts']]
+
+    print(contact_list)
+    contact_df = pd.DataFrame(contact_list)
+
+    return df, contact_df
 
 if __name__ == "__main__":
     def test_contact_block_to_dict():
