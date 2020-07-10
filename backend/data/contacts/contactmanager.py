@@ -30,7 +30,8 @@ SEARCH_PATHS = ['', MAIN_PATH + '/', THIS_DIR + '/files/', THIS_DIR,
                 BASE_DIR + '/newsgenerator/sources/']
 
 EMAIL_RX = r'^[a-zA-Z0-9.!#$%&*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$'
-PHONE_RX = r'((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}'
+# PHONE_RX = r'((\(\d{3}\) ?)|(\d{3}-))?\d{3}-\d{4}'
+PHONE_RX = r'((\(\d{3}\) ?)|\d{3}-)?\d{3}-\d{4}'
 
 
 def parse_contacts(collection_name):
@@ -210,12 +211,16 @@ def insert_from_csv(collection_name, csv, replace=False):
     insert_df = contact_df.merge(stock_df, 'left')[critical_columns]
     insert_df = insert_df.where(pd.notnull(insert_df), None)
     insert_df['company'] = insert_df['company'].apply(parse_company)
+    insert_df['email'] = insert_df['email'].apply(lambda x: x.lower() if x else None)
     insert_df['source'] = csv
 
     create_collection_indices(collection_name)
 
     try:
         insert_docs = insert_df.to_dict(orient='records')
+        for doc in insert_docs:
+            if utils.inbool(doc, 'email') and not utils.inbool(doc, 'domain'):
+                doc['domain'] = doc['email'].split('@')[-1]
         collection.insert_many(insert_docs, ordered=False)
         number_inserted = len(insert_docs)
     except mongo.BWE as bwe:
@@ -499,18 +504,20 @@ def crit_contact_block_to_dict(company, block):
                     "company": parse_company(company), "address_street": None, "address_unit": None,
                     "address_city_state": None, "phone": None, "email": None, "type": 'Retailer/Tenant', "region": None}
 
-    # check if block as a region
+    # get email & phone first
+    all_text = " | ".join(filter(lambda word: "Fax:" not in word, block))
 
+    for word in block.copy():
+        if bool(re.match(EMAIL_RX, word)):
+            contact_dict['email'] = word
+            block.remove(word)
+        elif bool(re.match(PHONE_RX, word)):
+            contact_dict['phone'] = word
+            block.remove(word)
+
+    # immediately remove any indiactors of regions, if they appear.
     if "," in block[0] or "region" in block[0].lower() or "area" in block[0].lower() or "u.s." in block[0].lower():
         contact_dict['region'] = block.pop(0)
-
-    contact_dict['first_name'], contact_dict['last_name'] = split_name(block.pop(0))
-    if bool(re.match(EMAIL_RX, block[-1])):
-        contact_dict['email'] = block.pop()
-    if "Fax:" in block[-1]:  # remove fax numbers
-        block.pop()
-    if bool(re.match(PHONE_RX, block[-1])):
-        contact_dict['phone'] = block.pop()
 
     # assign address
     address_end = None
@@ -546,14 +553,78 @@ def crit_contact_block_to_dict(company, block):
         elif not contact_dict["address_unit"] and len(item) <= 11:
             contact_dict["address_unit"] = item
 
-    contact_dict['title'] = block.pop(0)
+    name = None
+    title = None
+    region = None
+
+    def name_score(word):
+        points = 0
+
+        num_words = len(word.split(" "))
+        if num_words == 1 or num_words > 3:
+            return 0
+        elif num_words == 2:
+            points += 3
+        elif num_words == 3:
+            points += 1
+
+        if any(map(lambda punc: punc.lower() in word.lower(), [
+            'franchise', 'manager', 'commercial', 'ceo', 'president', 'region',
+            'main', 'contact', 'VP', 'director', ' - ', 'corporate', 'office',
+            'headquarters', 'hq', 'international', 'corporation', 'retail',
+            'development'
+        ])):
+            return 0
+
+        return points
+
+    def is_region(word):
+        if any(map(lambda punc: punc.lower() in word.lower(), [
+            'region', 'area', 'u.s.', 'mid-atlantic',
+        ])):
+            return True
+        if len(word) == 1:
+            return True
+        if word.split(" ")[0] in utils.STATE_DICT.index:
+            return True
+
+    if len(block) == 2:
+        name = block[0] if name_score(block[0]) else None
+        title = block[1]
+        # pass
+    elif len(block) >= 3:
+
+        if is_region(block[0]):
+            region = block[0]
+            name = block[1]
+            title = block[2]
+        else:
+            first_score = name_score(block[0])
+            second_score = name_score(block[1])
+            if first_score >= second_score:
+                name = block[0]
+                title = block[1]
+            elif second_score > first_score:
+                name = block[1]
+                title = block[2]
+    else:
+        # likely
+        name = block[0] if name_score(block[0]) else None
+        title = None
+        region = None
+
+    if not name:
+        return None
+
+    contact_dict['first_name'], contact_dict['last_name'] = split_name(name) if name else (None, None)
+    contact_dict['title'] = title
 
     return contact_dict
 
 
 def split_name(name):
     first = name.split(",")[0].split(" ")[0]
-    if bool(re.match(r"[A-Z]\.", first)):
+    if bool(re.match(r"[A-z]{1,3}\.", first)):
         first = name.split(",")[0].split(" ")[1]
     last = name.split(",")[0].split(" ")[-1]
     return first, last
@@ -677,6 +748,9 @@ def print_to_csv(collection_name):
 def remove_email_dupes(collection_name):
 
     contacts = get_contacts_collection('main_contact_db').aggregate([
+        {'$set': {
+            'email': {"$toLower": "$email"}
+        }},
         {'$group': {
             '_id': '$email',
             'count': {'$sum': 1}
@@ -700,44 +774,61 @@ def remove_email_dupes(collection_name):
     email_counts = email_counts[email_counts['count'] > 1]
     email_counts = email_counts.dropna()
 
-    collection = get_contacts_collection('main_contact_db')
+    collection = get_contacts_collection(collection_name)
+
+    print(email_counts)
 
     for email in email_counts['email']:
 
-        candidates = list(collection.find({'email': email}))
+        if not email:
+            continue
+
+        candidates = list(collection.find({'email': {"$regex": r"^" + email, "$options": "i"}}))
+
+        prune_candidates(candidates, collection)
+
+
+def prune_candidates(candidates, collection):
+
+    if len(candidates) > 3:
+        input(f'Length of candidates is {len(candidates)} for email {email}. '
+              'Are you sure you want to prune duplicates? Enter to Continue, '
+              'ctrl+C to quite')
+
+    for candidate in candidates:
+        if not (utils.inbool(candidate, 'address_street') or
+                utils.inbool(candidate, 'address_unit') or
+                utils.inbool(candidate, 'address_city_state')):
+            candidate['has_details'] = False
+        else:
+            candidate['has_details'] = True
+
+        print(candidate)
+        candidate['match_value'] = fuzz.WRatio(
+            candidate['email'].split('@')[1],
+            candidate['company']
+        )
+
+    details = [c['has_details'] for c in candidates]
+    if any(details):
+        # delete all the ones that have no details
+        for candidate in candidates.copy():
+            if not candidate['has_details']:
+                collection.delete_one({'_id': candidate['_id']})
+                candidates.remove(candidate)
+
+    if len(candidates) > 1:
+        # keep the one with the highest email-to-company match.
+        highest_match = {'match_value': -10}
+        for candidate in candidates:
+            if candidate['match_value'] > highest_match['match_value']:
+                highest_match = candidate
 
         for candidate in candidates:
-            if not (utils.inbool(candidate, 'address_street') or
-                    utils.inbool(candidate, 'address_unit') or
-                    utils.inbool(candidate, 'address_city_state')):
-                candidate['has_details'] = False
-            else:
-                candidate['has_details'] = True
-
-            candidate['match_value'] = fuzz.WRatio(
-                candidate['email'].split('@')[1],
-                candidate['company']
-            )
-
-        details = [c['has_details'] for c in candidates]
-        if any(details):
-            # delete all the ones that have no details
-            for candidate in candidates.copy():
-                if not candidate['has_details']:
-                    collection.delete_one({'_id': candidate['_id']})
-                    candidates.remove(candidate)
-
-        if len(candidates) > 1:
-            # keep the one with the highest email-to-company match.
-            highest_match = {'match_value': -10}
-            for candidate in candidates:
-                if candidate['match_value'] > highest_match['match_value']:
-                    highest_match = candidate
-
-            for candidate in candidates:
-                if candidate != highest_match:
-                    collection.delete_one({'_id': candidate['_id']})
-                    candidates.remove(candidate)
+            if candidate != highest_match:
+                collection.delete_one({'_id': candidate['_id']})
+                print(f'Removed Candidate: ({candidate})')
+                candidates.remove(candidate)
 
 
 def get_collection_domains(collection_name):
@@ -866,6 +957,51 @@ def create_prelight_collection():
     ])
 
 
+def update_email_from_collection(from_collection, to_collection):
+    """
+    Pushes email from one collection to another, deleting all the data in the from
+    collection in the process.
+    """
+
+    updated_count = 0
+    while True:
+        contacts = list(get_contacts_collection(from_collection).aggregate([
+            {'$sample': {
+                'size': 200}}
+        ]))
+        if len(contacts) == 0:
+            break
+        list_ids = [contact['_id'] for contact in contacts]
+        print(list_ids)
+        for contact in contacts:
+            if contact['email']:
+                try:
+                    modified = get_contacts_collection(to_collection).update_one({
+                        'first_name': contact['first_name'],
+                        'last_name': contact['last_name'],
+                        'company': contact['company'],
+                        'email': None
+                    }, {
+                        '$set': {'email': contact['email']}
+                    }).modified_count
+                    if modified:
+                        updated_count += modified
+                        print('Modified!')
+                except mongoerrors.DuplicateKeyError:
+                    candidates = list(get_contacts_collection(to_collection).find({
+                        'first_name': contact['first_name'],
+                        'last_name': contact['last_name'],
+                        'company': contact['company'],
+                    }))
+                    if len(candidates) > 1:
+                        prune_candidates(candidates)
+
+        print(updated_count, "Updated")
+        print(get_contacts_collection('temp_collection').delete_many({
+            '_id': {'$in': list_ids}
+        }).deleted_count, "deleted from temp db")
+
+
 def get_collection_stats(collection_name, print_out=True):
     collection = get_contacts_collection(collection_name)
     stats = {}
@@ -913,18 +1049,21 @@ def parse_crit_csv(file):
     contact_list = []
 
     # currently unused, but could be
-    df['parent_company'] = df['parent_company'].apply(lambda x: x.replace("Parent Company:", "").strip())
-    df['headquarters'] = df['headquarters'].apply(lambda x: x.replace("Headquarters:", "").strip())
-    df['num_locations'] = df['num_locations'].apply(lambda x: int(x.replace("Locations:", "").strip()))
-    df['bus_type'] = df['bus_type'].apply(lambda x: x.replace("Business:", "").strip())
+    df['parent_company'] = df['parent_company'].apply(lambda x: x.replace(
+        "Parent Company:", "").strip() if np.all(pd.notnull(x)) else None)
+    df['headquarters'] = df['headquarters'].apply(lambda x: x.replace("Headquarters:", "").strip() if np.all(pd.notnull(x)) else None)
+    df['num_locations'] = df['num_locations'].apply(lambda x: int(
+        x.replace("Locations:", "").strip()) if np.all(pd.notnull(x)) else None)
+    df['bus_type'] = df['bus_type'].apply(lambda x: x.replace("Business:", "").strip() if np.all(pd.notnull(x)) else None)
     df['property_pref'] = df['property_pref'].apply(
-        lambda x: re.sub(' +', ' ', x.replace('\n', '')).replace('Property: ', ''))
+        lambda x: re.sub(' +', ' ', x.replace('\n', '')).replace('Property: ', '') if np.all(pd.notnull(x)) else None)
 
     # used for populating contacts
-    df['company'] = df['company'].apply(lambda x: str(x))
+    df['company'] = df['company'].apply(lambda x: str(x) if np.all(pd.notnull(x)) else None)
     df['contacts'] = df['contacts'].apply(
-        lambda x: [list(item.values())[0].split('\n') for item in ast.literal_eval(re.sub(' +', ' ', x))])
-    df['contacts'] = df['contacts'].apply(lambda a: [[y.strip() for y in x if y.strip() != ''] for x in a])
+        lambda x: [list(item.values())[0].split('\n') for item in ast.literal_eval(re.sub(' +', ' ', x))] if np.all(pd.notnull(x)) else None)
+    df['contacts'] = df['contacts'].apply(lambda a: [[y.strip() for y in x if y.strip() != '']
+                                                     for x in a] if np.all(pd.notnull(a)) else None)
 
     for index, row in df.iterrows():
         company = row['company']
@@ -944,12 +1083,19 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    # get_collection_stats('main_contact_db')
+    get_collection_stats('main_contact_db')
     # get_contacts_domains('main_contact_db')
     # get_contacts_emails('main_contact_db')
     # prune_bad_apples('main_contact_db')
 
-    # from IPython import start_ipython
-    result = parse_crit_csv(THIS_DIR + '/files/crittenden_first_quarter.csv')
+    # firstquarter = parse_crit_csv(THIS_DIR + '/files/crittenden_first_quarter.csv')
+    # secondquarter = parse_crit_csv(THIS_DIR + '/files/crittenden_second_quarter.csv')
+    # # secondhalf = parse_crit_csv(THIS_DIR + '/files/crittenden_second_half.csv')
 
-    # start_ipython(result=result)
+    # # firstquarter.to_csv(THIS_DIR + '/files/firstquarter.csv')
+    # secondquarter.to_csv(THIS_DIR + '/files/secondquarter.csv')
+    # # secondhalf.to_csv(THIS_DIR + '/files/secondhalf.csv')
+
+    # # insert_from_csv('temp_collection', 'firstquarter.csv')
+    # insert_from_csv('temp_collection', 'secondquarter.csv')
+    # insert_from_csv('temp_collection', 'secondhalf.csv')
