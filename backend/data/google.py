@@ -3,6 +3,7 @@ import re
 import ast
 import time
 import utils
+import numpy as np
 import matplotlib.pyplot as plt
 from decouple import config
 
@@ -269,6 +270,43 @@ class GeoCode(GenericScraper):
                     data['data'] = data['data'][:2]
 
         return result
+
+
+def divide_region(center, viewport, ground_zoom):
+    lat, lng = center
+    sky_nw, sky_se = viewport
+
+    nearby_scraper = GoogleNearby('GOOGLE NEARBY')
+    geo_scraper = GeoCode('GOOGLE GEO')
+    nearby_request_url = nearby_scraper.build_request('', lat, lng, ground_zoom)
+
+    print("requesting {}".format(nearby_request_url))
+    try:
+        lat, lng, size_var = nearby_scraper.request(
+            nearby_request_url,
+            quality_proxy=True,
+            headers={"referer": "https://www.google.com/"},
+            timeout=5,
+            res_parser=geo_scraper.default_parser
+        )
+    except Exception:
+        return None
+    nw, se = get_viewport(lat, lng, size_var)
+    diameter = {"vertical": abs(nw[0] - se[0]), "horizontal": abs(nw[1] - se[1])}
+    print("nw {} se {}".format(nw, se))
+
+    sky_diameter = {"vertical": abs(sky_nw[0] - sky_se[0]),
+                    "horizontal": abs(sky_nw[1] - sky_se[1])}
+    print("sky_nw {} sky_se {}".format(sky_nw, sky_se))
+
+    print("assigning new coordinates".format())
+    coords = []
+    print(sky_nw[1], sky_se[1], sky_diameter['horizontal'] / diameter['horizontal'])
+    for v in np.linspace(sky_nw[0], sky_se[0], round(sky_diameter['vertical'] / diameter['vertical'])):
+        for h in np.linspace(sky_nw[1], sky_se[1], round(sky_diameter['horizontal'] / diameter['horizontal'])):
+            coords.append((v, h))
+
+    return coords
 
 
 class GoogleDetails(GenericScraper):

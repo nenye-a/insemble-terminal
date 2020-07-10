@@ -11,7 +11,6 @@ import utils
 import time
 import google
 import datetime as dt
-from locations import divide_region
 
 
 '''
@@ -66,7 +65,7 @@ def search_locations():
             if 'searched_terms' in location and term in location['searched_terms']:
                 continue
             staged_finder(center, viewport, term, course_zoom=15,
-                          eliminated_regions=eliminated_geojson)
+                          eliminated_regions=eliminated_geojson, log_name=location['name'])
             utils.DB_REGIONS.update_one({'_id': location['_id']}, {'$addToSet': {
                 'searched_terms': term
             }})
@@ -91,7 +90,7 @@ def search_region(region, term, course_zoom=15, batch_size=100):
 
 
 def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
-                  eliminated_regions=None):
+                  eliminated_regions=None, log_name=None):
     """
     Stage search approach to getting all items in a region. Searches region in iterative
     stages, using the returned points as the query points of the next stage. First stage
@@ -101,6 +100,7 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
     In the 3rd stage, the maximum number of calls is 6,000 or half the calls.
 
     Parameters:
+    -------------
         center: tuple - Center of search (doesn't need to be the exact center), ex. (lat, lng)
                         (34.00000, -118.000000)
         viewport: tuple - viewport of search. (nw, se) where nw and se are (lat, lng) tuples
@@ -111,6 +111,8 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
                            zoom.
         batch_size: int - number of query points to process at a time.
         eliminated_regions: dict - geo-json region to elimate results from.
+        log_name: name of log to attach to the log identifier if creating for the first time
+
     """
 
     first_stage_zoom = 15
@@ -141,7 +143,9 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
         try:
             log_identifier['1st_stage_points'] = len(coords)
             log_identifier['created_at'] = dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
-            utils.DB_LOG.insert_one(log_identifier)
+            insert_log = dict(log_identifier, **{'log_name': log_name}
+                              ) if log_name else log_identifier
+            utils.DB_LOG.insert_one(insert_log)
             utils.DB_COORDINATES.insert_many(coords, ordered=False)
         except pymongo.errors.DuplicateKeyError:
             print('Center, viewport, zoom, method, combo already in database, please check. '
@@ -226,7 +230,7 @@ def _get_region(center, viewport, course_zoom):
     """
     count = 0
     while count < 10:
-        result = divide_region(center, viewport, course_zoom)
+        result = google.divide_region(center, viewport, course_zoom)
         if result:
             return result
         time.sleep(2)  # wait 2 seconds between attempts
@@ -388,6 +392,6 @@ def targeted_update(msa_name, batch_size=100):
 
 
 if __name__ == "__main__":
-    # search_locations()
-    targeted_update('New York')
+    search_locations()
+    # targeted_update('New York')
     pass
