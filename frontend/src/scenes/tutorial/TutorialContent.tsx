@@ -8,6 +8,9 @@ import { useTutorialContext } from '../../context';
 import OverviewContent from './OverviewContent';
 import ActivityContent from './ActivityContent';
 import MapContent from './MapContent';
+import PerformanceContent from './PerformanceContent';
+import NewsContent from './NewsContent';
+import ContactsContent from './ContactsContent';
 
 export default function TutorialContent() {
   let { selectedPage } = useTutorialContext();
@@ -16,10 +19,16 @@ export default function TutorialContent() {
     <Container flex>
       {selectedPage === 'overview' ? (
         <OverviewContent />
+      ) : selectedPage === 'performance' ? (
+        <PerformanceContent />
       ) : selectedPage === 'activity' ? (
         <ActivityContent />
       ) : selectedPage === 'map' ? (
         <MapContent />
+      ) : selectedPage === 'news' ? (
+        <NewsContent />
+      ) : selectedPage === 'contacts' ? (
+        <ContactsContent />
       ) : null}
     </Container>
   );
