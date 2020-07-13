@@ -6,7 +6,7 @@ import { View, Modal, TouchableOpacity } from '../core-ui';
 import { DISABLED_TEXT_COLOR, THEME_COLOR } from '../constants/colors';
 import { DEFAULT_BORDER_RADIUS } from '../constants/theme';
 
-import SvgQuestionMark from './icons/question-mark';
+import SvgQuestionMarkRound from './icons/question-mark-round';
 
 type Props = {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export default function InfoboxPopover(props: Props) {
   let [modalVisible, setModalVisible] = useState(false);
 
   let icon = (
-    <SvgQuestionMark
+    <SvgQuestionMarkRound
       style={{ color: disabled ? DISABLED_TEXT_COLOR : THEME_COLOR }}
     />
   );

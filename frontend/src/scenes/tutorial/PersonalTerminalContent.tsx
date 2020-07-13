@@ -62,7 +62,7 @@ export default function PersonalTerminalContent() {
       </View>
       <BottomNavigation
         leftButton={{
-          text: 'Contact',
+          text: 'Contacts',
           onPress: () => {
             onPageChange('contacts');
           },

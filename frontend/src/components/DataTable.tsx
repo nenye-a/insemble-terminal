@@ -18,7 +18,7 @@ import {
 import { Direction } from '../types/types';
 import { SortConfig } from '../helpers/useSortableData';
 
-import SvgQuestionMark from './icons/question-mark';
+import SvgQuestionMark from './icons/question-mark-round';
 
 type Props = ViewProps & {
   children?: ReactNode;
@@ -48,6 +48,8 @@ function HeaderCell({
   sortConfig,
   name,
   infoboxContent,
+  onClick,
+  disabled,
   ...otherProps
 }: HeaderCellProps) {
   let [popoverVisible, setPopoverVisible] = useState(false);
@@ -59,7 +61,14 @@ function HeaderCell({
       : '';
   let infoboxPopover = <PopoverContainer>{infoboxContent}</PopoverContainer>;
   return (
-    <Cell {...otherProps}>
+    <Cell
+      onClick={() => {
+        if (!disabled) {
+          onClick();
+        }
+      }}
+      {...otherProps}
+    >
       <RowedView>
         {infoboxContent && (
           <Popover
@@ -144,8 +153,9 @@ const Cell = styled(View)<CellProps>`
   font-weight: ${FONT_WEIGHT_MEDIUM};
   font-size: ${FONT_SIZE_NORMAL};
   font-family: 'Avenir';
-  ${({ onClick }) =>
+  ${({ onClick, disabled }) =>
     onClick &&
+    !disabled &&
     css`
       cursor: pointer;
     `}

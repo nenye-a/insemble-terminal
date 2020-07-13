@@ -13,18 +13,25 @@ import {
   THEME_COLOR,
   WHITE,
   SLIGHT_GRAY,
+  GRAY_TEXT,
 } from '../../constants/colors';
 import { useViewport } from '../../helpers';
-import { SearchFilterBar } from '../../components';
-import { LocationTagType } from '../../generated/globalTypes';
+import { useTutorialContext } from '../../context';
+import { PerformanceTableType, DemoType } from '../../generated/globalTypes';
 import searchBox from '../../assets/images/searchbox-demo.svg';
+import performanceSearchboxDemo from '../../assets/images/performance-searchbox-demo.svg';
 import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import ResultTitle from '../results/ResultTitle';
+import PerformanceResult from '../results/PerformanceResult';
+import PerformanceTable from '../results/PerformanceTable';
+import SvgArrowPointerRight from '../../components/icons/arrow-pointer-right';
 
 import { MENU } from './constants';
+import BottomNavigation from './BottomNavigation';
 
 export default function OverviewContent() {
   let { isDesktop } = useViewport();
+  let { onPageChange } = useTutorialContext();
   return (
     <View>
       <Title>Overview & Search</Title>
@@ -64,20 +71,20 @@ export default function OverviewContent() {
         no indicator is provided, Insemble will data from all available
         indicators for the search.
       </Text>
-      {/* TODO: change to image */}
-      <SearchBarContainer>
-        <SearchFilterBar
-          defaultReviewTag="Performance"
-          defaultBusinessTag="Starbucks"
-          defaultLocationTag={{
-            params: 'Los Angeles, CA',
-            type: LocationTagType.ADDRESS,
-          }}
-        />
-      </SearchBarContainer>
-      <SvgFourDotsArrow style={{ alignSelf: 'center', color: SLIGHT_GRAY }} />
+      <SearchBox src={performanceSearchboxDemo} />
 
-      {/* TODO: Performance demo */}
+      <SvgFourDotsArrow style={{ alignSelf: 'center', color: SLIGHT_GRAY }} />
+      <PerformanceResult
+        title="By Location"
+        performanceType={PerformanceTableType.ADDRESS}
+        demoType={DemoType.BASIC}
+        headerTitle="Address"
+        containerStyle={{ paddingTop: 8, paddingBottom: 8 }}
+      />
+      <Text color={GRAY_TEXT} style={{ textAlign: 'right' }}>
+        * Please note that the data in this example is recent as of July, 7,
+        2019
+      </Text>
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons
       </SubTitle>
@@ -85,10 +92,45 @@ export default function OverviewContent() {
         Insemble allows you to quickly compare different items. When you do so,
         you can see how the performance of one brand compares with others.
       </Text>
-      <ResultTitle title="By Location" noData={true} />
-      <SvgFourDotsArrow style={{ alignSelf: 'center', color: SLIGHT_GRAY }} />
-
-      {/* TODO: Performance demo */}
+      <View>
+        <SvgArrowPointerRight
+          style={{
+            position: 'absolute',
+            right: 90,
+            color: THEME_COLOR,
+            top: 20,
+          }}
+        />
+        <ResultTitle
+          title="By Location"
+          noData={true}
+          zoomIcon="compare"
+          demo={true}
+        />
+      </View>
+      <PerformanceTable
+        data={[]}
+        performanceType={PerformanceTableType.ADDRESS}
+        disableHeader={true}
+      />
+      <SvgFourDotsArrow
+        style={{ paddingTop: 30, alignSelf: 'center', color: SLIGHT_GRAY }}
+      />
+      <PerformanceResult
+        title="By Location"
+        performanceType={PerformanceTableType.ADDRESS}
+        demoType={DemoType.WITH_COMPARE}
+        headerTitle="Address"
+        containerStyle={{ paddingBottom: 50 }}
+      />
+      <BottomNavigation
+        rightButton={{
+          text: 'Performance',
+          onPress: () => {
+            onPageChange('performance');
+          },
+        }}
+      />
     </View>
   );
 }
@@ -153,10 +195,9 @@ const DescriptionContainer = styled(View)`
   border-bottom-right-radius: ${DEFAULT_BORDER_RADIUS};
 `;
 
-const SearchBarContainer = styled(View)`
-  padding: 14px;
-  background-color: ${WHITE};
-  border-radius: ${DEFAULT_BORDER_RADIUS};
-  box-shadow: ${SHADOW_COLOR};
+const SearchBox = styled.img`
+  width: 100%;
   margin: 17px 0;
+  box-shadow: ${SHADOW_COLOR};
+  border-radius: ${DEFAULT_BORDER_RADIUS};
 `;

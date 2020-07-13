@@ -8,6 +8,7 @@ import {
   HeaderNavigationBar,
   PageTitle,
   SearchPlaceholder,
+  TutorialButton,
 } from '../../components';
 import { MUTED_TEXT_COLOR, BACKGROUND_COLOR } from '../../constants/colors';
 import { SEARCH, GET_SEARCH_TAG } from '../../graphql/queries/server/search';
@@ -240,6 +241,9 @@ export default function ResultsScene() {
             locationTag={selectedSearchTagWithIds.locationTag}
           />
           <Container isDesktop={isDesktop}>
+            {isDesktop && (
+              <TutorialButton style={{ position: 'absolute', right: 36 }} />
+            )}
             {resultQueries.map(({ reviewTag, type }, idx) => {
               let key = `${reviewTag}-${type}-${idx}`;
               let props = {

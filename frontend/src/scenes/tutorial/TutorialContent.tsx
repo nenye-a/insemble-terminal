@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import styled from 'styled-components';
 
 import { View } from '../../core-ui';
@@ -15,9 +15,16 @@ import PersonalTerminalContent from './PersonalTerminalContent';
 
 export default function TutorialContent() {
   let { selectedPage } = useTutorialContext();
+  let contentContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (contentContainerRef.current) {
+      contentContainerRef.current.scrollTo({ top: 0 });
+    }
+  }, [selectedPage]);
 
   return (
-    <Container flex>
+    <Container flex ref={contentContainerRef}>
       {selectedPage === 'overview' ? (
         <OverviewContent />
       ) : selectedPage === 'performance' ? (

@@ -139,6 +139,7 @@ export default function MapResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.MAP}
+        demo={!!demoType}
         {...(data?.mapTable.businessTag && {
           businessTag: {
             params: data.mapTable.businessTag.params,
