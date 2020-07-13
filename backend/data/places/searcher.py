@@ -152,7 +152,8 @@ def staged_finder(center, viewport, term, course_zoom=15, batch_size=100,
                   'Running with previous settings.')
             log_identifier.pop('created_at')
             log_identifier.pop('1st_stage_points')
-            log_identifier.pop('_id')
+            if '_id' in log_identifier:
+                log_identifier.pop('_id')
         except pymongo.errors.BulkWriteError:
             print('Many of these points allready exist!. Updating these points.')
 

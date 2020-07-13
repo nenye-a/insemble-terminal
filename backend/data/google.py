@@ -67,9 +67,9 @@ def get_google_details(name, address, projection=None):
     return detailer.get_details(name, address, projection=projection)
 
 
-def get_many_google_details(places, projection=None):
+def get_many_google_details(places, projection=None, timeout=5):
     detailer = GoogleDetails('GOOGLE DETAILS')
-    return detailer.many_google_details(places, projection=projection)
+    return detailer.many_google_details(places, projection=projection, timeout=timeout)
 
 
 def get_company(name, projection=None):
@@ -391,7 +391,7 @@ class GoogleDetails(GenericScraper):
             print("Error has occured in GoogleDetails: {} - request_url: {}".format(e, url))
             return None
 
-    def many_google_details(self, places, projection=None):
+    def many_google_details(self, places, projection=None, timeout=5):
         """
         Provided a list of objects containing a name and address,
         will return their result tagged with the name and address.
@@ -411,7 +411,7 @@ class GoogleDetails(GenericScraper):
         result = self.async_request(
             queries,
             quality_proxy=True,
-            timeout=5
+            timeout=timeout
         )
 
         projection_list = projection.strip().split(',') if projection else None
