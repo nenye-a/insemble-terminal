@@ -170,6 +170,10 @@ export default function PerformanceContent() {
           </ScopesRow>
         );
       })}
+      <Text color={DARK_TEXT_COLOR} style={{ alignSelf: 'flex-start' }}>
+        *Category searches will include {<BoldText>By Brand</BoldText>}, but
+        otherwise follow same pattern
+      </Text>
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons
       </SubTitle>
@@ -223,6 +227,9 @@ const InfoboxContainer = styled(Card)`
   padding: 14px;
   margin: 15px 0px;
   align-self: center;
+`;
+const BoldText = styled(BaseText)`
+  font-weight: ${FONT_WEIGHT_BOLD};
 `;
 
 const SearchBar = styled.img`
