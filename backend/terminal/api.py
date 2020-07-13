@@ -6,6 +6,7 @@ from .serializers import (SearchSerializer, OptionalSearchSerializer, Performanc
                           OwnershipSerializer, PreProcessSerializer)
 import datetime as dt
 import performancev2
+import utils
 import news
 import activity
 import contact
@@ -533,9 +534,6 @@ class InfoAPI(BasicAPI):
         business = params['business'] if 'business' in params else None
         dataType = params['dataType']
 
-        if location and location['locationType'] != 'ADDRESS':
-            return Response({'status_detail': ['{} not supported.'.format(
-                location['locationType'])]}, status=status.HTTP_400_BAD_REQUEST)
         if business and business['businessType'] != 'BUSINESS':
             return Response({'status_detail': ['{} not supported.'.format(
                 business['businessType'])]}, status=status.HTTP_400_BAD_REQUEST)
@@ -544,6 +542,9 @@ class InfoAPI(BasicAPI):
         data = {}
 
         if dataType == 'PROPERTY':
+            if not location or location['locationType'] != 'ADDRESS':
+                return Response({'status_detail': ['{} not supported.'.format(
+                    location['locationType'])]}, status=status.HTTP_400_BAD_REQUEST)
             # INFO + ADDRESS
             if location:
                 row = {
@@ -603,7 +604,7 @@ class ContactAPI(BasicAPI):
         }
         dataType: 'COMAPNY' | 'PROPERTY'
 
-        Response: 
+        Response:
             {
                 createdAt: Date,
                 updatedAt: Date,
@@ -627,9 +628,6 @@ class ContactAPI(BasicAPI):
         business = params['business'] if 'business' in params else None
         dataType = params['dataType']
 
-        if location and location['locationType'] != 'ADDRESS':
-            return Response({'status_detail': ['{} not supported.'.format(
-                location['locationType'])]}, status=status.HTTP_400_BAD_REQUEST)
         if business and business['businessType'] != 'BUSINESS':
             return Response({'status_detail': ['{} not supported.'.format(
                 business['businessType'])]}, status=status.HTTP_400_BAD_REQUEST)
@@ -649,7 +647,7 @@ class ContactAPI(BasicAPI):
                 data.append(row)
 
         elif dataType == 'COMPANY':
-            # BRAND + ADDRESS
+            # BRAND
             if business:
                 raw_data = contact.retail_contact(
                     business['params'],
