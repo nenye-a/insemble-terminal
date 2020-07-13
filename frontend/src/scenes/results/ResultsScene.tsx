@@ -241,7 +241,9 @@ export default function ResultsScene() {
             locationTag={selectedSearchTagWithIds.locationTag}
           />
           <Container isDesktop={isDesktop}>
-            <TutorialButton style={{ position: 'absolute', right: 36 }} />
+            {isDesktop && (
+              <TutorialButton style={{ position: 'absolute', right: 36 }} />
+            )}
             {resultQueries.map(({ reviewTag, type }, idx) => {
               let key = `${reviewTag}-${type}-${idx}`;
               let props = {
