@@ -228,7 +228,8 @@ export default function PerformanceResult(props: Props) {
         ) : (!loading &&
             data?.performanceTable.table &&
             data.performanceTable.table.data.length > 0) ||
-          prevData.length > 0 ? (
+          prevData.length > 0 ||
+          !!demoType ? (
           performanceType ? (
             viewMode === 'graph' ? (
               <PerformanceChart

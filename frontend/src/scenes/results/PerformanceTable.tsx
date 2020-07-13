@@ -16,7 +16,12 @@ import {
   ComparationTagWithFill,
   MergedPerformanceData,
 } from '../../types/types';
-import { WHITE, THEME_COLOR, GRAY_TEXT } from '../../constants/colors';
+import {
+  WHITE,
+  THEME_COLOR,
+  GRAY_TEXT,
+  SLIGHT_GRAY,
+} from '../../constants/colors';
 import { FONT_WEIGHT_BOLD, FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 import {
   PerformanceTableType,
@@ -42,7 +47,8 @@ type Props = {
   };
   locationTag?: { type: LocationTagType; params: string };
   comparisonTags?: Array<ComparationTagWithFill>;
-  onViewModeChange: (viewMode: 'graph' | 'table') => void;
+  onViewModeChange?: (viewMode: 'graph' | 'table') => void;
+  disableHeader?: boolean;
 };
 
 export default function PerformanceTable(props: Props) {
@@ -57,6 +63,7 @@ export default function PerformanceTable(props: Props) {
     locationTag,
     comparisonTags,
     onViewModeChange,
+    disableHeader,
   } = props;
   let [headerIndex, setHeaderIndex] = useState(0);
 
@@ -74,8 +81,21 @@ export default function PerformanceTable(props: Props) {
         iconPlacement="start"
         mode="secondary"
         size="small"
-        icon={<SvgChart style={{ color: THEME_COLOR, marginRight: 8 }} />}
-        onPress={() => onViewModeChange('graph')}
+        disabled={!onViewModeChange}
+        icon={
+          <SvgChart
+            style={{
+              color: disableHeader ? SLIGHT_GRAY : THEME_COLOR,
+              marginRight: 8,
+            }}
+          />
+        }
+        onPress={() => onViewModeChange && onViewModeChange('graph')}
+        textProps={{
+          style: {
+            color: disableHeader ? SLIGHT_GRAY : THEME_COLOR,
+          },
+        }}
       />
     </Row>
   );
@@ -89,6 +109,7 @@ export default function PerformanceTable(props: Props) {
       sortConfig={sortConfig}
       name="customerVolumeIndex"
       key={0}
+      disabled={disableHeader}
     >
       Volume IDX
     </DataTable.HeaderCell>,
@@ -101,6 +122,7 @@ export default function PerformanceTable(props: Props) {
       sortConfig={sortConfig}
       name="localRetailIndex"
       key={1}
+      disabled={disableHeader}
     >
       Retail IDX
     </DataTable.HeaderCell>,
@@ -113,6 +135,7 @@ export default function PerformanceTable(props: Props) {
       sortConfig={sortConfig}
       name="localCategoryIndex"
       key={2}
+      disabled={disableHeader}
     >
       Category IDX
     </DataTable.HeaderCell>,
@@ -125,6 +148,7 @@ export default function PerformanceTable(props: Props) {
       sortConfig={sortConfig}
       name="nationalIndex"
       key={3}
+      disabled={disableHeader}
     >
       Brand IDX
     </DataTable.HeaderCell>,
@@ -137,6 +161,7 @@ export default function PerformanceTable(props: Props) {
       sortConfig={sortConfig}
       name="avgRating"
       key={4}
+      disabled={disableHeader}
     >
       Rating
     </DataTable.HeaderCell>,
@@ -149,6 +174,7 @@ export default function PerformanceTable(props: Props) {
       sortConfig={sortConfig}
       name="numReview"
       key={5}
+      disabled={disableHeader}
     >
       # Reviews
     </DataTable.HeaderCell>,
@@ -164,6 +190,7 @@ export default function PerformanceTable(props: Props) {
         sortConfig={sortConfig}
         name="numLocation"
         key={6}
+        disabled={disableHeader}
       >
         # Locations
       </DataTable.HeaderCell>,
@@ -173,7 +200,9 @@ export default function PerformanceTable(props: Props) {
   return (
     <DataTable>
       {mobile ? (
-        <DataTable.HeaderRow>
+        <DataTable.HeaderRow
+          {...(disableHeader && { style: { backgroundColor: SLIGHT_GRAY } })}
+        >
           <DataTable.HeaderCell>{firstColumnHeader}</DataTable.HeaderCell>
           <TouchableOpacity
             onPress={() => {
@@ -202,7 +231,9 @@ export default function PerformanceTable(props: Props) {
           </Next>
         </DataTable.HeaderRow>
       ) : (
-        <DataTable.HeaderRow>
+        <DataTable.HeaderRow
+          {...(disableHeader && { style: { backgroundColor: SLIGHT_GRAY } })}
+        >
           <DataTable.HeaderCell>{firstColumnHeader}</DataTable.HeaderCell>
           {headerCells}
         </DataTable.HeaderRow>
@@ -363,6 +394,7 @@ function TableRow(props: TableRowProps) {
               };
             }
           }
+
           let newSearchTag = getPerformanceNewSearchTag(performanceType);
           if (Object.keys(newSearchTag).length > 0) {
             let parenthesesRegex = /\([^\(]+\)$/g;

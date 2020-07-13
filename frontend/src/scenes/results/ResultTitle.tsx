@@ -50,6 +50,7 @@ import {
 import SvgPin from '../../components/icons/pin';
 import SvgRoundClose from '../../components/icons/round-close';
 import SvgClose from '../../components/icons/close';
+import SvgRoundAdd from '../../components/icons/round-add';
 import InfoboxPopover from '../../components/InfoboxPopover';
 import AddComparisonButton from '../../components/AddComparisonButton';
 import TripleDotsButton from '../../components/TripleDotsButton';
@@ -236,8 +237,8 @@ export default function ResultTitle(props: Props) {
         style={{
           minWidth: 100,
           justifyContent: 'flex-end',
-          alignItems: 'flex-end',
         }}
+        {...(zoomIcon && { style: { alignItems: 'flex-end' } })}
       >
         {isDesktop && formattedCompareText && !zoomIcon ? (
           loading ? (
@@ -271,7 +272,7 @@ export default function ResultTitle(props: Props) {
         ) : null}
         {(isDesktop && !readOnly) || onClosePress ? (
           <>
-            {canCompare && reviewTag && tableId && (
+            {canCompare && reviewTag && tableId ? (
               <AddComparisonButton
                 isOpen={comparisonPopoverOpen}
                 onChange={setComparisonPopoverOpen}
@@ -287,7 +288,16 @@ export default function ResultTitle(props: Props) {
                 readOnly={readOnly}
                 demo={demo}
               />
-            )}
+            ) : demo ? (
+              <SvgRoundAdd
+                fill={zoomIcon === 'pin' ? DISABLED_TEXT_COLOR : THEME_COLOR}
+                {...(zoomIcon === 'compare' && {
+                  width: 48,
+                  height: 48,
+                  style: { alignSelf: 'flex-end' },
+                })}
+              />
+            ) : null}
             {isTerminalScene && !demo ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
