@@ -34,33 +34,14 @@ export default function TerminalDataResult(props: Props) {
   let history = useHistory();
 
   let onPerformanceRowPress = (params: PerformanceRowPressParam) => {
-    let { newTag, prevTag, comparisonTag } = params;
-    let { name, locationType, businessType } = newTag;
-    if (locationType) {
-      history.push('/results', {
-        search: {
-          businessTagWithId: comparisonTag
-            ? comparisonTag.businessTag
-            : prevTag?.businessTag,
-          locationTag: {
-            params: name,
-            type: locationType,
-          },
-        },
-      });
-    } else if (businessType) {
-      history.push('/results', {
-        search: {
-          businessTag: {
-            params: name,
-            type: businessType,
-          },
-          locationTag: comparisonTag
-            ? comparisonTag.locationTag
-            : prevTag?.locationTag,
-        },
-      });
-    }
+    let { businessTag, locationTag } = params;
+
+    history.push('/results', {
+      search: {
+        businessTag: businessTag ?? undefined,
+        locationTag: locationTag ?? undefined,
+      },
+    });
   };
   let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
     let { businessName, address } = params.newTag;

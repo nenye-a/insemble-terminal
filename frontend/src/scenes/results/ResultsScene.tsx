@@ -123,32 +123,12 @@ export default function ResultsScene() {
   };
 
   let onPerformanceRowPress = (params: PerformanceRowPressParam) => {
-    let { name, locationType, businessType } = params.newTag;
-    if (locationType) {
-      onSubmit({
-        reviewTag: undefined,
-        businessTagWithId: params.comparisonTag
-          ? params.comparisonTag.businessTag
-          : selectedSearchTagWithIds?.businessTag
-          ? selectedSearchTagWithIds.businessTag
-          : null,
-        locationTag: {
-          params: name,
-          type: locationType,
-        },
-      });
-    } else if (businessType) {
-      onSubmit({
-        reviewTag: undefined,
-        businessTag: {
-          params: name,
-          type: businessType,
-        },
-        locationTag: params.comparisonTag
-          ? params.comparisonTag.locationTag
-          : selectedSearchTagWithIds?.locationTag,
-      });
-    }
+    let { businessTag, locationTag } = params;
+    onSubmit({
+      reviewTag: undefined,
+      businessTag: businessTag ?? null,
+      locationTag: locationTag ?? null,
+    });
   };
 
   let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
