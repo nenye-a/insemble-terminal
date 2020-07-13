@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, CSSProperties } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -44,6 +44,8 @@ type Props = {
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
   demoType?: DemoType;
   initialView?: ViewMode;
+  containerStyle?: CSSProperties;
+  zoomIcon?: 'compare' | 'pin';
 };
 
 type Data = (PerformanceData | PerformanceCompareData) & {
@@ -67,6 +69,8 @@ export default function PerformanceResult(props: Props) {
     readOnly,
     demoType,
     initialView,
+    containerStyle,
+    zoomIcon,
   } = props;
   let alert = useAlert();
   let [viewMode, setViewMode] = useState(initialView || 'table');
@@ -172,7 +176,7 @@ export default function PerformanceResult(props: Props) {
   }, []);
 
   return (
-    <Container>
+    <Container style={containerStyle}>
       <ResultTitle
         title={title}
         demo={!!demoType}
@@ -190,6 +194,7 @@ export default function PerformanceResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.PERFORMANCE}
+        zoomIcon={zoomIcon}
         {...(data?.performanceTable.table?.businessTag && {
           businessTag: {
             params: data.performanceTable.table.businessTag.params,

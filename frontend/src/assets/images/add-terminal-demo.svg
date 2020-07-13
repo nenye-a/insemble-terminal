@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="424" height="365.5" viewBox="0 0 424 365.5">
+  <defs>
+    <filter id="Rectangle_1440" x="25.5" y="0" width="123" height="39" filterUnits="userSpaceOnUse">
+      <feOffset dy="2" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1.5" result="blur"/>
+      <feFlood flood-opacity="0.263"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1556" x="0" y="18.5" width="424" height="347" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="10" result="blur-2"/>
+      <feFlood flood-color="#646464" flood-opacity="0.059"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-2" x="285.5" y="277" width="87" height="39" filterUnits="userSpaceOnUse">
+      <feOffset dy="2" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1.5" result="blur-3"/>
+      <feFlood flood-opacity="0.263"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_39" x="207.5" y="277" width="78" height="39" filterUnits="userSpaceOnUse">
+      <feOffset dy="2" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="1.5" result="blur-4"/>
+      <feFlood flood-opacity="0.263"/>
+      <feComposite operator="in" in2="blur-4"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_1900" data-name="Group 1900" transform="translate(-804 -487.5)">
+    <g id="Group_1895" data-name="Group 1895" transform="translate(820.95 491)">
+      <g transform="matrix(1, 0, 0, 1, -16.95, -3.5)" filter="url(#Rectangle_1440)">
+        <rect id="Rectangle_1440-3" data-name="Rectangle 1440" width="114" height="30" rx="5" transform="translate(30 2.5)" fill="#6749aa"/>
+      </g>
+      <text id="New_Terminal" data-name="New Terminal" transform="translate(70.05 18)" fill="#fff" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-43.295" y="0">New Terminal</tspan></text>
+    </g>
+    <g id="Add_Terminal" data-name="Add Terminal" transform="translate(834 536)">
+      <g transform="matrix(1, 0, 0, 1, -30, -48.5)" filter="url(#Rectangle_1556)">
+        <rect id="Rectangle_1556-2" data-name="Rectangle 1556" width="364" height="287" rx="5" transform="translate(30 48.5)" fill="#fff"/>
+      </g>
+      <text id="Add_a_new_Terminal" data-name="Add a new Terminal" transform="translate(26 46)" fill="#674ca7" font-size="18" font-family="Avenir-Heavy, Avenir" font-weight="800"><tspan x="0" y="0">Add a new Terminal</tspan></text>
+      <text id="Name" transform="translate(26 87)" fill="#707070" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Name</tspan></text>
+      <g id="Rectangle_292" data-name="Rectangle 292" transform="translate(26 99)" fill="#fff" stroke="#b2b2b2" stroke-width="0.5">
+        <rect width="312" height="36" rx="5" stroke="none"/>
+        <rect x="0.25" y="0.25" width="311.5" height="35.5" rx="4.75" fill="none"/>
+      </g>
+      <text id="Description_optional_" data-name="Description (optional)" transform="translate(26 171)" fill="#707070" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Description (optional)</tspan></text>
+      <g id="Group_989" data-name="Group 989" transform="translate(210.95 232)">
+        <g transform="matrix(1, 0, 0, 1, -240.95, -280.5)" filter="url(#Rectangle_1440-2)">
+          <rect id="Rectangle_1440-4" data-name="Rectangle 1440" width="78" height="30" rx="5" transform="translate(290 279.5)" fill="#6749aa"/>
+        </g>
+        <text id="Create" transform="translate(88.05 18)" fill="#fff" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-21.399" y="0">Create</tspan></text>
+      </g>
+      <g id="Rectangle_1557" data-name="Rectangle 1557" transform="translate(26 183)" fill="#fff" stroke="#b2b2b2" stroke-width="0.5">
+        <rect width="312" height="36" rx="5" stroke="none"/>
+        <rect x="0.25" y="0.25" width="311.5" height="35.5" rx="4.75" fill="none"/>
+      </g>
+      <g id="Group_1088" data-name="Group 1088" transform="translate(-354 -151)">
+        <g id="Button" transform="translate(534.62 382)">
+          <g transform="matrix(1, 0, 0, 1, -210.62, -279.5)" filter="url(#Rectangle_39)">
+            <g id="Rectangle_39-2" data-name="Rectangle 39" transform="translate(212 279.5)" fill="#fff" stroke="#eaeaea" stroke-width="0.5">
+              <rect width="69" height="30" rx="5" stroke="none"/>
+              <rect x="0.25" y="0.25" width="68.5" height="29.5" rx="4.75" fill="none"/>
+            </g>
+          </g>
+        </g>
+        <text id="Cancel" transform="translate(571 402)" fill="#727272" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-21.399" y="0">Cancel</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

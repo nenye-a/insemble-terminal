@@ -11,6 +11,7 @@ import MapContent from './MapContent';
 import PerformanceContent from './PerformanceContent';
 import NewsContent from './NewsContent';
 import ContactsContent from './ContactsContent';
+import PersonalTerminalContent from './PersonalTerminalContent';
 
 export default function TutorialContent() {
   let { selectedPage } = useTutorialContext();
@@ -29,6 +30,8 @@ export default function TutorialContent() {
         <NewsContent />
       ) : selectedPage === 'contacts' ? (
         <ContactsContent />
+      ) : selectedPage === 'terminal' ? (
+        <PersonalTerminalContent />
       ) : null}
     </Container>
   );
