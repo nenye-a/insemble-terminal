@@ -13,10 +13,11 @@ import { WHITE } from '../../constants/colors';
 
 type Props = {
   data: Array<MergedNewsData>;
+  demo?: boolean;
 };
 
 export default function NewsTable(props: Props) {
-  let { data } = props;
+  let { data, demo } = props;
   let history = useHistory();
 
   let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
@@ -65,15 +66,19 @@ export default function NewsTable(props: Props) {
             <DataTable.Row
               key={index}
               href={path}
-              onPress={() => {
-                history.push(path, {
-                  title,
-                  link,
-                  source,
-                  published,
-                  background: history.location,
-                });
-              }}
+              onPress={
+                !demo
+                  ? () => {
+                      history.push(path, {
+                        title,
+                        link,
+                        source,
+                        published,
+                        background: history.location,
+                      });
+                    }
+                  : undefined
+              }
               style={{
                 backgroundColor: bgColor,
               }}

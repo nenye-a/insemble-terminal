@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="739" height="71" viewBox="0 0 739 71">
+  <defs>
+    <filter id="Rectangle_1440" x="297" y="12" width="130" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-2" x="500" y="12" width="180" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-2"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-2"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+    <filter id="Rectangle_1440-3" x="31" y="12" width="160" height="46" filterUnits="userSpaceOnUse">
+      <feOffset input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="3" result="blur-3"/>
+      <feFlood flood-opacity="0.161"/>
+      <feComposite operator="in" in2="blur-3"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g id="Group_1899" data-name="Group 1899" transform="translate(-502 -298)">
+    <path id="Rectangle_2120" data-name="Rectangle 2120" d="M2,0H739a0,0,0,0,1,0,0V71a0,0,0,0,1,0,0H2a2,2,0,0,1-2-2V2A2,2,0,0,1,2,0Z" transform="translate(502 298)" fill="#fff"/>
+    <g id="Search_Bar" data-name="Search Bar" transform="translate(516 312)">
+      <rect id="Rectangle_663" data-name="Rectangle 663" width="706" height="42" rx="5" fill="#f7f7f7"/>
+      <text id="Search_for_data" data-name="Search for data" transform="translate(56 26)" fill="gray" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Search for data</tspan></text>
+      <text id="Any_Location" data-name="Any Location" transform="translate(532 26)" fill="gray" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">Any Location</tspan></text>
+      <path id="Path_67" data-name="Path 67" d="M15.5,14h-.79l-.28-.27a6.518,6.518,0,1,0-.7.7l.27.28v.79l4.25,4.25a1.054,1.054,0,0,0,1.49-1.49Zm-6,0A4.5,4.5,0,1,1,14,9.5,4.494,4.494,0,0,1,9.5,14Z" transform="translate(674.73 10)" fill="#c5c5c5"/>
+      <text id="of" transform="translate(226 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">of</tspan></text>
+      <text id="in" transform="translate(449 26)" fill="#c5c5c5" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="0" y="0">in</tspan></text>
+      <g id="Group_1843" data-name="Group 1843" transform="translate(299 7)">
+        <g transform="matrix(1, 0, 0, 1, -313, -21)" filter="url(#Rectangle_1440)">
+          <rect id="Rectangle_1440-4" data-name="Rectangle 1440" width="125" height="28" rx="5" transform="translate(300 21)" fill="#6749aa"/>
+        </g>
+        <text id="Cheesecake_Factory" transform="translate(20 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-30.989" y="0">Cheesecake Factory</tspan></text>
+      </g>
+      <g id="Group_1844" data-name="Group 1844" transform="translate(509.385 7)">
+        <g transform="matrix(1, 0, 0, 1, -523.39, -21)" filter="url(#Rectangle_1440-2)">
+          <rect id="Rectangle_1440-5" data-name="Rectangle 1440" width="180" height="28" rx="5" transform="translate(500 21)" fill="#6749aa"/>
+        </g>
+        <text id="511_Americana_Way_Glendale" data-name="511 Americana Way, Glendale" transform="translate(32 18)" fill="#fff" font-size="13" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-52.262" y="0">511 Americana Way, Glendale</tspan></text>
+      </g>
+      <g id="Group_1845" data-name="Group 1845" transform="translate(32.385 7)">
+        <g transform="matrix(1, 0, 0, 1, -46.39, -21)" filter="url(#Rectangle_1440-3)">
+          <rect id="Rectangle_1440-6" data-name="Rectangle 1440" width="142" height="28" rx="5" transform="translate(40 21)" fill="#6749aa"/>
+        </g>
+        <text id="Contact" transform="translate(63 18)" fill="#fff" font-size="14" font-family="Avenir-Medium, Avenir" font-weight="500"><tspan x="-23.842" y="0">Contact</tspan></text>
+      </g>
+    </g>
+  </g>
+</svg>

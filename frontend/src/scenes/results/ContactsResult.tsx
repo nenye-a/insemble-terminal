@@ -8,6 +8,7 @@ import {
   ReviewTag,
   OwnershipType,
   TableType,
+  DemoType,
 } from '../../generated/globalTypes';
 import {
   GetOwnershipContactData,
@@ -29,6 +30,7 @@ type Props = {
   ownershipType: OwnershipType;
   title: string;
   readOnly?: boolean;
+  demoType?: DemoType;
 };
 
 export default function ContactsResult(props: Props) {
@@ -40,6 +42,7 @@ export default function ContactsResult(props: Props) {
     ownershipType,
     title,
     readOnly,
+    demoType,
   } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipContactData,
@@ -50,6 +53,7 @@ export default function ContactsResult(props: Props) {
       locationTagId,
       ownershipType,
       tableId,
+      demo: demoType,
     },
   });
 
@@ -62,6 +66,7 @@ export default function ContactsResult(props: Props) {
       <ResultTitle
         title={title}
         noData={noData}
+        demo={!!demoType}
         reviewTag={ReviewTag.CONTACT}
         tableId={data?.ownershipContactTable.id || ''}
         onTableIdChange={(newTableId: string) => {
@@ -98,7 +103,7 @@ export default function ContactsResult(props: Props) {
       ) : (
         <ContactsTable data={data?.ownershipContactTable.data} />
       )}
-      {!readOnly && (
+      {!readOnly && !demoType && (
         <FeedbackButton
           tableId={data?.ownershipContactTable.id}
           tableType={TableType.OWNERSHIP_CONTACT}

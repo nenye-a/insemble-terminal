@@ -5,7 +5,7 @@ import { useAlert } from 'react-alert';
 
 import { View, LoadingIndicator } from '../../core-ui';
 import { EmptyDataComponent, ErrorComponent } from '../../components';
-import { ReviewTag, TableType } from '../../generated/globalTypes';
+import { ReviewTag, TableType, DemoType } from '../../generated/globalTypes';
 import {
   GetNewsTable,
   GetNewsTableVariables,
@@ -27,6 +27,7 @@ type Props = {
   tableId?: string;
   pinTableId?: string;
   readOnly?: boolean;
+  demoType?: DemoType;
 };
 
 type ColoredData = (NewsData | NewsCompareData) & {
@@ -36,7 +37,14 @@ type ColoredData = (NewsData | NewsCompareData) & {
 const POLL_INTERVAL = 5000;
 
 export default function LatestNewsResult(props: Props) {
-  let { businessTagId, locationTagId, tableId, pinTableId, readOnly } = props;
+  let {
+    businessTagId,
+    locationTagId,
+    tableId,
+    pinTableId,
+    readOnly,
+    demoType,
+  } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
@@ -55,6 +63,7 @@ export default function LatestNewsResult(props: Props) {
       businessTagId,
       locationTagId,
       tableId,
+      demo: demoType,
     },
   });
   let { data: coloredData, comparisonTags } = useColoredData<
@@ -125,6 +134,7 @@ export default function LatestNewsResult(props: Props) {
       <ResultTitle
         title="Latest News"
         noData={noData}
+        demo={!!demoType}
         reviewTag={ReviewTag.NEWS}
         tableId={data?.newsTable.table?.id || ''}
         onTableIdChange={(newTableId: string) => {
@@ -169,15 +179,21 @@ export default function LatestNewsResult(props: Props) {
             data.newsTable.table.data.length > 0) ||
           prevData.length > 0 ? (
           isDesktop ? (
-            <NewsTable data={loading ? prevData : coloredData} />
+            <NewsTable
+              data={loading ? prevData : coloredData}
+              demo={!!demoType}
+            />
           ) : (
-            <NewsTableMobile data={loading ? prevData : coloredData} />
+            <NewsTableMobile
+              data={loading ? prevData : coloredData}
+              demo={!!demoType}
+            />
           )
         ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : null}
       </View>
-      {!readOnly && (
+      {!readOnly && !demoType && (
         <FeedbackButton
           tableId={data?.newsTable.table?.id}
           tableType={TableType.NEWS}
