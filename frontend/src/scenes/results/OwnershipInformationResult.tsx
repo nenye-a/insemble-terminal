@@ -1,5 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { CSSProperties } from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
 import { View, LoadingIndicator } from '../../core-ui';
@@ -8,6 +8,7 @@ import {
   ReviewTag,
   OwnershipType,
   TableType,
+  DemoType,
 } from '../../generated/globalTypes';
 import {
   GetOwnershipInfoData,
@@ -29,6 +30,8 @@ type Props = {
   ownershipType: OwnershipType;
   title: string;
   readOnly?: boolean;
+  demoType?: DemoType;
+  containerStyle?: CSSProperties;
 };
 
 export default function OwnershipInformationResult(props: Props) {
@@ -40,6 +43,8 @@ export default function OwnershipInformationResult(props: Props) {
     ownershipType,
     title,
     readOnly,
+    demoType,
+    containerStyle,
   } = props;
   let { data, loading, error, refetch } = useQuery<
     GetOwnershipInfoData,
@@ -50,6 +55,7 @@ export default function OwnershipInformationResult(props: Props) {
       locationTagId,
       ownershipType,
       tableId,
+      demo: demoType,
     },
   });
   let noData =
@@ -59,10 +65,11 @@ export default function OwnershipInformationResult(props: Props) {
   let { isDesktop } = useViewport();
 
   return (
-    <Container isDesktop={isDesktop}>
+    <Container isDesktop={isDesktop} style={containerStyle}>
       <ResultTitle
         title={title}
         noData={noData}
+        demo={!!demoType}
         reviewTag={ReviewTag.CONTACT}
         tableId={data?.ownershipInfoTable.id || ''}
         onTableIdChange={(newTableId: string) => {
@@ -105,7 +112,7 @@ export default function OwnershipInformationResult(props: Props) {
           lastUpdate={data?.ownershipInfoTable.data.lastUpdate}
         />
       )}
-      {!readOnly && (
+      {!readOnly && !demoType && (
         <FeedbackButton
           tableId={data?.ownershipInfoTable.id}
           tableType={TableType.OWNERSHIP_INFO}
