@@ -24,8 +24,8 @@ export const MENU = [
         description: 'Latest, most relevant retailer/restaurant news',
       },
       {
-        label: 'Contact',
-        path: 'contact',
+        label: 'Contacts',
+        path: 'contacts',
         description: 'Contact information for retailers/restaurants',
       },
     ],

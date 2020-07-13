@@ -109,22 +109,13 @@ export type HasCompareId = {
 };
 
 export type PerformanceRowPressParam = {
-  newTag: {
-    name: string;
-    locationType?: LocationTagType;
-    businessType?: BusinessTagType;
+  locationTag?: {
+    type: LocationTagType;
+    params: string;
   };
-  prevTag?: {
-    locationTag?: { type: LocationTagType; params: string };
-    businessTag?: {
-      type: BusinessType;
-      params: string;
-      id: string;
-    };
-  };
-  comparisonTag?: {
-    locationTag: LocationTag;
-    businessTag: BusinessTagResult;
+  businessTag?: {
+    type: BusinessTagType;
+    params: string;
   };
 };
 

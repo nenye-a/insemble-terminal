@@ -14,7 +14,7 @@ import { FONT_WEIGHT_BOLD, FONT_WEIGHT_HEAVY } from '../constants/theme';
 import SvgArrowRight from './icons/arrow-right';
 
 type Props = {
-  style: CSSProperties;
+  style?: CSSProperties;
 };
 
 export default function ReferralButton(props: Props) {
@@ -24,7 +24,7 @@ export default function ReferralButton(props: Props) {
   let popoverContent = (
     <PopoverContainer>
       <Text fontWeight={FONT_WEIGHT_BOLD} style={{ textAlign: 'center' }}>
-        Refer an Insemble Terminal Subscriber and you both get a month free.
+        Refer an Insemble Terminal Subscriber and you both get two months free.
       </Text>
       <ReferLink href="/referral">
         Refer a colleague

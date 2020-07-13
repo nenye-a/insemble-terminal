@@ -121,13 +121,20 @@ export default function ManageTerminalForm(props: Props) {
         defaultValue={prevDescription || undefined}
       />
       <ButtonContainer>
-        <Button text="Cancel" size="small" mode="secondary" onPress={onClose} />
+        <Button
+          text="Cancel"
+          size="small"
+          mode="secondary"
+          onPress={onClose}
+          stopPropagation={true}
+        />
         <Button
           type="submit"
           text={isEditMode ? 'Save' : 'Create'}
           size="small"
           style={{ marginLeft: 8 }}
           loading={addTerminalLoading || editTerminalLoading}
+          stopPropagation={true}
         />
       </ButtonContainer>
     </Form>

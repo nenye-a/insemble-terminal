@@ -40,6 +40,6 @@ const Img = styled.img`
   bottom: 0px;
   object-fit: cover;
   width: 100vw;
-  height: 100vh;
+  min-height: 100vh;
   z-index: 0;
 `;

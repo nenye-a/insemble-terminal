@@ -49,7 +49,8 @@ const Container = styled(View)`
 `;
 
 const LoginCard = styled(Card)`
-  width: 400px;
+  max-width: 400px;
+  width: 100%;
 `;
 
 const FormContainer = styled(View)`

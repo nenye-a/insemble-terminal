@@ -16,4 +16,5 @@ export { default as SearchPlaceholder } from './SearchPlaceholder';
 export { default as ScrollMenu } from './ScrollMenu';
 export { default as SuccessFeedback } from './SuccessFeedback';
 export { default as Tab } from './Tab';
+export { default as TutorialButton } from './TutorialButton';
 export { default as PinInfoBox } from './PinInfoBox';

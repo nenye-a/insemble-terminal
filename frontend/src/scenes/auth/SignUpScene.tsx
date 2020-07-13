@@ -31,6 +31,7 @@ export default function SignUpScene() {
 
 const FormContainer = styled(View)`
   padding: 12px 24px;
+  width: 100%;
   max-width: 360px;
 `;
 

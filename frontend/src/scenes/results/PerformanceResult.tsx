@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, CSSProperties } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -44,6 +44,8 @@ type Props = {
   onPerformanceRowPress?: (param: PerformanceRowPressParam) => void;
   demoType?: DemoType;
   initialView?: ViewMode;
+  containerStyle?: CSSProperties;
+  zoomIcon?: 'compare' | 'pin';
 };
 
 type Data = (PerformanceData | PerformanceCompareData) & {
@@ -67,6 +69,8 @@ export default function PerformanceResult(props: Props) {
     readOnly,
     demoType,
     initialView,
+    containerStyle,
+    zoomIcon,
   } = props;
   let alert = useAlert();
   let [viewMode, setViewMode] = useState(initialView || 'table');
@@ -74,7 +78,6 @@ export default function PerformanceResult(props: Props) {
   let [prevTableId, setPrevTableId] = useState('');
   let [sortOrder, setSortOrder] = useState<Array<string>>([]);
   let history = useHistory();
-  let isTerminalScene = history.location.pathname.includes('terminal');
 
   let { isDesktop } = useViewport();
   let {
@@ -173,7 +176,7 @@ export default function PerformanceResult(props: Props) {
   }, []);
 
   return (
-    <Container>
+    <Container style={containerStyle}>
       <ResultTitle
         title={title}
         demo={!!demoType}
@@ -191,6 +194,7 @@ export default function PerformanceResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.PERFORMANCE}
+        zoomIcon={zoomIcon}
         {...(data?.performanceTable.table?.businessTag && {
           businessTag: {
             params: data.performanceTable.table.businessTag.params,
@@ -224,7 +228,8 @@ export default function PerformanceResult(props: Props) {
         ) : (!loading &&
             data?.performanceTable.table &&
             data.performanceTable.table.data.length > 0) ||
-          prevData.length > 0 ? (
+          prevData.length > 0 ||
+          !!demoType ? (
           performanceType ? (
             viewMode === 'graph' ? (
               <PerformanceChart
@@ -252,28 +257,19 @@ export default function PerformanceResult(props: Props) {
                 mobile={!isDesktop}
                 comparisonTags={comparisonTags}
                 onViewModeChange={setViewMode}
-                inTerminal={isTerminalScene && !demoType}
-                /**
-                 * will be used when user is on other scene than results scene (terminal)
-                 * to get the business/location tag when user clicking on table row.
-                 * the location/businessTag will be passed ro '/results' as state
-                 */
-
-                {...(isTerminalScene &&
-                  data?.performanceTable.table?.businessTag && {
-                    businessTag: {
-                      params: data.performanceTable.table.businessTag.params,
-                      type: data.performanceTable.table.businessTag.type,
-                      id: data.performanceTable.table.businessTag.id,
-                    },
-                  })}
-                {...(isTerminalScene &&
-                  data?.performanceTable.table?.locationTag && {
-                    locationTag: {
-                      params: data.performanceTable.table.locationTag.params,
-                      type: data.performanceTable.table.locationTag.type,
-                    },
-                  })}
+                {...(data?.performanceTable.table?.businessTag && {
+                  businessTag: {
+                    params: data.performanceTable.table.businessTag.params,
+                    type: data.performanceTable.table.businessTag.type,
+                    id: data.performanceTable.table.businessTag.id,
+                  },
+                })}
+                {...(data?.performanceTable.table?.locationTag && {
+                  locationTag: {
+                    params: data.performanceTable.table.locationTag.params,
+                    type: data.performanceTable.table.locationTag.type,
+                  },
+                })}
               />
             )
           ) : null

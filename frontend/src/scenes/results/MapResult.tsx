@@ -11,7 +11,7 @@ import {
   useColoredData,
   useViewport,
 } from '../../helpers';
-import { ReviewTag, TableType } from '../../generated/globalTypes';
+import { ReviewTag, TableType, DemoType } from '../../generated/globalTypes';
 import {
   GetMap,
   GetMapVariables,
@@ -34,6 +34,7 @@ type Props = {
   tableId?: string;
   pinTableId?: string;
   readOnly?: boolean;
+  demoType?: DemoType;
   onInfoBoxPress?: (param: MapInfoboxPressParam) => void;
 };
 
@@ -48,6 +49,7 @@ export default function MapResult(props: Props) {
     tableId,
     pinTableId,
     readOnly,
+    demoType,
     onInfoBoxPress,
   } = props;
   let [prevData, setPrevData] = useState<Array<ColoredData>>([]);
@@ -66,6 +68,7 @@ export default function MapResult(props: Props) {
       businessTagId,
       locationTagId,
       tableId,
+      demo: demoType,
     },
   });
 
@@ -136,6 +139,7 @@ export default function MapResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.MAP}
+        demo={!!demoType}
         {...(data?.mapTable.businessTag && {
           businessTag: {
             params: data.mapTable.businessTag.params,
@@ -179,7 +183,7 @@ export default function MapResult(props: Props) {
           </ContentContainer>
         ) : null}
       </View>
-      {!readOnly && (
+      {!readOnly && !demoType && (
         <FeedbackButton tableId={data?.mapTable.id} tableType={TableType.MAP} />
       )}
     </View>

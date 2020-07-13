@@ -3,6 +3,7 @@ import React, {
   ComponentProps,
   CSSProperties,
   SVGProps,
+  useEffect,
 } from 'react';
 import ReactDOM from 'react-dom';
 import styled from 'styled-components';
@@ -35,13 +36,27 @@ export default function Modal({
   iconContainerStyle,
   ...otherProps
 }: Props) {
+  useEffect(() => {
+    if (visible) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [visible]);
+
   if (visible) {
     let onModalDialogClick = (e: Event) => {
       e.stopPropagation();
       otherProps?.onClick && otherProps.onClick();
     };
     return ReactDOM.createPortal(
-      <Overlay style={overlayStyle} onClick={onClose}>
+      <Overlay
+        style={overlayStyle}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose && onClose();
+        }}
+      >
         <ModalDialog
           backgroundColor={backgroundColor}
           aria-modal

@@ -8,6 +8,7 @@ import {
   HeaderNavigationBar,
   PageTitle,
   SearchPlaceholder,
+  // TutorialButton,
 } from '../../components';
 import { MUTED_TEXT_COLOR, BACKGROUND_COLOR } from '../../constants/colors';
 import { SEARCH, GET_SEARCH_TAG } from '../../graphql/queries/server/search';
@@ -123,32 +124,12 @@ export default function ResultsScene() {
   };
 
   let onPerformanceRowPress = (params: PerformanceRowPressParam) => {
-    let { name, locationType, businessType } = params.newTag;
-    if (locationType) {
-      onSubmit({
-        reviewTag: undefined,
-        businessTagWithId: params.comparisonTag
-          ? params.comparisonTag.businessTag
-          : selectedSearchTagWithIds?.businessTag
-          ? selectedSearchTagWithIds.businessTag
-          : null,
-        locationTag: {
-          params: name,
-          type: locationType,
-        },
-      });
-    } else if (businessType) {
-      onSubmit({
-        reviewTag: undefined,
-        businessTag: {
-          params: name,
-          type: businessType,
-        },
-        locationTag: params.comparisonTag
-          ? params.comparisonTag.locationTag
-          : selectedSearchTagWithIds?.locationTag,
-      });
-    }
+    let { businessTag, locationTag } = params;
+    onSubmit({
+      reviewTag: undefined,
+      businessTag: businessTag ?? null,
+      locationTag: locationTag ?? null,
+    });
   };
 
   let onMapInfoboxPress = (params: MapInfoboxPressParam) => {
@@ -260,6 +241,9 @@ export default function ResultsScene() {
             locationTag={selectedSearchTagWithIds.locationTag}
           />
           <Container isDesktop={isDesktop}>
+            {/* {isDesktop && (
+              <TutorialButton style={{ position: 'absolute', right: 36 }} />
+            )} */}
             {resultQueries.map(({ reviewTag, type }, idx) => {
               let key = `${reviewTag}-${type}-${idx}`;
               let props = {
