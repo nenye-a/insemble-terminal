@@ -5,14 +5,23 @@ import { Text as BaseText, View, Card } from '../../core-ui';
 import {
   FONT_WEIGHT_MEDIUM,
   DEFAULT_BORDER_RADIUS,
+  FONT_SIZE_SMALL,
+  FONT_SIZE_LARGE,
+  FONT_WEIGHT_BOLD,
 } from '../../constants/theme';
 import {
   DARK_TEXT_COLOR,
   SLIGHT_GRAY,
   SHADOW_COLOR,
+  THEME_COLOR,
+  WHITE,
 } from '../../constants/colors';
 import { useViewport } from '../../helpers';
-import { PerformanceTableType, DemoType } from '../../generated/globalTypes';
+import {
+  PerformanceTableType,
+  DemoType,
+  TableType,
+} from '../../generated/globalTypes';
 import performanceSearchbarDemo from '../../assets/images/performance-searchbox-demo.svg';
 import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import { useTutorialContext } from '../../context';
@@ -29,6 +38,52 @@ export default function PerformanceContent() {
       * Data in this example data, for demonstration purposes only
     </Text>
   );
+  const SCOPES = [
+    {
+      searchBar: ['Business', 'Address'],
+      result: [
+        {
+          tableType: 'Overall',
+          name: 'Name',
+        },
+      ],
+    },
+    {
+      searchBar: ['Business', 'City'],
+      result: [
+        {
+          tableType: 'Overall',
+          name: 'Name',
+        },
+        {
+          tableType: 'By Location',
+          name: 'Address',
+        },
+      ],
+    },
+    {
+      searchBar: ['Business', 'County'],
+      result: [
+        {
+          tableType: 'Overall',
+          name: 'Name',
+        },
+        {
+          tableType: 'By City',
+          name: 'City',
+        },
+      ],
+    },
+    {
+      searchBar: ['Category', 'Any'],
+      result: [
+        {
+          tableType: 'By Brand',
+          name: 'Company',
+        },
+      ],
+    },
+  ];
   return (
     <View>
       <Title>Performance</Title>
@@ -71,7 +126,50 @@ export default function PerformanceContent() {
         initialView="graph"
       />
       {demonstrationText}
-      {/* TODO: Scopes Tutorial */}
+      <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>Scopes</SubTitle>
+      <Paragraph>
+        Performance tables support viewing the data at a variety of scopes.
+        County level searches will return data by city, and city level searches
+        will return data by location.
+      </Paragraph>
+      {SCOPES.map((scope) => {
+        return (
+          <ScopesRow>
+            <ScopesBar>
+              {scope.searchBar.map((search) => {
+                return (
+                  <ReviewTagContainer>
+                    <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
+                      {search}
+                    </Text>
+                  </ReviewTagContainer>
+                );
+              })}
+            </ScopesBar>
+            <SvgFourDotsArrow
+              style={{
+                alignSelf: 'center',
+                color: SLIGHT_GRAY,
+                transform: 'rotate(270deg)',
+              }}
+            />
+            <ResultRow>
+              {scope.result.map((result) => {
+                return (
+                  <ResultContainer>
+                    <TableTypeText>{result.tableType}</TableTypeText>
+                    <ReviewTagContainer>
+                      <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
+                        {result.name}
+                      </Text>
+                    </ReviewTagContainer>
+                  </ResultContainer>
+                );
+              })}
+            </ResultRow>
+          </ScopesRow>
+        );
+      })}
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons
       </SubTitle>
@@ -132,4 +230,47 @@ const SearchBar = styled.img`
   border-radius: ${DEFAULT_BORDER_RADIUS};
   box-shadow: ${SHADOW_COLOR};
   margin: 33px 0;
+`;
+
+const ScopesBar = styled(Card)`
+  padding: 5px 15px;
+  flex-direction: row;
+`;
+
+const ReviewTagContainer = styled(View)`
+  background-color: ${THEME_COLOR};
+  width: 88px;
+  height: 30px;
+  margin: 0px 5px;
+  align-items: center;
+  justify-content: center;
+  border-radius: ${DEFAULT_BORDER_RADIUS};
+`;
+
+const ResultRow = styled(View)`
+  padding: 5px 15px;
+  flex-direction: row;
+  width: 250px;
+  justify-content: center;
+`;
+
+const ResultContainer = styled(View)`
+  margin: 5px;
+  align-items: center;
+`;
+
+const TableTypeText = styled(Text)`
+  color: ${THEME_COLOR};
+  font-size: ${FONT_SIZE_LARGE};
+  font-weight: ${FONT_WEIGHT_BOLD};
+`;
+
+const ScopesRow = styled(View)`
+  flex: 1;
+  flex-direction: row;
+  justify-content: space-evenly;
+  align-items: center;
+  align-self: center;
+  margin: 15px;
+  width: 100%;
 `;
