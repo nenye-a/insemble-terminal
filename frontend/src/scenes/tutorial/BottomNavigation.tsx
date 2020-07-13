@@ -26,8 +26,8 @@ export default function BottomNavigation(props: Props) {
           <Touchable onPress={leftButton.onPress}>
             <SvgArrowLeft
               height={14}
-              pathStyle={{ strokeWidth: 1, stroke: DARK_TEXT_COLOR }}
-              style={{ marginRight: 8 }}
+              pathStyle={{ strokeWidth: 2, stroke: DARK_TEXT_COLOR }}
+              style={{ marginRight: 8, marginLeft: -8 }}
             />
             <TouchableText color={DARK_TEXT_COLOR}>
               {leftButton.text}
