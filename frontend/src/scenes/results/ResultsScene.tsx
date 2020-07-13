@@ -45,6 +45,7 @@ import CustomerActivityResult from './CustomerActivityResult';
 import MapResult from './MapResult';
 import ContactsResult from './ContactsResult';
 import OwnershipInformationResult from './OwnershipInformationResult';
+import TutorialButton from '../../components/TutorialButton';
 
 type SearchState = {
   search: SearchTag;
@@ -240,6 +241,7 @@ export default function ResultsScene() {
             locationTag={selectedSearchTagWithIds.locationTag}
           />
           <Container isDesktop={isDesktop}>
+            <TutorialButton style={{ position: 'absolute', right: 36 }} />
             {resultQueries.map(({ reviewTag, type }, idx) => {
               let key = `${reviewTag}-${type}-${idx}`;
               let props = {

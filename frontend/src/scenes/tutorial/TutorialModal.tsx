@@ -21,7 +21,7 @@ export default function TutorialModal(props: Props) {
     <TutorialContextProvider
       value={{ selectedPage, onPageChange: setSelectedPage }}
     >
-      <Container visible={visible} onClose={onClose}>
+      <Container visible={visible} onClose={onClose} hideCloseButton={true}>
         <SideBar />
         <TutorialContent />
       </Container>
