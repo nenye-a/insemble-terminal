@@ -141,6 +141,7 @@ export default function CustomerActivityResult(props: Props) {
         }}
         comparisonTags={comparisonTags}
         tableType={TableType.ACTIVITY}
+        demo={!!demoType}
         {...(data?.activityTable.table?.businessTag && {
           businessTag: {
             params: data.activityTable.table.businessTag.params,

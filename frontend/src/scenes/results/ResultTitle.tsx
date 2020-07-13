@@ -50,6 +50,7 @@ import {
 import SvgPin from '../../components/icons/pin';
 import SvgRoundClose from '../../components/icons/round-close';
 import SvgClose from '../../components/icons/close';
+import SvgRoundAdd from '../../components/icons/round-add';
 import InfoboxPopover from '../../components/InfoboxPopover';
 import AddComparisonButton from '../../components/AddComparisonButton';
 import TripleDotsButton from '../../components/TripleDotsButton';
@@ -75,6 +76,7 @@ type Props = {
   readOnly?: boolean;
   demo?: boolean;
   onClosePress?: () => void;
+  zoomIcon?: 'pin' | 'compare';
 };
 
 type Params = {
@@ -102,6 +104,7 @@ export default function ResultTitle(props: Props) {
     readOnly,
     onClosePress,
     demo,
+    zoomIcon,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -204,9 +207,12 @@ export default function ResultTitle(props: Props) {
     }
   };
   return (
-    <Container isDesktop={isDesktop}>
+    <Container
+      isDesktop={isDesktop}
+      {...(zoomIcon && { style: { alignItems: 'baseline' } })}
+    >
       <Row flex>
-        <Title noData={noData}>{title}</Title>
+        <Title noData={noData || !!zoomIcon}>{title}</Title>
         {infoboxContent && (
           <InfoboxPopover
             isOpen={infoPopoverOpen}
@@ -216,7 +222,7 @@ export default function ResultTitle(props: Props) {
                 {infoboxContent ? infoboxContent() : null}
               </PopoverContainer>
             )}
-            disabled={noData}
+            disabled={noData || !!zoomIcon}
             isDesktop={isDesktop}
           />
         )}
@@ -227,8 +233,14 @@ export default function ResultTitle(props: Props) {
           </>
         )}
       </Row>
-      <Row style={{ minWidth: 100, justifyContent: 'flex-end' }}>
-        {isDesktop && formattedCompareText ? (
+      <Row
+        style={{
+          minWidth: 100,
+          justifyContent: 'flex-end',
+        }}
+        {...(zoomIcon && { style: { alignItems: 'flex-end' } })}
+      >
+        {isDesktop && formattedCompareText && !zoomIcon ? (
           loading ? (
             <LoadingIndicator />
           ) : (
@@ -236,7 +248,7 @@ export default function ResultTitle(props: Props) {
               <CompareText>{formattedCompareText}</CompareText>
               {!readOnly && (
                 <Touchable
-                  disable={demo}
+                  disabled={demo}
                   onPress={() => {
                     if (reviewTag && tableId) {
                       updateComparison({
@@ -260,11 +272,11 @@ export default function ResultTitle(props: Props) {
         ) : null}
         {(isDesktop && !readOnly) || onClosePress ? (
           <>
-            {canCompare && reviewTag && tableId && (
+            {canCompare && reviewTag && tableId ? (
               <AddComparisonButton
                 isOpen={comparisonPopoverOpen}
                 onChange={setComparisonPopoverOpen}
-                disabled={noData}
+                disabled={noData || zoomIcon === 'pin'}
                 reviewTag={reviewTag}
                 tableId={tableId}
                 onTableIdChange={onTableIdChange}
@@ -276,7 +288,16 @@ export default function ResultTitle(props: Props) {
                 readOnly={readOnly}
                 demo={demo}
               />
-            )}
+            ) : demo ? (
+              <SvgRoundAdd
+                fill={zoomIcon === 'pin' ? DISABLED_TEXT_COLOR : THEME_COLOR}
+                {...(zoomIcon === 'compare' && {
+                  width: 48,
+                  height: 48,
+                  style: { alignSelf: 'flex-end' },
+                })}
+              />
+            ) : null}
             {isTerminalScene && !demo ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
@@ -319,7 +340,16 @@ export default function ResultTitle(props: Props) {
                     }}
                     disabled={noData || demo}
                   >
-                    <SvgPin {...(noData && { fill: DISABLED_TEXT_COLOR })} />
+                    <SvgPin
+                      {...((zoomIcon === 'compare' || noData) && {
+                        fill: DISABLED_TEXT_COLOR,
+                      })}
+                      {...(zoomIcon === 'pin' && {
+                        width: 48,
+                        height: 48,
+                        style: { alignSelf: 'flex-end' },
+                      })}
+                    />
                   </Touchable>
                 )}
               </Popover>

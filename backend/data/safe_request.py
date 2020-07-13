@@ -112,11 +112,16 @@ def request(api_name, req_type, url, headers={}, data={},
         try:
             _id = DB_REQUESTS[api_name].insert(api_request)
         except Exception:
-            search = DB_REQUESTS[api_name].find_one(api_request)
+            search = DB_REQUESTS[api_name].find_one({
+                'req_type': api_request['req_type'],
+                'url': api_request['url'],
+                'masked_params': api_request['masked_params'],
+                'masked_headers': api_request['masked_headers'],
+            })
             if search is not None:
                 return search['response'], search['_id']
-            else:
-                return None, None
+
+            # Otherwise, just return the result =
     else:
         _id = None
 

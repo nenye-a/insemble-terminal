@@ -7,6 +7,7 @@ import {
   SearchPlaceholder,
   SearchFilterBar,
   ReferralButton,
+  // TutorialButton,
 } from '../../components';
 import { useViewport } from '../../helpers';
 import { useAuth } from '../../context/AuthContext';
@@ -31,7 +32,17 @@ export default function UserHomeScene() {
 
   return (
     <Container isDesktop={isDesktop}>
-      <ReferralButton style={{ position: 'absolute', right: 24, top: 36 }} />
+      <View
+        style={{
+          position: 'absolute',
+          right: 24,
+          top: 36,
+          alignItems: 'flex-end',
+        }}
+      >
+        <ReferralButton />
+        {/* <TutorialButton style={{ paddingTop: 22 }} /> */}
+      </View>
       <InsembleLogo color="purple" size="big" />
       <SearchBarContainer>
         {isDesktop ? (

@@ -35,7 +35,7 @@ export default function Footer() {
       >
         {isDesktop ? 'Privacy Policy' : 'Privacy'}
       </Link>
-      <Spacing />
+      {isDesktop && <Spacing />}
       <Link
         href={TERMS_OF_SERVICE_PDF}
         onPress={() => {
@@ -44,7 +44,7 @@ export default function Footer() {
       >
         {isDesktop ? 'Terms of Agreement' : 'Terms'}
       </Link>
-      <Spacing />
+      {isDesktop && <Spacing />}
       <WhiteText>© Insemble, Inc</WhiteText>
     </Container>
   );
@@ -63,7 +63,7 @@ const Container = styled(View)<ViewWithViewportType>`
           justify-content: flex-end;
         `
       : css`
-          justify-content: center;
+          justify-content: space-between;
         `}
 `;
 
