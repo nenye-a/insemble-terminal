@@ -182,7 +182,7 @@ export default function MapResult(props: Props) {
           </ContentContainer>
         ) : null}
       </View>
-      {!readOnly && (
+      {!readOnly && !demoType && (
         <FeedbackButton tableId={data?.mapTable.id} tableType={TableType.MAP} />
       )}
     </View>
