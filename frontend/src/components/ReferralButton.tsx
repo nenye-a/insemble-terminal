@@ -14,7 +14,7 @@ import { FONT_WEIGHT_BOLD, FONT_WEIGHT_HEAVY } from '../constants/theme';
 import SvgArrowRight from './icons/arrow-right';
 
 type Props = {
-  style: CSSProperties;
+  style?: CSSProperties;
 };
 
 export default function ReferralButton(props: Props) {

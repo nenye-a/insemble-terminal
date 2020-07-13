@@ -7,7 +7,13 @@ import { TutorialContextProvider } from '../../context';
 import SideBar from './SideBar';
 import TutorialContent from './TutorialContent';
 
-export default function TutorialModal() {
+type Props = {
+  visible: boolean;
+  onClose?: () => void;
+};
+
+export default function TutorialModal(props: Props) {
+  let { visible, onClose } = props;
   // TODO: better typing for selectedPage
   let [selectedPage, setSelectedPage] = useState('overview');
 
@@ -15,7 +21,7 @@ export default function TutorialModal() {
     <TutorialContextProvider
       value={{ selectedPage, onPageChange: setSelectedPage }}
     >
-      <Container visible>
+      <Container visible={visible} onClose={onClose}>
         <SideBar />
         <TutorialContent />
       </Container>
