@@ -271,7 +271,7 @@ const TableTypeText = styled(Text)`
 const ScopesRow = styled(View)`
   flex: 1;
   flex-direction: row;
-  justify-content: space-evenly;
+  justify-content: space-between;
   align-items: center;
   align-self: center;
   margin: 15px;
