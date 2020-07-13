@@ -64,7 +64,7 @@ export default function PersonalTerminalContent() {
         leftButton={{
           text: 'Contact',
           onPress: () => {
-            onPageChange('contact');
+            onPageChange('contacts');
           },
         }}
       />
