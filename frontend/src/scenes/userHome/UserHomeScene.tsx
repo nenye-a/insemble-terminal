@@ -14,6 +14,7 @@ import { WHITE } from '../../constants/colors';
 import InsembleLogo from '../../components/InsembleLogo';
 import { SearchTag } from '../../types/types';
 import SearchFilterBarMobile from '../../components/SearchFilterBarMobile';
+import TutorialButton from '../../components/TutorialButton';
 
 export default function UserHomeScene() {
   let history = useHistory();
@@ -31,7 +32,17 @@ export default function UserHomeScene() {
 
   return (
     <Container isDesktop={isDesktop}>
-      <ReferralButton style={{ position: 'absolute', right: 24, top: 36 }} />
+      <View
+        style={{
+          position: 'absolute',
+          right: 24,
+          top: 36,
+          alignItems: 'flex-end',
+        }}
+      >
+        <ReferralButton />
+        <TutorialButton style={{ paddingTop: 22 }} />
+      </View>
       <InsembleLogo color="purple" size="big" />
       <SearchBarContainer>
         {isDesktop ? (
