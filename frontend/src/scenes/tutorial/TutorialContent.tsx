@@ -7,6 +7,7 @@ import { useTutorialContext } from '../../context';
 
 import OverviewContent from './OverviewContent';
 import ActivityContent from './ActivityContent';
+import MapContent from './MapContent';
 
 export default function TutorialContent() {
   let { selectedPage } = useTutorialContext();
@@ -17,6 +18,8 @@ export default function TutorialContent() {
         <OverviewContent />
       ) : selectedPage === 'activity' ? (
         <ActivityContent />
+      ) : selectedPage === 'map' ? (
+        <MapContent />
       ) : null}
     </Container>
   );
