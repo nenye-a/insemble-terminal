@@ -8,6 +8,7 @@ import {
   HeaderNavigationBar,
   PageTitle,
   SearchPlaceholder,
+  TutorialButton,
 } from '../../components';
 import { MUTED_TEXT_COLOR, BACKGROUND_COLOR } from '../../constants/colors';
 import { SEARCH, GET_SEARCH_TAG } from '../../graphql/queries/server/search';
@@ -45,7 +46,6 @@ import CustomerActivityResult from './CustomerActivityResult';
 import MapResult from './MapResult';
 import ContactsResult from './ContactsResult';
 import OwnershipInformationResult from './OwnershipInformationResult';
-import TutorialButton from '../../components/TutorialButton';
 
 type SearchState = {
   search: SearchTag;

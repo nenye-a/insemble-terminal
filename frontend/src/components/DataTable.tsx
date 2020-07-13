@@ -18,7 +18,7 @@ import {
 import { Direction } from '../types/types';
 import { SortConfig } from '../helpers/useSortableData';
 
-import SvgQuestionMark from './icons/question-mark';
+import SvgQuestionMark from './icons/question-mark-round';
 
 type Props = ViewProps & {
   children?: ReactNode;

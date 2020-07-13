@@ -24,10 +24,10 @@ import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import ResultTitle from '../results/ResultTitle';
 import PerformanceResult from '../results/PerformanceResult';
 import PerformanceTable from '../results/PerformanceTable';
+import SvgArrowPointerRight from '../../components/icons/arrow-pointer-right';
 
 import { MENU } from './constants';
 import BottomNavigation from './BottomNavigation';
-import SvgArrowPointerRight from '../../components/icons/arrow-pointer-right';
 
 export default function OverviewContent() {
   let { isDesktop } = useViewport();

@@ -7,6 +7,7 @@ import {
   SearchPlaceholder,
   SearchFilterBar,
   ReferralButton,
+  TutorialButton,
 } from '../../components';
 import { useViewport } from '../../helpers';
 import { useAuth } from '../../context/AuthContext';
@@ -14,7 +15,6 @@ import { WHITE } from '../../constants/colors';
 import InsembleLogo from '../../components/InsembleLogo';
 import { SearchTag } from '../../types/types';
 import SearchFilterBarMobile from '../../components/SearchFilterBarMobile';
-import TutorialButton from '../../components/TutorialButton';
 
 export default function UserHomeScene() {
   let history = useHistory();
