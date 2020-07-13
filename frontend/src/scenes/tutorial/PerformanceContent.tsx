@@ -17,11 +17,7 @@ import {
   WHITE,
 } from '../../constants/colors';
 import { useViewport } from '../../helpers';
-import {
-  PerformanceTableType,
-  DemoType,
-  TableType,
-} from '../../generated/globalTypes';
+import { PerformanceTableType, DemoType } from '../../generated/globalTypes';
 import performanceSearchbarDemo from '../../assets/images/performance-searchbox-demo.svg';
 import SvgFourDotsArrow from '../../components/icons/four-dots-arrow';
 import { useTutorialContext } from '../../context';
@@ -132,13 +128,13 @@ export default function PerformanceContent() {
         County level searches will return data by city, and city level searches
         will return data by location.
       </Paragraph>
-      {SCOPES.map((scope) => {
+      {SCOPES.map((scope, idx) => {
         return (
-          <ScopesRow>
+          <ScopesRow key={idx}>
             <ScopesBar>
               {scope.searchBar.map((search) => {
                 return (
-                  <ReviewTagContainer>
+                  <ReviewTagContainer key={search}>
                     <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
                       {search}
                     </Text>
@@ -156,7 +152,7 @@ export default function PerformanceContent() {
             <ResultRow>
               {scope.result.map((result) => {
                 return (
-                  <ResultContainer>
+                  <ResultContainer key={result.name}>
                     <TableTypeText>{result.tableType}</TableTypeText>
                     <ReviewTagContainer>
                       <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
