@@ -230,6 +230,7 @@ const SubmitButton = styled(Button)`
 const Title = styled(Text)`
   font-size: 35px;
   padding-bottom: 4px;
+  text-align: center;
 `;
 
 const TitleContainer = styled(View)`
