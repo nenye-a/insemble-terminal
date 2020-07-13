@@ -16,10 +16,11 @@ import { FONT_WEIGHT_MEDIUM } from '../../constants/theme';
 
 type Props = {
   data: Array<MergedNewsData>;
+  demo?: boolean;
 };
 
 export default function NewsTableMobile(props: Props) {
-  let { data } = props;
+  let { data, demo } = props;
   let history = useHistory();
 
   let { sortedData, requestSort, sortConfig } = useSortableData<MergedNewsData>(
@@ -64,19 +65,23 @@ export default function NewsTableMobile(props: Props) {
           return (
             <DataTable.Row
               key={index}
-              onPress={() => {
-                let path = history.location.pathname.includes('news')
-                  ? `${history.location.pathname}/${id}`
-                  : `${history.location.pathname}/news/${id}`;
+              onPress={
+                !demo
+                  ? () => {
+                      let path = history.location.pathname.includes('news')
+                        ? `${history.location.pathname}/${id}`
+                        : `${history.location.pathname}/news/${id}`;
 
-                history.push(path, {
-                  title,
-                  link,
-                  source,
-                  published,
-                  background: history.location,
-                });
-              }}
+                      history.push(path, {
+                        title,
+                        link,
+                        source,
+                        published,
+                        background: history.location,
+                      });
+                    }
+                  : undefined
+              }
               style={{
                 backgroundColor: bgColor,
               }}
