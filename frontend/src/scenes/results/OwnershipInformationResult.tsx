@@ -100,7 +100,10 @@ export default function OwnershipInformationResult(props: Props) {
           containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
         />
       ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+        <ErrorComponent
+          text={formatErrorMessage(error.message)}
+          onRetry={refetch}
+        />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (

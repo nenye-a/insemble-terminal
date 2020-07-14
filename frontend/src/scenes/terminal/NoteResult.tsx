@@ -23,7 +23,7 @@ type Props = {
 export default function NoteResult(props: Props) {
   let { readOnly, tableId, pinTableId } = props;
   let [isEditing, setIsEditing] = useState(false);
-  let { data, loading, error } = useQuery<GetNote, GetNoteVariables>(
+  let { data, loading, error, refetch } = useQuery<GetNote, GetNoteVariables>(
     GET_NOTE_DATA,
     {
       variables: {
@@ -51,7 +51,10 @@ export default function NoteResult(props: Props) {
           containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
         />
       ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+        <ErrorComponent
+          text={formatErrorMessage(error.message)}
+          onRetry={refetch}
+        />
       ) : data ? (
         !isEditing ? (
           <NotesContainer>

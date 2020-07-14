@@ -172,6 +172,7 @@ export default function CustomerActivityResult(props: Props) {
             text={formatErrorMessage(
               error?.message || data?.activityTable.error || '',
             )}
+            onRetry={refetch}
           />
         ) : (!loading &&
             !data?.activityTable.polling &&

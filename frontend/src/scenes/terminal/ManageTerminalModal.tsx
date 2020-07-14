@@ -51,7 +51,7 @@ export default function ManageTerminalModal(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent text={error.message} />
+        <ErrorComponent text={error.message} onRetry={refetchCurrentPage} />
       ) : (
         <ManageTerminalForm
           refetchCurrentPage={refetchCurrentPage}

@@ -41,6 +41,7 @@ export default function PinPopover(props: Props) {
     loading: terminalsLoading,
     data: terminalsData,
     error: terminalsError,
+    refetch: terminalsRefetch,
   } = useQuery<GetTerminalList>(GET_TERMINAL_LIST, {
     fetchPolicy: 'network-only',
   });
@@ -56,7 +57,7 @@ export default function PinPopover(props: Props) {
       {terminalsLoading || pinTableLoading ? (
         <LoadingIndicator />
       ) : terminalsError ? (
-        <ErrorComponent />
+        <ErrorComponent onRetry={terminalsRefetch} />
       ) : terminalsData?.userTerminals.length === 0 || addTerminalVisible ? (
         <ManageTerminalForm mode="add" onClose={onClickAway} />
       ) : (

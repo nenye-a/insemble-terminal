@@ -164,7 +164,10 @@ export default function MapResult(props: Props) {
         {loading && prevData.length === 0 ? (
           <View style={{ height: 90 }} />
         ) : error ? (
-          <ErrorComponent text={formatErrorMessage(error.message)} />
+          <ErrorComponent
+            text={formatErrorMessage(error.message)}
+            onRetry={refetch}
+          />
         ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : (!loading && !noData) || prevData.length > 0 ? (

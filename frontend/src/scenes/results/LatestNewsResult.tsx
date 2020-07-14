@@ -173,6 +173,7 @@ export default function LatestNewsResult(props: Props) {
             text={formatErrorMessage(
               error?.message || data?.newsTable.error || '',
             )}
+            onRetry={refetch}
           />
         ) : (!loading &&
             data?.newsTable.table &&

@@ -59,6 +59,7 @@ export default function NewsScene(props: Props) {
     data,
     loading: newsLoading,
     error,
+    refetch,
     startPolling,
     stopPolling,
   } = useQuery<GetOpenNewsData, GetOpenNewsDataVariables>(GET_OPEN_NEWS_DATA, {
@@ -143,6 +144,7 @@ export default function NewsScene(props: Props) {
               text={formatErrorMessage(
                 error?.message || data?.openNews.error || '',
               )}
+              onRetry={refetch}
             />
           ) : !loading &&
             data?.openNews.data &&

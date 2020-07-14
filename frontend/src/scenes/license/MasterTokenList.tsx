@@ -9,7 +9,9 @@ import { GET_MASTER_TOKENS } from '../../graphql/queries/server/license';
 import MasterTokensTable from './MasterTokensTable';
 
 export default function MasterTokenList() {
-  let { data, loading, error } = useQuery<GetMasterTokens>(GET_MASTER_TOKENS);
+  let { data, loading, error, refetch } = useQuery<GetMasterTokens>(
+    GET_MASTER_TOKENS,
+  );
 
   let noData = !data?.masterLicenseList || data?.masterLicenseList.length === 0;
 
@@ -18,7 +20,7 @@ export default function MasterTokenList() {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent onRetry={refetch} />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
