@@ -10,7 +10,7 @@ import SvgArrowUp from './icons/arrow-up';
 export default function SearchPlaceholder() {
   return (
     <TitleRow>
-      <SvgArrowUp />
+      <SvgArrowUp height={26} viewBox="0 0 27 27" />
       <Title>
         Search and find performance data on retailers and restaurants
       </Title>

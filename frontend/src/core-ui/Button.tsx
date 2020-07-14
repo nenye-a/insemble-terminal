@@ -77,7 +77,10 @@ export default function Button(props: Props) {
       {...otherProps}
     >
       {loading ? (
-        <LoadingIndicator color={mode === 'primary' ? 'white' : 'purple'} />
+        <LoadingIndicator
+          color={mode === 'primary' ? 'white' : 'purple'}
+          containerStyle={{ padding: 0 }}
+        />
       ) : (
         <>
           {iconPlacement === 'start' ? buttonContent.reverse() : buttonContent}
