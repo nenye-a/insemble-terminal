@@ -72,12 +72,8 @@ export let updateComparisonResolver: FieldResolver<
   }
   let comparationTags = await context.prisma.comparationTag.findMany({
     where: {
-      businessTag: selectedBusinessTag
-        ? { id: selectedBusinessTag.id }
-        : undefined,
-      locationTag: selectedLocationTag
-        ? { id: selectedLocationTag.id }
-        : undefined,
+      businessTag: selectedBusinessTag ? { id: selectedBusinessTag.id } : null,
+      locationTag: selectedLocationTag ? { id: selectedLocationTag.id } : null,
     },
     include: { businessTag: true, locationTag: true },
   });
