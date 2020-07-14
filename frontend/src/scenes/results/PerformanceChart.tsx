@@ -423,7 +423,7 @@ const TableButton = styled(Button)`
   align-self: flex-start;
   padding: 2px 5px;
   height: 20px;
-  margin-bottom: 8px;
+  border-width: 0px;
 `;
 
 const ScrollContainer = styled(View)`

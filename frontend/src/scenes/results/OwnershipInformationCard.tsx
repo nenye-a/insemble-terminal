@@ -28,7 +28,7 @@ export default function OwnershipInformationCard(props: Props) {
         <ValueText>{name}</ValueText>
       </Row>
       <Row>
-        <LabelText>Headquarters Address:</LabelText>
+        <LabelText>Headquarters:</LabelText>
         <ValueText>{address}</ValueText>
       </Row>
       <Row>
