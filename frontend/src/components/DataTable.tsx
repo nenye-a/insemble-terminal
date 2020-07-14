@@ -64,7 +64,7 @@ function HeaderCell({
     <Cell
       onClick={() => {
         if (!disabled) {
-          onClick();
+          onClick && onClick();
         }
       }}
       {...otherProps}
