@@ -12,6 +12,7 @@ import {
   LoadingIndicator,
   Button,
 } from '../core-ui';
+import { Popup } from '../components';
 import {
   DARK_TEXT_COLOR,
   THEME_COLOR,
@@ -19,6 +20,7 @@ import {
   COLORS,
   BLACK,
 } from '../constants/colors';
+import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import {
   capitalize,
   generateRandomColor,
@@ -69,6 +71,7 @@ export default function ComparisonPopover(props: Props) {
   let alert = useAlert();
   let { isDesktop } = useViewport();
   let [tableId, setTableId] = useState('');
+  let [deleteAllPopupVisible, setDeleteAllPopupVisible] = useState(false);
   let [activeComparison, setActiveComparison] = useState<
     Array<ComparationTagWithFill>
   >(activeComparisonProp || []);
@@ -80,6 +83,9 @@ export default function ComparisonPopover(props: Props) {
       alert.show('Fail to update comparison. Please try again');
     },
     onCompleted: (data) => {
+      if (deleteAllPopupVisible) {
+        setDeleteAllPopupVisible(false);
+      }
       onUpdateComparisonCompleted(data);
     },
   });
@@ -193,16 +199,27 @@ export default function ComparisonPopover(props: Props) {
   };
 
   let onDeleteAll = () => {
-    updateComparison({
-      variables: {
-        actionType: CompareActionType.DELETE_ALL,
-        tableId,
-        reviewTag,
-        pinId,
-      },
-      refetchQueries: refetchTerminalQueries,
-      awaitRefetchQueries: true,
-    });
+    if (terminalId) {
+      updateComparison({
+        variables: {
+          actionType: CompareActionType.DELETE_ALL,
+          tableId,
+          reviewTag,
+          pinId,
+        },
+        refetchQueries: refetchTerminalQueries,
+        awaitRefetchQueries: true,
+      });
+    } else {
+      updateComparison({
+        variables: {
+          actionType: CompareActionType.DELETE_ALL,
+          tableId,
+          reviewTag,
+          pinId,
+        },
+      });
+    }
   };
 
   useEffect(() => {
@@ -214,17 +231,33 @@ export default function ComparisonPopover(props: Props) {
 
   return (
     <Container isDesktop={isDesktop}>
+      <Popup
+        visible={deleteAllPopupVisible}
+        title="Remove All Comparisons"
+        bodyText="Do you want to remove all of your comparisons?"
+        buttons={[
+          { text: 'Yes', onPress: onDeleteAll },
+          {
+            text: 'No',
+            onPress: () => {
+              setDeleteAllPopupVisible(false);
+            },
+          },
+        ]}
+        loading={updateComparisonLoading}
+      />
       {activeComparison && activeComparison.length > 0 ? (
         <View>
           <TitleContainer>
             <Title isDesktop={isDesktop}>Active Comparison</Title>
-            {!isDesktop && (
-              <Button
-                text="Delete All"
-                mode="transparent"
-                onPress={onDeleteAll}
-              />
-            )}
+            <Button
+              text="Delete All"
+              mode="transparent"
+              onPress={() => {
+                setDeleteAllPopupVisible(true);
+              }}
+              style={{ paddingRight: isDesktop ? 38 : 9 }}
+            />
           </TitleContainer>
           <ScrollView isDesktop={isDesktop}>
             {activeComparison.map((comparison) => {
@@ -297,7 +330,7 @@ export default function ComparisonPopover(props: Props) {
                       }
                     }}
                   >
-                    <SvgRoundClose />
+                    <SvgRoundClose viewBox="0 0 20 20" width={20} height={20} />
                   </CloseContainer>
                 </Row>
               );
@@ -340,12 +373,9 @@ const Container = styled(Card)<ContainerProps>`
 
 const Title = styled(Text)<TextProps & WithViewport>`
   color: ${DARK_TEXT_COLOR};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
   padding-bottom: 12px;
-  ${({ isDesktop }) =>
-    isDesktop &&
-    css`
-      padding: 0 34px;
-    `}
+  padding: ${({ isDesktop }) => (isDesktop ? '0 38px' : '0 4px')};
 `;
 
 const Row = styled(View)`
@@ -370,7 +400,7 @@ const ComparisonDivider = styled(Divider)`
   ${({ isDesktop }) =>
     isDesktop
       ? css`
-          margin: 28px 34px;
+          margin: 28px 38px;
         `
       : css`
           margin: 28px 8px;
@@ -391,7 +421,7 @@ const ScrollView = styled(View)<ViewProps & WithViewport>`
 `;
 
 const SearchbarContainer = styled(View)`
-  padding: 0 34px;
+  padding: 0 38px;
 `;
 
 const TitleContainer = styled(View)`

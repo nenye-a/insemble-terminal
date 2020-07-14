@@ -29,15 +29,9 @@ import { ComparationTagWithFill } from '../../types/types';
 import {
   ReviewTag,
   LocationTagType,
-  CompareActionType,
   TableType,
   BusinessType,
 } from '../../generated/globalTypes';
-import { UPDATE_COMPARISON } from '../../graphql/queries/server/comparison';
-import {
-  UpdateComparison,
-  UpdateComparisonVariables,
-} from '../../generated/UpdateComparison';
 import {
   REMOVE_PINNED_TABLE,
   GET_TERMINAL,
@@ -48,7 +42,6 @@ import {
   RemovePinnedTableVariables,
 } from '../../generated/RemovePinnedTable';
 import SvgPin from '../../components/icons/pin';
-import SvgRoundClose from '../../components/icons/round-close';
 import SvgClose from '../../components/icons/close';
 import SvgRoundAdd from '../../components/icons/round-add';
 import InfoboxPopover from '../../components/InfoboxPopover';
@@ -113,27 +106,7 @@ export default function ResultTitle(props: Props) {
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
-  let refetchTerminalQueries = params.terminalId
-    ? [
-        {
-          query: GET_TERMINAL,
-          variables: {
-            terminalId: params.terminalId || '',
-          },
-          skip: params.terminalId,
-        },
-      ]
-    : [];
 
-  let [updateComparison, { loading }] = useMutation<
-    UpdateComparison,
-    UpdateComparisonVariables
-  >(UPDATE_COMPARISON, {
-    onError: () => {},
-    onCompleted: (data) => {
-      onTableIdChange && onTableIdChange(data.updateComparison.tableId);
-    },
-  });
   let [removePinnedTable, { loading: removePinnedTableLoading }] = useMutation<
     RemovePinnedTable,
     RemovePinnedTableVariables
@@ -241,34 +214,7 @@ export default function ResultTitle(props: Props) {
         {...(zoomIcon && { style: { alignItems: 'flex-end' } })}
       >
         {isDesktop && formattedCompareText && !zoomIcon ? (
-          loading ? (
-            <LoadingIndicator />
-          ) : (
-            <>
-              <CompareText>{formattedCompareText}</CompareText>
-              {!readOnly && (
-                <Touchable
-                  disabled={demo}
-                  onPress={() => {
-                    if (reviewTag && tableId) {
-                      updateComparison({
-                        variables: {
-                          actionType: CompareActionType.DELETE_ALL,
-                          tableId,
-                          reviewTag,
-                          pinId: pinTableId,
-                        },
-                        awaitRefetchQueries: true,
-                        refetchQueries: refetchTerminalQueries,
-                      });
-                    }
-                  }}
-                >
-                  <SvgRoundClose />
-                </Touchable>
-              )}
-            </>
-          )
+          <CompareText>{formattedCompareText}</CompareText>
         ) : null}
         {(isDesktop && !readOnly) || onClosePress ? (
           <>
