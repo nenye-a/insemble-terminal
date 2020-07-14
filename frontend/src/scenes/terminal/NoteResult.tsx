@@ -28,12 +28,8 @@ type Params = {
 export default function NoteResult(props: Props) {
   let { readOnly, tableId, pinTableId } = props;
   let [isEditing, setIsEditing] = useState(false);
-<<<<<<< HEAD
-  let { data, loading, error, refetch } = useQuery<GetNote, GetNoteVariables>(
-=======
   let params = useParams<Params>();
-  let { data, loading, error } = useQuery<GetNote, GetNoteVariables>(
->>>>>>> fix edit note not resolves
+  let { data, loading, error, refetch } = useQuery<GetNote, GetNoteVariables>(
     GET_NOTE_DATA,
     {
       variables: {
