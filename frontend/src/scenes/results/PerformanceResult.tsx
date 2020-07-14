@@ -224,6 +224,7 @@ export default function PerformanceResult(props: Props) {
             text={formatErrorMessage(
               error?.message || data?.performanceTable.error || '',
             )}
+            onRetry={refetch}
           />
         ) : (!loading &&
             data?.performanceTable.table &&

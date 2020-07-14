@@ -10,7 +10,7 @@ import { GET_TOKENS } from '../../graphql/queries/server/license';
 import TokensTable from './TokensTable';
 
 export default function TokenList() {
-  let { data, loading, error } = useQuery<GetTokens>(GET_TOKENS);
+  let { data, loading, error, refetch } = useQuery<GetTokens>(GET_TOKENS);
 
   let noData = !data?.licenseList || data?.licenseList.length === 0;
 
@@ -19,7 +19,7 @@ export default function TokenList() {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent />
+        <ErrorComponent onRetry={refetch} />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (

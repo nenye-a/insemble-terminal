@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 
@@ -47,7 +47,7 @@ export default function ShareTerminalPopover(props: Props) {
     setCopied(true);
   };
 
-  useEffect(() => {
+  let onShareTerminal = useCallback(() => {
     shareTerminal({
       variables: {
         terminalId,
@@ -55,12 +55,16 @@ export default function ShareTerminalPopover(props: Props) {
     });
   }, [shareTerminal, terminalId]);
 
+  useEffect(() => {
+    onShareTerminal();
+  }, [onShareTerminal]);
+
   return (
     <Container>
       {shareTerminalLoading ? (
         <LoadingIndicator />
       ) : shareTerminalError ? (
-        <ErrorComponent />
+        <ErrorComponent onRetry={onShareTerminal} />
       ) : (
         <>
           <Title>Share Terminal</Title>
