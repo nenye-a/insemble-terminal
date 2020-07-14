@@ -117,8 +117,8 @@ export default function OverviewContent() {
         style={{ paddingTop: 30, alignSelf: 'center', color: SLIGHT_GRAY }}
       />
       <PerformanceResult
-        title="By Location"
-        performanceType={PerformanceTableType.ADDRESS}
+        title="Overall Performance"
+        performanceType={PerformanceTableType.OVERALL}
         demoType={DemoType.WITH_COMPARE}
         headerTitle="Address"
         containerStyle={{ paddingBottom: 50 }}
