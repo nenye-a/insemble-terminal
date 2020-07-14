@@ -45,7 +45,7 @@ export default function OverviewContent() {
         You can search for both categories and businesses, as well as for
         addresses and locations (cities and counties)
       </Paragraph>
-      <img src={searchBox} />
+      <img src={searchBox} alt="search-box" />
       <Text style={{ paddingTop: 10, paddingBottom: 10 }}>
         Supported Data Searches
       </Text>
