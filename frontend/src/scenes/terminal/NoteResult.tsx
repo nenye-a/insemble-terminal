@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
+import { useParams } from 'react-router-dom';
 
 import { View, Text, Button, LoadingIndicator } from '../../core-ui';
 import { ErrorComponent } from '../../components';
@@ -20,10 +21,19 @@ type Props = {
   pinTableId?: string;
 };
 
+type Params = {
+  terminalId: string;
+};
+
 export default function NoteResult(props: Props) {
   let { readOnly, tableId, pinTableId } = props;
   let [isEditing, setIsEditing] = useState(false);
+<<<<<<< HEAD
   let { data, loading, error, refetch } = useQuery<GetNote, GetNoteVariables>(
+=======
+  let params = useParams<Params>();
+  let { data, loading, error } = useQuery<GetNote, GetNoteVariables>(
+>>>>>>> fix edit note not resolves
     GET_NOTE_DATA,
     {
       variables: {
@@ -32,9 +42,10 @@ export default function NoteResult(props: Props) {
     },
   );
 
-  let onClosePress = () => {
+  let closeEditMode = () => {
     setIsEditing(false);
   };
+
   return (
     <Container>
       <ResultTitle
@@ -44,7 +55,7 @@ export default function NoteResult(props: Props) {
         pinTableId={pinTableId}
         tableType={TableType.NOTE}
         canCompare={false}
-        {...(isEditing && { onClosePress })}
+        {...(isEditing && { onClosePress: closeEditMode })}
       />
       {loading ? (
         <LoadingIndicator
@@ -79,6 +90,8 @@ export default function NoteResult(props: Props) {
               tableId={tableId}
               defaultTitle={data.note.title}
               defaultContent={data.note.content}
+              terminalId={params.terminalId}
+              onManageFormSuccessful={closeEditMode}
             />
           </NotesContainer>
         )
