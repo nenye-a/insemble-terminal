@@ -1,12 +1,18 @@
 import { queryField, FieldResolver, arg, stringArg } from 'nexus';
 import axios, { AxiosResponse } from 'axios';
 
+import { BusinessTagCreateInput, LocationTagCreateInput } from '@prisma/client';
 import { Root, Context } from 'serverTypes';
 import { PyPerformanceResponse, PyPerformanceData } from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 import { todayMinXHour } from '../../helpers/todayMinXHour';
+import {
+  PerformanceDemoBasicOverallData,
+  PerformanceDemoBasicAddressData,
+  PerformanceDemoCompareData,
+} from '../../constants/demoData';
 
 let performanceTableResolver: FieldResolver<
   'Query',
@@ -23,7 +29,163 @@ let performanceTableResolver: FieldResolver<
         type: performanceType,
       },
     });
-    let demoTable = demoTables[0];
+    let demoTable;
+    if (!demoTables.length) {
+      let businessTag: BusinessTagCreateInput = {
+        params: 'Starbucks',
+        type: 'BUSINESS',
+      };
+      let demoBusinessTag;
+      let businessTagsCheck = await context.prisma.businessTag.findMany({
+        where: {
+          params: businessTag.params,
+          type: businessTag.type,
+        },
+      });
+      if (businessTagsCheck.length) {
+        demoBusinessTag = businessTagsCheck[0];
+      } else {
+        demoBusinessTag = await context.prisma.businessTag.create({
+          data: {
+            params: businessTag.params,
+            type: businessTag.type,
+          },
+        });
+      }
+      let locationTag: LocationTagCreateInput = {
+        params: 'Los Angeles, CA, USA',
+        type: 'CITY',
+      };
+      let demoLocationTag;
+      let locationTagsCheck = await context.prisma.locationTag.findMany({
+        where: {
+          params: locationTag.params,
+          type: locationTag.type,
+        },
+      });
+      if (locationTagsCheck.length) {
+        demoLocationTag = locationTagsCheck[0];
+      } else {
+        demoLocationTag = await context.prisma.locationTag.create({
+          data: {
+            params: locationTag.params,
+            type: locationTag.type,
+          },
+        });
+      }
+      switch (demo) {
+        case 'BASIC':
+          demoTable = await context.prisma.performance.create({
+            data: {
+              data: {
+                create:
+                  performanceType === 'OVERALL'
+                    ? PerformanceDemoBasicOverallData
+                    : PerformanceDemoBasicAddressData,
+              },
+              type: performanceType,
+              businessTag: { connect: { id: demoBusinessTag.id } },
+              locationTag: { connect: { id: demoLocationTag.id } },
+              demo,
+            },
+          });
+          break;
+        case 'WITH_COMPARE':
+          let compareBusinessTag: BusinessTagCreateInput = {
+            params: 'The Cheesecake Factory',
+            type: 'BUSINESS',
+          };
+          let demoCompareBusinessTag;
+          let compareBusinessTagsCheck = await context.prisma.businessTag.findMany(
+            {
+              where: {
+                params: compareBusinessTag.params,
+                type: compareBusinessTag.type,
+              },
+            },
+          );
+          if (compareBusinessTagsCheck.length) {
+            demoCompareBusinessTag = compareBusinessTagsCheck[0];
+          } else {
+            demoCompareBusinessTag = await context.prisma.businessTag.create({
+              data: {
+                params: compareBusinessTag.params,
+                type: compareBusinessTag.type,
+              },
+            });
+          }
+          let compareLocationTag: LocationTagCreateInput = {
+            params: 'Los Angeles, CA, USA',
+            type: 'CITY',
+          };
+          let demoCompareLocationTag;
+          let compareLocationTagsCheck = await context.prisma.locationTag.findMany(
+            {
+              where: {
+                params: compareLocationTag.params,
+                type: compareLocationTag.type,
+              },
+            },
+          );
+          if (compareLocationTagsCheck.length) {
+            demoCompareLocationTag = compareLocationTagsCheck[0];
+          } else {
+            demoCompareLocationTag = await context.prisma.locationTag.create({
+              data: {
+                params: compareLocationTag.params,
+                type: compareLocationTag.type,
+              },
+            });
+          }
+          let comparationTags = await context.prisma.comparationTag.findMany({
+            where: {
+              businessTag: demoCompareBusinessTag
+                ? { id: demoCompareBusinessTag.id }
+                : undefined,
+              locationTag: demoCompareLocationTag
+                ? { id: demoCompareLocationTag.id }
+                : undefined,
+            },
+            include: { businessTag: true, locationTag: true },
+          });
+          let comparationTag;
+          if (!comparationTags.length) {
+            comparationTag = await context.prisma.comparationTag.create({
+              data: {
+                businessTag: demoCompareBusinessTag
+                  ? { connect: { id: demoCompareBusinessTag.id } }
+                  : undefined,
+                locationTag: demoCompareLocationTag
+                  ? { connect: { id: demoCompareLocationTag.id } }
+                  : undefined,
+              },
+              include: { businessTag: true, locationTag: true },
+            });
+          } else {
+            comparationTag = comparationTags[0];
+          }
+          let compareId = comparationTag.id;
+          let compareData = PerformanceDemoCompareData.map((data) => ({
+            ...data,
+            compareId: compareId,
+          }));
+          if (performanceType === 'OVERALL') {
+            demoTable = await context.prisma.performance.create({
+              data: {
+                comparationTags: { connect: { id: comparationTag.id } },
+                compareData: { create: compareData },
+                data: { create: PerformanceDemoBasicOverallData },
+                type: 'OVERALL',
+                demo,
+              },
+            });
+          }
+          break;
+      }
+    } else {
+      demoTable = demoTables[0];
+    }
+
     return {
       table: demoTable,
       polling: false,

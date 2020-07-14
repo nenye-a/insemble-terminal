@@ -1,11 +1,13 @@
 import { queryField, FieldResolver, arg, stringArg } from 'nexus';
 import axios from 'axios';
 
+import { BusinessTagCreateInput, LocationTagCreateInput } from '@prisma/client';
 import { Root, Context } from 'serverTypes';
 import { PyOwnershipInfoResponse } from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
+import { InfoDemoData } from '../../constants/demoData';
 
 let ownershipInfoTableResolver: FieldResolver<
   'Query',
@@ -22,7 +24,73 @@ let ownershipInfoTableResolver: FieldResolver<
         type: ownershipType,
       },
     });
-    let demoTable = demoTables[0];
+    let demoTable;
+    if (!demoTables.length) {
+      let businessTag: BusinessTagCreateInput = {
+        params: 'Cheesecake Factory',
+        type: 'BUSINESS',
+      };
+      let demoBusinessTag;
+      let businessTagsCheck = await context.prisma.businessTag.findMany({
+        where: {
+          params: businessTag.params,
+          type: businessTag.type,
+        },
+      });
+      if (businessTagsCheck.length) {
+        demoBusinessTag = businessTagsCheck[0];
+      } else {
+        demoBusinessTag = await context.prisma.businessTag.create({
+          data: {
+            params: businessTag.params,
+            type: businessTag.type,
+          },
+        });
+      }
+      let locationTag: LocationTagCreateInput = {
+        params: '511 Americana Way, Glendale, CA 91210, USA',
+        type: 'ADDRESS',
+      };
+      let demoLocationTag;
+      let locationTagsCheck = await context.prisma.locationTag.findMany({
+        where: {
+          params: locationTag.params,
+          type: locationTag.type,
+        },
+      });
+      if (locationTagsCheck.length) {
+        demoLocationTag = locationTagsCheck[0];
+      } else {
+        demoLocationTag = await context.prisma.locationTag.create({
+          data: {
+            params: locationTag.params,
+            type: locationTag.type,
+          },
+        });
+      }
+      switch (demo) {
+        case 'BASIC':
+          if (ownershipType === 'COMPANY') {
+            demoTable = await context.prisma.ownershipInfo.create({
+              data: {
+                data: {
+                  create: InfoDemoData,
+                },
+                type: 'COMPANY',
+                businessTag: { connect: { id: demoBusinessTag.id } },
+                locationTag: { connect: { id: demoLocationTag.id } },
+                demo,
+              },
+            });
+          }
+          break;
+        case 'WITH_COMPARE':
+          break;
+      }
+    } else {
+      demoTable = demoTables[0];
+    }
+
     return demoTable;
   }
   let businessTag = businessTagId

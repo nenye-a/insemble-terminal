@@ -1,12 +1,14 @@
 import { queryField, FieldResolver, stringArg, arg } from 'nexus';
 import axios, { AxiosResponse } from 'axios';
 
+import { BusinessTagCreateInput, LocationTagCreateInput } from '@prisma/client';
 import { Root, Context } from 'serverTypes';
 import { PyNewsResponse, PyNewsData } from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
 import { todayMinXHour } from '../../helpers/todayMinXHour';
+import { NewsDemoData } from '../../constants/demoData';
 
 let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
   _: Root,
@@ -19,7 +21,70 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         demo,
       },
     });
-    let demoTable = demoTables[0];
+    let demoTable;
+    if (!demoTables.length) {
+      let businessTag: BusinessTagCreateInput = {
+        params: 'Starbucks',
+        type: 'BUSINESS',
+      };
+      let demoBusinessTag;
+      let businessTagsCheck = await context.prisma.businessTag.findMany({
+        where: {
+          params: businessTag.params,
+          type: businessTag.type,
+        },
+      });
+      if (businessTagsCheck.length) {
+        demoBusinessTag = businessTagsCheck[0];
+      } else {
+        demoBusinessTag = await context.prisma.businessTag.create({
+          data: {
+            params: businessTag.params,
+            type: businessTag.type,
+          },
+        });
+      }
+      let locationTag: LocationTagCreateInput = {
+        params: 'Los Angeles, CA, USA',
+        type: 'CITY',
+      };
+      let demoLocationTag;
+      let locationTagsCheck = await context.prisma.locationTag.findMany({
+        where: {
+          params: locationTag.params,
+          type: locationTag.type,
+        },
+      });
+      if (locationTagsCheck.length) {
+        demoLocationTag = locationTagsCheck[0];
+      } else {
+        demoLocationTag = await context.prisma.locationTag.create({
+          data: {
+            params: locationTag.params,
+            type: locationTag.type,
+          },
+        });
+      }
+      switch (demo) {
+        case 'BASIC':
+          demoTable = await context.prisma.news.create({
+            data: {
+              data: {
+                create: NewsDemoData,
+              },
+              businessTag: { connect: { id: demoBusinessTag.id } },
+              locationTag: { connect: { id: demoLocationTag.id } },
+              demo,
+            },
+          });
+          break;
+        case 'WITH_COMPARE':
+          break;
+      }
+    } else {
+      demoTable = demoTables[0];
+    }
+
     return {
       table: demoTable,
       polling: false,
