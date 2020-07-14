@@ -62,7 +62,8 @@ export default function Popup(props: Props) {
 }
 
 const Container = styled(Modal)`
-  width: 500px;
+  max-width: 500px;
+  width: 90%;
   height: fit-content;
   background-color: transparent;
 `;
