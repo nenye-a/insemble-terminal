@@ -41,10 +41,15 @@ import {
 } from '../../helpers';
 import SvgTable from '../../components/icons/table';
 
-type graphMode = 'merged' | 'split';
+/**
+ * 'merged' as in all of the data could fit in 1 chart,
+ * 'split' means the data will need
+ * to be split per index (customerVolumeIndex || localRetailIndex || ...otherKeys)
+ */
+type GraphMode = 'merged' | 'split';
 type Props = {
   data: Array<MergedPerformanceData>;
-  graphMode?: graphMode;
+  graphMode?: GraphMode;
   onViewModeChange: (viewMode: 'table' | 'graph') => void;
 };
 
@@ -175,7 +180,7 @@ export default function PerformanceChart(props: Props) {
           </ScrollContainer>
         )}
         <AboveAverageText>Above Average</AboveAverageText>
-        <ResponsiveContainer height={stillHaveSpace ? 450 : calculatedHeight}>
+        <ResponsiveContainer height={calculatedHeight} minHeight={450}>
           <BarChart
             data={chartData}
             layout="vertical"
@@ -247,6 +252,19 @@ function prepareSplitChartData(data: Array<MergedPerformanceData>) {
 }
 
 function prepareMergedChartData(data: Array<MergedPerformanceData>) {
+  /**
+   * format chart data from Array<MergedPerformanceData> to Array of
+   * {
+   *    label: 'customerVolumeIndex' | 'localCategoryIndex'| etc , (depends on the key)
+   *    value_{brand/location A}: number,
+   *    fill_{brand/location A}: string,
+   *    value_{brand/location B}: number,
+   *    fill_{brand/location B}: string,
+   *    ...etc depends on number of comparison
+   * }
+   * and dividing the value by 100 as well
+   */
+
   let chartData: Array<ChartData> = [];
 
   for (let datum of data) {
@@ -302,6 +320,7 @@ function CustomTooltip(props: TooltipProps) {
       <TooltipTitle>{camelCaseToCapitalCase(label)}</TooltipTitle>
       {payload.map((data, index) => {
         let color = data.fill;
+        // The dataKey which includes 'value_' usually comes from the merged type chart e.g value_BrandA
         let key = data.dataKey.includes('value_')
           ? data.dataKey.replace('value_', '')
           : camelCaseToCapitalCase(data.dataKey);
@@ -351,9 +370,16 @@ function CustomizedTick(props: TickProps) {
   let { value } = payload;
   let splitMode = mode === 'split';
   let { isDesktop } = useViewport();
+  let foundObj = INDEX_OPTIONS.find((item) => item.value === value);
+  let stringValue = foundObj ? foundObj.label : value;
   return (
     <text
       x={isDesktop ? x - Y_AXIS_WIDTH + 10 : x - Y_AXIS_WIDTH_MOBILE + 10}
+      /**
+       * for non split mode (Overall Performance Desktop),
+       * the default tick (the text side by side with the chart should be 'Average Volume', etc)
+       * but since it will be used for the bar label, we need to move the text upper (y)
+       */
       y={splitMode ? y + 3 : y - 30 * (size / 2)}
       fontSize={splitMode ? 10 : FONT_SIZE_XSMALL}
       fill={splitMode ? DEFAULT_TEXT_COLOR : THEME_COLOR}
@@ -361,7 +387,7 @@ function CustomizedTick(props: TickProps) {
       textAnchor="start"
       fontFamily={FONT_FAMILY_NORMAL}
     >
-      {trimText(camelCaseToCapitalCase(value), isDesktop ? 50 : 35)}
+      {trimText(camelCaseToCapitalCase(stringValue), isDesktop ? 50 : 35)}
     </text>
   );
 }
@@ -387,7 +413,7 @@ function CustomizedLabel(
       fontSize={FONT_SIZE_XSMALL}
       textAnchor="start"
     >
-      {trimText(label.replace('value_', ''), isDesktop ? 50 : 35)}
+      {trimText(label.replace('value_', ''), 35)}
     </text>
   );
 }
@@ -424,6 +450,7 @@ const TableButton = styled(Button)`
   padding: 2px 5px;
   height: 20px;
   border-width: 0px;
+  margin-bottom: 10px;
 `;
 
 const ScrollContainer = styled(View)`
