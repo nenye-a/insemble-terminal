@@ -57,8 +57,6 @@ const FormContainer = styled(View)`
   padding: 24px;
 `;
 
-// TODO: change color to variable. currently if we put variable, the color is not passed
 const PurpleLink = styled(Link)`
-  color: #c9cbff;
   font-weight: ${FONT_WEIGHT_MEDIUM};
 `;

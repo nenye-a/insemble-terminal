@@ -1,5 +1,12 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip } from 'recharts';
+import React from 'react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';
 import styled, { css } from 'styled-components';
 
 import { View, Text } from '../../core-ui';
@@ -27,8 +34,6 @@ type ChartDatum = { [key: string]: any };
 
 export default function ActivityChart(props: Props) {
   let { data } = props;
-  let lineChartRef = useRef<HTMLDivElement | null>(null);
-  let [chartWidth, setChartWidth] = useState(700);
   let { isDesktop } = useViewport();
 
   let formattedData = [...data].map((item) => [...item.activityData]);
@@ -68,57 +73,35 @@ export default function ActivityChart(props: Props) {
     fontFamily: FONT_FAMILY_NORMAL,
   };
 
-  useEffect(() => {
-    let onResize = () => {
-      if (lineChartRef.current) {
-        setChartWidth(lineChartRef.current.getBoundingClientRect().width);
-      }
-    };
-
-    window.addEventListener('resize', onResize);
-    return () => {
-      window.removeEventListener('resize', onResize);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (lineChartRef.current) {
-      setChartWidth(lineChartRef.current.getBoundingClientRect().width);
-    }
-  }, [lineChartRef]);
-
   return (
     <Container>
       <ChartTitle isDesktop={isDesktop}>Customer Activity Index</ChartTitle>
       <ContentContainer isDesktop={isDesktop}>
-        <View flex ref={lineChartRef}>
+        <View flex>
           {!isDesktop && legendContent}
-          <LineChart
-            height={200}
-            width={chartWidth}
-            data={lineChartData}
-            margin={{ right: 5, top: 10 }}
-          >
-            <XAxis
-              dataKey="name"
-              tick={textStyle}
-              tickFormatter={(val) => val.toLowerCase().replace('m', '')}
-              interval={1}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={textStyle}
-              width={25}
-            />
-            <Tooltip
-              wrapperStyle={textStyle}
-              itemSorter={(item1, item2) =>
-                (item2 ? Number(item2.value) : 0) - Number(item1.value)
-              }
-            />
-            {lines}
-          </LineChart>
+          <ResponsiveContainer height={200}>
+            <LineChart data={lineChartData} margin={{ right: 5, top: 10 }}>
+              <XAxis
+                dataKey="name"
+                tick={textStyle}
+                tickFormatter={(val) => val.toLowerCase().replace('m', '')}
+                interval={1}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={textStyle}
+                width={25}
+              />
+              <Tooltip
+                wrapperStyle={textStyle}
+                itemSorter={(item1, item2) =>
+                  (item2 ? Number(item2.value) : 0) - Number(item1.value)
+                }
+              />
+              {lines}
+            </LineChart>
+          </ResponsiveContainer>
         </View>
         {isDesktop && legendContent}
       </ContentContainer>
