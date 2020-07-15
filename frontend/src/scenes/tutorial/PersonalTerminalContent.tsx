@@ -29,7 +29,7 @@ export default function PersonalTerminalContent() {
           <Text>Navigate To Terminals</Text>
         </View>
         <View flex>
-          <img src={terminalHeader} />
+          <img src={terminalHeader} alt="terminal-header" />
         </View>
       </Row>
       <Row>
@@ -37,7 +37,7 @@ export default function PersonalTerminalContent() {
           <Text>Add a new terminal</Text>
         </View>
         <View flex>
-          <img src={addTerminal} />
+          <img src={addTerminal} alt="add-terminal" />
         </View>
       </Row>
       <Paragraph style={{ paddingBottom: 0 }}>
