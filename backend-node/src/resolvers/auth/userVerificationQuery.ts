@@ -11,12 +11,22 @@ export let userVerification = queryField('userRegisterVerification', {
     }), // TODO: fix naming args
   },
   resolve: async (_, { verificationId }, context: Context) => {
+    /**
+     * Endpoint for polling if user verified.
+     * Then loged in the user if verified.
+     */
     let [verifyId, tokenQuery] = verificationId
       ? verificationId.split(':')
       : [];
     if (!verifyId || !tokenQuery) {
       throw new Error('Invalid verification code');
     }
+    /**
+     * The token we got from verificationId will be decoded into two, id and tokenQuery.
+     * Id used for searching the userRegisterVerification
+     * Then we check if the userVerification tokenQuery is the same as we got.
+     * NOTE: tokenQuery is different from emailQuery.
+     */
     let userVerificationId = Base64.decode(verifyId);
     let userTokenQuery = Base64.decode(tokenQuery);
     let userVerification = await context.prisma.userRegisterVerification.findOne(
@@ -26,6 +36,10 @@ export let userVerification = queryField('userRegisterVerification', {
         },
       },
     );
+    /**
+     * This part is checking if the verification is valid or not.
+     * If invalid then throw error.
+     */
     if (!userVerification) {
       throw new Error('Invalid verification ID');
     }
@@ -41,6 +55,9 @@ export let userVerification = queryField('userRegisterVerification', {
     if (userTokenQuery !== userVerification.tokenQuery) {
       throw new Error('Invalid token');
     }
+    /**
+     * If all check are good, then we create userSession to loged in User.
+     */
     return {
       ...userVerification,
       auth: {
