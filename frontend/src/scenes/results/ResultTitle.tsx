@@ -181,7 +181,7 @@ export default function ResultTitle(props: Props) {
   };
   return (
     <Container
-      // dont add padding horizontal if it's demo mode
+      // don't add padding horizontal if it's demo mode
       isDesktop={isDesktop || demo}
       {...(zoomIcon && { style: { alignItems: 'baseline' } })}
     >
