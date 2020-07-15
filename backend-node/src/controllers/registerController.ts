@@ -5,12 +5,20 @@ import { prisma } from '../prisma';
 import { FRONTEND_HOST } from '../constants/constants';
 
 export let registerHandler = async (req: Request, res: Response) => {
+  /**
+   * This function is for verify user register /register-verification/:token.
+   */
   let [verifyId, tokenEmail] = req.params.token
     ? req.params.token.split(':')
     : [];
   if (!verifyId || !tokenEmail) {
     throw new Error('Invalid verification code');
   }
+  /**
+   * The token we got from params will be decoded into two, id and tokenEmail.
+   * Id used for searching the userRegisterVerification
+   * Then we check if the verification tokenEmail is the same as we got.
+   */
   let verificationId = Base64.decode(verifyId);
   let decodedTokenEmail = Base64.decode(tokenEmail);
   let verification = await prisma.userRegisterVerification.findOne({
@@ -18,6 +26,10 @@ export let registerHandler = async (req: Request, res: Response) => {
       id: verificationId,
     },
   });
+  /**
+   * This part is checking if the verification is valid or not.
+   * If not we redirected user to front end to show the fail.
+   */
   if (!verification) {
     res.redirect(`${FRONTEND_HOST}/verification-failed/invalid`);
     return;
@@ -33,6 +45,11 @@ export let registerHandler = async (req: Request, res: Response) => {
   let { referralCode, ...user } = JSON.parse(verification.userInput);
   let userReferrer;
   if (referralCode) {
+    /**
+     * If there is referralCode on user register input then we refer the registered to referrer.
+     * The userId referrer is exist in referralInvitation. So if referralInvitation doesn't exist,
+     * then it won't refer to anyone.
+     */
     let invitationId = Base64.decode(referralCode);
     let referralInvitation = await prisma.referralInvitation.findOne({
       where: {

@@ -10,6 +10,9 @@ let editUserProfileResolver: FieldResolver<
   'Mutation',
   'editUserProfile'
 > = async (_: Root, { profile }, context: Context) => {
+  /**
+   * Endpoint for edit user profile.
+   */
   let currentUser = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -18,7 +21,9 @@ let editUserProfileResolver: FieldResolver<
   if (!currentUser) {
     throw new Error('User not found');
   }
-
+  /**
+   * Check if user change the email.
+   */
   if (
     profile.email &&
     profile.email.toLocaleLowerCase() !== currentUser.email
@@ -29,12 +34,18 @@ let editUserProfileResolver: FieldResolver<
         email: lowercasedEmail,
       },
     });
-
+    /**
+     * We throw error if the edited email is exist as user.
+     */
     if (emailExist && emailExist.id !== context.userId) {
       throw new Error('Email already exist');
     }
 
     let bytesEmail = await getRandomBytes(18);
+    /**
+     * If the email can be used then we create userEmailVerification.
+     * This will be used on emailVerificationController to verify the email.
+     */
     let userEmailVerification = await context.prisma.userEmailVerification.create(
       {
         data: {
@@ -59,7 +70,10 @@ let editUserProfileResolver: FieldResolver<
         id: context.userId,
       },
     });
-
+    /**
+     * This where we send the link to email in production.
+     * Or console the verifyCode if in dev.
+     */
     if (NODE_ENV === 'production') {
       sendVerificationEmail(
         {
@@ -75,6 +89,10 @@ let editUserProfileResolver: FieldResolver<
     }
   }
 
+  /**
+   * This the case that if user want to change password.
+   * We check the oldPassword first if it's correct then we proceed to change it with newPassword.
+   */
   if (profile.oldPassword && profile.newPassword) {
     if (!bcrypt.compareSync(profile.oldPassword, currentUser.password || '')) {
       throw new Error('Wrong current password');
