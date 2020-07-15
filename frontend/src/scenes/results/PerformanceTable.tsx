@@ -467,6 +467,8 @@ function TableRow(props: TableRowProps) {
             onMouseLeave={() => {
               setInfoboxVisible(false);
             }}
+            // adding this padding 1 so the white border not hidden
+            style={{ paddingBottom: 1 }}
           >
             {tableRow}
           </View>

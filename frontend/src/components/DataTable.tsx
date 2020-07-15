@@ -17,6 +17,7 @@ import {
 } from '../constants/theme';
 import { Direction } from '../types/types';
 import { SortConfig } from '../helpers/useSortableData';
+import { useViewport } from '../helpers';
 
 import SvgQuestionMark from './icons/question-mark-round';
 
@@ -40,7 +41,12 @@ type HeaderCellProps = CellProps & {
 };
 
 function DataTable({ children, ...otherProps }: Props) {
-  return <Container {...otherProps}>{children}</Container>;
+  let { isDesktop } = useViewport();
+  return (
+    <Container isDesktop={isDesktop} {...otherProps}>
+      {children}
+    </Container>
+  );
 }
 
 function HeaderCell({
@@ -130,9 +136,11 @@ let TextAlign = {
   right: 'right',
 };
 
-const Container = styled(View)`
+const Container = styled(View)<WithViewport>`
   box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.1);
   background-color: ${WHITE};
+  border-radius: ${({ isDesktop }) => (isDesktop ? '2px' : '0px')};
+  overflow: hidden;
 `;
 
 const Cell = styled(View)<CellProps>`
