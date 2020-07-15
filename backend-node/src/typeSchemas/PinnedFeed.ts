@@ -11,6 +11,10 @@ export let PinnedFeed = objectType({
     t.field('performanceTableType', {
       type: 'PerformanceTableType',
       resolve: async ({ tableType, tableId }) => {
+        /**
+         * This will check if table is PERFORMANCE
+         * then it will resolve its PerformanceTableType.
+         */
         let performanceTableType: PerformanceType | null = null;
         if (tableType === 'PERFORMANCE') {
           let performance = await prisma.performance.findOne({
@@ -29,6 +33,10 @@ export let PinnedFeed = objectType({
     t.field('ownershipTableType', {
       type: 'OwnershipType',
       resolve: async ({ tableType, tableId }) => {
+        /**
+         * This will check if table is OWNERSHIP_CONTACT or OWNERSHIP_INFO
+         * then it will resolve its OwnershipType.
+         */
         let ownershipType: OwnershipType | null = null;
         if (tableType === 'OWNERSHIP_CONTACT') {
           let ownershipContact = await prisma.ownershipContact.findOne({

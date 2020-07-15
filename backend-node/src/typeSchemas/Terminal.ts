@@ -11,6 +11,9 @@ export let Terminal = objectType({
     t.field('pinnedFeeds', {
       type: 'PinnedFeed',
       resolve: async ({ id }) => {
+        /**
+         * This for sorting the PinnedFeed by id (It's like createdAt) ascending.
+         */
         let pinnedFeeds = await prisma.pinnedFeed.findMany({
           where: { terminal: { id } },
           orderBy: { id: 'asc' },
