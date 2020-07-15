@@ -13,7 +13,6 @@ import {
   SLIGHT_GRAY,
   SHADOW_COLOR,
   THEME_COLOR,
-  WHITE,
 } from '../../constants/colors';
 import { useViewport } from '../../helpers';
 import { PerformanceTableType, DemoType } from '../../generated/globalTypes';
