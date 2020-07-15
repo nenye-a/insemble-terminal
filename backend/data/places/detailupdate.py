@@ -46,7 +46,7 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
             else:
                 collecting = False
 
-        google_details = google.get_many_google_details(places, timeout=30)
+        google_details = google.get_many_google_details(places, timeout=10)
 
         for details in google_details:
 
