@@ -3,8 +3,16 @@ import { rule, shield } from 'graphql-shield';
 import { Context } from 'serverTypes';
 
 let isUserAuthenticated = rule()(async (_, __, ctx: Context) => {
+  /**
+   * This function is checking if there is userId on the context or not.
+   */
   return ctx.userId != null;
 });
+
+/**
+ * This permission is determine if the endpoint should have userId (bearer token)
+ * or else it will throw error "Unauthenticated"
+ */
 
 let permissions = shield({
   Query: {
