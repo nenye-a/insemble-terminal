@@ -112,6 +112,7 @@ export default function OverviewContent() {
         data={[]}
         performanceType={PerformanceTableType.ADDRESS}
         disableHeader={true}
+        mobile={!isDesktop}
       />
       <SvgFourDotsArrow
         style={{ paddingTop: 30, alignSelf: 'center', color: SLIGHT_GRAY }}

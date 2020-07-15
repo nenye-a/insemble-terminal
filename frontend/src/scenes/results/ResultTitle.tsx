@@ -181,7 +181,8 @@ export default function ResultTitle(props: Props) {
   };
   return (
     <Container
-      isDesktop={isDesktop}
+      // dont add padding horizontal if it's demo mode
+      isDesktop={isDesktop || demo}
       {...(zoomIcon && { style: { alignItems: 'baseline' } })}
     >
       <Row flex>
@@ -216,7 +217,7 @@ export default function ResultTitle(props: Props) {
         {isDesktop && formattedCompareText && !zoomIcon ? (
           <CompareText>{formattedCompareText}</CompareText>
         ) : null}
-        {(isDesktop && !readOnly) || onClosePress ? (
+        {(isDesktop && !readOnly) || onClosePress || demo ? (
           <>
             {canCompare && reviewTag && tableId ? (
               <AddComparisonButton

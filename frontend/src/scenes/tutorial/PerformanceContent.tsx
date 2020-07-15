@@ -1,11 +1,10 @@
 import React from 'react';
 import styled from 'styled-components';
 
-import { Text as BaseText, View, Card } from '../../core-ui';
+import { Text as BaseText, View, Card, Pill } from '../../core-ui';
 import {
   FONT_WEIGHT_MEDIUM,
   DEFAULT_BORDER_RADIUS,
-  FONT_SIZE_SMALL,
   FONT_SIZE_LARGE,
   FONT_WEIGHT_BOLD,
 } from '../../constants/theme';
@@ -100,12 +99,14 @@ export default function PerformanceContent() {
         title="Overall Performance"
         performanceType={PerformanceTableType.OVERALL}
         demoType={DemoType.BASIC}
+        containerStyle={{ paddingBottom: 8 }}
       />
       {demonstrationText}
       <PerformanceResult
         title="By Location"
         performanceType={PerformanceTableType.ADDRESS}
         demoType={DemoType.BASIC}
+        containerStyle={{ paddingBottom: 8 }}
       />
       {demonstrationText}
       <Paragraph>
@@ -120,6 +121,7 @@ export default function PerformanceContent() {
         performanceType={PerformanceTableType.ADDRESS}
         demoType={DemoType.BASIC}
         initialView="graph"
+        containerStyle={{ paddingBottom: 8 }}
       />
       {demonstrationText}
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>Scopes</SubTitle>
@@ -128,44 +130,41 @@ export default function PerformanceContent() {
         County level searches will return data by city, and city level searches
         will return data by location.
       </Paragraph>
-      {SCOPES.map((scope, idx) => {
-        return (
-          <ScopesRow key={idx}>
-            <ScopesBar>
-              {scope.searchBar.map((search) => {
-                return (
-                  <ReviewTagContainer key={search}>
-                    <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
+      <View flex>
+        {SCOPES.map((scope, idx) => {
+          return (
+            <ScopesRow key={idx}>
+              <ScopesBar>
+                {scope.searchBar.map((search) => {
+                  return (
+                    <ReviewTagContainer key={search} primary={true}>
                       {search}
-                    </Text>
-                  </ReviewTagContainer>
-                );
-              })}
-            </ScopesBar>
-            <SvgFourDotsArrow
-              style={{
-                alignSelf: 'center',
-                color: SLIGHT_GRAY,
-                transform: 'rotate(270deg)',
-              }}
-            />
-            <ResultRow>
-              {scope.result.map((result) => {
-                return (
-                  <ResultContainer key={result.name}>
-                    <TableTypeText>{result.tableType}</TableTypeText>
-                    <ReviewTagContainer>
-                      <Text color={WHITE} fontSize={FONT_SIZE_SMALL}>
-                        {result.name}
-                      </Text>
                     </ReviewTagContainer>
-                  </ResultContainer>
-                );
-              })}
-            </ResultRow>
-          </ScopesRow>
-        );
-      })}
+                  );
+                })}
+              </ScopesBar>
+              <SvgFourDotsArrow
+                style={{
+                  width: 64,
+                  marginLeft: 8,
+                  color: SLIGHT_GRAY,
+                  transform: 'rotate(270deg)',
+                }}
+              />
+              <ResultRow flex>
+                {scope.result.map((result) => {
+                  return (
+                    <ResultContainer key={result.name}>
+                      <TableTypeText>{result.tableType}</TableTypeText>
+                      <ReviewTagContainer>{result.name}</ReviewTagContainer>
+                    </ResultContainer>
+                  );
+                })}
+              </ResultRow>
+            </ScopesRow>
+          );
+        })}
+      </View>
       <Text color={DARK_TEXT_COLOR} style={{ alignSelf: 'flex-start' }}>
         *Category searches will include {<BoldText>By Brand</BoldText>}, but
         otherwise follow same pattern
@@ -181,6 +180,7 @@ export default function PerformanceContent() {
         title="Overall Performance"
         performanceType={PerformanceTableType.OVERALL}
         demoType={DemoType.WITH_COMPARE}
+        containerStyle={{ paddingBottom: 8 }}
       />
       {demonstrationText}
       <BottomNavigation
@@ -236,29 +236,39 @@ const SearchBar = styled.img`
 `;
 
 const ScopesBar = styled(Card)`
-  padding: 5px 15px;
+  padding: 6px 12px;
   flex-direction: row;
+  max-width: 300px;
+  flex: 1;
 `;
 
-const ReviewTagContainer = styled(View)`
-  background-color: ${THEME_COLOR};
-  width: 88px;
-  height: 30px;
-  margin: 0px 5px;
-  align-items: center;
+const ReviewTagContainer = styled(Pill)`
+  padding: 4px;
+  flex: 1;
+  margin-right: 8px;
+  width: 100%;
+  display: flex;
   justify-content: center;
-  border-radius: ${DEFAULT_BORDER_RADIUS};
+  align-items: center;
+  &:last-of-type {
+    margin: 0;
+  }
 `;
 
 const ResultRow = styled(View)`
-  padding: 5px 15px;
+  padding: 30px 8px;
   flex-direction: row;
-  width: 250px;
+  flex-wrap: wrap;
+  max-width: 360px;
+  width: 100%;
   justify-content: center;
+  flex: 1;
 `;
 
 const ResultContainer = styled(View)`
-  margin: 5px;
+  margin: 12px;
+  max-width: 120px;
+  width: 100%;
   align-items: center;
 `;
 
@@ -273,7 +283,5 @@ const ScopesRow = styled(View)`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  align-self: center;
-  margin: 15px;
   width: 100%;
 `;
