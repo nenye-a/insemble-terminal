@@ -7,6 +7,10 @@ export let deleteComparisonResolver: FieldResolver<
   'Mutation',
   'deleteComparison'
 > = async (_, { reviewTag, comparationTagId, tableId }, context: Context) => {
+  /**
+   * Endpoint for delete comparison in table.
+   * NOTE: It actually used not as endpoint but resolver on updateComparisonMutation.
+   */
   let comparationTag = await context.prisma.comparationTag.findOne({
     where: {
       id: comparationTagId,
@@ -14,6 +18,9 @@ export let deleteComparisonResolver: FieldResolver<
     include: { businessTag: true, locationTag: true },
   });
 
+  /**
+   * Check selected comparationTag we want to remove from table.
+   */
   if (!comparationTag) {
     throw new Error('Comparation tag not found');
   }
@@ -23,6 +30,10 @@ export let deleteComparisonResolver: FieldResolver<
   let newComparationIds: Array<string> = [];
   let tables;
   switch (reviewTag) {
+    /**
+     * Then we will check the table by reviewTag.
+     * The step are the same every reviewTag (1-6)
+     */
     case 'PERFORMANCE':
       table = await context.prisma.performance.findOne({
         where: { id: tableId },
@@ -45,10 +56,22 @@ export let deleteComparisonResolver: FieldResolver<
       if (!table) {
         throw new Error('Selected table not found.');
       }
+      /**
+       * (1)
+       * Map the comparationTags into array of string ids so it's easy to manage.
+       */
       selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      /**
+       * (2)
+       * Filter out the selected comparation we want to remove from table.
+       */
       newComparationIds = selectedComparationIds.filter(
         (id) => id !== selectedComparationId,
       );
+      /**
+       * (3)
+       * Search all tables that doesn't have the comparation we want to remove.
+       */
       tables = await context.prisma.performance.findMany({
         where: {
           comparationTags: {
@@ -74,6 +97,12 @@ export let deleteComparisonResolver: FieldResolver<
           },
         },
       });
+      /**
+       * (4)
+       * Then fillter out the tables that doesn't have the comparation we want
+       * to remove with exactly comparationIds we filter before.
+       * (Must include all newComparationIds and same length)
+       */
       tables = tables.filter(({ comparationTags }) => {
         return (
           comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
@@ -81,6 +110,10 @@ export let deleteComparisonResolver: FieldResolver<
         );
       });
       if (!tables.length) {
+        /**
+         * (5)
+         * If the table doesn't exist then we create new one.
+         */
         let connectNewCompIds = newComparationIds.map((compId) => {
           return { id: compId };
         });
@@ -122,6 +155,10 @@ export let deleteComparisonResolver: FieldResolver<
           },
         });
       } else {
+        /**
+         * (6)
+         * Else we put the tables with the first found(index 0).
+         */
         table = tables[0];
       }
       return {
@@ -538,6 +575,11 @@ export let deleteComparisonResolver: FieldResolver<
       };
     default:
   }
+  /**
+   * If there are no reviewTag on above (ex:OWNERSHIP_CONTACT)
+   * Then just return empty tags.
+   * NOTE: This for table who can compare.
+   */
   return {
     reviewTag,
     tableId: '',
