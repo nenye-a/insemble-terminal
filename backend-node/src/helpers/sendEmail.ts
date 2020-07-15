@@ -24,7 +24,7 @@ async function sendVerificationEmail(
   link: string,
 ) {
   /**
-   * This function and bellow are for constructing email template and send it with sgMail.
+   * This function and below are for constructing email template and send it with sgMail.
    * The variable construct with ejs.render are found on the template which have <%= %>.
    * If the variable is name then it will render on <%= name %>
    */
