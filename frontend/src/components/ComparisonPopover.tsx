@@ -144,6 +144,7 @@ export default function ComparisonPopover(props: Props) {
         fill: circleColor,
       };
     };
+    // callback to refetch the new result using the new tableId
     onTableIdChange && onTableIdChange(tableId);
     let newSortOrder: Array<string> = [];
     if (sortOrder && onSortOrderChange) {

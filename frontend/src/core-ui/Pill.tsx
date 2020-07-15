@@ -12,6 +12,7 @@ import {
 import {
   FONT_FAMILY_NORMAL,
   FONT_SIZE_NORMAL,
+  FONT_WEIGHT_MEDIUM,
   DEFAULT_BORDER_RADIUS,
 } from '../constants/theme';
 
@@ -61,6 +62,7 @@ const defaultPillStyle = css`
   background: ${WHITE};
   color: ${DEFAULT_TEXT_COLOR};
   font-family: ${FONT_FAMILY_NORMAL};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
     border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 `;

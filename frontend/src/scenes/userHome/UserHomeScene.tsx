@@ -7,7 +7,7 @@ import {
   SearchPlaceholder,
   SearchFilterBar,
   ReferralButton,
-  // TutorialButton,
+  TutorialButton,
 } from '../../components';
 import { useViewport } from '../../helpers';
 import { useAuth } from '../../context/AuthContext';
@@ -41,7 +41,7 @@ export default function UserHomeScene() {
         }}
       >
         <ReferralButton />
-        {/* <TutorialButton style={{ paddingTop: 22 }} /> */}
+        <TutorialButton style={{ paddingTop: 22 }} />
       </View>
       <InsembleLogo color="purple" size="big" />
       <SearchBarContainer>
