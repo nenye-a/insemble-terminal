@@ -3,7 +3,7 @@ import styled from 'styled-components';
 
 import { View, Text, Link } from '../../core-ui';
 import { FONT_WEIGHT_MEDIUM, FONT_SIZE_XSMALL } from '../../constants/theme';
-import { GRAY, SHADOW_COLOR, WHITE } from '../../constants/colors';
+import { GRAY, SHADOW_COLOR, WHITE, LINK_COLOR } from '../../constants/colors';
 
 type Props = {
   name?: string;
@@ -37,7 +37,9 @@ export default function OwnershipInformationCard(props: Props) {
       </Row>
       <Row>
         <LabelText>Website</LabelText>
-        <Link href={website}>{website}</Link>
+        <Link href={website} style={{ color: LINK_COLOR }}>
+          {website}
+        </Link>
       </Row>
       <LastUpdateText>
         Last Updated: {new Date(lastUpdate).toString()}
