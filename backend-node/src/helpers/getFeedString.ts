@@ -3,6 +3,15 @@ import { TableParams } from 'dataTypes';
 import { LocationTagType } from '@prisma/client';
 
 export default function getFeedString(tableParams: TableParams) {
+  /**
+   * This function is creating the table params into readable string.
+   * example input:
+   * Table{ tableType:"PERFORMANCE", type:"OVERALL",
+   * businessTag:{params:"Starbucks",type:"BUSINESS"},
+   * locationTag:{params:"Atlanta, GA",type:"CITY"}}
+   * output:
+   * "Starbucks Business Performance by Overall in Atlanta, GA City"
+   */
   let { tableType, type, businessTag, locationTag } = tableParams;
   let formattedReview = tableType
     ? type

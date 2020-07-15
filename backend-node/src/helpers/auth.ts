@@ -4,6 +4,9 @@ import { User } from '@prisma/client';
 
 export async function authSession(authToken: string | undefined) {
   let [sessionID, sessionToken] = authToken ? authToken.split(':') : [];
+  /**
+   * This function is for checking if the authToken is valid by checking our userSession id and token.
+   */
   if (!sessionID || !sessionToken) {
     return null;
   }
@@ -25,6 +28,9 @@ export async function authSession(authToken: string | undefined) {
 }
 
 export async function createSession(user: User) {
+  /**
+   * This function is for creating userSession with random generated token.
+   */
   let bytes = await getRandomBytes(18);
   let sessionData = {
     data: {

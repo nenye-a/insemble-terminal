@@ -1,6 +1,10 @@
 export let axiosParamsSerializer = (params: {
   [key: string]: string;
 }): string => {
+  /**
+   * This function is created for customization of params axios fetch.
+   * We parse the params to be uri encoded and change back all square bracket and coma to original (not encoded)
+   */
   let queryString = Object.keys(params)
     .filter((key) => params[key])
     .map((key) => {
