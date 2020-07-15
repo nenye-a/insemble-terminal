@@ -2,7 +2,7 @@ import React, { CSSProperties, MouseEvent } from 'react';
 import styled from 'styled-components';
 
 import { isLocalUrl } from '../helpers';
-import { FONT_SIZE_NORMAL } from '../constants/theme';
+import { FONT_SIZE_NORMAL, FONT_FAMILY_NORMAL } from '../constants/theme';
 import { PURPLE_LINK } from '../constants/colors';
 
 type Props = TextProps & {
@@ -41,7 +41,7 @@ export default function Link(props: Props) {
 }
 
 const StyledA = styled.a`
-  font-family: 'Avenir';
+  font-family: ${FONT_FAMILY_NORMAL};
   font-size: ${FONT_SIZE_NORMAL};
   text-decoration: none;
   color: ${PURPLE_LINK};
