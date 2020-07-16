@@ -616,7 +616,8 @@ def crit_contact_block_to_dict(company, block):
     if not name:
         return None
 
-    contact_dict['first_name'], contact_dict['last_name'] = split_name(name) if name else (None, None)
+    contact_dict['first_name'], contact_dict['last_name'] = split_name(
+        name) if name else (None, None)
     contact_dict['title'] = title
 
     return contact_dict
@@ -1051,10 +1052,12 @@ def parse_crit_csv(file):
     # currently unused, but could be
     df['parent_company'] = df['parent_company'].apply(lambda x: x.replace(
         "Parent Company:", "").strip() if np.all(pd.notnull(x)) else None)
-    df['headquarters'] = df['headquarters'].apply(lambda x: x.replace("Headquarters:", "").strip() if np.all(pd.notnull(x)) else None)
+    df['headquarters'] = df['headquarters'].apply(lambda x: x.replace(
+        "Headquarters:", "").strip() if np.all(pd.notnull(x)) else None)
     df['num_locations'] = df['num_locations'].apply(lambda x: int(
         x.replace("Locations:", "").strip()) if np.all(pd.notnull(x)) else None)
-    df['bus_type'] = df['bus_type'].apply(lambda x: x.replace("Business:", "").strip() if np.all(pd.notnull(x)) else None)
+    df['bus_type'] = df['bus_type'].apply(lambda x: x.replace(
+        "Business:", "").strip() if np.all(pd.notnull(x)) else None)
     df['property_pref'] = df['property_pref'].apply(
         lambda x: re.sub(' +', ' ', x.replace('\n', '')).replace('Property: ', '') if np.all(pd.notnull(x)) else None)
 
@@ -1083,19 +1086,9 @@ if __name__ == "__main__":
 
         print([contact_block_to_dict(block) for block in blocks])
 
-    get_collection_stats('main_contact_db')
+    # get_collection_stats('main_contact_db')
     # get_contacts_domains('main_contact_db')
     # get_contacts_emails('main_contact_db')
     # prune_bad_apples('main_contact_db')
 
-    # firstquarter = parse_crit_csv(THIS_DIR + '/files/crittenden_first_quarter.csv')
-    # secondquarter = parse_crit_csv(THIS_DIR + '/files/crittenden_second_quarter.csv')
-    # # secondhalf = parse_crit_csv(THIS_DIR + '/files/crittenden_second_half.csv')
-
-    # # firstquarter.to_csv(THIS_DIR + '/files/firstquarter.csv')
-    # secondquarter.to_csv(THIS_DIR + '/files/secondquarter.csv')
-    # # secondhalf.to_csv(THIS_DIR + '/files/secondhalf.csv')
-
-    # # insert_from_csv('temp_collection', 'firstquarter.csv')
-    # insert_from_csv('temp_collection', 'secondquarter.csv')
-    # insert_from_csv('temp_collection', 'secondhalf.csv')
+    print_to_csv('main_contact_db')
