@@ -81,15 +81,15 @@ export default function Dropdown<T>(props: Props<T>) {
         setInputItems(options);
       }
 
-      if (tabPressed && !selectedItem) {
-        if (!selectedItem) {
-          // when user pressing tab, this function still be called
-          // with inputValue === '' and selectedItem as undefined,
-          // so we're ignoring the changes and set the tabPressed state
-          // back to false
-        } else if (selectedItem) {
+      if (tabPressed) {
+        if (selectedItem) {
           // pressing tab when dropdown is open
           onOptionSelected(selectedItem);
+        } else {
+          // when user pressing tab, this function still be called
+          // with inputValue === '' and selectedItem as undefined,
+          // so we're ignoring the changes and set the `tabPressed` state
+          // back to false
         }
         setTabPressed(false);
       } else {
