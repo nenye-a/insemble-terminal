@@ -15,7 +15,15 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
   { businessTagId, locationTagId, tableId, demo },
   context: Context,
 ) => {
+  /**
+   * Endpoint for geting news table. This is polling endpoint.
+   * If there is demo in args then it's automaticaly use demo data.
+   * demo consist 'BASIC' and 'WITH_COMPARE'
+   */
   if (demo) {
+    /**
+     * Here we search all table with the same demo params.
+     */
     let demoTables = await context.prisma.news.findMany({
       where: {
         demo,
@@ -23,11 +31,17 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
     });
     let demoTable;
     if (!demoTables.length) {
+      /**
+       * If it's doesn't exist then we create new with this parameter.
+       */
       let businessTag: BusinessTagCreateInput = {
         params: 'Starbucks',
         type: 'BUSINESS',
       };
       let demoBusinessTag;
+      /**
+       * Here we checking if tag exist or not.
+       */
       let businessTagsCheck = await context.prisma.businessTag.findMany({
         where: {
           params: businessTag.params,
@@ -35,8 +49,14 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         },
       });
       if (businessTagsCheck.length) {
+        /**
+         * If exist then use the first found.
+         */
         demoBusinessTag = businessTagsCheck[0];
       } else {
+        /**
+         * Else create new tags.
+         */
         demoBusinessTag = await context.prisma.businessTag.create({
           data: {
             params: businessTag.params,
@@ -49,6 +69,9 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         type: 'CITY',
       };
       let demoLocationTag;
+      /**
+       * Here we checking if tag exist or not.
+       */
       let locationTagsCheck = await context.prisma.locationTag.findMany({
         where: {
           params: locationTag.params,
@@ -56,8 +79,14 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         },
       });
       if (locationTagsCheck.length) {
+        /**
+         * If exist then use the first found.
+         */
         demoLocationTag = locationTagsCheck[0];
       } else {
+        /**
+         * Else create new tags.
+         */
         demoLocationTag = await context.prisma.locationTag.create({
           data: {
             params: locationTag.params,
@@ -66,7 +95,15 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         });
       }
       switch (demo) {
+        /**
+         * Here we separate the case base on demo params.
+         * It's because both of them is different table with different set of data.
+         */
         case 'BASIC':
+          /**
+           * If BASIC then we're just add NewsDemoData.
+           * The demo data can be seen at demoData.ts.
+           */
           demoTable = await context.prisma.news.create({
             data: {
               data: {
@@ -79,9 +116,17 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
           });
           break;
         case 'WITH_COMPARE':
+          /**
+           * There's no news compare demo now.
+           */
           break;
       }
     } else {
+      /**
+       * If there's already demo table then we use the first found.
+       * NOTE: because it's first found, multiple demo (example:BASIC)
+       * table will be ignored except there is another search value.
+       */
       demoTable = demoTables[0];
     }
 
@@ -91,6 +136,10 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       error: null,
     };
   }
+  /**
+   * If not demo table we check if there is businessTagId and locationTagId
+   * and get the tag.
+   */
   let businessTag = businessTagId
     ? await context.prisma.businessTag.findOne({
         where: {
@@ -106,6 +155,11 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       })
     : undefined;
   let news;
+  /**
+   * Or the user already know the table want to get with tableId. (Usally used
+   * on pinned and comparation table)
+   * It will search table by Id here.
+   */
   if (tableId) {
     let selectedNewsById = await context.prisma.news.findOne({
       where: { id: tableId },
@@ -124,6 +178,9 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       throw new Error('Table not found');
     }
     if (selectedNewsById.demo) {
+      /**
+       * But if it's demo then we won't do anything to that table and just return it.
+       */
       return {
         table: selectedNewsById,
         polling: false,
@@ -132,6 +189,9 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
     }
     news = [selectedNewsById];
   } else {
+    /**
+     * If it's not by id then we search it with business and location tag.
+     */
     news = await context.prisma.news.findMany({
       where: {
         businessTag: businessTag ? { id: businessTag.id } : null,
@@ -149,14 +209,30 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         },
       },
     });
+    /**
+     * Here we search for table who doesn't have any comparation. (BASIC TABLE)
+     */
     news = news.filter(({ comparationTags }) => comparationTags.length === 0);
   }
 
   let selectedNewsTable;
+  /**
+   * Here we check if the table exist from process above.
+   */
   if (news.length) {
+    /**
+     * If exist then we're just use the first found table.
+     */
     selectedNewsTable = news[0];
     let selectedTable = news[0];
     if (selectedNewsTable.error) {
+      /**
+       * Because it's polling the error can come not in sync,
+       * if there is an error on selectedNewsTable then we return it here
+       * and remove it so next poll wont show error anymore.
+       * And also we make it updatedAt outdated because if it's not, by default
+       * updatedAt will replaced to today, this will prevent table to reupdate.
+       */
       let table = await context.prisma.news.update({
         where: {
           id: selectedTable.id,
@@ -173,8 +249,15 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       };
     }
     let updateData = timeCheck(selectedNewsTable.updatedAt, TABLE_UPDATE_TIME);
+    /**
+     * If selectedNewsTable process is not polling
+     * and the data must be updated then we start the process polling.
+     */
     if (updateData) {
       if (!selectedNewsTable.polling) {
+        /**
+         * Here we flag the news as polling.
+         */
         selectedNewsTable = await context.prisma.news.update({
           where: { id: selectedTable.id },
           data: {
@@ -191,6 +274,10 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
             },
           },
         });
+        /**
+         * Here we fetch for main data first. This will run async so we got
+         * promise here.
+         */
         let mainDataPromise = axios.get(`${API_URI}/api/news`, {
           params: {
             location: selectedNewsTable.locationTag
@@ -208,9 +295,16 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
           },
           paramsSerializer: axiosParamsSerializer,
         });
+        /**
+         * Here we create array to keep all of the compare promise and compareId.
+         */
         let compareDataPromises: Array<Promise<AxiosResponse>> = [];
         let compareIds: Array<string> = [];
         for (let comparationTag of selectedNewsTable.comparationTags) {
+          /**
+           * And here we fetch every comparationTags combination and
+           * get all compare promises.
+           */
           let compareDataPromise = axios.get(`${API_URI}/api/news`, {
             params: {
               location: comparationTag.locationTag
@@ -228,13 +322,28 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
             },
             paramsSerializer: axiosParamsSerializer,
           });
+          /**
+           * Here we put the compareId and comparePromise into array that we
+           * create before.
+           */
           compareDataPromises.push(compareDataPromise);
           compareIds.push(comparationTag.id);
         }
+        /**
+         * Promise.all will be called if all of the promise(Fetch) complete.
+         * using ".then()" function to run after it's all complete.
+         */
         Promise.all([mainDataPromise, ...compareDataPromises])
           .then(async (value) => {
+            /**
+             * Here we separate main data and compare data responses.
+             */
             let [mainResponse, ...compareResponses] = value;
             let mainData: PyNewsResponse = mainResponse.data;
+            /**
+             * Here we parse news data we got from response into our
+             * db type.
+             */
             let newsData = mainData.data.map(
               ({ title, description, link, published, source, relevance }) => {
                 return {
@@ -251,6 +360,10 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               compareId: string;
             }> = [];
             for (let [index, compareResponse] of compareResponses.entries()) {
+              /**
+               * Here every compareResponses the data we put all data we get
+               * into one array.
+               */
               let compareData: PyNewsResponse = compareResponse.data;
               rawCompareData = rawCompareData.concat(
                 compareData.data.map((data) => ({
@@ -259,6 +372,10 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
                 })),
               );
             }
+            /**
+             * And then we parse compare news data we got from response into our
+             * db type.
+             */
             let compareData = rawCompareData.map(
               ({
                 title,
@@ -280,6 +397,9 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
                 };
               },
             );
+            /**
+             * Here we delete all old data and compareData.
+             */
             await context.prisma.newsData.deleteMany({
               where: {
                 news: {
@@ -294,6 +414,9 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
                 },
               },
             });
+            /**
+             * Then finally we update the table here with data we parse above.
+             */
             await context.prisma.news.update({
               where: { id: selectedTable.id },
               data: {
@@ -305,6 +428,11 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
             });
           })
           .catch(async () => {
+            /**
+             * ".catch" is if the fetch failed. We put the error here.
+             * Then mark the updatedAt as outdated and polling false
+             * so if it run again it will poll again.
+             */
             await context.prisma.news.update({
               where: { id: selectedTable.id },
               data: {
@@ -317,6 +445,12 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       }
     }
   } else {
+    /**
+     * Here is the case when there is no basic table.
+     * So we create one here. Basically the same as above but without
+     * comparison. So only one promise for main data.
+     * First we create the empty table.
+     */
     let newSelectedNewsTable = await context.prisma.news.create({
       data: {
         polling: true,
@@ -340,6 +474,11 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       },
     });
     selectedNewsTable = newSelectedNewsTable;
+    /**
+     * Here we fetch to python API to get the latest data.
+     * We're not await it so this function will fetch,
+     * after fetch done the ".then"  will run async.
+     */
     axios
       .get(`${API_URI}/api/news`, {
         params: {
@@ -354,6 +493,10 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       })
       .then(async (response) => {
         let newsUpdate: PyNewsResponse = response.data;
+        /**
+         * Here we parse news data we got from response into our
+         * db type.
+         */
         let newsData = newsUpdate.data.map(
           ({ title, description, link, published, source, relevance }) => {
             return {
@@ -366,6 +509,9 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
             };
           },
         );
+        /**
+         * Then we update the empty table with the data here.
+         */
         await context.prisma.news.update({
           where: {
             id: newSelectedNewsTable.id,
@@ -384,6 +530,11 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         });
       })
       .catch(async () => {
+        /**
+         * ".catch" is if the fetch failed. We put the error here.
+         * Then mark the updatedAt as outdated and polling false
+         * so if it run again it will poll again.
+         */
         await context.prisma.news.update({
           where: { id: newSelectedNewsTable.id },
           data: {
@@ -394,6 +545,10 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         });
       });
   }
+  /**
+   * Here we return all data front end need.
+   * Including polling status, error message, and table.
+   */
   return {
     table: selectedNewsTable,
     polling: selectedNewsTable.polling,
