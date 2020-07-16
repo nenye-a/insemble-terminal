@@ -6,6 +6,9 @@ export let activateAccountResolver: FieldResolver<
   'Mutation',
   'activateAccount'
 > = async (_, { activationToken }, context: Context) => {
+  /**
+   * Endpoint for activate user account.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -19,14 +22,23 @@ export let activateAccountResolver: FieldResolver<
     throw new Error('User not found!');
   }
 
+  /**
+   * User check if ADMIN then it no need to activate.
+   */
   if (user.role === 'ADMIN') {
     throw new Error('No need to activate license for admin.');
   }
 
+  /**
+   * If user already have license then return.
+   */
   if (user.license) {
     return user;
   }
 
+  /**
+   * activationToken is consist of masterToken and licenseToken.
+   */
   let [masterToken, licenseToken] = activationToken
     ? activationToken.split(':')
     : [];
@@ -43,6 +55,10 @@ export let activateAccountResolver: FieldResolver<
     },
   });
 
+  /**
+   * If one of them is invalid then will throw error.
+   * And if the license already have user linked then throw error used.
+   */
   if (!license || masterLicenseId !== license.masterLicense.id) {
     throw new Error('Invalid license token.');
   }
@@ -51,6 +67,9 @@ export let activateAccountResolver: FieldResolver<
     throw new Error('License already used.');
   }
 
+  /**
+   * If all check are done then user will be linked with the license.
+   */
   await context.prisma.user.update({
     where: { id: user.id },
     data: {
