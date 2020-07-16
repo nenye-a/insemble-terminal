@@ -7,6 +7,10 @@ let searchQueryResolver: FieldResolver<'Query', 'search'> = async (
   { searchId },
   context: Context,
 ) => {
+  /**
+   * Endpoint for send back tags from searchLog with searchId.
+   * This for history search so we can back to prev search.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -17,6 +21,9 @@ let searchQueryResolver: FieldResolver<'Query', 'search'> = async (
     throw new Error('User not found!');
   }
 
+  /**
+   * Here we search the searchLog.
+   */
   let search = await context.prisma.searchLog.findOne({
     where: {
       id: searchId,
@@ -24,6 +31,11 @@ let searchQueryResolver: FieldResolver<'Query', 'search'> = async (
     include: { user: true, businessTag: true, locationTag: true },
   });
 
+  /**
+   * Then we check if the search history is exist and also check is it his/her
+   * search log or not.
+   * If not then throw error with message.
+   */
   if (!search) {
     throw new Error('Invalid search id.');
   }
