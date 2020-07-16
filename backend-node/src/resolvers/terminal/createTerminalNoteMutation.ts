@@ -15,15 +15,6 @@ export let createTerminalNoteResolver: FieldResolver<
   if (!user) {
     throw new Error('User not found!');
   }
-  let table = await context.prisma.note.create({
-    data: {
-      title,
-      content,
-      user: {
-        connect: { id: user.id },
-      },
-    },
-  });
 
   let selectedTerminal = await context.prisma.terminal.findOne({
     where: {
@@ -43,6 +34,16 @@ export let createTerminalNoteResolver: FieldResolver<
   if (selectedTerminal.user.id !== user.id) {
     throw new Error('This is not your terminal.');
   }
+
+  let table = await context.prisma.note.create({
+    data: {
+      title,
+      content,
+      user: {
+        connect: { id: user.id },
+      },
+    },
+  });
 
   await context.prisma.pinnedFeed.create({
     data: {
