@@ -7,6 +7,9 @@ let businessTagsResolver: FieldResolver<'Query', 'businessTags'> = async (
   _args,
   context: Context,
 ) => {
+  /**
+   * Endpoint for returning list of all existing businessTags.
+   */
   let businessTags = await context.prisma.businessTag.findMany();
   return businessTags;
 };
