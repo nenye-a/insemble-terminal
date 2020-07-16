@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isEqual<T, U>(a: any, b: any): boolean {
+  // Use this (instead of '===') to compare if 2 objects are equal
   if (a == null && b == null) {
     return true;
   } else if (a == null || b == null) {

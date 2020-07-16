@@ -1,20 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 
 import { View, Text } from '../../core-ui';
 import { DataTable } from '../../components';
-import { WHITE, THEME_COLOR } from '../../constants/colors';
+import { WHITE, THEME_COLOR, LIGHT_PURPLE } from '../../constants/colors';
 import { MergedMapData, Direction } from '../../types/types';
 import { GetMap_mapTable_data_coverageData as MapBusiness } from '../../generated/GetMap';
-import { useSortableData, useViewport } from '../../helpers';
+import { useSortableData, useViewport, isEqual } from '../../helpers';
 
 type Props = {
   data: Array<MergedMapData>;
-  hoverFunction: React.Dispatch<React.SetStateAction<MapBusiness | undefined>>;
+  // to highlight pins of the selected/hovered row
+  highlightFn: React.Dispatch<React.SetStateAction<MapBusiness | undefined>>;
 };
 
 export default function MapTable(props: Props) {
-  let { data, hoverFunction } = props;
+  let { data, highlightFn } = props;
+  let [selectedRow, setSelectedRow] = useState<MapBusiness | null>(null);
   let allMapCoverageData: Array<MapBusiness> = [];
   data.forEach(({ coverageData }) => {
     allMapCoverageData = allMapCoverageData.concat(coverageData);
@@ -54,25 +56,49 @@ export default function MapTable(props: Props) {
           </DataTable.HeaderCell>
         </DataTable.HeaderRow>
         <DataTable.Body flex style={{ maxHeight: isDesktop ? 260 : 130 }}>
-          {sortedData.map((row, index) => (
-            <DataTable.Row
-              key={'coverage-table-' + row.businessName + index}
-              onMouseEnter={() => {
-                hoverFunction(row);
-              }}
-              onMouseLeave={() => {
-                hoverFunction(undefined);
-              }}
-              onPress={() => {
-                // for mobile since they cannot hover
-                hoverFunction(row);
-              }}
-              style={{ cursor: 'pointer' }}
-            >
-              <DataTable.Cell width={200}>{row.businessName}</DataTable.Cell>
-              <DataTable.Cell align="right">{row.numLocations}</DataTable.Cell>
-            </DataTable.Row>
-          ))}
+          {sortedData.map((row, index) => {
+            let rowIsSelected = isEqual(row, selectedRow);
+            return (
+              <DataTable.Row
+                key={'coverage-table-' + row.businessName + index}
+                onMouseEnter={() => {
+                  highlightFn(row);
+                }}
+                onMouseLeave={() => {
+                  /**
+                   * if there's still selectedRow, highlight back the pins of the row,
+                   * else, go back to default state.
+                   */
+                  if (selectedRow) {
+                    highlightFn(selectedRow);
+                  } else {
+                    highlightFn(undefined);
+                  }
+                }}
+                onPress={() => {
+                  /**
+                   * if the user pressed on the same row as the selected row then deselect the row
+                   */
+                  if (rowIsSelected) {
+                    setSelectedRow(null);
+                    highlightFn(undefined);
+                  } else {
+                    setSelectedRow(row);
+                    highlightFn(row);
+                  }
+                }}
+                style={{
+                  cursor: 'pointer',
+                  backgroundColor: rowIsSelected ? LIGHT_PURPLE : WHITE,
+                }}
+              >
+                <DataTable.Cell width={200}>{row.businessName}</DataTable.Cell>
+                <DataTable.Cell align="right">
+                  {row.numLocations}
+                </DataTable.Cell>
+              </DataTable.Row>
+            );
+          })}
         </DataTable.Body>
       </DataTable>
     </Container>

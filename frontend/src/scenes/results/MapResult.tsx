@@ -175,7 +175,7 @@ export default function MapResult(props: Props) {
             <CoverageTable
               key="coverage-table"
               data={loading ? prevData : coloredData}
-              hoverFunction={setSelectedBusiness}
+              highlightFn={setSelectedBusiness}
             />
             <CoverageMap
               key="coverage-map"
