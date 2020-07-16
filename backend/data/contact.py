@@ -274,8 +274,6 @@ def get_email(first, last, domain):
         api_field='api_key'
     )
 
-    print(response)
-
     if utils.inbool(response, 'data') and utils.inbool(response['data'], 'email'):
         return response['data']['email']
     else:
@@ -334,10 +332,15 @@ def get_domain(business_name, in_parallel=False):
     else:
         collection = utils.DB_DOMAINS
 
-    domain = collection.find_one({
-        # TODO: handle if multiple domains are linked to this company
-        'companies': {'$regex': business_name}
-    })
+    try:
+        domain = collection.find_one({
+            # TODO: handle if multiple domains are linked to this company
+            'companies': {'$regex': business_name}
+        })
+    except Exception:
+        print("Failed on ", utils.adjust_case(business_name))
+        return None
+
     if domain:
         return domain['domain']
 
@@ -400,4 +403,5 @@ if __name__ == "__main__":
     def test_get_email():
         print(get_email("Kate", "Jay", "verizonwireless.com"))
 
-    test_get_domain()
+    # test_get_domain()
+    # test_get_email()

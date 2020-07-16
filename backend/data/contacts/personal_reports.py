@@ -238,10 +238,10 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
                     "type": {"$ne": None}
                 }))
 
-    # if subsidaries weren't found, find well known retailer
-    # in their area to get activity and performance from
-    print("No subsidiaries found. Attempting to find "
-          "well known default retailer {} nearby".format(DEFAULT_BRAND))
+        # if subsidaries weren't found, find well known retailer
+        # in their area to get activity and performance from
+        print("No subsidiaries found. Attempting to find "
+              "well known default retailer {} nearby".format(DEFAULT_BRAND))
 
     if not matches:
         processed_default = preprocess.preprocess(DEFAULT_BRAND)
