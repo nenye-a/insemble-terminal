@@ -37,6 +37,7 @@ type TripleDotsPopoverProps = {
   removePinFn: () => void;
   removePinLoading: boolean;
   canCompare?: boolean;
+  canExport?: boolean;
   csvData?: Array<object>;
   csvHeader?: Array<CSVHeader>;
   filename?: string;
@@ -92,6 +93,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
     removePinFn,
     removePinLoading,
     canCompare,
+    canExport,
     csvData,
     csvHeader,
     filename,
@@ -159,7 +161,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
           <PurpleText>Terminals</PurpleText>
         </ButtonContainer>
       )}
-      {csvData && csvData.length > 0 && (
+      {canExport && csvData && csvData.length > 0 && (
         <CSVLink
           data={csvData}
           headers={csvHeader}

@@ -72,6 +72,7 @@ type Props = {
   demo?: boolean;
   onClosePress?: () => void;
   zoomIcon?: 'pin' | 'compare';
+  canExport?: boolean;
   csvData?: Array<object>;
   csvHeader?: Array<CSVHeader>;
 };
@@ -104,6 +105,7 @@ export default function ResultTitle(props: Props) {
     zoomIcon,
     csvData = [],
     csvHeader,
+    canExport = true,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -307,7 +309,7 @@ export default function ResultTitle(props: Props) {
                 )}
               </Popover>
             )}
-            {(csvData || demo) && (
+            {((canExport && csvData) || demo) && (
               <CSVLink
                 data={csvData}
                 headers={csvHeader}
@@ -349,6 +351,7 @@ export default function ResultTitle(props: Props) {
             removePinLoading={removePinnedTableLoading}
             canCompare={canCompare}
             // csv props
+            canExport={canExport}
             csvData={csvData}
             csvHeader={csvHeader}
             filename={resultTitle}
