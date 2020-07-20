@@ -96,7 +96,7 @@ export default function OverviewContent() {
         <SvgArrowPointerRight
           style={{
             position: 'absolute',
-            right: 90,
+            right: 120,
             color: THEME_COLOR,
             top: 20,
           }}

@@ -102,7 +102,7 @@ export default function ResultTitle(props: Props) {
     onClosePress,
     demo,
     zoomIcon,
-    csvData,
+    csvData = [],
     csvHeader,
   } = props;
   let alert = useAlert();
@@ -307,14 +307,26 @@ export default function ResultTitle(props: Props) {
                 )}
               </Popover>
             )}
-            {csvData && csvData.length > 0 && (
+            {(csvData || demo) && (
               <CSVLink
                 data={csvData}
                 headers={csvHeader}
                 filename={resultTitle}
+                style={{ cursor: demo ? 'default' : 'pointer' }}
+                onClick={() => {
+                  if (demo || noData) {
+                    return false;
+                  }
+                }}
               >
-                <Touchable>
-                  <SvgExportCsv />
+                <Touchable disabled={noData || demo}>
+                  <SvgExportCsv
+                    {...((!!zoomIcon || noData) && {
+                      style: {
+                        color: DISABLED_TEXT_COLOR,
+                      },
+                    })}
+                  />
                 </Touchable>
               </CSVLink>
             )}
@@ -336,6 +348,10 @@ export default function ResultTitle(props: Props) {
             removePinFn={removePin}
             removePinLoading={removePinnedTableLoading}
             canCompare={canCompare}
+            // csv props
+            csvData={csvData}
+            csvHeader={csvHeader}
+            filename={resultTitle}
           />
         ) : null}
       </Row>
