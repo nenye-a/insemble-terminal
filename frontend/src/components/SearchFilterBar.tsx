@@ -18,6 +18,7 @@ import {
   isSearchCombinationValid,
   capitalize,
   isEqual,
+  omitTypename,
 } from '../helpers';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import {
@@ -60,7 +61,7 @@ type Props = {
 export default function SearchFilterBar(props: Props) {
   let {
     onSearchPress,
-    defaultReviewTag = '',
+    defaultReviewTag,
     defaultBusinessTag,
     defaultLocationTag,
     disableAll = false,
@@ -149,7 +150,7 @@ export default function SearchFilterBar(props: Props) {
   }, [dataTypeFilterVisible, businessFocus, locationFocus, isInputChange]);
 
   useEffect(() => {
-    setSelectedDataType(defaultReviewTag);
+    setSelectedDataType(defaultReviewTag || '');
   }, [defaultReviewTag]);
 
   useEffect(() => {
@@ -176,16 +177,15 @@ export default function SearchFilterBar(props: Props) {
       /**
        * Cleaning business input from _typeName.
        */
-      cleanSelectedBusiness = {
-        id: selectedBusiness.id,
-        params: selectedBusiness.params,
-        type: selectedBusiness.type,
-      };
+      cleanSelectedBusiness = omitTypename(selectedBusiness);
     }
     /**
      * Check review tags changes.
      */
-    let dataTypeChanged = !isEqual(selectedDataType, defaultReviewTag);
+    let dataTypeChanged = !isEqual(
+      selectedDataType,
+      defaultReviewTag ? defaultReviewTag : '',
+    );
     /**
      * Check business tags changes.
      */
