@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -75,9 +75,26 @@ export default function LatestNewsResult(props: Props) {
     data?.newsTable.table?.comparationTags,
     sortOrder,
   );
+  let csvData = useMemo(
+    () =>
+      coloredData.map(({ title, link, source, published }) => ({
+        title,
+        link,
+        source,
+        published,
+      })),
+    [coloredData],
+  );
+  let csvHeader = [
+    { label: 'Title', key: 'title' },
+    { label: 'Link', key: 'link' },
+    { label: 'Source', key: 'source' },
+    { label: 'Post Date', key: 'published' },
+  ];
   let noData =
     !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
   let loading = newsLoading || data?.newsTable.polling;
+
   useEffect(() => {
     if (
       (data?.newsTable.table?.data || data?.newsTable.error || error) &&
@@ -163,6 +180,8 @@ export default function LatestNewsResult(props: Props) {
           setSortOrder(newSortOrder)
         }
         readOnly={readOnly}
+        csvData={csvData}
+        csvHeader={csvHeader}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
