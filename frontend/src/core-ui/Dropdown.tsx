@@ -111,6 +111,7 @@ export default function Dropdown<T>(props: Props<T>) {
      * Set parent state focus to know if the dropdown opened or not.
      */
     setFocus && setFocus(isOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   useEffect(() => {

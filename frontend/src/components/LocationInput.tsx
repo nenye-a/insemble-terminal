@@ -99,6 +99,7 @@ export default function LocationInput(props: Props) {
         listener.remove();
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitHandler, isLoading]);
 
   useEffect(() => {

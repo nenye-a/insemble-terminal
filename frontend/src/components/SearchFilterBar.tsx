@@ -145,6 +145,7 @@ export default function SearchFilterBar(props: Props) {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypeFilterVisible, businessFocus, locationFocus, isInputChange]);
 
   useEffect(() => {
@@ -201,6 +202,7 @@ export default function SearchFilterBar(props: Props) {
     } else {
       setIsInputChange(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDataType, selectedBusiness, selectedPlace]);
 
   return (
