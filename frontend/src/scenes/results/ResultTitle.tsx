@@ -4,6 +4,7 @@ import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAlert } from 'react-alert';
+import { CSVLink } from 'react-csv';
 
 import {
   View,
@@ -25,7 +26,7 @@ import {
 } from '../../constants/theme';
 import { useAuth } from '../../context';
 import { getResultTitle, useViewport } from '../../helpers';
-import { ComparationTagWithFill } from '../../types/types';
+import { ComparationTagWithFill, CSVHeader } from '../../types/types';
 import {
   ReviewTag,
   LocationTagType,
@@ -44,6 +45,7 @@ import {
 import SvgPin from '../../components/icons/pin';
 import SvgClose from '../../components/icons/close';
 import SvgRoundAdd from '../../components/icons/round-add';
+import SvgExportCsv from '../../components/icons/export-csv';
 import InfoboxPopover from '../../components/InfoboxPopover';
 import AddComparisonButton from '../../components/AddComparisonButton';
 import TripleDotsButton from '../../components/TripleDotsButton';
@@ -70,6 +72,8 @@ type Props = {
   demo?: boolean;
   onClosePress?: () => void;
   zoomIcon?: 'pin' | 'compare';
+  csvData?: Array<object>;
+  csvHeader?: Array<CSVHeader>;
 };
 
 type Params = {
@@ -98,6 +102,8 @@ export default function ResultTitle(props: Props) {
     onClosePress,
     demo,
     zoomIcon,
+    csvData,
+    csvHeader,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -300,6 +306,17 @@ export default function ResultTitle(props: Props) {
                   </Touchable>
                 )}
               </Popover>
+            )}
+            {csvData && csvData.length > 0 && (
+              <CSVLink
+                data={csvData}
+                headers={csvHeader}
+                filename={resultTitle}
+              >
+                <Touchable>
+                  <SvgExportCsv />
+                </Touchable>
+              </CSVLink>
             )}
           </>
         ) : !isDesktop && !readOnly && tableType ? (
