@@ -77,6 +77,7 @@ export default function LatestNewsResult(props: Props) {
   );
   let csvData = useMemo(
     () =>
+      // destructure the exported columns
       coloredData.map(({ title, link, source, published }) => ({
         title,
         link,

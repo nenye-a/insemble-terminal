@@ -63,6 +63,7 @@ export default function ContactsResult(props: Props) {
 
   let csvData = useMemo(
     () =>
+      // desctructure only the exported columns. omiting the __typaname, id, date
       contactData.map(({ name, title, phone, email }) => ({
         name,
         title,

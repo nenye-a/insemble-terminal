@@ -189,7 +189,6 @@ const ButtonContainer = styled(TouchableOpacity)`
   align-items: center;
 `;
 const Touchable = styled(TouchableOpacity)`
-  align-items: center;
   svg {
     color: ${THEME_COLOR};
     &:hover {

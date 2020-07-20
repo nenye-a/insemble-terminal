@@ -91,8 +91,10 @@ export default function MapResult(props: Props) {
           flat: Array<Omit<CoverageLocations, '__typename'>>,
           next: MergedMapData,
         ) =>
+          // flatten the locations data
           flat.concat(
             next.coverageData[0].locations.map(
+              // desctructure the exported columns
               ({ lat, lng, name, address, rating, numReviews }) => ({
                 lat,
                 lng,

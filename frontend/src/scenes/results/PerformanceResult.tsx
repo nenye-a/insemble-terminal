@@ -118,27 +118,17 @@ export default function PerformanceResult(props: Props) {
 
   let csvData = useMemo(
     () =>
-      coloredData.map(
-        ({
-          name,
-          customerVolumeIndex,
-          localRetailIndex,
-          localCategoryIndex,
-          nationalIndex,
-          avgRating,
-          numReview,
-          numLocation,
-        }) => ({
-          name,
-          customerVolumeIndex,
-          localRetailIndex,
-          localCategoryIndex,
-          nationalIndex,
-          avgRating,
-          numReview,
-          numLocation,
-        }),
-      ),
+      coloredData.map(({ // destructure the exported columns
+        name, customerVolumeIndex, localRetailIndex, localCategoryIndex, nationalIndex, avgRating, numReview, numLocation }) => ({
+        name,
+        customerVolumeIndex,
+        localRetailIndex,
+        localCategoryIndex,
+        nationalIndex,
+        avgRating,
+        numReview,
+        numLocation,
+      })),
     [coloredData],
   );
 

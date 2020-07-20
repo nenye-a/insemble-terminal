@@ -19,6 +19,16 @@ export default function prepareActivityLineChartData(
   tooltipData: Array<TooltipWithFill>;
   lineChartData: Array<ChartDatum>;
 } {
+  /**
+   * merging the rawData to shape like this
+   * {
+   *    name: "12AM",
+   *    BrandA(LA): number,
+   *    BrandB(SM): number,
+   *    ...
+   * }
+   */
+
   let x = xAxis;
   let y = yAxis;
   let lineChartData: ChartDatum = {};
@@ -37,6 +47,7 @@ export default function prepareActivityLineChartData(
     label: tooltip,
     fill: COLORS[idx] || generateRandomColor(),
   }));
+
   return {
     tooltipData: tooltipWithFill,
     lineChartData: Object.values(lineChartData),

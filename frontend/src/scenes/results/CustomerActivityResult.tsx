@@ -79,31 +79,26 @@ export default function CustomerActivityResult(props: Props) {
   );
   let noData = coloredData.length === 0;
 
-  let formattedData = useMemo(
+  let activityData = useMemo(
     () => coloredData.map((item) => [...item.activityData]),
     [coloredData],
   );
   let csvData = useMemo(
     () =>
       prepareActivityLineChartData(
-        formattedData,
+        activityData,
         'name',
         'amount',
         'business',
-      ).lineChartData.map(
-        ({
-          business: _business,
-          amount: _amount,
-          __typename,
-          name,
-          ...item
-        }) => ({
-          time: name,
-          ...item,
-        }),
-      ),
+      ).lineChartData.map(({ /**
+         * destructure and omit the unexported columns.
+         * aliasing to _key to mark it as unused.
+         */ business: _business, amount: _amount, __typename, name, ...item }) => ({
+        time: name,
+        ...item,
+      })),
 
-    [formattedData],
+    [activityData],
   );
   useEffect(() => {
     if (
