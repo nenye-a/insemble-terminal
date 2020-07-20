@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
+import { CSVLink } from 'react-csv';
 
 import {
   TouchableOpacity,
@@ -11,7 +12,7 @@ import {
 } from '../core-ui';
 import { DISABLED_TEXT_COLOR, THEME_COLOR } from '../constants/colors';
 import { ReviewTag, TableType } from '../generated/globalTypes';
-import { ComparationTagWithFill } from '../types/types';
+import { ComparationTagWithFill, CSVHeader } from '../types/types';
 import AddComparisonModal from '../scenes/results/AddComparisonModal';
 
 import SvgTripleDotsRow from './icons/triple-dots-row';
@@ -19,6 +20,7 @@ import SvgRoundAdd from './icons/round-add';
 import SvgPin from './icons/pin';
 import PinPopover from './PinPopover';
 import SvgClose from './icons/close';
+import SvgExportCsv from './icons/export-csv';
 
 type TripleDotsPopoverProps = {
   reviewTag?: ReviewTag;
@@ -35,6 +37,9 @@ type TripleDotsPopoverProps = {
   removePinFn: () => void;
   removePinLoading: boolean;
   canCompare?: boolean;
+  csvData?: Array<object>;
+  csvHeader?: Array<CSVHeader>;
+  filename?: string;
 };
 
 type Props = TripleDotsPopoverProps & {
@@ -87,6 +92,9 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
     removePinFn,
     removePinLoading,
     canCompare,
+    csvData,
+    csvHeader,
+    filename,
   } = props;
   let [comparisonModalVisible, setComparisonModalVisible] = useState(false);
   let [pinModalVisible, setPinModalVisible] = useState(false);
@@ -151,8 +159,23 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
           <PurpleText>Terminals</PurpleText>
         </ButtonContainer>
       )}
-
-      {/* TODO: add export button */}
+      {csvData && csvData.length > 0 && (
+        <CSVLink
+          data={csvData}
+          headers={csvHeader}
+          filename={filename}
+          style={{ textDecoration: 'none' }}
+        >
+          <ButtonContainer>
+            <SvgExportCsv
+              width={24}
+              height={24}
+              style={{ color: THEME_COLOR }}
+            />
+            <PurpleText>Export</PurpleText>
+          </ButtonContainer>
+        </CSVLink>
+      )}
     </Container>
   );
 }
@@ -166,6 +189,7 @@ const ButtonContainer = styled(TouchableOpacity)`
   align-items: center;
 `;
 const Touchable = styled(TouchableOpacity)`
+  align-items: center;
   svg {
     color: ${THEME_COLOR};
     &:hover {
