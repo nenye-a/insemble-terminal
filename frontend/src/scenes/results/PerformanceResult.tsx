@@ -1,4 +1,4 @@
-import React, { useEffect, useState, CSSProperties } from 'react';
+import React, { useEffect, useState, useMemo, CSSProperties } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -116,6 +116,43 @@ export default function PerformanceResult(props: Props) {
     hasAsterisk: !!datum.numNearby && datum.numNearby >= 3,
   }));
 
+  let csvData = useMemo(
+    () =>
+      coloredData.map(
+        ({
+          name,
+          customerVolumeIndex,
+          localRetailIndex,
+          localCategoryIndex,
+          nationalIndex,
+          avgRating,
+          numReview,
+          numLocation,
+        }) => ({
+          name,
+          customerVolumeIndex,
+          localRetailIndex,
+          localCategoryIndex,
+          nationalIndex,
+          avgRating,
+          numReview,
+          numLocation,
+        }),
+      ),
+    [coloredData],
+  );
+
+  let csvHeaders = [
+    { label: 'Name', key: 'name' },
+    { label: 'Volume IDX', key: 'customerVolumeIndex' },
+    { label: 'Retail IDX', key: 'localRetailIndex' },
+    { label: 'Category IDX', key: 'localCategoryIndex' },
+    { label: 'Brand IDX', key: 'nationalIndex' },
+    { label: 'Rating', key: 'avgRating' },
+    { label: '# Reviews', key: 'numReview' },
+    { label: '# Locations', key: 'numLocation' },
+  ];
+
   let noData =
     !data?.performanceTable.table?.data ||
     data.performanceTable.table?.data.length === 0;
@@ -214,6 +251,8 @@ export default function PerformanceResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
+        csvData={csvData}
+        csvHeader={csvHeaders}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
