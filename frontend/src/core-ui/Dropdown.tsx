@@ -32,6 +32,7 @@ type Props<T> = {
   optionExtractor?: (option: T) => string;
   placeholder?: string;
   disabled?: boolean;
+  setFocus?: (focus: boolean) => void;
   renderCustomList?: (item: T) => ReactNode;
 };
 
@@ -46,6 +47,7 @@ export default function Dropdown<T>(props: Props<T>) {
     placeholder,
     disabled,
     renderCustomList,
+    setFocus,
   } = props;
 
   let [inputItems, setInputItems] = useState<Array<T>>(options);
@@ -104,6 +106,13 @@ export default function Dropdown<T>(props: Props<T>) {
       closeMenu();
     },
   });
+  useEffect(() => {
+    /**
+     * Set parent state focus to know if the dropdown opened or not.
+     */
+    setFocus && setFocus(isOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   useEffect(() => {
     setInputValue(optionExtractor(selectedOption));

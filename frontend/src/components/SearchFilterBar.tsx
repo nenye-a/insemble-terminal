@@ -17,6 +17,8 @@ import {
   parsePlaceType,
   isSearchCombinationValid,
   capitalize,
+  isEqual,
+  omitTypename,
 } from '../helpers';
 import { DEFAULT_BORDER_RADIUS, FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import {
@@ -68,6 +70,9 @@ export default function SearchFilterBar(props: Props) {
   let alert = useAlert();
 
   let [dataTypeFilterVisible, setDataTypeFilterVisible] = useState(false);
+  let [locationFocus, setLocationFocus] = useState(false);
+  let [businessFocus, setBusinessFocus] = useState(false);
+  let [isInputChange, setIsInputChange] = useState(false);
   let [selectedDataType, setSelectedDataType] = useState('');
   let [
     selectedBusiness,
@@ -82,10 +87,58 @@ export default function SearchFilterBar(props: Props) {
     GetBusinessTag
   >(GET_BUSINESS_TAG);
 
+  let search = () => {
+    if (isAuthenticated && !!user?.license) {
+      let isValid = isSearchCombinationValid(
+        selectedDataType,
+        selectedBusiness,
+        selectedPlace,
+      );
+      if (isValid) {
+        onSearchPress &&
+          onSearchPress({
+            reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
+            businessTag:
+              typeof selectedBusiness === 'string'
+                ? {
+                    type: BusinessTagType.BUSINESS,
+                    params: selectedBusiness,
+                  }
+                : undefined,
+            businessTagWithId:
+              selectedBusiness &&
+              typeof selectedBusiness !== 'string' &&
+              selectedBusiness?.id
+                ? selectedBusiness
+                : undefined,
+            locationTag: selectedPlace ? selectedPlace : undefined,
+          });
+      } else {
+        alert.show('Search combination is not valid. Please try again.');
+      }
+    } else {
+      history.push('/contact-us');
+    }
+  };
+
   useEffect(() => {
     let handleKeyPress = (e: KeyboardEvent) => {
       if (e.keyCode === 8 && dataTypeFilterVisible) {
         setSelectedDataType('');
+      }
+      /**
+       * This will check first if the input are enter, and all of search input
+       * are not focused.
+       * Also if it won't do anything if the search not changed.
+       */
+      if (
+        e.keyCode === 13 &&
+        !dataTypeFilterVisible &&
+        !businessFocus &&
+        !locationFocus &&
+        isInputChange
+      ) {
+        search();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
@@ -93,7 +146,8 @@ export default function SearchFilterBar(props: Props) {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [dataTypeFilterVisible]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataTypeFilterVisible, businessFocus, locationFocus, isInputChange]);
 
   useEffect(() => {
     setSelectedDataType(defaultReviewTag || '');
@@ -106,6 +160,50 @@ export default function SearchFilterBar(props: Props) {
   useEffect(() => {
     setSelectedPlace(defaultLocationTag || null);
   }, [defaultLocationTag]);
+
+  useEffect(() => {
+    let defaultLocationWithoutId;
+    if (defaultLocationTag) {
+      /**
+       * Clean defaultLocationTag from id.
+       */
+      defaultLocationWithoutId = {
+        params: defaultLocationTag.params,
+        type: defaultLocationTag.type,
+      };
+    }
+    let cleanSelectedBusiness;
+    if (selectedBusiness && typeof selectedBusiness !== 'string') {
+      /**
+       * Cleaning business input from _typeName.
+       */
+      cleanSelectedBusiness = omitTypename(selectedBusiness);
+    }
+    /**
+     * Check review tags changes.
+     */
+    let dataTypeChanged = !isEqual(
+      selectedDataType,
+      defaultReviewTag ? defaultReviewTag : '',
+    );
+    /**
+     * Check business tags changes.
+     */
+    let businessChanged = !isEqual(cleanSelectedBusiness, defaultBusinessTag);
+    /**
+     * First run will have id on selectedPlace because it set from defaultLocation.
+     * but if input the same again selectedPlace won't have id so we check both with and without id.
+     */
+    let locationChanged =
+      !isEqual(selectedPlace, defaultLocationWithoutId) &&
+      !isEqual(selectedPlace, defaultLocationTag);
+    if (dataTypeChanged || businessChanged || locationChanged) {
+      setIsInputChange(true);
+    } else {
+      setIsInputChange(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDataType, selectedBusiness, selectedPlace]);
 
   return (
     <View flex>
@@ -155,6 +253,7 @@ export default function SearchFilterBar(props: Props) {
 
             <SpacedText>of</SpacedText>
             <Dropdown<SelectedBusiness | null>
+              setFocus={setBusinessFocus}
               selectedOption={selectedBusiness}
               onOptionSelected={setSelectedBusiness}
               options={businessTagData.businessTags}
@@ -182,6 +281,7 @@ export default function SearchFilterBar(props: Props) {
             />
             <SpacedText>in</SpacedText>
             <SearchLocationInput
+              setFocus={setLocationFocus}
               placeholder="Any Location"
               onPlaceSelected={(place) => {
                 if (place?.address) {
@@ -199,41 +299,7 @@ export default function SearchFilterBar(props: Props) {
             <TouchableOpacity
               text="Search"
               forwardedAs="button"
-              onPress={() => {
-                if (isAuthenticated && !!user?.license) {
-                  let isValid = isSearchCombinationValid(
-                    selectedDataType,
-                    selectedBusiness,
-                    selectedPlace,
-                  );
-                  if (isValid) {
-                    onSearchPress &&
-                      onSearchPress({
-                        reviewTag: selectedDataType.toUpperCase() as ReviewTag, // TODO: change this to enum,
-                        businessTag:
-                          typeof selectedBusiness === 'string'
-                            ? {
-                                type: BusinessTagType.BUSINESS,
-                                params: selectedBusiness,
-                              }
-                            : undefined,
-                        businessTagWithId:
-                          selectedBusiness &&
-                          typeof selectedBusiness !== 'string' &&
-                          selectedBusiness?.id
-                            ? selectedBusiness
-                            : undefined,
-                        locationTag: selectedPlace ? selectedPlace : undefined,
-                      });
-                  } else {
-                    alert.show(
-                      'Search combination is not valid. Please try again.',
-                    );
-                  }
-                } else {
-                  history.push('/contact-us');
-                }
-              }}
+              onPress={search}
               stopPropagation={true}
               disabled={disableAll}
             >
