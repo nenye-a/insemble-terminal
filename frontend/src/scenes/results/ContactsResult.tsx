@@ -74,13 +74,9 @@ export default function ContactsResult(props: Props) {
 
   let csvHeader = [
     { label: 'Name', key: 'name' },
-    { label: 'Volume IDX', key: 'customerVolumeIndex' },
-    { label: 'Retail IDX', key: 'localRetailIndex' },
-    { label: 'Category IDX', key: 'localCategoryIndex' },
-    { label: 'Brand IDX', key: 'nationalIndex' },
-    { label: 'Rating', key: 'avgRating' },
-    { label: '# Reviews', key: 'numReview' },
-    { label: '# Locations', key: 'numLocation' },
+    { label: 'Title', key: 'title' },
+    { label: 'Phone', key: 'phone' },
+    { label: 'Email', key: 'email' },
   ];
 
   return (

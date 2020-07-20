@@ -83,9 +83,25 @@ export default function CustomerActivityResult(props: Props) {
     () => coloredData.map((item) => [...item.activityData]),
     [coloredData],
   );
-  let { lineChartData } = useMemo(
+  let csvData = useMemo(
     () =>
-      prepareActivityLineChartData(formattedData, 'name', 'amount', 'business'),
+      prepareActivityLineChartData(
+        formattedData,
+        'name',
+        'amount',
+        'business',
+      ).lineChartData.map(
+        ({
+          business: _business,
+          amount: _amount,
+          __typename,
+          name,
+          ...item
+        }) => ({
+          time: name,
+          ...item,
+        }),
+      ),
 
     [formattedData],
   );
@@ -174,7 +190,7 @@ export default function CustomerActivityResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
-        csvData={lineChartData}
+        csvData={csvData}
       />
       <View>
         {(loading || data?.activityTable.polling) && (

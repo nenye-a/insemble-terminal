@@ -143,7 +143,7 @@ export default function PerformanceResult(props: Props) {
   );
 
   let csvHeaders = [
-    { label: 'Name', key: 'name' },
+    { label: headerTitle || 'Company', key: 'name' },
     { label: 'Volume IDX', key: 'customerVolumeIndex' },
     { label: 'Retail IDX', key: 'localRetailIndex' },
     { label: 'Category IDX', key: 'localCategoryIndex' },
