@@ -13,6 +13,9 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
   { openNewsId },
   context: Context,
 ) => {
+  /**
+   * Endpoint for viewing news form open news. This is polling endpoint.
+   */
   let selectedOpenNews = await context.prisma.openNews.findOne({
     where: { id: openNewsId },
     include: {
@@ -24,6 +27,11 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
     throw new Error('News not found');
   }
   if (selectedOpenNews.error) {
+    /**
+     * Because it's polling the error can come not in sync,
+     * if there is an error on selectedOpenNews then we return it here
+     * and remove it so next poll wont show error anymore.
+     */
     await context.prisma.openNews.update({
       where: {
         id: selectedOpenNews.id,
@@ -37,17 +45,26 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
   }
   let businessTag = selectedOpenNews.businessTag;
   let locationTag = selectedOpenNews.locationTag;
+  /**
+   * Here we search for existingOpenNews that have the same tag as selected.
+   */
   let existingOpenNews = await context.prisma.openNews.findMany({
     where: {
       businessTag: selectedOpenNews.businessTag,
       locationTag: selectedOpenNews.locationTag,
     },
   });
+  /**
+   * Then we search it the latest one with timeCheck.
+   */
   let latestOpenNews = existingOpenNews.find(
     (openNews) => !timeCheck(openNews.updatedAt, 300),
   );
   if (latestOpenNews) {
     // Note: input the data if there is latestOpenNews
+    /**
+     * Here we update data so it will same as the latestOpenNews Data.
+     */
     selectedOpenNews = await context.prisma.openNews.update({
       where: { id: selectedOpenNews.id },
       data: {
@@ -61,6 +78,10 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
     });
   }
 
+  /**
+   * If selectedOpenNews process is not polling
+   * and the data must be updated then we start the process polling.
+   */
   if (!selectedOpenNews.polling) {
     let updateData = timeCheck(selectedOpenNews.updatedAt, 300); // Note: 300 minute (5 hour)
     if (updateData || !selectedOpenNews.data) {
@@ -68,6 +89,10 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
         ...selectedOpenNews,
         polling: true,
       };
+      /**
+       * Here we flag all the openNews that have same tags as polling.
+       * We're going to update all of them.
+       */
       await context.prisma.openNews.updateMany({
         where: {
           businessTag: selectedOpenNews.businessTag,
@@ -78,6 +103,11 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
           polling: true,
         },
       });
+      /**
+       * Here we fetch to python API to get the latest data.
+       * We're not await it so this function will fetch,
+       * after fetch done the ".then"  will run async.
+       */
       axios
         .get(`${API_URI}/api/news`, {
           params: {
@@ -91,7 +121,13 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
           paramsSerializer: axiosParamsSerializer,
         })
         .then(async (response) => {
+          /**
+           * Here the response of the endpoint will be processed.
+           */
           let newsUpdate: PyNewsResponse = response.data;
+          /**
+           * Here where the data parse the response data if null then we make it '-' or 0.
+           */
           let newsData = newsUpdate.data.map(
             ({ title, description, link, published, source, relevance }) => {
               return {
@@ -104,6 +140,11 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
               };
             },
           );
+          /**
+           * Then we parse it again to JSON string and then save the data in all
+           * of openNews data that have same tags.
+           * And also mark polling false as it's completed.
+           */
           let stringifyNewsData = JSON.stringify(newsData);
           await context.prisma.openNews.updateMany({
             where: {
@@ -118,6 +159,11 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
           });
         })
         .catch(async () => {
+          /**
+           * ".catch" is if the fetch failed. We put the error here.
+           * Then mark the updatedAt as outdated and polling false
+           * so if it run again it will poll again.
+           */
           await context.prisma.openNews.updateMany({
             where: {
               businessTag: selectedOpenNews.businessTag,
@@ -132,6 +178,10 @@ let openNewsResolver: FieldResolver<'Query', 'openNews'> = async (
         });
     }
   }
+  /**
+   * Here we return all data front end need.
+   * Including polling status, error message, and the data.
+   */
   return selectedOpenNews;
 };
 

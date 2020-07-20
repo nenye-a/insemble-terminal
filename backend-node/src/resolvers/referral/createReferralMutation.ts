@@ -8,6 +8,9 @@ export let createReferralResolver: FieldResolver<
   'Mutation',
   'createReferral'
 > = async (_, { referredData }, context: Context) => {
+  /**
+   * Endpoint for create referral and send email to referred.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -16,12 +19,19 @@ export let createReferralResolver: FieldResolver<
       license: true,
     },
   });
+  /**
+   * referredData is data input from referrer.
+   */
   let { email, ...otherData } = referredData;
 
   if (!user) {
     throw new Error('User not found!');
   }
   let lowerCasedEmail = email.toLocaleLowerCase();
+  /**
+   * We check first if the referred email already exist as user.
+   * If it's then we throw an error.
+   */
   let exist = await context.prisma.user.findMany({
     where: {
       email: lowerCasedEmail,
@@ -32,6 +42,9 @@ export let createReferralResolver: FieldResolver<
     throw new Error('Referred email already exist as user.');
   }
 
+  /**
+   * Then we create the invitation and save referred data in JSON String.
+   */
   let referralInvitation = await context.prisma.referralInvitation.create({
     data: {
       referrer: user.id,
@@ -42,6 +55,9 @@ export let createReferralResolver: FieldResolver<
     },
   });
 
+  /**
+   * Then created invitationId encoded then send it to email as referralCode.
+   */
   let emailReferralCode = Base64.encodeURI(referralInvitation.id);
 
   if (NODE_ENV === 'production') {

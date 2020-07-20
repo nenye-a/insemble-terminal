@@ -6,6 +6,9 @@ export let removePinnedTableResolver: FieldResolver<
   'Mutation',
   'removePinnedTable'
 > = async (_, { pinTableId }, context: Context) => {
+  /**
+   * Endpoint for removing pinnedFeed. Require pinTableId.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -16,6 +19,11 @@ export let removePinnedTableResolver: FieldResolver<
     throw new Error('User not found!');
   }
 
+  /**
+   * Here we check the pinnedFeed that user select.
+   * The checks are: if exist? if pinnedFeed have user? if pinnedFeed connected
+   * to terminal? if pinnedFeed terminal user are the same who use this endpoint?
+   */
   let selectedPinnedTable = await context.prisma.pinnedFeed.findOne({
     where: {
       id: pinTableId,
@@ -39,6 +47,9 @@ export let removePinnedTableResolver: FieldResolver<
   }
 
   if (selectedPinnedTable.tableType === 'NOTE') {
+    /**
+     * If the table is note then we also delete the note.
+     */
     await context.prisma.note.delete({
       where: {
         id: selectedPinnedTable.tableId,
@@ -46,6 +57,10 @@ export let removePinnedTableResolver: FieldResolver<
     });
   }
 
+  /**
+   * If all pass then we delete the pinnedFeed. This will also remove it from
+   * its terminal.
+   */
   await context.prisma.pinnedFeed.delete({
     where: {
       id: selectedPinnedTable.id,
