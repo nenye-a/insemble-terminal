@@ -1,4 +1,4 @@
-import React, { useEffect, useState, CSSProperties } from 'react';
+import React, { useEffect, useState, useMemo, CSSProperties } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -14,7 +14,11 @@ import {
   GetActivity_activityTable_table_comparationTags as ComparationTags,
 } from '../../generated/GetActivity';
 import { GET_ACTIVITY_DATA } from '../../graphql/queries/server/results';
-import { formatErrorMessage, useColoredData } from '../../helpers';
+import {
+  formatErrorMessage,
+  useColoredData,
+  prepareActivityLineChartData,
+} from '../../helpers';
 
 import ResultTitle from './ResultTitle';
 import ActivityChart from './ActivityChart';
@@ -75,6 +79,27 @@ export default function CustomerActivityResult(props: Props) {
   );
   let noData = coloredData.length === 0;
 
+  let activityData = useMemo(
+    () => coloredData.map((item) => [...item.activityData]),
+    [coloredData],
+  );
+  let csvData = useMemo(
+    () =>
+      prepareActivityLineChartData(
+        activityData,
+        'name',
+        'amount',
+        'business',
+      ).lineChartData.map(({ /**
+         * destructure and omit the unexported columns.
+         * aliasing to _key to mark it as unused.
+         */ business: _business, amount: _amount, __typename, name, ...item }) => ({
+        time: name,
+        ...item,
+      })),
+
+    [activityData],
+  );
   useEffect(() => {
     if (
       (data?.activityTable.table?.data || data?.activityTable.error || error) &&
@@ -160,6 +185,7 @@ export default function CustomerActivityResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
+        csvData={csvData}
       />
       <View>
         {(loading || data?.activityTable.polling) && (

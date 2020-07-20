@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -19,9 +19,10 @@ import {
   GetMap_mapTable_data_coverageData as MapBusiness,
   GetMap_mapTable_compareData as MapCompareData,
   GetMap_mapTable_comparationTags as ComparationTags,
+  GetMap_mapTable_data_coverageData_locations as CoverageLocations,
 } from '../../generated/GetMap';
 import { GET_MAP_DATA } from '../../graphql/queries/server/results';
-import { MapInfoboxPressParam } from '../../types/types';
+import { MapInfoboxPressParam, MergedMapData } from '../../types/types';
 
 import CoverageTable from './CoverageTable';
 import CoverageMap from './CoverageMap';
@@ -82,6 +83,41 @@ export default function MapResult(props: Props) {
     sortOrder,
     true,
   );
+
+  let csvData = useMemo(
+    () =>
+      coloredData.reduce(
+        (
+          flat: Array<Omit<CoverageLocations, '__typename'>>,
+          next: MergedMapData,
+        ) =>
+          // flatten the locations data
+          flat.concat(
+            next.coverageData[0].locations.map(
+              // desctructure the exported columns
+              ({ lat, lng, name, address, rating, numReviews }) => ({
+                lat,
+                lng,
+                name,
+                address,
+                rating,
+                numReviews,
+              }),
+            ),
+          ),
+        [],
+      ),
+    [coloredData],
+  );
+
+  let csvHeaders = [
+    { label: 'Name', key: 'name' },
+    { label: 'Latitude', key: 'lat' },
+    { label: 'Longitude', key: 'lng' },
+    { label: 'Address', key: 'address' },
+    { label: 'Rating', key: 'rating' },
+    { label: '# Reviews', key: 'numReviews' },
+  ];
 
   let noData = !data?.mapTable.data || data?.mapTable.data.length === 0;
 
@@ -158,6 +194,8 @@ export default function MapResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
+        csvData={csvData}
+        csvHeader={csvHeaders}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}

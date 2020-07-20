@@ -125,3 +125,8 @@ export type MapInfoboxPressParam = {
     address: string | null;
   };
 };
+
+export type CSVHeader = {
+  label: string;
+  key: string;
+};

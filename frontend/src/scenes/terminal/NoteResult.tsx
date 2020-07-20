@@ -51,6 +51,7 @@ export default function NoteResult(props: Props) {
         pinTableId={pinTableId}
         tableType={TableType.NOTE}
         canCompare={false}
+        canExport={false}
         {...(isEditing && { onClosePress: closeEditMode })}
       />
       {loading ? (

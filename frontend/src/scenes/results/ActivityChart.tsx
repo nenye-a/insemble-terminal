@@ -10,12 +10,7 @@ import {
 import styled, { css } from 'styled-components';
 
 import { View, Text } from '../../core-ui';
-import {
-  WHITE,
-  SHADOW_COLOR,
-  DARK_TEXT_COLOR,
-  COLORS,
-} from '../../constants/colors';
+import { WHITE, SHADOW_COLOR, DARK_TEXT_COLOR } from '../../constants/colors';
 import {
   FONT_SIZE_SMALL,
   FONT_FAMILY_NORMAL,
@@ -23,21 +18,18 @@ import {
   FONT_WEIGHT_MEDIUM,
 } from '../../constants/theme';
 import { MergedActivityData } from '../../types/types';
-import { generateRandomColor, useViewport } from '../../helpers';
+import { useViewport, prepareActivityLineChartData } from '../../helpers';
 
 type Props = {
   data: Array<MergedActivityData>;
 };
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ChartDatum = { [key: string]: any };
 
 export default function ActivityChart(props: Props) {
   let { data } = props;
   let { isDesktop } = useViewport();
 
   let formattedData = [...data].map((item) => [...item.activityData]);
-  let { tooltipData, lineChartData } = prepareLineChartData(
+  let { tooltipData, lineChartData } = prepareActivityLineChartData(
     formattedData,
     'name',
     'amount',
@@ -107,43 +99,6 @@ export default function ActivityChart(props: Props) {
       </ContentContainer>
     </Container>
   );
-}
-
-type TooltipWithFill = {
-  label: string;
-  fill: string;
-};
-function prepareLineChartData(
-  rawData: Array<Array<ChartDatum>>,
-  xAxis: string,
-  yAxis: string,
-  tooltipInfo: string,
-): {
-  tooltipData: Array<TooltipWithFill>;
-  lineChartData: Array<ChartDatum>;
-} {
-  let x = xAxis;
-  let y = yAxis;
-  let lineChartData: ChartDatum = {};
-  let tooltipData = [];
-  for (let data of rawData) {
-    for (let datum of data) {
-      tooltipData.push(`${datum[tooltipInfo]}`);
-      lineChartData[datum[x]] = {
-        ...lineChartData[datum[x]],
-        ...datum,
-        [`${datum[tooltipInfo]}`]: datum[y],
-      };
-    }
-  }
-  let tooltipWithFill = [...new Set(tooltipData)].map((tooltip, idx) => ({
-    label: tooltip,
-    fill: COLORS[idx] || generateRandomColor(),
-  }));
-  return {
-    tooltipData: tooltipWithFill,
-    lineChartData: Object.values(lineChartData),
-  };
 }
 
 const Container = styled(View)`

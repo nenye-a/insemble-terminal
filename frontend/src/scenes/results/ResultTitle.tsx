@@ -4,6 +4,7 @@ import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAlert } from 'react-alert';
+import { CSVLink } from 'react-csv';
 
 import {
   View,
@@ -25,7 +26,7 @@ import {
 } from '../../constants/theme';
 import { useAuth } from '../../context';
 import { getResultTitle, useViewport } from '../../helpers';
-import { ComparationTagWithFill } from '../../types/types';
+import { ComparationTagWithFill, CSVHeader } from '../../types/types';
 import {
   ReviewTag,
   LocationTagType,
@@ -44,6 +45,7 @@ import {
 import SvgPin from '../../components/icons/pin';
 import SvgClose from '../../components/icons/close';
 import SvgRoundAdd from '../../components/icons/round-add';
+import SvgExportCsv from '../../components/icons/export-csv';
 import InfoboxPopover from '../../components/InfoboxPopover';
 import AddComparisonButton from '../../components/AddComparisonButton';
 import TripleDotsButton from '../../components/TripleDotsButton';
@@ -70,6 +72,9 @@ type Props = {
   demo?: boolean;
   onClosePress?: () => void;
   zoomIcon?: 'pin' | 'compare';
+  canExport?: boolean;
+  csvData?: Array<object>;
+  csvHeader?: Array<CSVHeader>;
 };
 
 type Params = {
@@ -98,6 +103,9 @@ export default function ResultTitle(props: Props) {
     onClosePress,
     demo,
     zoomIcon,
+    csvData = [],
+    csvHeader,
+    canExport = true,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -245,6 +253,29 @@ export default function ResultTitle(props: Props) {
                 })}
               />
             ) : null}
+            {((canExport && csvData) || demo) && (
+              <CSVLink
+                data={csvData}
+                headers={csvHeader}
+                filename={resultTitle}
+                style={{ cursor: demo ? 'default' : 'pointer' }}
+                onClick={() => {
+                  if (demo || noData) {
+                    return false;
+                  }
+                }}
+              >
+                <Touchable disabled={noData || demo}>
+                  <SvgExportCsv
+                    {...((!!zoomIcon || noData) && {
+                      style: {
+                        color: DISABLED_TEXT_COLOR,
+                      },
+                    })}
+                  />
+                </Touchable>
+              </CSVLink>
+            )}
             {isTerminalScene && !demo ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
@@ -258,6 +289,7 @@ export default function ResultTitle(props: Props) {
                     }
                   }}
                   disabled={noData || demo}
+                  style={{ marginLeft: 8 }}
                 >
                   <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
                 </Touchable>
@@ -319,6 +351,11 @@ export default function ResultTitle(props: Props) {
             removePinFn={removePin}
             removePinLoading={removePinnedTableLoading}
             canCompare={canCompare}
+            // csv props
+            canExport={canExport}
+            csvData={csvData}
+            csvHeader={csvHeader}
+            filename={resultTitle}
           />
         ) : null}
       </Row>

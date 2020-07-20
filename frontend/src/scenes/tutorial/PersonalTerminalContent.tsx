@@ -48,7 +48,7 @@ export default function PersonalTerminalContent() {
           style={{
             color: THEME_COLOR,
             position: 'absolute',
-            right: 78,
+            right: 100,
             top: 30,
           }}
         />
