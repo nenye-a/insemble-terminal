@@ -253,6 +253,29 @@ export default function ResultTitle(props: Props) {
                 })}
               />
             ) : null}
+            {((canExport && csvData) || demo) && (
+              <CSVLink
+                data={csvData}
+                headers={csvHeader}
+                filename={resultTitle}
+                style={{ cursor: demo ? 'default' : 'pointer' }}
+                onClick={() => {
+                  if (demo || noData) {
+                    return false;
+                  }
+                }}
+              >
+                <Touchable disabled={noData || demo}>
+                  <SvgExportCsv
+                    {...((!!zoomIcon || noData) && {
+                      style: {
+                        color: DISABLED_TEXT_COLOR,
+                      },
+                    })}
+                  />
+                </Touchable>
+              </CSVLink>
+            )}
             {isTerminalScene && !demo ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
@@ -266,6 +289,7 @@ export default function ResultTitle(props: Props) {
                     }
                   }}
                   disabled={noData || demo}
+                  style={{ marginLeft: 8 }}
                 >
                   <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
                 </Touchable>
@@ -308,29 +332,6 @@ export default function ResultTitle(props: Props) {
                   </Touchable>
                 )}
               </Popover>
-            )}
-            {((canExport && csvData) || demo) && (
-              <CSVLink
-                data={csvData}
-                headers={csvHeader}
-                filename={resultTitle}
-                style={{ cursor: demo ? 'default' : 'pointer' }}
-                onClick={() => {
-                  if (demo || noData) {
-                    return false;
-                  }
-                }}
-              >
-                <Touchable disabled={noData || demo}>
-                  <SvgExportCsv
-                    {...((!!zoomIcon || noData) && {
-                      style: {
-                        color: DISABLED_TEXT_COLOR,
-                      },
-                    })}
-                  />
-                </Touchable>
-              </CSVLink>
             )}
           </>
         ) : !isDesktop && !readOnly && tableType ? (
