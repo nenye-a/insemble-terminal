@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -57,9 +57,31 @@ export default function ContactsResult(props: Props) {
     },
   });
 
-  let noData =
-    !data?.ownershipContactTable.data ||
-    data?.ownershipContactTable.data.length === 0;
+  let contactData = data?.ownershipContactTable.data || [];
+
+  let noData = !contactData || contactData.length === 0;
+
+  let csvData = useMemo(
+    () =>
+      contactData.map(({ name, title, phone, email }) => ({
+        name,
+        title,
+        phone,
+        email,
+      })),
+    [contactData],
+  );
+
+  let csvHeader = [
+    { label: 'Name', key: 'name' },
+    { label: 'Volume IDX', key: 'customerVolumeIndex' },
+    { label: 'Retail IDX', key: 'localRetailIndex' },
+    { label: 'Category IDX', key: 'localCategoryIndex' },
+    { label: 'Brand IDX', key: 'nationalIndex' },
+    { label: 'Rating', key: 'avgRating' },
+    { label: '# Reviews', key: 'numReview' },
+    { label: '# Locations', key: 'numLocation' },
+  ];
 
   return (
     <Container>
@@ -91,6 +113,8 @@ export default function ContactsResult(props: Props) {
         })}
         pinTableId={pinTableId}
         readOnly={readOnly}
+        csvData={csvData}
+        csvHeader={csvHeader}
       />
       {loading ? (
         <LoadingIndicator
