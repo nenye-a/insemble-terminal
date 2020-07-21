@@ -28,6 +28,7 @@ function CoverageMap(props: Props) {
   let latArr = flatLocations.map(({ lat }) => lat);
   let lngArr = flatLocations.map(({ lng }) => lng);
 
+  // Getting the average of both lat & lng to be the default center
   let defaultCenter = {
     lat: latArr.reduce((a, b) => a + b, 0) / flatLocations.length,
     lng: lngArr.reduce((a, b) => a + b, 0) / flatLocations.length,

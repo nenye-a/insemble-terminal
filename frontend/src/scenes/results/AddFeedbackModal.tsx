@@ -58,15 +58,18 @@ export default function AddFeedbackModal(props: Props) {
 
   let onSubmit = (fieldValues: FieldValues) => {
     let { title, details } = fieldValues;
-    sendFeedback({
-      variables: {
-        tableId,
-        tableType,
-        feedbackTitle: title,
-        feedbackDetail: details,
-        customFeed,
-      },
-    });
+    // At least there's selected radio option
+    if (title) {
+      sendFeedback({
+        variables: {
+          tableId,
+          tableType,
+          feedbackTitle: title,
+          feedbackDetail: details,
+          customFeed,
+        },
+      });
+    }
   };
 
   useEffect(() => {

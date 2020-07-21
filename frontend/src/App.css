@@ -2,7 +2,9 @@
   font-family: 'Avenir';
   font-style: normal;
   font-weight: 400;
-  src: url(./assets/fonts/Avenir-Book.otf) format('otf');
+  src: url(./assets/fonts/Avenir-Book.otf) format('otf'),
+    url(./assets/fonts/Avenir-Book.ttf) format('ttf') /* Safari, Android, iOS */,
+    url(./assets/fonts/Avenir-Book.woff) format('woff') /* Modern Browsers */;
 }
 
 html {

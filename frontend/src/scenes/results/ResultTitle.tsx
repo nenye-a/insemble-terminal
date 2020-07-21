@@ -49,6 +49,18 @@ import SvgExportCsv from '../../components/icons/export-csv';
 import InfoboxPopover from '../../components/InfoboxPopover';
 import AddComparisonButton from '../../components/AddComparisonButton';
 import TripleDotsButton from '../../components/TripleDotsButton';
+import { MESSAGE } from '../../constants/message';
+
+/**
+ * title: result title
+ * noData?: whether result has data or not
+ * onTableIdChange?: callback executed to refetch result when getting new tableId
+ * canCompare?: whether result can be compared or not
+ * infoboxContent?: popover content which will be placed next to the result title
+ * sortOrder?: comparison tag sorting rule
+ * onSortOrderChange?: callback executed to reorder the sort rule
+ * zoomIcon?: determine which icon should be zoomed. Use for demo purpose
+ */
 
 type Props = {
   title: string;
@@ -161,11 +173,11 @@ export default function ResultTitle(props: Props) {
 
   let resultTitle = getResultTitle({ reviewTag, businessTag, locationTag });
   let showAuthAlert = () => {
-    alert.show('You need to sign in to access this feature');
+    alert.show(MESSAGE.LoginNeeded);
   };
 
   let showReadOnlyAlert = () => {
-    alert.show('This is a read-only page');
+    alert.show(MESSAGE.ReadOnly);
   };
 
   let removePin = () => {
@@ -258,7 +270,7 @@ export default function ResultTitle(props: Props) {
                 data={csvData}
                 headers={csvHeader}
                 filename={resultTitle}
-                style={{ cursor: demo ? 'default' : 'pointer' }}
+                style={{ cursor: noData || demo ? 'default' : 'pointer' }}
                 onClick={() => {
                   if (demo || noData) {
                     return false;

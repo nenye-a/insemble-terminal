@@ -7,6 +7,7 @@ import { useAlert } from 'react-alert';
 import { View, Card, Form, TextInput, Button } from '../../core-ui';
 import { Background } from '../../components';
 import { WHITE } from '../../constants/colors';
+import { MESSAGE } from '../../constants/message';
 import { validateEmail } from '../../helpers';
 import { CREATE_REFERRAL } from '../../graphql/queries/server/referral';
 
@@ -16,7 +17,7 @@ export default function ReferralScene() {
 
   let [createReferral, { loading }] = useMutation(CREATE_REFERRAL, {
     onCompleted: () => {
-      alert.show('You successfully referred your colleague');
+      alert.show(MESSAGE.ReferredSucceed);
       reset();
     },
     onError: (e) => {
@@ -27,6 +28,7 @@ export default function ReferralScene() {
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
 
   let onSubmit = (fieldValues: FieldValues) => {
+    // Check if all input valid
     if (Object.keys(errors).length === 0) {
       let { email, firstName, lastName, company } = fieldValues;
       createReferral({
@@ -104,7 +106,6 @@ export default function ReferralScene() {
                 })}
                 containerStyle={inputContainerStyle}
               />
-
               <ReferButton text="Refer" type="submit" loading={loading} />
             </FormContent>
           </Form>

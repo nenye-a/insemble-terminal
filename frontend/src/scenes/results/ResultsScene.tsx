@@ -76,6 +76,8 @@ export default function ResultsScene() {
     },
     onCompleted: ({ search }) => {
       if (history.location.pathname === '/results') {
+        // Using replace, so if user navigating back,
+        // they won't found '/results' route with no id
         history.replace('/results/' + search.searchId, {
           search: history.location.state.search,
         });
@@ -201,6 +203,10 @@ export default function ResultsScene() {
 
   useEffect(() => {
     if (searchIdParam) {
+      /**
+       * Get search tag by id from route param.
+       * Used when user pressing back/next on the browser.
+       */
       getSearchTag({
         variables: {
           searchId: searchIdParam,

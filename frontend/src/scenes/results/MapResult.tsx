@@ -127,18 +127,26 @@ export default function MapResult(props: Props) {
     if (!coverageLoading) {
       if (data?.mapTable) {
         let { compareData, comparationTags, id } = data.mapTable;
+        /**
+         * If compareData and compareTag sizes are not the same,
+         * it is possible that one of the compare data failed to fetch
+         */
         if (compareData.length !== comparationTags.length) {
+          // Filter function to find which compare data is missing
           let notIncludedFilterFn = (tag: ComparationTags) =>
             !compareData.map((item) => item.compareId).includes(tag.id);
+          // List of business/location which doesn't have compare data
           let notIncluded = comparationTags
             .filter(notIncludedFilterFn)
             .map(
               (item) => item.businessTag?.params || item.locationTag?.params,
             );
+          // List of compareId which doesn't have data
           let notIncludedTagId = comparationTags
             .filter(notIncludedFilterFn)
             .map((item) => item.id);
           if (notIncluded.length > 0) {
+            // Remove compareIds which doesn't have data from sortOrder list
             let newSortOrder = sortOrder.filter((item) => {
               return !notIncludedTagId.includes(item);
             });
@@ -148,6 +156,7 @@ export default function MapResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            // Fetch previous table if error
             if (prevTableId) {
               refetch({
                 tableId: prevTableId,

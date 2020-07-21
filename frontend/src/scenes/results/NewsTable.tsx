@@ -55,6 +55,7 @@ export default function NewsTable(props: Props) {
             published,
             fill,
           } = row;
+          // Reduce background color by 25%
           let bgColor = fill ? lightenOrDarkenColor(fill, 25) : WHITE;
           let textColor = getTextColor(bgColor);
           let id = idProp || index;

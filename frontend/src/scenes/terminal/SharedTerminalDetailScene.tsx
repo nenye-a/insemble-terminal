@@ -50,7 +50,7 @@ export default function SharedTerminalDetailScene() {
         ) : error ? (
           <ErrorComponent onRetry={refetch} />
         ) : data?.sharedTerminal.pinnedFeeds.length === 0 ? (
-          <EmptyDataComponent text="No found for this terminal" />
+          <EmptyDataComponent text="No data found for this terminal" />
         ) : data?.sharedTerminal.pinnedFeeds &&
           data.sharedTerminal.pinnedFeeds.length > 0 ? (
           <TerminalDetailResult
