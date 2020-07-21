@@ -16,6 +16,8 @@ type Props = {
   isDesktop: boolean;
 };
 
+// Functioning as tooltip on the result title.
+// It will show a modal when the question mark icon is hovered
 export default function InfoboxPopover(props: Props) {
   let { isOpen, content, onChange, disabled, isDesktop } = props;
   let [modalVisible, setModalVisible] = useState(false);

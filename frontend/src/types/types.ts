@@ -26,7 +26,7 @@ import {
 
 export type ResultQuery = {
   reviewTag: ReviewTag | null;
-  type: string; // TODO: change to BE enum
+  type: string;
 };
 
 export type LocationTag = {

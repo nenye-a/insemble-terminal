@@ -12,6 +12,10 @@ type NewSearchTag = {
 export default function getPerformanceNewSearchTag(
   performanceType: PerformanceTableType,
 ): NewSearchTag {
+  /**
+   * To determine the new search tag on table row press
+   * based on the performanceType
+   */
   let type: NewSearchTag = {};
   switch (performanceType) {
     case PerformanceTableType.STATE:

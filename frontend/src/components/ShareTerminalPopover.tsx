@@ -86,6 +86,7 @@ export default function ShareTerminalPopover(props: Props) {
               onPress={() =>
                 onCopyPress(shareTerminalData?.shareTerminal || '')
               }
+              stopPropagation={true}
               {...(isCopied && {
                 textProps: {
                   style: {

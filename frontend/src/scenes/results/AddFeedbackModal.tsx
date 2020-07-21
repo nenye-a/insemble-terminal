@@ -120,7 +120,7 @@ export default function AddFeedbackModal(props: Props) {
 
 const Container = styled(Modal)`
   width: 365px;
-  max-height: fit-content;
+  height: fit-content;
   padding: 12px 24px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
 `;
