@@ -59,10 +59,16 @@ export let updateComparisonResolver: FieldResolver<
           paramsSerializer: axiosParamsSerializer,
         })
       ).data;
-      preprocessBusinessName = pyPreprocessName;
     } catch {
-      // TODO: Handle if error.
-      preprocessBusinessName = businessTag.params;
+      throw new Error('Something wrong when doing preprocessing.');
+    }
+    /**
+     * If word contain bad or banned word it will give back null.
+     */
+    if (!preprocessBusinessName) {
+      throw new Error(
+        'Search contains banned word. Please try different input.',
+      );
     }
     /**
      * Check if it's already on our side.
