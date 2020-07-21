@@ -29,32 +29,32 @@ type Props = {
   readOnly?: boolean;
 };
 
-const POLL_INTERVAL = 5000;
-
 type State = {
-  openNewsId?: string;
-  background?: {
-    state?: {
-      openNewsId?: string;
-    };
-  };
+  // state that should be passed when navigating to results scene
   search?: SearchTag;
+
+  // state that should be passed when opening the news modal
   title?: string;
   source?: string;
   published?: string;
   link?: string;
+  background?: {
+    state?: State;
+  };
 };
 
 type Params = {
   openNewsId: string;
 };
+
+const POLL_INTERVAL = 5000;
+
 export default function NewsScene(props: Props) {
   let { readOnly } = props;
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
   let history = useHistory<State>();
   let { openNewsId } = useParams<Params>();
-
   let {
     data,
     loading: newsLoading,
@@ -184,5 +184,4 @@ export default function NewsScene(props: Props) {
 const Container = styled(View)<ViewProps & WithViewport>`
   padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 0`)};
   background-color: ${BACKGROUND_COLOR};
-  min-height: 90vh;
 `;

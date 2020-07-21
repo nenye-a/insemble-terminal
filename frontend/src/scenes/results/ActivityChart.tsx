@@ -76,6 +76,7 @@ export default function ActivityChart(props: Props) {
               <XAxis
                 dataKey="name"
                 tick={textStyle}
+                // replace m from am/pm
                 tickFormatter={(val) => val.toLowerCase().replace('m', '')}
                 interval={1}
               />
@@ -87,6 +88,7 @@ export default function ActivityChart(props: Props) {
               />
               <Tooltip
                 wrapperStyle={textStyle}
+                // sort tooltip descending
                 itemSorter={(item1, item2) =>
                   (item2 ? Number(item2.value) : 0) - Number(item1.value)
                 }

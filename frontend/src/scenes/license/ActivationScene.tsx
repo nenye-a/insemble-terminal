@@ -14,6 +14,7 @@ import {
   Link,
 } from '../../core-ui';
 import { Background } from '../../components';
+import { SUPPORT_EMAIL } from '../../constants/uri';
 import { ACTIVATE_ACCOUNT } from '../../graphql/queries/server/license';
 import {
   ActivateAccount,
@@ -55,7 +56,7 @@ export default function ActivationScene() {
             Please activate your account. If you do not have a token, contact{' '}
             {
               <Link target="_top" href="/contact-us">
-                sales@insemblegroup.com
+                {SUPPORT_EMAIL}
               </Link>
             }
             .

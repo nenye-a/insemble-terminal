@@ -121,8 +121,17 @@ export default function PerformanceChart(props: Props) {
         <Bar
           dataKey={INDEX_OPTIONS[selectedIndexKey].value}
           fill={THEME_COLOR}
+          /**
+           * If container still have plenty of space,
+           * let the chart to automatically calculate the bar size.
+           * else determine the barSize manually
+           */
           {...(!stillHaveSpace && { barSize: MIN_BAR_SIZE })}
           radius={[5, 24, 24, 5]}
+          /**
+           * need to turn off the animation because
+           * the label is not shown when updating the comparison
+           */
           isAnimationActive={false}
           maxBarSize={MAX_BAR_SIZE}
         />,
@@ -136,6 +145,11 @@ export default function PerformanceChart(props: Props) {
             <Bar
               dataKey={key}
               fill={fill ? fill.toString() : THEME_COLOR}
+              /**
+               * If container still have plenty of space,
+               * let the chart to automatically calculate the bar size.
+               * else determine the barSize manually
+               */
               {...(!stillHaveSpace && { barSize: NORMAL_BAR_SIZE })}
               radius={[5, 24, 24, 5]}
               maxBarSize={MAX_BAR_SIZE}
@@ -192,13 +206,18 @@ export default function PerformanceChart(props: Props) {
               orientation="top"
               axisLine={false}
               tickLine={false}
+              /**
+               * For desktop, we want to show the ticks every 0.5.
+               * Whereas for mobile is per 1 interval.
+               * Combining the `ticks` & `interval` to achieve those results
+               */
               ticks={isDesktop ? TICKS_VALUE : TICKS_VALUE.slice(1)}
+              interval={isDesktop ? 0 : 1}
               tick={{
                 color: LIGHT_GRAY,
                 fontSize: FONT_SIZE_SMALL,
                 fontFamily: FONT_FAMILY_NORMAL,
               }}
-              interval={isDesktop ? 0 : 1}
               tickFormatter={(val) => {
                 if (val % 1 === 0 || (isDesktop && val % 0.5 === 0)) {
                   return val + 'x';

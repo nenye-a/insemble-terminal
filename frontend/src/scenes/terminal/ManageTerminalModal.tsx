@@ -38,6 +38,7 @@ export default function ManageTerminalModal(props: Props) {
 
   useEffect(() => {
     if (mode === 'edit' && terminalId) {
+      // Get terminal name & description
       getTerminalBasicInfo({
         variables: {
           terminalId,
