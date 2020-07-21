@@ -46,6 +46,7 @@ import CustomerActivityResult from './CustomerActivityResult';
 import MapResult from './MapResult';
 import ContactsResult from './ContactsResult';
 import OwnershipInformationResult from './OwnershipInformationResult';
+import { useAlert } from 'react-alert';
 
 type SearchState = {
   search: SearchTag;
@@ -64,12 +65,15 @@ type SearchTagWithIds = {
 export default function ResultsScene() {
   let history = useHistory<SearchState>();
   let params = useParams<Params>();
+  let alert = useAlert();
   let { searchId: searchIdParam } = params;
   let [
     submitSearch,
     { data: submitSearchData, loading: submitSearchLoading },
   ] = useMutation<Search, SearchVariables>(SEARCH, {
-    onError: () => {},
+    onError: (e) => {
+      alert.show(e.message);
+    },
     onCompleted: ({ search }) => {
       if (history.location.pathname === '/results') {
         history.replace('/results/' + search.searchId, {
