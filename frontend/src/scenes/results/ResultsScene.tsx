@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useHistory, useParams } from 'react-router-dom';
+import { useAlert } from 'react-alert';
 
 import { View, Divider, LoadingIndicator } from '../../core-ui';
 import {
@@ -46,7 +47,6 @@ import CustomerActivityResult from './CustomerActivityResult';
 import MapResult from './MapResult';
 import ContactsResult from './ContactsResult';
 import OwnershipInformationResult from './OwnershipInformationResult';
-import { useAlert } from 'react-alert';
 
 type SearchState = {
   search: SearchTag;
