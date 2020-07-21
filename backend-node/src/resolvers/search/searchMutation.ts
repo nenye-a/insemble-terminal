@@ -60,7 +60,9 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
      * If word contain bad or banned word it will give back null.
      */
     if (!preprocessBusinessName) {
-      throw new Error('Search contain bad or banned word. Please try again.');
+      throw new Error(
+        'Search contains banned word. Please try different input.',
+      );
     }
     /**
      * Check if it's already on our side.
