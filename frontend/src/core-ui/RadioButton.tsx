@@ -86,7 +86,9 @@ const StyledRadio = styled(View)<StyledRadioProps>`
     disabled &&
     isVisible &&
     css`
+      border: 1px solid ${THEME_COLOR};
       border-color: ${BORDER_COLOR};
+      background-color: ${BORDER_COLOR};
     `}
 `;
 
