@@ -45,6 +45,12 @@ export default function ProfileMenuDropdown() {
         setFeedbackModalVisible(true);
       },
     },
+    {
+      label: 'Help',
+      onPress: () => {
+        history.push('/contact-us');
+      },
+    },
   ];
   const USER_MENUS = [...GENERAL_MENUS, logoutMenu];
   const ADMIN_MENUS = [
