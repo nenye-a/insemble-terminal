@@ -25,6 +25,12 @@ type TextProps = ComponentProps<typeof Text>;
 type Props = ComponentProps<typeof TouchableOpacity> & {
   text: string;
   textProps?: TextProps;
+  /**
+   * primary: white text with purple background
+   * secondary: dark text with white background and gray border
+   * transparent: purple text with transparent background
+   * withShadow: purple text with white background and shadow border
+   */
   mode?: 'primary' | 'secondary' | 'transparent' | 'withShadow';
   size?: 'small' | 'default';
   shape?: 'block' | 'round';

@@ -47,7 +47,9 @@ export default function ProfileMenuDropdown() {
     },
     {
       label: 'Help',
-      onPress: () => {},
+      onPress: () => {
+        history.push('/contact-us');
+      },
     },
   ];
   const USER_MENUS = [...GENERAL_MENUS, logoutMenu];

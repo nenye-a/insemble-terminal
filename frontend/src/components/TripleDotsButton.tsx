@@ -47,6 +47,10 @@ type Props = TripleDotsPopoverProps & {
   disabled?: boolean;
 };
 
+/**
+ * Menu selection for mobile view.
+ * Consists of compare, pin (add or remove depends on which scene user at) and export button.
+ */
 export default function TripleDotsButton(props: Props) {
   let { disabled, ...tripleDotsProps } = props;
   let [popoverVisible, setPopoverVisible] = useState(false);
@@ -141,6 +145,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
         </ButtonContainer>
       )}
       {isTerminalScene ? (
+        // show remove pinned table button if user is on terminal scene
         <ButtonContainer onPress={removePinFn} disabled={removePinLoading}>
           {removePinLoading ? (
             <LoadingIndicator />
@@ -152,6 +157,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
           )}
         </ButtonContainer>
       ) : (
+        // show add pinned table button
         <ButtonContainer
           onPress={() => {
             setPinModalVisible(true);

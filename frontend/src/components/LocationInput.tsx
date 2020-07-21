@@ -156,8 +156,10 @@ export default function LocationInput(props: Props) {
         setInputValue(e.target.value);
       }}
       onKeyDown={(e) => {
+        // Handle if user press backspace/delete
         if (e.which === 8) {
           if (inputRef.current && selectedPlace.current) {
+            // Deleting the current input value if previously has already selected place
             inputRef.current.value = '';
           }
           onPlaceSelected && onPlaceSelected(null);

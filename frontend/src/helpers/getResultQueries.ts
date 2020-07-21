@@ -10,9 +10,12 @@ import { ResultQuery, OwnershipType } from '../types/types';
 export default function getResultQueries(
   search: Omit<Search, '__typename'>,
 ): Array<ResultQuery> {
+  /**
+   * Generate array of queries to be called
+   * given the search query
+   */
   let { reviewTag, businessTag, locationTag } = search;
-  // TODO: change to enum when be ready
-  let queries = [];
+  let queries: Array<ResultQuery> = [];
 
   if (!reviewTag || reviewTag === ReviewTag.NEWS) {
     queries.push({ reviewTag: ReviewTag.NEWS, type: 'NEWS' });

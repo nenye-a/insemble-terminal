@@ -17,6 +17,9 @@ type Props = {
   style?: CSSProperties;
 };
 
+/**
+ * Referral button which shows a popover when pressed
+ */
 export default function ReferralButton(props: Props) {
   let { style } = props;
   let [popoverVisible, setPopoverVisible] = useState(false);

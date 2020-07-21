@@ -54,8 +54,8 @@ type Props = {
   defaultReviewTag?: string;
   defaultBusinessTag?: SelectedBusiness;
   defaultLocationTag?: LocationTagInput;
-  disableAll?: boolean;
-  disableReviewTag?: boolean;
+  disableAll?: boolean; // disable all input and pill color will be gray
+  disableReviewTag?: boolean; // disable only the review tag
 };
 
 export default function SearchFilterBar(props: Props) {
@@ -88,7 +88,9 @@ export default function SearchFilterBar(props: Props) {
   >(GET_BUSINESS_TAG);
 
   let search = () => {
+    // Check if user is authenticated and has license
     if (isAuthenticated && !!user?.license) {
+      // Check if search combination valid
       let isValid = isSearchCombinationValid(
         selectedDataType,
         selectedBusiness,
@@ -111,7 +113,7 @@ export default function SearchFilterBar(props: Props) {
               selectedBusiness?.id
                 ? selectedBusiness
                 : undefined,
-            locationTag: selectedPlace ? selectedPlace : undefined,
+            locationTag: selectedPlace ?? undefined,
           });
       } else {
         alert.show('Search combination is not valid. Please try again.');
@@ -123,6 +125,10 @@ export default function SearchFilterBar(props: Props) {
 
   useEffect(() => {
     let handleKeyPress = (e: KeyboardEvent) => {
+      /**
+       * When user press delete and the review tag selection is open,
+       * remove the review tag selection
+       */
       if (e.keyCode === 8 && dataTypeFilterVisible) {
         setSelectedDataType('');
       }
@@ -150,14 +156,29 @@ export default function SearchFilterBar(props: Props) {
   }, [dataTypeFilterVisible, businessFocus, locationFocus, isInputChange]);
 
   useEffect(() => {
+    /**
+     * Use to populate the default review tag
+     * when searching from scene than result scene
+     * e.g when searching from terminal scene search bar, and navigated to result scene
+     */
     setSelectedDataType(defaultReviewTag || '');
   }, [defaultReviewTag]);
 
   useEffect(() => {
+    /**
+     * Use to populate the default business tag
+     * when searching from scene than result scene
+     * e.g when searching from terminal scene search bar, and navigated to result scene
+     */
     setSelectedBusiness(defaultBusinessTag || null);
   }, [defaultBusinessTag]);
 
   useEffect(() => {
+    /**
+     * Use to populate the default location tag
+     * when searching from scene than result scene
+     * e.g when searching from terminal scene search bar, and navigated to result scene
+     */
     setSelectedPlace(defaultLocationTag || null);
   }, [defaultLocationTag]);
 
@@ -212,6 +233,7 @@ export default function SearchFilterBar(props: Props) {
       ) : businessTagData ? (
         <>
           <SearchContainer>
+            {/* Review tag selector */}
             <Popover
               isOpen={dataTypeFilterVisible}
               content={
@@ -250,8 +272,12 @@ export default function SearchFilterBar(props: Props) {
                 </DataFilterContainer>
               )}
             </Popover>
-
             <SpacedText>of</SpacedText>
+            {/*
+              Business tag selector
+              SelectedBusiness can be selected from the dropdown list from BE (object with id)
+              or create a new one which will be counted as string and will be assumed as BRAND
+            */}
             <Dropdown<SelectedBusiness | null>
               setFocus={setBusinessFocus}
               selectedOption={selectedBusiness}
@@ -280,10 +306,12 @@ export default function SearchFilterBar(props: Props) {
               }}
             />
             <SpacedText>in</SpacedText>
+            {/* Location tag selector */}
             <SearchLocationInput
               setFocus={setLocationFocus}
               placeholder="Any Location"
               onPlaceSelected={(place) => {
+                // if place has address, user has entered the correct location.
                 if (place?.address) {
                   setSelectedPlace({
                     params: place.address,

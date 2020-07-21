@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ComponentProps } from 'react';
+import React, { useEffect, useState, ComponentProps, useCallback } from 'react';
 import styled, { css } from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -84,6 +84,7 @@ export default function ComparisonPopover(props: Props) {
     },
     onCompleted: (data) => {
       if (deleteAllPopupVisible) {
+        // Closing the popup on delete success
         setDeleteAllPopupVisible(false);
       }
       onUpdateComparisonCompleted(data);
@@ -101,6 +102,11 @@ export default function ComparisonPopover(props: Props) {
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
+    /**
+     * Activity, map and performance starts the color from the second color
+     * because the first color (purple) has already used by the primary data (not compareData)
+     * as table row background, line color, or map pin color
+     */
     let usableColors =
       reviewTag === ReviewTag.ACTIVITY ||
       reviewTag === ReviewTag.MAP ||
@@ -157,11 +163,12 @@ export default function ComparisonPopover(props: Props) {
           return false;
         });
         if (newComparison.length === 1) {
+          // Adding new comparison on the last index
           newSortOrder = [...sortOrder, newComparison[0].id];
           onSortOrderChange(newSortOrder);
         }
       } else if (comparationTags.length < sortOrder.length) {
-        // remove comparison
+        // Remove comparison
         newSortOrder = sortOrder.filter((item) =>
           comparationTags.map((tag) => tag.id).includes(item),
         );
@@ -199,8 +206,13 @@ export default function ComparisonPopover(props: Props) {
     }
   };
 
-  let onDeleteAll = () => {
+  let onDeleteAll = useCallback(() => {
     if (terminalId) {
+      /**
+       * Handle if the user is in terminal scene.
+       * They need the terminalId to refetch the current terminal
+       * after the delete all comparison completed
+       */
       updateComparison({
         variables: {
           actionType: CompareActionType.DELETE_ALL,
@@ -221,7 +233,55 @@ export default function ComparisonPopover(props: Props) {
         },
       });
     }
-  };
+  }, [
+    terminalId,
+    refetchTerminalQueries,
+    pinId,
+    reviewTag,
+    tableId,
+    updateComparison,
+  ]);
+
+  let onDelete = useCallback(
+    (compareId: string) => {
+      /**
+       * Handle if the user is in terminal scene.
+       * They need the terminalId to refetch the current terminal
+       * after the deleting comparison completed
+       */
+      if (terminalId) {
+        updateComparison({
+          variables: {
+            reviewTag,
+            comparationTagId: compareId,
+            tableId,
+            actionType: CompareActionType.DELETE,
+            pinId,
+          },
+          refetchQueries: refetchTerminalQueries,
+          awaitRefetchQueries: true,
+        });
+      } else {
+        updateComparison({
+          variables: {
+            reviewTag,
+            comparationTagId: compareId,
+            tableId,
+            actionType: CompareActionType.DELETE,
+            pinId,
+          },
+        });
+      }
+    },
+    [
+      pinId,
+      terminalId,
+      reviewTag,
+      tableId,
+      updateComparison,
+      refetchTerminalQueries,
+    ],
+  );
 
   useEffect(() => {
     if (!tableId) {
@@ -305,31 +365,7 @@ export default function ComparisonPopover(props: Props) {
                   )}
                   <CloseContainer
                     key={'del_' + comparison.id}
-                    onPress={() => {
-                      if (terminalId) {
-                        updateComparison({
-                          variables: {
-                            reviewTag,
-                            comparationTagId: comparison.id,
-                            tableId,
-                            actionType: CompareActionType.DELETE,
-                            pinId,
-                          },
-                          refetchQueries: refetchTerminalQueries,
-                          awaitRefetchQueries: true,
-                        });
-                      } else {
-                        updateComparison({
-                          variables: {
-                            reviewTag,
-                            comparationTagId: comparison.id,
-                            tableId,
-                            actionType: CompareActionType.DELETE,
-                            pinId,
-                          },
-                        });
-                      }
-                    }}
+                    onPress={() => onDelete(comparison.id)}
                   >
                     <SvgRoundClose viewBox="0 0 20 20" width={20} height={20} />
                   </CloseContainer>

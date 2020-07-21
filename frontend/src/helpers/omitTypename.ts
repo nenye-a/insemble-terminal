@@ -1,4 +1,6 @@
+// Remove __typename property from an object
 export default function omitTypename<T extends ObjectKey>(data: Array<T> | T) {
+  // TODO: support nested object
   let omitTypenameFromObject = (obj: T) => {
     if (obj.hasOwnProperty('__typename')) {
       let { __typename, ...otherEntries } = obj;

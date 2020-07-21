@@ -20,6 +20,9 @@ type Props = {
   onInfoboxPress: () => void;
 };
 
+/**
+ * Info box that will be shown when pressing pin on coverage map marker
+ */
 export default function PinInfoBox(props: Props) {
   let infoRef = useRef<Element | undefined>();
   let [infoBoxHeight, setInfoBoxHeight] = useState<number>(0);
@@ -37,6 +40,7 @@ export default function PinInfoBox(props: Props) {
   let leftText = ['Name:', 'Address:', 'Rating:', 'NumRating:'];
   let rightText = [name, address, rating, numReview];
   let handleInfoBoxPress = (e: Event) => {
+    // So the onPress function not bubbling up to the parent component
     e.stopPropagation();
     onInfoboxPress();
   };
