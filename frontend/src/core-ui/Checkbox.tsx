@@ -7,7 +7,14 @@ import React, {
 import styled, { css } from 'styled-components';
 
 import SvgCheck from '../components/icons/check';
-import { THEME_COLOR, WHITE, DEFAULT_TEXT_COLOR } from '../constants/colors';
+import {
+  THEME_COLOR,
+  WHITE,
+  DEFAULT_TEXT_COLOR,
+  BACKGROUND_COLOR,
+  BORDER_COLOR,
+  LIGHT_GRAY,
+} from '../constants/colors';
 import { FONT_SIZE_NORMAL } from '../constants/theme';
 import { useID } from '../helpers';
 
@@ -22,6 +29,7 @@ type CheckboxProps = ViewProps & {
   size?: string;
   iconContainerStyle?: CSSProperties;
   color?: string;
+  disabled?: boolean;
 };
 
 type ContainerProps = ViewProps & {
@@ -30,6 +38,7 @@ type ContainerProps = ViewProps & {
 
 type CheckProps = ComponentProps<typeof SvgCheck> & {
   isVisible: boolean;
+  disabled?: boolean;
   color: string;
 };
 
@@ -51,6 +60,10 @@ const focusedStyles = css`
   box-shadow: 0 0 0.35rem rgba(0, 0, 0, 0.15);
 `;
 
+type BackdropProps = ViewProps & {
+  disabled: boolean;
+};
+
 const Container = styled(View)<ContainerProps>`
   width: ${(props) => props.size};
   height: ${(props) => props.size};
@@ -63,11 +76,17 @@ const RowedView = styled(View)`
   align-items: center;
 `;
 
-const Backdrop = styled(View)`
+const Backdrop = styled(View)<BackdropProps>`
   ${fillContainer};
   background-color: ${WHITE};
   border: 1px solid ${(props) => props.color};
   border-radius: ${BORDER_RADIUS};
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      background-color: ${BACKGROUND_COLOR};
+      border-color: ${BORDER_COLOR};
+    `}
 `;
 
 const Check = styled(SvgCheck)<CheckProps>`
@@ -77,6 +96,11 @@ const Check = styled(SvgCheck)<CheckProps>`
   border-radius: ${BORDER_RADIUS};
   opacity: ${(props) => (props.isVisible ? 1 : 0)};
   transition: opacity 150ms linear;
+  ${({ disabled }) =>
+    disabled &&
+    css`
+      background-color: ${LIGHT_GRAY};
+    `}
 `;
 
 const NativeCheckbox = styled.input.attrs(() => ({ type: 'checkbox' }))`
@@ -105,6 +129,7 @@ export default function Checkbox(props: CheckboxProps) {
     size = SIZE,
     iconContainerStyle,
     color = THEME_COLOR,
+    disabled,
     ...otherProps
   } = props;
   let [isFocused, setFocus] = useState(false);
@@ -113,11 +138,12 @@ export default function Checkbox(props: CheckboxProps) {
   return (
     <RowedView {...otherProps}>
       <Container isFocused={isFocused} size={size} style={iconContainerStyle}>
-        <Backdrop color={color} />
-        <Check color={color} isVisible={isChecked} />
+        <Backdrop color={color} disabled={disabled} />
+        <Check color={color} isVisible={isChecked} disabled={disabled} />
         <NativeCheckbox
           id={id}
           checked={isChecked}
+          disabled={disabled}
           onClick={() => onPress()}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
