@@ -3,6 +3,9 @@ export * from './auth/registerMutation';
 export * from './auth/userVerificationQuery';
 export * from './auth/userProfileQuery';
 export * from './auth/editUserProfileMutation';
+export * from './auth/forgotPasswordMutation';
+export * from './auth/resetPasswordMutation';
+export * from './auth/resetPasswordVerificationQuery';
 
 export * from './search/searchMutation';
 export * from './search/searchQuery';

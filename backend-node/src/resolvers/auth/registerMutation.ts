@@ -7,7 +7,7 @@ import { sendVerificationEmail } from '../../helpers/sendEmail';
 import getRandomBytes from '../../helpers/getRandomBytes';
 
 export let register = mutationField('register', {
-  type: 'UserRegisterResult',
+  type: 'MessageWithVerificationId',
   args: {
     user: arg({ type: 'UserRegisterInput', required: true }),
     referralCode: stringArg(),
@@ -64,6 +64,9 @@ export let register = mutationField('register', {
           email: `${user.email}`,
           name: `${user.firstName} ${user.lastName}`,
         },
+        `Thank you for signing up with Insemble Terminal.
+        Please use the following link to verify your email
+        address and complete your registration.`,
         `${HOST}/register-verification/${emailVerifyCode}`,
       );
     } else {
