@@ -10,14 +10,23 @@ let forgotPasswordResolver: FieldResolver<
   'Mutation',
   'forgotPassword'
 > = async (_, { email }, context: Context) => {
+  /**
+   * Endpoint for creating reset password request to email.
+   */
   let lowerCasedEmail = email.toLocaleLowerCase();
   let existing = await context.prisma.user.findOne({
     where: { email: lowerCasedEmail },
   });
+  /**
+   * This check if the user already exist.
+   */
   if (!existing) {
     throw new Error('User not found!');
   }
   let userRPVerification;
+  /**
+   * Searching if there's any not verifed reset password request on the user.
+   */
   let existingUserRPVerification = await context.prisma.userResetPasswordVerification.findMany(
     {
       where: {
@@ -27,10 +36,16 @@ let forgotPasswordResolver: FieldResolver<
     },
   );
   if (existingUserRPVerification.length) {
+    /**
+     * If there's any unused reset password request then use it again.
+     */
     userRPVerification = existingUserRPVerification[0];
   } else {
     let bytesEmail = await getRandomBytes(18);
     let bytesQuery = await getRandomBytes(18);
+    /**
+     * Else we create new request here.
+     */
     userRPVerification = await context.prisma.userResetPasswordVerification.create(
       {
         data: {
@@ -46,7 +61,11 @@ let forgotPasswordResolver: FieldResolver<
     Base64.encodeURI(userRPVerification.id) +
     ':' +
     Base64.encodeURI(userRPVerification.tokenEmail);
-
+  /**
+   * This where we send the link to email in production.
+   * Or console the verifyCode if in dev.
+   * This will be directed to Front end reset password scene.
+   */
   if (NODE_ENV === 'production') {
     sendForgotPasswordEmail(
       {
