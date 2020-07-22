@@ -21,6 +21,7 @@ let referralEmail = fs
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
+  message: string,
   link: string,
 ) {
   /**
@@ -30,6 +31,7 @@ async function sendVerificationEmail(
    */
   let htmlContent = ejs.render(emailVerificationTemplate, {
     name: receiver.name,
+    message,
     url: link,
   });
   let msg = {
@@ -65,10 +67,12 @@ async function sendReferralEmail(
 
 async function sendForgotPasswordEmail(
   receiver: { email: string; name: string },
+  message: string,
   link: string,
 ) {
   let htmlContent = ejs.render(emailVerificationTemplate, {
     name: receiver.name,
+    message,
     url: link,
   });
   let msg = {
