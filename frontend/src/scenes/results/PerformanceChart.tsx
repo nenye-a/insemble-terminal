@@ -194,7 +194,7 @@ export default function PerformanceChart(props: Props) {
           </ScrollContainer>
         )}
         <AboveAverageText>Above Average</AboveAverageText>
-        <ResponsiveContainer height={calculatedHeight} minHeight={450}>
+        <ResponsiveContainer height={stillHaveSpace ? 450 : calculatedHeight}>
           <BarChart
             data={chartData}
             layout="vertical"
