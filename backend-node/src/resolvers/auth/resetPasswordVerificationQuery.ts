@@ -59,7 +59,7 @@ let resetPasswordResolver: FieldResolver<
 };
 
 let resetPasswordVerification = queryField('resetPasswordVerification', {
-  type: 'UserRegisterResult',
+  type: 'MessageWithVerificationId',
   resolve: resetPasswordResolver,
   args: {
     verificationCode: stringArg({ required: true }),

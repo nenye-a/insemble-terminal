@@ -7,7 +7,7 @@ import { sendVerificationEmail } from '../../helpers/sendEmail';
 import getRandomBytes from '../../helpers/getRandomBytes';
 
 export let register = mutationField('register', {
-  type: 'UserRegisterResult',
+  type: 'MessageWithVerificationId',
   args: {
     user: arg({ type: 'UserRegisterInput', required: true }),
     referralCode: stringArg(),

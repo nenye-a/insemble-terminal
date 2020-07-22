@@ -91,7 +91,7 @@ let resetPasswordResolver: FieldResolver<'Mutation', 'resetPassword'> = async (
 };
 
 export let resetPassword = mutationField('resetPassword', {
-  type: 'UserRegisterResult',
+  type: 'MessageWithVerificationId',
   args: {
     password: stringArg({ required: true }),
     verificationCode: stringArg({ required: true }),
