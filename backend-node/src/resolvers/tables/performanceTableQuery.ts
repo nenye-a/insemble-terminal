@@ -393,7 +393,6 @@ let performanceTableResolver: FieldResolver<
       selectedPerformanceTable.updatedAt,
       TABLE_UPDATE_TIME,
     );
-    console.log(selectedPerformanceTable.id);
     /**
      * If selectedPerformanceTable process is not polling
      * and the data must be updated then we start the process polling.
