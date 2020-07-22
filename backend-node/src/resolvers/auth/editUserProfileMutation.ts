@@ -82,7 +82,7 @@ let editUserProfileResolver: FieldResolver<
         },
         `Thank you for signing up with Insemble Terminal.
         Please use the following link to verify your email
-        address and complete your email change:`,
+        address and complete your email change.`,
         `${HOST}/email-verification/${emailVerifyCode}`,
       );
     } else {

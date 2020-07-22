@@ -74,7 +74,7 @@ let forgotPasswordResolver: FieldResolver<
       },
       `We received a request to reset the 
       password directed to this e-mail address. 
-      Please proceed by clicking this link :`,
+      Please proceed by clicking this link.`,
       `${FRONTEND_HOST}/reset-password/${emailVerifyCode}`,
     );
   } else {

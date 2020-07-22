@@ -66,7 +66,7 @@ export let register = mutationField('register', {
         },
         `Thank you for signing up with Insemble Terminal.
         Please use the following link to verify your email
-        address and complete your registration:`,
+        address and complete your registration.`,
         `${HOST}/register-verification/${emailVerifyCode}`,
       );
     } else {
