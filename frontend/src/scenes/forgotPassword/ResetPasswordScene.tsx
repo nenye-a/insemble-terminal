@@ -13,6 +13,7 @@ import {
   TextInput,
   LoadingIndicator,
   Link,
+  Alert,
 } from '../../core-ui';
 import { Background } from '../../components';
 import { BACKGROUND_COLOR, THEME_COLOR } from '../../constants/colors';
@@ -52,10 +53,10 @@ export default function ResetPasswordScene() {
       setResetCode(verificationData.resetPasswordVerification.verificationId);
     },
   });
-  let [resetPassword, { loading: resetPasswordLoading }] = useMutation<
-    ResetPassword,
-    ResetPasswordVariables
-  >(RESET_PASSWORD, {
+  let [
+    resetPassword,
+    { loading: resetPasswordLoading, error: resetPasswordError },
+  ] = useMutation<ResetPassword, ResetPasswordVariables>(RESET_PASSWORD, {
     onCompleted: () => {
       setPasswordSubmitted(true);
     },
@@ -86,15 +87,19 @@ export default function ResetPasswordScene() {
           ) : verificationError ? (
             <Content>
               <Text>
-                Reset verification fail. Please try again or{' '}
+                Fail to verify id. Please check the url and try again or{' '}
                 <Link to="/contact-us" style={{ color: THEME_COLOR }}>
                   contact us
                 </Link>
+                .
               </Text>
             </Content>
           ) : !passwordSubmitted ? (
             <Content>
               <Form onSubmit={handleSubmit(onSubmit)}>
+                {resetPasswordError && (
+                  <Alert visible text={resetPasswordError.message} />
+                )}
                 <TextInput
                   label="New Password"
                   placeholder="Enter Your New Password"
