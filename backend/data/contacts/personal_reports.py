@@ -80,7 +80,10 @@ def report_from_csv(csv_filename):
 def parse_brand_address_file(file):
     df = pd.read_csv(file)
     brands = df["Brand"]
-    addresses = df["Shopping Center Address"] + ", " + df["City"] + ", " + df["State / Prov"]
+    if 'address' in df.columns:
+        addresses = df["address"]
+    else:
+        addresses = df["Shopping Center Address"] + ", " + df["City"] + ", " + df["State / Prov"]
     return brands, addresses
 
 
@@ -112,6 +115,7 @@ def batch_report(subject, company, file):
         "report_title": report_name
     } if report else None
 
+
 def batch_query_brands(brands, addresses, separate_by_brand=False):
     query_list = []
     brand_dict = {}
@@ -121,20 +125,23 @@ def batch_query_brands(brands, addresses, separate_by_brand=False):
             brand_dict[brand] = []
         brand_dict[brand].append({
             'location_tag': {'type': 'ADDRESS', 'params': address},
-            'business_tag': {'type': 'BUSINESS', 'params': brand} # no preprocess, watch out
+            'business_tag': {'type': 'BUSINESS', 'params': brand}  # no preprocess, watch out
         })
         print(f"Adding search for {brand} at {address}")
 
     print("Appending to query list")
     if separate_by_brand:
         for brand in brand_dict:
-            query_list.append(("PERFORMANCE", {"searches": brand_dict[brand], "performance_type": "OVERALL"}))
+            query_list.append(
+                ("PERFORMANCE", {"searches": brand_dict[brand], "performance_type": "OVERALL"}))
     else:
         searches_combined = []
         [searches_combined.extend(item) for item in list(brand_dict.values())]
-        query_list.append(("PERFORMANCE", {"searches": searches_combined, "performance_type": "OVERALL"}))
+        query_list.append(
+            ("PERFORMANCE", {"searches": searches_combined, "performance_type": "OVERALL"}))
 
     return query_list
+
 
 def generate_report(name, company, address, city, contact_type,
                     first_name=None, last_name=None, in_parallel=False):
@@ -1159,12 +1166,14 @@ if __name__ == "__main__":
     # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     # report_from_csv(filename)
 
-    print(generate_report(
-        name=None,
-        company="Volk Company",
-        address='10230 N 32nd St, Phoenix, AZ',
-        city='Phoenix, AZ',
-        contact_type='retail broker',
-        first_name='Terry',
-        last_name='Dahlstrom'
-    ))
+    batch_report('Terminals-2', 'Kimco', THIS_DIR + '/files/result-2.csv')
+
+    # print(generate_report(
+    #     name=None,
+    #     company="Volk Company",
+    #     address='10230 N 32nd St, Phoenix, AZ',
+    #     city='Phoenix, AZ',
+    #     contact_type='retail broker',
+    #     first_name='Terry',
+    #     last_name='Dahlstrom'
+    # ))
