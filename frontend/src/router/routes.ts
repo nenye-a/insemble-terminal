@@ -21,6 +21,7 @@ import {
   ExpiredSharedTerminalScene,
   ReferralScene,
   ReferralVerificationFailedScene,
+  ForgotPasswordScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -117,6 +118,11 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
     path: '/verify-referral-code-failed/:errorStatus',
     component: ReferralVerificationFailedScene,
     showSearchBar: false,
+  },
+  {
+    path: '/forgot-password',
+    component: ForgotPasswordScene,
+    headerMode: 'lightPurple',
   },
 ];
 
