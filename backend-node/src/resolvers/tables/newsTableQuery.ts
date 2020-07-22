@@ -257,11 +257,14 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
       if (!selectedNewsTable.polling) {
         /**
          * Here we flag the news as polling.
+         * Also we make updatedAt as outdated so it won't make it's looks like
+         * updated.
          */
         selectedNewsTable = await context.prisma.news.update({
           where: { id: selectedTable.id },
           data: {
             polling: true,
+            updatedAt: todayMinXHour(1),
           },
           include: {
             locationTag: true,
@@ -275,26 +278,90 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
           },
         });
         /**
-         * Here we fetch for main data first. This will run async so we got
-         * promise here.
+         * We search all table with same tag for getting basic table.
          */
-        let mainDataPromise = axios.get(`${API_URI}/api/news`, {
-          params: {
-            location: selectedNewsTable.locationTag
-              ? {
-                  locationType: selectedNewsTable.locationTag.type,
-                  params: selectedNewsTable.locationTag.params,
-                }
-              : undefined,
-            business: selectedNewsTable.businessTag
-              ? {
-                  businessType: selectedNewsTable.businessTag.type,
-                  params: selectedNewsTable.businessTag.params,
-                }
-              : undefined,
+        let tablesWithSameTag = await context.prisma.news.findMany({
+          where: {
+            businessTag: businessTag ? { id: businessTag.id } : null,
+            locationTag: locationTag ? { id: locationTag.id } : null,
+            demo: null,
           },
-          paramsSerializer: axiosParamsSerializer,
+          include: {
+            locationTag: true,
+            businessTag: true,
+            data: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
         });
+        /**
+         * Here we search for table who doesn't have any comparation. (BASIC TABLE)
+         */
+        let [basicTable] = tablesWithSameTag.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
+        );
+        let updateBasicData = timeCheck(
+          basicTable.updatedAt,
+          TABLE_UPDATE_TIME,
+        );
+        let mainDataPromise;
+        if (basicTable && !updateBasicData) {
+          /**
+           * If not outdated we use the data from basic table. This promise
+           * is the same type as mainDataPromise. So the data will have same
+           * type promise when resolved.
+           */
+          mainDataPromise = new Promise<AxiosResponse>((resolve, reject) => {
+            if (basicTable.data.length) {
+              resolve({
+                data: {
+                  /**
+                   * Here we revert the data back to Python response so not change
+                   * the most of code. And we mark this data as dataQueue.
+                   * News data is the same type as python news data so no need
+                   * to map here.
+                   */
+                  dataQueue: true,
+                  createAt: basicTable.createdAt,
+                  updatedAt: basicTable.updatedAt,
+                  data: basicTable.data,
+                },
+                config: null,
+                headers: null,
+                status: 200,
+                statusText: 'success',
+              });
+            } else {
+              reject();
+            }
+          });
+        } else {
+          /**
+           * Here we fetch for main data if basic table not outdated.
+           * This will run async so we got promise here.
+           */
+          mainDataPromise = axios.get(`${API_URI}/api/news`, {
+            params: {
+              location: selectedNewsTable.locationTag
+                ? {
+                    locationType: selectedNewsTable.locationTag.type,
+                    params: selectedNewsTable.locationTag.params,
+                  }
+                : undefined,
+              business: selectedNewsTable.businessTag
+                ? {
+                    businessType: selectedNewsTable.businessTag.type,
+                    params: selectedNewsTable.businessTag.params,
+                  }
+                : undefined,
+            },
+            paramsSerializer: axiosParamsSerializer,
+          });
+        }
         /**
          * Here we create array to keep all of the compare promise and compareId.
          */
@@ -397,6 +464,36 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
                 };
               },
             );
+            if (!mainResponse.data.dataQueue) {
+              if (basicTable.id) {
+                /**
+                 * If the data is from fetch(not data queue) and there is
+                 * basicTable then we also update the basic table here.
+                 */
+                await context.prisma.newsData.deleteMany({
+                  where: {
+                    news: {
+                      id: basicTable.id,
+                    },
+                  },
+                });
+                await context.prisma.compareNewsData.deleteMany({
+                  where: {
+                    news: {
+                      id: basicTable.id,
+                    },
+                  },
+                });
+                await context.prisma.news.update({
+                  where: { id: basicTable.id },
+                  data: {
+                    data: { create: newsData },
+                    polling: false,
+                    updatedAt: new Date(),
+                  },
+                });
+              }
+            }
             /**
              * Here we delete all old data and compareData.
              */
