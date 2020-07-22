@@ -3,7 +3,11 @@ import axios, { AxiosResponse } from 'axios';
 
 import { BusinessTagCreateInput, LocationTagCreateInput } from '@prisma/client';
 import { Root, Context } from 'serverTypes';
-import { PyActivityData, PyActivityResponse } from 'dataTypes';
+import {
+  PyActivityData,
+  PyActivityResponse,
+  ActivityGraphData,
+} from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
@@ -13,6 +17,7 @@ import {
   ActivityDemoData,
   ActivityDemoCompareData,
 } from '../../constants/demoData';
+import { activityGraphToObject } from '../../helpers/activityGraphToObject';
 
 let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
   _: Root,
@@ -389,11 +394,14 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
       if (!selectedActivity.polling) {
         /**
          * Here we flag the activity as polling.
+         * Also we make updatedAt as outdated so it won't make it's looks like
+         * updated.
          */
         selectedActivity = await context.prisma.activity.update({
           where: { id: selectedTable.id },
           data: {
             polling: true,
+            updatedAt: todayMinXHour(1),
           },
           include: {
             locationTag: true,
@@ -406,27 +414,104 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
             },
           },
         });
+
         /**
-         * Here we fetch for main data first. This will run async so we got
-         * promise here.
+         * We search all table with same tag for getting basic table.
          */
-        let mainDataPromise = axios.get(`${API_URI}/api/activity`, {
-          params: {
-            location: selectedActivity.locationTag
-              ? {
-                  locationType: selectedActivity.locationTag.type,
-                  params: selectedActivity.locationTag.params,
-                }
-              : undefined,
-            business: selectedActivity.businessTag
-              ? {
-                  businessType: selectedActivity.businessTag.type,
-                  params: selectedActivity.businessTag.params,
-                }
-              : undefined,
+        let tablesWithSameTag = await context.prisma.activity.findMany({
+          where: {
+            businessTag: businessTag ? { id: businessTag.id } : null,
+            locationTag: locationTag ? { id: locationTag.id } : null,
+            demo: null,
           },
-          paramsSerializer: axiosParamsSerializer,
+          include: {
+            locationTag: true,
+            businessTag: true,
+            data: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
         });
+        /**
+         * Here we search for table who doesn't have any comparation. (BASIC TABLE)
+         */
+        let [basicTable] = tablesWithSameTag.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
+        );
+        let updateBasicData = timeCheck(
+          basicTable.updatedAt,
+          TABLE_UPDATE_TIME,
+        );
+        let mainDataPromise;
+        if (basicTable && !updateBasicData) {
+          /**
+           * If not outdated we use the data from basic table. This promise
+           * is the same type as mainDataPromise. So the data will have same
+           * type promise when resolved.
+           */
+          mainDataPromise = new Promise<AxiosResponse>((resolve, reject) => {
+            if (basicTable.data.length) {
+              resolve({
+                data: {
+                  /**
+                   * Here we revert the data back to Python response so not change
+                   * the most of code. And we mark this data as dataQueue.
+                   */
+                  dataQueue: true,
+                  createAt: basicTable.createdAt,
+                  updatedAt: basicTable.updatedAt,
+                  data: basicTable.data.map(
+                    ({ name, location, activityData }) => {
+                      let parseActivityData: Array<ActivityGraphData> = JSON.parse(
+                        activityData || '[]',
+                      );
+                      let activityObject = activityGraphToObject(
+                        parseActivityData,
+                      );
+                      return {
+                        name: name || '-',
+                        location: location || '-',
+                        activity: activityObject,
+                      };
+                    },
+                  ),
+                },
+                config: null,
+                headers: null,
+                status: 200,
+                statusText: 'success',
+              });
+            } else {
+              reject();
+            }
+          });
+        } else {
+          /**
+           * Here we fetch for main data if basic table not outdated.
+           * This will run async so we got promise here.
+           */
+          mainDataPromise = axios.get(`${API_URI}/api/activity`, {
+            params: {
+              location: selectedActivity.locationTag
+                ? {
+                    locationType: selectedActivity.locationTag.type,
+                    params: selectedActivity.locationTag.params,
+                  }
+                : undefined,
+              business: selectedActivity.businessTag
+                ? {
+                    businessType: selectedActivity.businessTag.type,
+                    params: selectedActivity.businessTag.params,
+                  }
+                : undefined,
+            },
+            paramsSerializer: axiosParamsSerializer,
+          });
+        }
         /**
          * Here we create array to keep all of the compare promise and compareId.
          */
@@ -478,7 +563,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
              */
             let activityData = mainData.data.map(
               ({ name, location, activity }) => {
-                let arrayActiviy = objectToActivityGraph(
+                let arrayActivity = objectToActivityGraph(
                   activity,
                   name,
                   location,
@@ -487,8 +572,8 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
                   name: name || '-',
                   location: location || '-',
                   activityData:
-                    arrayActiviy.length > 0
-                      ? JSON.stringify(arrayActiviy)
+                    arrayActivity.length > 0
+                      ? JSON.stringify(arrayActivity)
                       : '[]',
                 };
               },
@@ -515,7 +600,7 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
              */
             let compareData = rawCompareData.map(
               ({ name, location, activity, compareId }) => {
-                let arrayActiviy = objectToActivityGraph(
+                let arrayActivity = objectToActivityGraph(
                   activity,
                   name,
                   location,
@@ -524,13 +609,43 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
                   name: name || '-',
                   location: location || '-',
                   activityData:
-                    arrayActiviy.length > 0
-                      ? JSON.stringify(arrayActiviy)
+                    arrayActivity.length > 0
+                      ? JSON.stringify(arrayActivity)
                       : '[]',
                   compareId,
                 };
               },
             );
+            if (!mainResponse.data.dataQueue) {
+              if (basicTable.id) {
+                /**
+                 * If the data is from fetch(not data queue) and there is
+                 * basicTable then we also update the basic table here.
+                 */
+                await context.prisma.activityData.deleteMany({
+                  where: {
+                    activity: {
+                      id: basicTable.id,
+                    },
+                  },
+                });
+                await context.prisma.compareActivityData.deleteMany({
+                  where: {
+                    activity: {
+                      id: basicTable.id,
+                    },
+                  },
+                });
+                await context.prisma.activity.update({
+                  where: { id: basicTable.id },
+                  data: {
+                    data: { create: activityData },
+                    polling: false,
+                    updatedAt: new Date(),
+                  },
+                });
+              }
+            }
             /**
              * Here we delete all old data and compareData.
              */
@@ -633,12 +748,12 @@ let activityResolver: FieldResolver<'Query', 'activityTable'> = async (
          */
         let activityData = activityUpdate.data.map(
           ({ name, location, activity }) => {
-            let arrayActiviy = objectToActivityGraph(activity, name, location);
+            let arrayActivity = objectToActivityGraph(activity, name, location);
             return {
               name: name || '-',
               location: location || '-',
               activityData:
-                arrayActiviy.length > 0 ? JSON.stringify(arrayActiviy) : '[]',
+                arrayActivity.length > 0 ? JSON.stringify(arrayActivity) : '[]',
             };
           },
         );
