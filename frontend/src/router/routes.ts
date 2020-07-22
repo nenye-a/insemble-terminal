@@ -126,7 +126,7 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
     headerMode: 'lightPurple',
   },
   {
-    path: '/reset-password',
+    path: '/reset-password/:verificationId',
     component: ResetPasswordScene,
     headerMode: 'lightPurple',
   },

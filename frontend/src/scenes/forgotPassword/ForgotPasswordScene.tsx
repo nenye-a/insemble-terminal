@@ -54,7 +54,7 @@ export default function ForgotPasswordScene() {
           <Content>
             {!hasSubmitted ? (
               <Form onSubmit={handleSubmit(onSubmit)}>
-                <Alert visible={!!error} text={error?.message} />
+                <Alert visible={!!error} text={error?.message || ''} />
                 <TextInput
                   name="email"
                   ref={register({
