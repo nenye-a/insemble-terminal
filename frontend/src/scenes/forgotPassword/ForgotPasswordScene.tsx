@@ -16,14 +16,35 @@ import {
 import { validateEmail } from '../../helpers';
 import { Background } from '../../components';
 import { WHITE } from '../../constants/colors';
+import { FORGOT_PASSWORD } from '../../graphql/queries/server/forgotPassword';
+import {
+  ForgotPassword,
+  ForgotPasswordVariables,
+} from '../../generated/ForgotPassword';
 
 export default function ForgotPasswordScene() {
-  let { register, handleSubmit, errors } = useForm();
   let [hasSubmitted, setHasSubmitted] = useState(false);
+
+  let { register, handleSubmit, errors } = useForm();
+
+  let [forgotPassword, { loading, error }] = useMutation<
+    ForgotPassword,
+    ForgotPasswordVariables
+  >(FORGOT_PASSWORD, {
+    onCompleted: () => {
+      setHasSubmitted(true);
+    },
+  });
+
   let inputContainerStyle = { paddingTop: 12, paddingBottom: 12 };
 
   let onSubmit = (data: FieldValues) => {
     let { email } = data;
+    forgotPassword({
+      variables: {
+        email,
+      },
+    });
   };
 
   return (
@@ -33,6 +54,7 @@ export default function ForgotPasswordScene() {
           <Content>
             {!hasSubmitted ? (
               <Form onSubmit={handleSubmit(onSubmit)}>
+                <Alert visible={!!error} text={error?.message} />
                 <TextInput
                   name="email"
                   ref={register({
@@ -47,7 +69,11 @@ export default function ForgotPasswordScene() {
                   })}
                   containerStyle={inputContainerStyle}
                 />
-                <SubmitButton text="Send Recovery Email" type="submit" />
+                <SubmitButton
+                  text="Send Recovery Email"
+                  type="submit"
+                  loading={loading}
+                />
               </Form>
             ) : (
               <Text>
