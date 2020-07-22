@@ -70,8 +70,9 @@ export default function ManageTerminalModal(props: Props) {
 }
 
 const Container = styled(Modal)`
-  width: 365px;
-  max-height: fit-content;
+  max-width: 365px;
+  width: 90%;
+  height: fit-content;
   padding: 20px 24px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
 `;
