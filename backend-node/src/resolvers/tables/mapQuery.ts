@@ -8,7 +8,7 @@ import {
   LocationTagCreateInput,
 } from '@prisma/client';
 import { Root, Context } from 'serverTypes';
-import { PyMapResponse, PyMapData } from 'dataTypes';
+import { PyMapResponse, PyMapData, BusinessData } from 'dataTypes';
 import { API_URI, TABLE_UPDATE_TIME } from '../../constants/constants';
 import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
 import { timeCheck } from '../../helpers/timeCheck';
@@ -351,10 +351,100 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
         /**
          * Here we getting the map data and put it on mapUpdate.
          */
-        let mapUpdate = await getMapData(
-          selectedMap.locationTag,
-          selectedMap.businessTag,
+        let mapUpdate: PyMapResponse & { dataQueue?: boolean };
+        /**
+         * We search all table with same tag for getting basic table.
+         */
+        let tablesWithSameTag = await context.prisma.map.findMany({
+          where: {
+            businessTag: businessTag ? { id: businessTag.id } : null,
+            locationTag: locationTag ? { id: locationTag.id } : null,
+            demo: null,
+          },
+          include: {
+            locationTag: true,
+            businessTag: true,
+            data: true,
+            comparationTags: {
+              include: {
+                locationTag: true,
+                businessTag: true,
+              },
+            },
+          },
+        });
+        /**
+         * Here we search for table who doesn't have any comparation. (BASIC TABLE)
+         */
+        let [basicTable] = tablesWithSameTag.filter(
+          ({ comparationTags }) => comparationTags.length === 0,
         );
+
+        /**
+         * If there is basicTable then we check it if it's outdated or not.
+         */
+        let updateBasicData = timeCheck(
+          basicTable.updatedAt,
+          TABLE_UPDATE_TIME,
+        );
+        if (basicTable && !updateBasicData) {
+          /**
+           * If not outdated we use the data from basic table.
+           */
+          mapUpdate = {
+            /**
+             * Here we revert the data back to Python response so not change
+             * the most of code. And we mark this data as dataQueue.
+             */
+            dataQueue: true,
+            createdAt: basicTable.createdAt,
+            updatedAt: basicTable.updatedAt,
+            data: basicTable.data.map(
+              ({ name, location, numLocations, coverageData }) => {
+                let parseBusinessData: Array<BusinessData> = JSON.parse(
+                  coverageData || '[]',
+                );
+                let insertMap = parseBusinessData.map(
+                  ({ businessName, numLocations, locations }) => {
+                    let insertLocations = locations.map(
+                      ({ lat, lng, name, address, numReviews, rating }) => {
+                        return {
+                          lat,
+                          lng,
+                          name,
+                          rating,
+                          address,
+                          num_reviews: numReviews,
+                        };
+                      },
+                    );
+                    return {
+                      business_name: businessName || '_',
+                      num_locations:
+                        numLocations === '-' ? Number(numLocations) : null,
+                      locations: insertLocations,
+                    };
+                  },
+                );
+                return {
+                  name: name || '-',
+                  location: location || '_',
+                  num_locations:
+                    numLocations === '-' ? Number(numLocations) : null,
+                  coverage: insertMap,
+                };
+              },
+            ),
+          };
+        } else {
+          /**
+           * If data outdated and there is no basic table then we fetch again here.
+           */
+          mapUpdate = await getMapData(
+            selectedMap.locationTag,
+            selectedMap.businessTag,
+          );
+        }
         /**
          * Then we parse the data here with convertMap.
          */
@@ -386,6 +476,35 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
          * All compare data that we put in one array parsed here.
          */
         let compareData = convertMap(rawCompareData);
+        if (!mapUpdate.dataQueue) {
+          if (basicTable.id) {
+            /**
+             * If the data is from fetch(not data queue) and there is
+             * basicTable then we also update the basic table here.
+             */
+            await context.prisma.mapData.deleteMany({
+              where: {
+                map: {
+                  id: basicTable.id,
+                },
+              },
+            });
+            await context.prisma.compareMapData.deleteMany({
+              where: {
+                map: {
+                  id: basicTable.id,
+                },
+              },
+            });
+            await context.prisma.map.update({
+              where: { id: basicTable.id },
+              data: {
+                data: { create: mapData },
+                updatedAt: new Date(),
+              },
+            });
+          }
+        }
         /**
          * Here we delete all old data and compareData.
          */
