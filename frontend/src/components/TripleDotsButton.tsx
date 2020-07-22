@@ -171,7 +171,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
         <CSVLink
           data={csvData}
           headers={csvHeader}
-          filename={filename}
+          filename={`${filename}.csv`}
           style={{ textDecoration: 'none' }}
         >
           <ButtonContainer>

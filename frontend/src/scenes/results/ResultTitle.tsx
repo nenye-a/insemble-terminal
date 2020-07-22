@@ -269,7 +269,7 @@ export default function ResultTitle(props: Props) {
               <CSVLink
                 data={csvData}
                 headers={csvHeader}
-                filename={resultTitle}
+                filename={`${resultTitle}.csv`}
                 style={{ cursor: noData || demo ? 'default' : 'pointer' }}
                 onClick={() => {
                   if (demo || noData) {
