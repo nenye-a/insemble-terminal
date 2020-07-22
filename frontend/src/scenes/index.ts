@@ -4,6 +4,7 @@ export { default as SignUpScene } from './auth/SignUpScene';
 export { default as VerificationSuccessfulScene } from './auth/VerificationSuccessfulScene';
 export { default as VerificationFailedScene } from './auth/VerificationFailedScene';
 export { default as ForgotPasswordScene } from './forgotPassword/ForgotPasswordScene';
+export { default as ResetPasswordScene } from './forgotPassword/ResetPasswordScene';
 export { default as ContactUsScene } from './landing/ContactUsScene';
 export { default as LandingScene } from './landing/LandingScene';
 export { default as ActivationScene } from './license/ActivationScene';

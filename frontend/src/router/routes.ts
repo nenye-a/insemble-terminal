@@ -22,6 +22,7 @@ import {
   ReferralScene,
   ReferralVerificationFailedScene,
   ForgotPasswordScene,
+  ResetPasswordScene,
 } from '../scenes';
 
 export type RouteType = Omit<RouteProps, 'component'> & {
@@ -122,6 +123,11 @@ export const unAuthenticatedRoutes: Array<RouteType> = [
   {
     path: '/forgot-password',
     component: ForgotPasswordScene,
+    headerMode: 'lightPurple',
+  },
+  {
+    path: '/reset-password',
+    component: ResetPasswordScene,
     headerMode: 'lightPurple',
   },
 ];
