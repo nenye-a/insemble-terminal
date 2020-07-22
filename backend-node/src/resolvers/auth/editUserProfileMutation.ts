@@ -80,6 +80,9 @@ let editUserProfileResolver: FieldResolver<
           email: userEmailVerification.email,
           name: `${currentUser.firstName} ${currentUser.lastName}`,
         },
+        `Thank you for signing up with Insemble Terminal.
+        Please use the following link to verify your email
+        address and complete your email change:`,
         `${HOST}/email-verification/${emailVerifyCode}`,
       );
     } else {
