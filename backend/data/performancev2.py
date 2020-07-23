@@ -149,10 +149,12 @@ def parse_details(place):
         if (volume > 0 and 'brand_volume' in place and place['brand_volume'] > 0) else None,
 
         'avgRating': place['google_details']['rating']
-        if 'rating' in place['google_details'] else None,
+        if utils.inbool(place, 'google_details') and
+        'rating' in place['google_details'] else None,
 
         'avgReviews': place['google_details']['num_reviews']
-        if 'num_reviews' in place['google_details'] else None,
+        if utils.inbool(place, 'google_details') and
+        'num_reviews' in place['google_details'] else None,
 
         'numNearby': place['num_nearby']
         if 'num_nearby' in place else None,
