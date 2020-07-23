@@ -47,6 +47,16 @@ function CoverageMap(props: Props) {
     }
   }, [flatLocations]);
 
+  useEffect(() => {
+    // Zoom in to selectedBusiness locations
+    if (selectedBusiness && mapRef.current) {
+      let bounds = new google.maps.LatLngBounds();
+      // Map through all latLng
+      selectedBusiness.locations.forEach((loc) => bounds.extend(loc));
+      mapRef.current.fitBounds(bounds);
+    }
+  }, [selectedBusiness]);
+
   let closePinInfo = () => {
     setSelectedPinLatLng(null);
   };
@@ -69,10 +79,11 @@ function CoverageMap(props: Props) {
         return item.coverageData.map((covData) => {
           let { locations } = covData;
           // when the table is hovered to a certain row
-          let businessSelected = isEqual(covData, selectedBusiness);
+          let rowSelected = isEqual(covData, selectedBusiness);
 
           return locations.map((location, index) => {
             let { lat, lng, address, name, numReviews, rating } = location;
+            // Non-compare data won't have fill property. Therefore set the fallback to THEME_COLOR
             let pinColor = item.fill || THEME_COLOR;
             let previewVisible = selectedPinLatLng
               ? selectedPinLatLng.lat() === Number(lat) &&
@@ -87,8 +98,14 @@ function CoverageMap(props: Props) {
                 onClick={() => {
                   onLocationMarkerClick(latLng);
                 }}
-                opacity={previewVisible || businessSelected ? 1 : 0.5}
-                zIndex={selectedBusiness ? (businessSelected ? 100 : 0) : 1}
+                opacity={
+                  !selectedBusiness
+                    ? 0.1
+                    : previewVisible || rowSelected
+                    ? 1
+                    : 0 // Not sure why the opacity never be 0 in display. but 0 on debug console
+                }
+                zIndex={selectedBusiness ? (rowSelected ? 100 : 0) : 1}
               >
                 <PinInfoBox
                   visible={previewVisible}
