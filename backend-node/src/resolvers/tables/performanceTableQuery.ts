@@ -725,8 +725,7 @@ let performanceTableResolver: FieldResolver<
                 },
               });
             })
-            .catch(async (err) => {
-              console.log(err)
+            .catch(async () => {
               /**
                * ".catch" is if the fetch failed. We put the error here.
                * Then mark the updatedAt as outdated and polling false
