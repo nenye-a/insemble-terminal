@@ -59,6 +59,7 @@ export let updateComparisonResolver: FieldResolver<
           paramsSerializer: axiosParamsSerializer,
         })
       ).data;
+      preprocessBusinessName = pyPreprocessName;
     } catch {
       throw new Error('Something wrong when doing preprocessing.');
     }
