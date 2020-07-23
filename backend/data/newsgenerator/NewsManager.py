@@ -739,9 +739,9 @@ if __name__ == "__main__":
 
     my_generator = NewsManager(
         'Official-7/23', national_news=False)
-    my_generator.generate()
+    # my_generator.generate()
     # my_generator.convert_links()
-    # my_generator.email(update=False)
+    my_generator.email(update=False, enforce_conversion=False)
 
     # print(my_generator.collection.count_documents({
     #     'data_type': 'contact',
