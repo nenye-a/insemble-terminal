@@ -587,8 +587,6 @@ let performanceTableResolver: FieldResolver<
                 res => res.value
               );
 
-              console.log(fulfilledValue)
-
               let [mainResponse, ...compareResponses] = fulfilledValue;
               let mainData: PyPerformanceResponse = mainResponse.data;
               /**
