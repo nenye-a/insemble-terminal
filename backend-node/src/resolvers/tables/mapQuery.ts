@@ -357,8 +357,12 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
          */
         let tablesWithSameTag = await context.prisma.map.findMany({
           where: {
-            businessTag: businessTag ? { id: businessTag.id } : null,
-            locationTag: locationTag ? { id: locationTag.id } : null,
+            businessTag: selectedMap.businessTag
+              ? { id: selectedMap.businessTag.id }
+              : null,
+            locationTag: selectedMap.locationTag
+              ? { id: selectedMap.locationTag.id }
+              : null,
             demo: null,
           },
           include: {
@@ -382,11 +386,11 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
 
         /**
          * If there is basicTable then we check it if it's outdated or not.
+         * If no basicTable found then it's will be undefined.
          */
-        let updateBasicData = timeCheck(
-          basicTable.updatedAt,
-          TABLE_UPDATE_TIME,
-        );
+        let updateBasicData = basicTable
+          ? timeCheck(basicTable.updatedAt, TABLE_UPDATE_TIME)
+          : undefined;
         if (basicTable && !updateBasicData) {
           /**
            * If not outdated we use the data from basic table.
@@ -400,7 +404,7 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
             createdAt: basicTable.createdAt,
             updatedAt: basicTable.updatedAt,
             data: basicTable.data.map(
-              ({ name, location, numLocations, coverageData }) => {
+              ({ name, location, numLocations: dataNumLoc, coverageData }) => {
                 let parseBusinessData: Array<BusinessData> = JSON.parse(
                   coverageData || '[]',
                 );
@@ -420,8 +424,7 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
                     );
                     return {
                       business_name: businessName || '_',
-                      num_locations:
-                        numLocations === '-' ? Number(numLocations) : null,
+                      num_locations: Number(numLocations),
                       locations: insertLocations,
                     };
                   },
@@ -429,8 +432,7 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
                 return {
                   name: name || '-',
                   location: location || '_',
-                  num_locations:
-                    numLocations === '-' ? Number(numLocations) : null,
+                  num_locations: Number(dataNumLoc),
                   coverage: insertMap,
                 };
               },
@@ -477,7 +479,7 @@ let mapResolver: FieldResolver<'Query', 'mapTable'> = async (
          */
         let compareData = convertMap(rawCompareData);
         if (!mapUpdate.dataQueue) {
-          if (basicTable.id) {
+          if (basicTable && basicTable.id) {
             /**
              * If the data is from fetch(not data queue) and there is
              * basicTable then we also update the basic table here.

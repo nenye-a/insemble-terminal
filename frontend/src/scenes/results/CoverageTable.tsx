@@ -67,12 +67,10 @@ export default function MapTable(props: Props) {
                 onMouseLeave={() => {
                   /**
                    * if there's still selectedRow, highlight back the pins of the row,
-                   * else, go back to default state.
+                   * else, leave the view as it is.
                    */
                   if (selectedRow) {
                     highlightFn(selectedRow);
-                  } else {
-                    highlightFn(undefined);
                   }
                 }}
                 onPress={() => {

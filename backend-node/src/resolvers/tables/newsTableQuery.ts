@@ -282,8 +282,12 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
          */
         let tablesWithSameTag = await context.prisma.news.findMany({
           where: {
-            businessTag: businessTag ? { id: businessTag.id } : null,
-            locationTag: locationTag ? { id: locationTag.id } : null,
+            businessTag: selectedNewsTable.businessTag
+              ? { id: selectedNewsTable.businessTag.id }
+              : null,
+            locationTag: selectedNewsTable.locationTag
+              ? { id: selectedNewsTable.locationTag.id }
+              : null,
             demo: null,
           },
           include: {
@@ -304,10 +308,13 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
         let [basicTable] = tablesWithSameTag.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
-        let updateBasicData = timeCheck(
-          basicTable.updatedAt,
-          TABLE_UPDATE_TIME,
-        );
+        /**
+         * If there is basicTable then we check it if it's outdated or not.
+         * If no basicTable found then it's will be undefined.
+         */
+        let updateBasicData = basicTable
+          ? timeCheck(basicTable.updatedAt, TABLE_UPDATE_TIME)
+          : undefined;
         let mainDataPromise;
         if (basicTable && !updateBasicData) {
           /**
@@ -465,7 +472,7 @@ let newsTableResolver: FieldResolver<'Query', 'newsTable'> = async (
               },
             );
             if (!mainResponse.data.dataQueue) {
-              if (basicTable.id) {
+              if (basicTable && basicTable.id) {
                 /**
                  * If the data is from fetch(not data queue) and there is
                  * basicTable then we also update the basic table here.

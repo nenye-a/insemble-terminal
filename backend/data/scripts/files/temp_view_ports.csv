@@ -1,0 +1,202 @@
+,msa,lat,lng
+0,Indianapolis Metropolitan Area center,39.809623949999995,-86.13135585
+1,Indianapolis Metropolitan Area north west,40.00950330064094,-86.41391588847944
+2,Indianapolis Metropolitan Area south east,39.609744599359054,-85.84879581152057
+3,San Jose Metropolitan Area center,36.84074244999999,-121.39951899999998
+4,San Jose Metropolitan Area north west,37.257221191245826,-121.98827541117969
+5,San Jose Metropolitan Area south east,36.42426370875416,-120.81076258882028
+6,Buffalo Metropolitan Area center,42.9064155,-78.79857025
+7,Buffalo Metropolitan Area north west,43.28759107463363,-79.33742023470592
+8,Buffalo Metropolitan Area south east,42.52523992536637,-78.25972026529408
+9,New Orleans Metropolitan Area center,29.818606550000002,-89.75293880000001
+10,New Orleans Metropolitan Area north west,30.27010758372617,-90.39120457910165
+11,New Orleans Metropolitan Area south east,29.367105516273835,-89.11467302089837
+12,Hartford Metropolitan Area center,41.7068991,-72.7308962
+13,Hartford Metropolitan Area north west,41.90115346942233,-73.00550446705093
+14,Hartford Metropolitan Area south east,41.51264473057767,-72.45628793294908
+15,Raleigh Metropolitan Area center,35.7950655,-78.67150935
+16,Raleigh Metropolitan Area north west,36.006117368056096,-78.9698634509507
+17,Raleigh Metropolitan Area south east,35.584013631943904,-78.37315524904929
+18,"Louisville/Jefferson County, KY Metropolitan Area center",38.188804999999995,-85.6767705
+19,"Louisville/Jefferson County, KY Metropolitan Area north west",38.29106067794083,-85.82132454323184
+20,"Louisville/Jefferson County, KY Metropolitan Area south east",38.08654932205916,-85.53221645676817
+21,Cleveland Metropolitan Area center,41.4215018,-81.6747572
+22,Cleveland Metropolitan Area north west,41.81173033890933,-82.22640493457799
+23,Cleveland Metropolitan Area south east,41.031273261090675,-81.12310946542202
+24,"Jacksonville, FL Metropolitan Area center",30.3159596,-81.6100919
+25,"Jacksonville, FL Metropolitan Area north west",30.540578498106573,-81.92762507333022
+26,"Jacksonville, FL Metropolitan Area south east",30.091340701893426,-81.29255872666978
+27,"Columbus, OH Metropolitan Area center",40.06723615,-83.01963305
+28,"Columbus, OH Metropolitan Area north west",40.26636446363857,-83.30113138278743
+29,"Columbus, OH Metropolitan Area south east",39.86810783636143,-82.73813471721256
+30,"Kansas City, MO Metropolitan Area center",39.068401,-94.59040800000001
+31,"Kansas City, MO Metropolitan Area north west",39.069979263314494,-94.59263911662833
+32,"Kansas City, MO Metropolitan Area south east",39.06682273668551,-94.58817688337169
+33,Virginia Beach Metropolitan Area center,36.8188382,-76.20201095
+34,Virginia Beach Metropolitan Area north west,36.922987699882555,-76.34924220025202
+35,Virginia Beach Metropolitan Area south east,36.71468870011745,-76.05477969974798
+36,"Richmond, VA Metropolitan Area center",37.50135039999999,-77.5170119
+37,"Richmond, VA Metropolitan Area north west",37.70777716142877,-77.80882770521183
+38,"Richmond, VA Metropolitan Area south east",37.29492363857121,-77.22519609478817
+39,"Memphis, TN Metropolitan Area center",35.038116,-89.88624005
+40,"Memphis, TN Metropolitan Area north west",35.4642039681638,-90.48858057339035
+41,"Memphis, TN Metropolitan Area south east",34.6120280318362,-89.28389952660964
+42,Nashville Metropolitan Area center,36.117038949999994,-86.77622964999999
+43,Nashville Metropolitan Area north west,36.32723227145466,-87.07337006399423
+44,Nashville Metropolitan Area south east,35.90684562854533,-86.47908923600575
+45,Birmingham Metropolitan Area center,33.45403355,-86.77657075
+46,Birmingham Metropolitan Area north west,33.67112574104303,-87.08346377150524
+47,Birmingham Metropolitan Area south east,33.23694135895697,-86.46967772849477
+48,Grand Rapids Metropolitan Area center,42.95034545,-85.72256645
+49,Grand Rapids Metropolitan Area north west,43.04557140519559,-85.85718290476646
+50,Grand Rapids Metropolitan Area south east,42.85511949480441,-85.58794999523354
+51,"Salt Lake City, UT Metropolitan Area center",40.4798043,-112.800109
+52,"Salt Lake City, UT Metropolitan Area north west",40.87563858401035,-113.35968131281167
+53,"Salt Lake City, UT Metropolitan Area south east",40.08397001598964,-112.24053668718834
+54,"Tucson, AZ Metropolitan Area center",32.25741965,-110.9313453
+55,"Tucson, AZ Metropolitan Area north west",32.36743982492097,-111.0868756474796
+56,"Tucson, AZ Metropolitan Area south east",32.147399475079034,-110.7758149525204
+57,"Urban Honolulu, HI Metropolitan Area center",24.85825345,-168.0204405
+58,"Urban Honolulu, HI Metropolitan Area north west",28.635734433272926,-173.36048772632068
+59,"Urban Honolulu, HI Metropolitan Area south east",21.080772466727073,-162.68039327367933
+60,Greenville Metropolitan Area center,34.834839699999996,-82.32733435
+61,Greenville Metropolitan Area north west,34.9416260205103,-82.47829314957441
+62,Greenville Metropolitan Area south east,34.728053379489694,-82.17637555042559
+63,"Fresno, CA Metropolitan Area center",36.782513949999995,-119.7767845
+64,"Fresno, CA Metropolitan Area north west",36.88671285842033,-119.92408559677841
+65,"Fresno, CA Metropolitan Area south east",36.67831504157966,-119.6294834032216
+66,"Rochester, NY Metropolitan Area center",43.17992,-77.59599795
+67,"Rochester, NY Metropolitan Area north west",43.274790004230056,-77.73011121362542
+68,"Rochester, NY Metropolitan Area south east",43.08504999576995,-77.46188468637457
+69,Omaha Metropolitan Area center,41.324888900000005,-96.03186294999999
+70,Omaha Metropolitan Area north west,41.715697435415876,-96.58433059836437
+71,Omaha Metropolitan Area south east,40.93408036458413,-95.4793953016356
+72,"Knoxville, TN Metropolitan Area center",36.026424999999996,-84.084722
+73,"Knoxville, TN Metropolitan Area north west",36.447296234245755,-84.67968787197242
+74,"Knoxville, TN Metropolitan Area south east",35.60555376575424,-83.48975612802758
+75,Albany Metropolitan Area center,42.89323045,-74.00782199999999
+76,Albany Metropolitan Area north west,43.655744639189294,-75.0857524512825
+77,Albany Metropolitan Area south east,42.1307162608107,-72.92989154871748
+78,"Albuquerque, NM Metropolitan Area center",35.239746499999995,-106.45831495
+79,"Albuquerque, NM Metropolitan Area north west",36.089814332750116,-107.66001586988885
+80,"Albuquerque, NM Metropolitan Area south east",34.389678667249875,-105.25661403011115
+81,New Haven Metropolitan Area center,41.31635095,-72.92634685
+82,New Haven Metropolitan Area north west,41.41406588447542,-73.06448185772769
+83,New Haven Metropolitan Area south east,41.21863601552458,-72.78821184227232
+84,"Bakersfield, CA Metropolitan Area center",35.2956548,-118.90517354999999
+85,"Bakersfield, CA Metropolitan Area north west",35.72039551520816,-119.50560952524283
+86,"Bakersfield, CA Metropolitan Area south east",34.87091408479184,-118.30473757475714
+87,"Baton Rouge, LA Metropolitan Area center",30.462627500000004,-91.11819899999999
+88,"Baton Rouge, LA Metropolitan Area north west",30.574768475913825,-91.27672742411045
+89,"Baton Rouge, LA Metropolitan Area south east",30.350486524086183,-90.95967057588953
+90,"Worcester, MA Metropolitan Area center",42.2753197,-71.807738
+91,"Worcester, MA Metropolitan Area north west",42.32345154603744,-71.87577972729606
+92,"Worcester, MA Metropolitan Area south east",42.227187853962555,-71.73969627270394
+93,Oxnard Metropolitan Area center,34.23424119999999,-119.2075929
+94,Oxnard Metropolitan Area north west,34.288020919042324,-119.28361875976633
+95,Oxnard Metropolitan Area south east,34.18046148095766,-119.13156704023366
+96,Bridgeport Metropolitan Area center,41.184746000000004,-73.1990064
+97,Bridgeport Metropolitan Area north west,41.20922399251815,-73.2336097869214
+98,Bridgeport Metropolitan Area south east,41.16026800748186,-73.1644030130786
+99,Allentown Metropolitan Area center,40.608040499999994,-75.39412164999999
+100,Allentown Metropolitan Area north west,40.706809793481135,-75.53374715547179
+101,Allentown Metropolitan Area south east,40.509271206518854,-75.25449614452819
+102,"Columbia, SC Metropolitan Area center",34.0586212,-81.02506955
+103,"Columbia, SC Metropolitan Area north west",34.16640447465269,-81.17743769676275
+104,"Columbia, SC Metropolitan Area south east",33.95083792534731,-80.87270140323724
+105,"Oklahoma City, OK Metropolitan Area center",35.4229415,-97.46627899999999
+106,"Oklahoma City, OK Metropolitan Area north west",35.8470131746218,-98.06576918402818
+107,"Oklahoma City, OK Metropolitan Area south east",34.9988698253782,-96.86678881597179
+108,"El Paso, TX Metropolitan Area center",31.812553099999995,-106.4090573
+109,"El Paso, TX Metropolitan Area north west",32.033665085221614,-106.72163291550076
+110,"El Paso, TX Metropolitan Area south east",31.591441114778377,-106.09648168449924
+111,Cape Coral Metropolitan Area center,26.647604949999998,-81.99571845
+112,Cape Coral Metropolitan Area north west,26.76388595043571,-82.16009943208836
+113,Cape Coral Metropolitan Area south east,26.531323949564285,-81.83133746791164
+114,"Stockton, CA Metropolitan Area center",37.96462755,-121.29785825
+115,"Stockton, CA Metropolitan Area north west",38.01591235347763,-121.37035716495836
+116,"Stockton, CA Metropolitan Area south east",37.913342746522375,-121.22535933504165
+117,Little Rock Metropolitan Area center,34.754393099999994,-92.311518
+118,Little Rock Metropolitan Area north west,34.86128365746304,-92.46262415445267
+119,Little Rock Metropolitan Area south east,34.64750254253695,-92.16041184554734
+120,Charleston Metropolitan Area center,35.61342555,-79.8379179
+121,Charleston Metropolitan Area north west,38.99795794505224,-84.6224721859442
+122,Charleston Metropolitan Area south east,32.22889315494776,-75.05336361405578
+123,"Colorado Springs, CO Metropolitan Area center",38.8497845,-104.76716195
+124,"Colorado Springs, CO Metropolitan Area north west",38.95110547519195,-104.91039464791106
+125,"Colorado Springs, CO Metropolitan Area south east",38.748463524808045,-104.62392925208894
+126,"Boise City, ID Metropolitan Area center",43.60080605,-116.233898
+127,"Boise City, ID Metropolitan Area north west",43.64791278836486,-116.30049058078602
+128,"Boise City, ID Metropolitan Area south east",43.55369931163514,-116.16730541921397
+129,McAllen Metropolitan Area center,26.2164612,-98.17676819999998
+130,McAllen Metropolitan Area north west,26.33317798139368,-98.34176522513559
+131,McAllen Metropolitan Area south east,26.099744418606324,-98.01177117486438
+132,Des Moines Metropolitan Area center,41.6097189,-93.66830135000001
+133,Des Moines Metropolitan Area north west,41.70699275745649,-93.80581282788812
+134,Des Moines Metropolitan Area south east,41.512445042543504,-93.5307898721119
+135,"Springfield, MA Metropolitan Area center",42.11990545,-72.54689505
+136,"Springfield, MA Metropolitan Area north west",42.216406177893056,-72.68331359098144
+137,"Springfield, MA Metropolitan Area south east",42.02340472210694,-72.41047650901857
+138,Greensboro Metropolitan Area center,36.024360949999995,-79.78869189999999
+139,Greensboro Metropolitan Area north west,36.445243210252585,-80.38367335891976
+140,Greensboro Metropolitan Area south east,35.603478689747405,-79.19371044108021
+141,Lakeland Metropolitan Area center,28.062435550000004,-81.94735945
+142,Lakeland Metropolitan Area north west,28.119837965823713,-82.02850654584532
+143,Lakeland Metropolitan Area south east,28.005033134176294,-81.86621235415467
+144,"Akron, OH Metropolitan Area center",41.1150999,-81.48435875000001
+145,"Akron, OH Metropolitan Area north west",41.21311593349146,-81.6229194072472
+146,"Akron, OH Metropolitan Area south east",41.017083866508536,-81.34579809275283
+147,Ogden Metropolitan Area center,41.086104000000006,-111.97988495
+148,Ogden Metropolitan Area north west,41.28222263146435,-112.25712863663098
+149,Ogden Metropolitan Area south east,40.88998536853566,-111.70264126336902
+150,Poughkeepsie Metropolitan Area center,41.707048750000006,-73.9376975
+151,Poughkeepsie Metropolitan Area north west,41.70856635872861,-73.9398428720926
+152,Poughkeepsie Metropolitan Area south east,41.7055311412714,-73.9355521279074
+153,"Madison, WI Metropolitan Area center",43.076580549999996,-89.42520344999998
+154,"Madison, WI Metropolitan Area north west",43.171610968915495,-89.55954348432257
+155,"Madison, WI Metropolitan Area south east",42.9815501310845,-89.29086341567739
+156,Deltona Metropolitan Area center,28.892232949999997,-81.218591
+157,Deltona Metropolitan Area north west,28.949186166411728,-81.29910308376064
+158,Deltona Metropolitan Area south east,28.835279733588266,-81.13807891623937
+159,"Jackson, MS Metropolitan Area center",32.3491268,-90.1909146
+160,"Jackson, MS Metropolitan Area north west",32.45903569298083,-90.34628763343397
+161,"Jackson, MS Metropolitan Area south east",32.239217907019174,-90.03554156656602
+162,Spokane Metropolitan Area center,47.68578325,-117.2982789
+163,Spokane Metropolitan Area north west,47.77336603296851,-117.42209056161668
+164,Spokane Metropolitan Area south east,47.59820046703149,-117.17446723838331
+165,Augusta Metropolitan Area center,33.7312819,-83.60745845000001
+166,Augusta Metropolitan Area north west,34.59686414618831,-84.83109136658598
+167,Augusta Metropolitan Area south east,32.86569965381169,-82.38382553341404
+168,Palm Bay Metropolitan Area center,27.986888049999997,-80.65288905
+169,Palm Bay Metropolitan Area north west,28.044330765849104,-80.73409311609608
+170,Palm Bay Metropolitan Area south east,27.92944533415089,-80.57168498390392
+171,Durham Metropolitan Area center,36.005976499999996,-78.94878895
+172,Durham Metropolitan Area north west,36.11122161114082,-79.09756901436565
+173,Durham Metropolitan Area south east,35.90073138885917,-78.80000888563434
+174,"Syracuse, NY Metropolitan Area center",43.08469595,-76.1515386
+175,"Syracuse, NY Metropolitan Area north west",43.17971378249118,-76.28586084148641
+176,"Syracuse, NY Metropolitan Area south east",42.98967811750882,-76.01721635851358
+177,"Chattanooga, TN Metropolitan Area center",35.0654312,-85.2173389
+178,"Chattanooga, TN Metropolitan Area north west",35.171917570707514,-85.36787367464365
+179,"Chattanooga, TN Metropolitan Area south east",34.958944829292484,-85.06680412535636
+180,Provo Metropolitan Area center,40.33654475,-111.80643415
+181,Provo Metropolitan Area north west,40.435714186823894,-111.94662531929832
+182,Provo Metropolitan Area south east,40.23737531317611,-111.66624298070168
+183,Harrisburg Metropolitan Area center,40.302104,-77.1035875
+184,Harrisburg Metropolitan Area north west,40.5005440765504,-77.3841129043809
+185,Harrisburg Metropolitan Area south east,40.1036639234496,-76.82306209561911
+186,"Tulsa, OK Metropolitan Area center",36.1341131,-95.8821439
+187,"Tulsa, OK Metropolitan Area north west",36.239186903716046,-96.03068179511514
+188,"Tulsa, OK Metropolitan Area south east",36.029039296283955,-95.73360600488486
+189,Dayton Metropolitan Area center,39.727066799999996,-84.1737678
+190,Dayton Metropolitan Area north west,39.82712639086643,-84.3152173382079
+191,Dayton Metropolitan Area south east,39.62700720913356,-84.03231826179208
+192,North Port Metropolitan Area center,27.034129,-82.20474604999998
+193,North Port Metropolitan Area north west,27.092071360488337,-82.28665644022625
+194,North Port Metropolitan Area south east,26.976186639511663,-82.12283565977371
+195,"Toledo, OH Metropolitan Area center",41.6386058,-83.5416082
+196,"Toledo, OH Metropolitan Area north west",41.64012502325098,-83.54375585446695
+197,"Toledo, OH Metropolitan Area south east",41.63708657674902,-83.53946054553305
+198,"Wichita, KS Metropolitan Area center",37.69901095,-97.34403094999999
+199,"Wichita, KS Metropolitan Area north west",37.80195048288266,-97.48955172680415
+200,"Wichita, KS Metropolitan Area south east",37.596071417117344,-97.19851017319583
