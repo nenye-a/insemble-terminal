@@ -47,19 +47,18 @@ def combine_kimco():
         else:
             return None
 
-    main_csv = pd.read_csv(THIS_DIR + '/files/raw-kimco-result-1.csv')
-    result_csv = pd.read_csv(THIS_DIR + '/files/combined_kimco_results.csv')
+    main_csv = pd.read_csv(THIS_DIR + '/files/kimco-all-address.csv')
+    result_csv = pd.read_csv(THIS_DIR + '/files/combined-kimco-all.csv')
     original_csv = pd.read_csv(THIS_DIR + '/files/sites_request_insemble.csv')
-    result_csv = pd.read_csv(THIS_DIR + '/files/combined_kimco_results.csv')
-    result_csv['address'] = result_csv['Company'].apply(parse_address)
 
+    result_csv['address'] = result_csv['Company'].apply(parse_address)
     final_csv = main_csv.merge(result_csv, on='address', how='outer')
     final_csv = final_csv[
         ['Building ID', 'Brand', 'Shopping Center Address', 'City', 'State / Prov', 'Postal Code', 'Latitude', 'Longitude', 'name', 'address',
-         'Volume IDX', 'Retail IDX', 'Category IDX', 'Brand IDX', 'Rating', '# Reviews', '# Locations']
+         'Volume IDX', 'Retail IDX', 'Category IDX', 'Brand IDX', 'Rating', '# Reviews']
     ]
     final_csv = final_csv.merge(original_csv, on=['Brand', 'Shopping Center Address'], how='outer')
-    final_csv.to_csv(THIS_DIR + '/files/kimco_results-prime.csv')
+    final_csv.to_csv(THIS_DIR + '/files/kimco_results-prime-new.csv')
 
 
 combine_kimco()
