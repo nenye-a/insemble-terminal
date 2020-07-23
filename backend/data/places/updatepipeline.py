@@ -15,7 +15,10 @@ import datetime as dt
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
 
 
-def setup(query={'activity_volume': {'$ne': -1}}, update_all=True):
+def setup(query={}, has_activity=False, update_all=True):
+
+    if not has_activity:
+        query.update({'activity_volume': {'$ne': -1}})
 
     if not update_all:
         query.update({
