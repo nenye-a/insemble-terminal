@@ -1166,7 +1166,7 @@ if __name__ == "__main__":
     # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     # report_from_csv(filename)
 
-    batch_report('Terminals-Main', 'Kimco', THIS_DIR + '/files/raw-kimco-result-1.csv')
+    batch_report('Terminals-All-Address', 'Kimco', THIS_DIR + '/files/kimco-all-address.csv')
 
     # print(generate_report(
     #     name=None,
