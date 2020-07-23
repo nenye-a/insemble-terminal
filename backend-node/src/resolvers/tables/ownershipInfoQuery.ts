@@ -245,18 +245,6 @@ let ownershipInfoTableResolver: FieldResolver<
          */
         let ownershipInfoData = ownershipInfoUpdate.data;
         /**
-         * Here we delete all old data.
-         */
-        await context.prisma.ownershipInfoData.deleteMany({
-          where: {
-            ownershipInfoes: {
-              some: {
-                id: selectedOwnershipInfoTable.id,
-              },
-            },
-          },
-        });
-        /**
          * Then finally we update the table here with data.
          * Also we null check when we create it.
          */
@@ -264,7 +252,7 @@ let ownershipInfoTableResolver: FieldResolver<
           where: { id: selectedOwnershipInfoTable.id },
           data: {
             data: {
-              create: {
+              update: {
                 parentCompany: ownershipInfoData.parent_company || '-',
                 headquarters: ownershipInfoData.headquarters || '-',
                 phone: ownershipInfoData.phone || '-',

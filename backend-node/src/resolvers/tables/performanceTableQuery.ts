@@ -427,8 +427,12 @@ let performanceTableResolver: FieldResolver<
         let tablesWithSameTag = await context.prisma.performance.findMany({
           where: {
             type: performanceType,
-            businessTag: businessTag ? { id: businessTag.id } : null,
-            locationTag: locationTag ? { id: locationTag.id } : null,
+            businessTag: selectedPerformanceTable.businessTag
+              ? { id: selectedPerformanceTable.businessTag.id }
+              : null,
+            locationTag: selectedPerformanceTable.locationTag
+              ? { id: selectedPerformanceTable.locationTag.id }
+              : null,
             demo: null,
           },
           include: {
@@ -449,10 +453,13 @@ let performanceTableResolver: FieldResolver<
         let [basicTable] = tablesWithSameTag.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
-        let updateBasicData = timeCheck(
-          basicTable.updatedAt,
-          TABLE_UPDATE_TIME,
-        );
+        /**
+         * If there is basicTable then we check it if it's outdated or not.
+         * If no basicTable found then it's will be undefined.
+         */
+        let updateBasicData = basicTable
+          ? timeCheck(basicTable.updatedAt, TABLE_UPDATE_TIME)
+          : undefined;
         let mainDataPromise;
         if (basicTable && !updateBasicData) {
           /**
@@ -654,7 +661,7 @@ let performanceTableResolver: FieldResolver<
               },
             );
             if (!mainResponse.data.dataQueue) {
-              if (basicTable.id) {
+              if (basicTable && basicTable.id) {
                 /**
                  * If the data is from fetch(not data queue) and there is
                  * basicTable then we also update the basic table here.
