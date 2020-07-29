@@ -237,6 +237,7 @@ class PerformanceAPI(BasicAPI):
             'data': data
         }
 
+        print(result)
         return Response(result, status=status.HTTP_200_OK)
 
 
