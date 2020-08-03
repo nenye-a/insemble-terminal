@@ -82,8 +82,8 @@ export default function OverviewContent() {
         containerStyle={{ paddingTop: 8, paddingBottom: 8 }}
       />
       <Text color={GRAY_TEXT} style={{ textAlign: 'right' }}>
-        * Please note that the data in this example is recent as of July, 7,
-        2019
+        * Please note that the data in this example is recent as of August 3,
+        2020
       </Text>
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons

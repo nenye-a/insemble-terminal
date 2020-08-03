@@ -22,7 +22,8 @@ class LocationSerializer(serializers.Serializer):
 
         if not valid_type:
             error_message['status_detail'].append(
-                'Please provide a valid location type. Valid location types are: ' + str(LOCATION_TYPES)
+                'Please provide a valid location type. Valid location types are: ' +
+                str(LOCATION_TYPES)
             )
             raise serializers.ValidationError(error_message)
 
@@ -43,15 +44,12 @@ class BusinessSerializer(serializers.Serializer):
 
         if not valid_type:
             error_message['status_detail'].append(
-                'Please provide a valid business type. Valid business types are: ' + str(BUSINESS_TYPES)
+                'Please provide a valid business type. Valid business types are: ' +
+                str(BUSINESS_TYPES)
             )
             raise serializers.ValidationError(error_message)
 
         return attrs
-
-
-class PreProcessSerializer(serializers.Serializer):
-    business = serializers.CharField(max_length=255)
 
 
 class SearchSerializer(serializers.Serializer):
@@ -129,7 +127,8 @@ class PerformanceSerializer(OptionalSearchSerializer):
         if attrs['dataType'] not in PERFORMANCE_DATA_TYPES:
             error_message = {}
             error_message['status_detail'] = [
-                'Please provide a valid data type. Valid data types are: ' + str(PERFORMANCE_DATA_TYPES)
+                'Please provide a valid data type. Valid data types are: ' +
+                str(PERFORMANCE_DATA_TYPES)
             ]
             raise serializers.ValidationError(error_message)
 
@@ -151,7 +150,8 @@ class OwnershipSerializer(OptionalSearchSerializer):
         if attrs['dataType'] not in OWNERSHIP_DATA_TYPES:
             error_message = {}
             error_message['status_detail'] = [
-                'Please provide a valid data type. Valid data types are: ' + str(OWNERSHIP_DATA_TYPES)
+                'Please provide a valid data type. Valid data types are: ' +
+                str(OWNERSHIP_DATA_TYPES)
             ]
             raise serializers.ValidationError(error_message)
 

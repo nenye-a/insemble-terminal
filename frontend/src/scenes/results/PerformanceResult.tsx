@@ -121,10 +121,14 @@ export default function PerformanceResult(props: Props) {
       coloredData.map(({ // destructure the exported columns
         name, customerVolumeIndex, localRetailIndex, localCategoryIndex, nationalIndex, avgRating, numReview, numLocation }) => ({
         name,
-        customerVolumeIndex,
-        localRetailIndex,
-        localCategoryIndex,
-        nationalIndex,
+        customerVolumeIndex: customerVolumeIndex
+          ? customerVolumeIndex / 100
+          : null,
+        localRetailIndex: localRetailIndex ? localRetailIndex / 100 : null,
+        localCategoryIndex: localCategoryIndex
+          ? localCategoryIndex / 100
+          : null,
+        nationalIndex: nationalIndex ? nationalIndex / 100 : null,
         avgRating,
         numReview,
         numLocation,

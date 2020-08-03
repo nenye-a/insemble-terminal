@@ -7,22 +7,27 @@ Pre-processor for all the categories that come through the database.
 
 BAD_WORDS = utils.DB_MISC.find_one({"name": "bad_words"})["bad_words"]
 NAMES = utils.DB_MISC.find_one({"name": "business_names"})["business_names"]
-CATEGORIES = utils.DB_MISC.find_one({"name": "category_names"})["category_names"]
+CATEGORIES = utils.DB_MISC.find_one({"name": "all_category_names"})["category_names"]
 
 
-def preprocess(business_name):
-    word_match = get_matching_name(business_name)
+def preprocess(business_name, business_type='BUSINESS'):
+    word_match = get_matching_name(business_name, business_type)
     if word_match:
-        return utils.adjust_case(word_match)
+        return word_match
     if is_bad_word(business_name):
         return None
     else:
-        return utils.adjust_case(business_name)
+        return business_name
 
 
-def get_matching_name(original_word):
+def get_matching_name(original_word, business_type):
+    if business_type == 'BUSINESS':
+        word_list = NAMES
+    elif business_type == 'CATEGORY':
+        word_list = CATEGORIES
     word = utils.alpanumeric(original_word)
-    matches = process.extractBests(word, NAMES, score_cutoff=80)
+    matches = process.extractBests(word, word_list, score_cutoff=85)
+    print(matches)
     for match in matches.copy():
         # Remove any words that do not start with this item.
         if match[0][0].lower() != word[0].lower():
@@ -125,8 +130,8 @@ if __name__ == "__main__":
     print(preprocess('Pap[]a Jo-hn\'s'))
     print(preprocess('Retail'))
     print(preprocess('California Pizza'))
-    print(preprocess('Sandwich Shop'))
-    print(preprocess('Chinese Cafe'))
+    print(preprocess('Sandwich Shop', business_type='CATEGORY'))
+    print(preprocess('Chinese Cafe', business_type='CATEGORY'))
     # # print(process.extractBests("Papa Johns", NAMES))
     # print(time.time() - start)
     # pass

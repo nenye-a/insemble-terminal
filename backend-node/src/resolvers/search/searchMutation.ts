@@ -47,7 +47,8 @@ export let searchResolver: FieldResolver<'Mutation', 'search'> = async (
       let { business_name: pyPreprocessName }: PyPreprocessingResponse = (
         await axios.get(`${API_URI}/api/preprocess`, {
           params: {
-            business: businessTag.params,
+            params: businessTag.params,
+            businessType: businessTag.type,
           },
           paramsSerializer: axiosParamsSerializer,
         })
