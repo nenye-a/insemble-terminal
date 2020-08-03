@@ -161,7 +161,7 @@ const SupportedDataContainer = styled(View)`
   flex-flow: row wrap;
 `;
 
-const SupportedDataContent = styled(Row) <WithViewport>`
+const SupportedDataContent = styled(Row)<WithViewport>`
   flex-direction: row;
   min-height: 28px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
