@@ -18,9 +18,9 @@ let feedback = fs.readFileSync('src/emailTemplates/feedback.html').toString();
 let referralEmail = fs
   .readFileSync('src/emailTemplates/referralEmail.html')
   .toString();
-let referralNotificationEmail = fs
-  .readFileSync('src/emailTemplates/referralNotificationEmail.html')
-  .toString();
+// let referralNotificationEmail = fs
+//   .readFileSync('src/emailTemplates/referralNotificationEmail.html')
+//   .toString();
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
@@ -150,8 +150,6 @@ async function sendFeedbackEmail(
   };
   await sgMail.send(msg);
 }
-
-
 
 export {
   sendVerificationEmail,
