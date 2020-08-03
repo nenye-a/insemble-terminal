@@ -18,6 +18,7 @@ export { default as lightenOrDarkenColor } from './lightenOrDarkenColor';
 export { default as localStorage } from './localStorage';
 export { default as omitTypename } from './omitTypename';
 export { default as parsePlaceType } from './parsePlaceType';
+export { default as prepareActivityLineChartData } from './prepareActivityLineChartData';
 export { default as useColoredData } from './useColoredData';
 export { default as useID } from './useID';
 export { default as useGoogleMaps } from './useGoogleMaps';

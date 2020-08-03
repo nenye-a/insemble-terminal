@@ -21,6 +21,7 @@ export default function EmailVerificationScene() {
     UserRegisterVerification,
     UserRegisterVerificationVariables
   >(USER_REGISTER_VERIFICATION, {
+    // Will keep polling every 3 seconds until it receive a confirmation that email has already verified
     pollInterval: 3000,
     variables: {
       verificationId: verificationId || '',
@@ -33,6 +34,7 @@ export default function EmailVerificationScene() {
     } = data;
     if (verified && auth) {
       let { token } = auth;
+      // Saving token to local storage
       login(token);
 
       return <Redirect to="/" />;

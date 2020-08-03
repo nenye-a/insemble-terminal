@@ -15,9 +15,7 @@ export default function ReadOnlyBanner() {
         </Text>{' '}
         shared report from Insemble. To access data on millions of retailers and
         restaurants,{' '}
-        <PurpleLink href="/contact-us" target="_top">
-          contact the Insemble team.
-        </PurpleLink>
+        <PurpleLink href="/contact-us">contact the Insemble team.</PurpleLink>
       </Text>
     </Container>
   );
@@ -33,6 +31,5 @@ const Container = styled(View)`
 `;
 
 const PurpleLink = styled(Link)`
-  color: #c9cbff;
   font-weight: ${FONT_WEIGHT_BOLD};
 `;

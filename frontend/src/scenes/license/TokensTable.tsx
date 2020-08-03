@@ -42,22 +42,35 @@ export default function TokensTable(props: Props) {
 
   let toggleCheck = (tkn: string) => {
     let newDataList = dataWithCheckbox.map((item) => {
+      // If user select the same row, reverse the isChecked
       if (item.token === tkn) {
         return { ...item, isChecked: !item.isChecked };
       }
       return item;
     });
+    // Create list to know if the current state is all checked/all not checked/some checked.
     let checkSet = [...new Set(newDataList.map((datum) => datum.isChecked))];
+    // checkSet length 1 means the list is eiher all checked or all not checked.
+    // If currentCheck true, it means current state is all checked.
     let currentCheck = checkSet.length === 1 && checkSet.includes(true);
     setAllSelected(currentCheck);
     setDataWithCheckbox(newDataList);
   };
 
   let onSelectAllPress = () => {
+    // Create list to know if the current state is all checked/all not checked/some checked.
     let checkSet = [
       ...new Set(dataWithCheckbox.map((datum) => datum.isChecked)),
     ];
+    // checkSet length 1 means the list is eiher all checked or all not checked.
+    // If currentCheck true, it means current state is all checked.
     let currentCheck = checkSet.length === 1 && checkSet.includes(true);
+    /**
+     * Map the data and reverse the check.
+     * if all checked, isChecked: false
+     * if all not checked, isChecked: true
+     * if some checked, isChecked: true
+     */
     let newDataList = dataWithCheckbox.map((item) => ({
       ...item,
       isChecked: !currentCheck,
@@ -67,6 +80,7 @@ export default function TokensTable(props: Props) {
   };
 
   let onDeletePress = () => {
+    // Filter only the checked rows
     let checkedLicense = dataWithCheckbox
       .filter((item) => item.isChecked)
       .map((item) => item.token);
@@ -80,6 +94,7 @@ export default function TokensTable(props: Props) {
   };
 
   useEffect(() => {
+    // Populate table with data from parent component
     let mappedData = data.map((item) => ({ ...item, isChecked: false }));
     setDataWithCheckbox(mappedData);
     setAllSelected(false);

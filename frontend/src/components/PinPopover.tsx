@@ -41,6 +41,7 @@ export default function PinPopover(props: Props) {
     loading: terminalsLoading,
     data: terminalsData,
     error: terminalsError,
+    refetch: terminalsRefetch,
   } = useQuery<GetTerminalList>(GET_TERMINAL_LIST, {
     fetchPolicy: 'network-only',
   });
@@ -48,6 +49,7 @@ export default function PinPopover(props: Props) {
     pinTable,
     { loading: pinTableLoading, data: pinTableData, error: pinTableError },
   ] = useMutation<PinTable, PinTableVariables>(PIN_TABLE);
+  // State to show if the Add Terminal Form should be visible/not.
   let [addTerminalVisible, setAddTerminalVisible] = useState(false);
   let { isDesktop } = useViewport();
 
@@ -56,10 +58,13 @@ export default function PinPopover(props: Props) {
       {terminalsLoading || pinTableLoading ? (
         <LoadingIndicator />
       ) : terminalsError ? (
-        <ErrorComponent />
+        <ErrorComponent onRetry={terminalsRefetch} />
       ) : terminalsData?.userTerminals.length === 0 || addTerminalVisible ? (
+        // Show add terminal form when there's no existing terminal
+        // or user want to create a new terminal
         <ManageTerminalForm mode="add" onClose={onClickAway} />
       ) : (
+        // Show list of existing terminals
         <>
           <Title>Select the terminal to add this data feed to.</Title>
           <MessageAlert

@@ -46,7 +46,7 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
             else:
                 collecting = False
 
-        google_details = google.get_many_google_details(places)
+        google_details = google.get_many_google_details(places, timeout=10)
 
         for details in google_details:
 
@@ -245,8 +245,12 @@ def apply_county_tags():
 
 if __name__ == "__main__":
 
-    # setup()
-    pass
+    # setup({"name": "Ross Dress for Less",
+    #        "$or": [
+    #            {"activity_volume": -1},
+    #            {"activity_volume": None}
+    #        ]}
+    #       )
     # google_detailer(wait=False)
     # check_recency()
     # update_last_update()

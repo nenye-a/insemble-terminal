@@ -23,14 +23,14 @@ type Params = {
 
 export default function TerminalDetailScene() {
   let params = useParams<Params>();
-  let { loading, data, error } = useQuery<GetTerminal, GetTerminalVariables>(
-    GET_TERMINAL,
-    {
-      variables: {
-        terminalId: params.terminalId,
-      },
+  let { loading, data, error, refetch } = useQuery<
+    GetTerminal,
+    GetTerminalVariables
+  >(GET_TERMINAL, {
+    variables: {
+      terminalId: params.terminalId,
     },
-  );
+  });
   let { isDesktop } = useViewport();
 
   return (
@@ -44,7 +44,7 @@ export default function TerminalDetailScene() {
         {loading ? (
           <LoadingIndicator />
         ) : error ? (
-          <ErrorComponent />
+          <ErrorComponent onRetry={refetch} />
         ) : data?.terminal.pinnedFeeds.length === 0 ? (
           <>
             <SearchPlaceholder />

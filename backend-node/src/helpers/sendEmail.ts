@@ -21,10 +21,17 @@ let referralEmail = fs
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
+  message: string,
   link: string,
 ) {
+  /**
+   * This function and below are for constructing email template and send it with sgMail.
+   * The variable construct with ejs.render are found on the template which have <%= %>.
+   * If the variable is name then it will render on <%= name %>
+   */
   let htmlContent = ejs.render(emailVerificationTemplate, {
     name: receiver.name,
+    message,
     url: link,
   });
   let msg = {
@@ -60,10 +67,12 @@ async function sendReferralEmail(
 
 async function sendForgotPasswordEmail(
   receiver: { email: string; name: string },
+  message: string,
   link: string,
 ) {
   let htmlContent = ejs.render(emailVerificationTemplate, {
     name: receiver.name,
+    message,
     url: link,
   });
   let msg = {

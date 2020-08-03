@@ -21,6 +21,13 @@ import ProfileMenuDropdown from './ProfileMenuDropdown';
 import ReadOnlyBanner from './ReadOnlyBanner';
 import SearchFilterBarMobile from './SearchFilterBarMobile';
 
+/**
+ * Types of header mode
+ * default: white background and shadowed bottom border with insemble logo on the left.
+ * transparent: transparent background with insemble logo on the left.
+ * logoOnly: light purple background with insemble logo on the center.
+ * lightPurple: light purple background with insemble logo on the left.
+ */
 export type HeaderMode = 'default' | 'transparent' | 'logoOnly' | 'lightPurple';
 
 type Props = {
@@ -46,12 +53,17 @@ export default function HeaderNavigationBar(props: Props) {
   let history = useHistory();
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
+  /**
+   * State for mobile viewport.
+   * focus true: search bar mobile will be set to open/focus mode (vertical search bar)
+   * focus false: search bar mobile will be set to close mode (horizontal search bar)
+   */
   let [isFocus, setIsFocus] = useState(false);
 
   useEffect(() => {
     let handleScroll = () => {
       if (isFocus) {
-        // should change the search bar to not focus mode when scrolling
+        // Should change the search bar to not focus (close) mode when scrolling
         setIsFocus(false);
       }
     };
@@ -95,8 +107,10 @@ export default function HeaderNavigationBar(props: Props) {
                 />
               </SearchContainer>
             ) : (
+              // Reserving the space even when search bar is not shown.
               <View flex />
             )}
+            {/* Show profile info if user is logged in. else show sign in & contact button */}
             {isAuthenticated ? (
               <RowEnd>
                 <TerminalButton

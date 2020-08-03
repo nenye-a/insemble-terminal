@@ -21,6 +21,13 @@ type Props = {
   loading?: boolean;
 };
 
+/**
+ * Small modal functioning as confirmation dialog.
+ * Can pass multiple buttons.
+ * The order of the buttons will be reversed when rendering.
+ * The button on the most right, will be the primary button.
+ */
+
 export default function Popup(props: Props) {
   let { visible, title, bodyText, buttons, loading } = props;
 
@@ -62,7 +69,8 @@ export default function Popup(props: Props) {
 }
 
 const Container = styled(Modal)`
-  width: 500px;
+  max-width: 500px;
+  width: 90%;
   height: fit-content;
   background-color: transparent;
 `;

@@ -5,6 +5,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.extend([THIS_DIR, BASE_DIR])
 
 import re
+import time
 import json
 import datetime as dt
 import pandas as pd
@@ -299,18 +300,18 @@ class NewsManager():
 
             print("{}: News emailed to {}".format(self.name, email))
 
-    def email_aync(self, enforce_conversion=True, update=False):
+    def email_async(self, enforce_conversion=True, update=False):
         """
         Emails all the subscribed folks in the list with generated emails.
         """
 
         while True:
 
-            people = len(self.collection.find({
+            people = list(self.collection.find({
                 'content_generated': True,
                 'content_emailed': False,
                 'email': {'$nin': self.unsubscribed}
-            }).limit(100))
+            }).limit(10))
 
             if not people:
                 print("All emails completed!")
@@ -355,6 +356,9 @@ class NewsManager():
                 })
 
                 print("{}: News emailed to {}".format(self.name, person['email']))
+
+            print('Pausing for 5 seconds to allow for stopping of emails.')
+            time.sleep(5)
 
     def push_email(self, person, enforce_conversion, update):
 
@@ -733,10 +737,11 @@ def date_converter(o):
 
 if __name__ == "__main__":
 
-    my_generator = NewsManager('Official-7/2', national_news=False)
+    my_generator = NewsManager(
+        'Official-7/29', national_news=False)
     # my_generator.generate()
     # my_generator.convert_links()
-    my_generator.email(update=True)
+    my_generator.email(update=False, enforce_conversion=False)
 
     # print(my_generator.collection.count_documents({
     #     'data_type': 'contact',

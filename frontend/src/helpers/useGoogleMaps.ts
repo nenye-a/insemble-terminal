@@ -9,6 +9,7 @@ type GoogleMaps = typeof globalThis.google.maps;
 let googleMaps: null | GoogleMaps = null;
 let loadingPromise: null | Promise<GoogleMaps> = null;
 
+// Load google maps script
 function useGoogleMaps() {
   let [isLoading, setLoading] = useState(googleMaps == null);
   if (!googleMaps) {

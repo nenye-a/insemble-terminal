@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -19,9 +19,10 @@ import {
   GetMap_mapTable_data_coverageData as MapBusiness,
   GetMap_mapTable_compareData as MapCompareData,
   GetMap_mapTable_comparationTags as ComparationTags,
+  GetMap_mapTable_data_coverageData_locations as CoverageLocations,
 } from '../../generated/GetMap';
 import { GET_MAP_DATA } from '../../graphql/queries/server/results';
-import { MapInfoboxPressParam } from '../../types/types';
+import { MapInfoboxPressParam, MergedMapData } from '../../types/types';
 
 import CoverageTable from './CoverageTable';
 import CoverageMap from './CoverageMap';
@@ -83,6 +84,41 @@ export default function MapResult(props: Props) {
     true,
   );
 
+  let csvData = useMemo(
+    () =>
+      coloredData.reduce(
+        (
+          flat: Array<Omit<CoverageLocations, '__typename'>>,
+          next: MergedMapData,
+        ) =>
+          // flatten the locations data
+          flat.concat(
+            next.coverageData[0].locations.map(
+              // desctructure the exported columns
+              ({ lat, lng, name, address, rating, numReviews }) => ({
+                lat,
+                lng,
+                name,
+                address,
+                rating,
+                numReviews,
+              }),
+            ),
+          ),
+        [],
+      ),
+    [coloredData],
+  );
+
+  let csvHeaders = [
+    { label: 'Name', key: 'name' },
+    { label: 'Latitude', key: 'lat' },
+    { label: 'Longitude', key: 'lng' },
+    { label: 'Address', key: 'address' },
+    { label: 'Rating', key: 'rating' },
+    { label: '# Reviews', key: 'numReviews' },
+  ];
+
   let noData = !data?.mapTable.data || data?.mapTable.data.length === 0;
 
   let loading = isLoading || coverageLoading;
@@ -91,18 +127,26 @@ export default function MapResult(props: Props) {
     if (!coverageLoading) {
       if (data?.mapTable) {
         let { compareData, comparationTags, id } = data.mapTable;
+        /**
+         * If compareData and compareTag sizes are not the same,
+         * it is possible that one of the compare data failed to fetch
+         */
         if (compareData.length !== comparationTags.length) {
+          // Filter function to find which compare data is missing
           let notIncludedFilterFn = (tag: ComparationTags) =>
             !compareData.map((item) => item.compareId).includes(tag.id);
+          // List of business/location which doesn't have compare data
           let notIncluded = comparationTags
             .filter(notIncludedFilterFn)
             .map(
               (item) => item.businessTag?.params || item.locationTag?.params,
             );
+          // List of compareId which doesn't have data
           let notIncludedTagId = comparationTags
             .filter(notIncludedFilterFn)
             .map((item) => item.id);
           if (notIncluded.length > 0) {
+            // Remove compareIds which doesn't have data from sortOrder list
             let newSortOrder = sortOrder.filter((item) => {
               return !notIncludedTagId.includes(item);
             });
@@ -112,6 +156,7 @@ export default function MapResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            // Fetch previous table if error
             if (prevTableId) {
               refetch({
                 tableId: prevTableId,
@@ -158,13 +203,18 @@ export default function MapResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
+        csvData={csvData}
+        csvHeader={csvHeaders}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
         {loading && prevData.length === 0 ? (
           <View style={{ height: 90 }} />
         ) : error ? (
-          <ErrorComponent text={formatErrorMessage(error.message)} />
+          <ErrorComponent
+            text={formatErrorMessage(error.message)}
+            onRetry={refetch}
+          />
         ) : noData && !loading ? (
           <EmptyDataComponent />
         ) : (!loading && !noData) || prevData.length > 0 ? (
@@ -172,7 +222,7 @@ export default function MapResult(props: Props) {
             <CoverageTable
               key="coverage-table"
               data={loading ? prevData : coloredData}
-              hoverFunction={setSelectedBusiness}
+              highlightFn={setSelectedBusiness}
             />
             <CoverageMap
               key="coverage-map"

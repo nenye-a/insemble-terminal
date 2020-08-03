@@ -31,7 +31,7 @@ export default function ContactUsScene() {
   let { register, handleSubmit, errors, getValues } = useForm();
   let { isAuthenticated, user } = useAuth();
   let { isDesktop } = useViewport();
-  let [contactUs, { loading, data, error }] = useMutation<
+  let [contactUs, { loading, error }] = useMutation<
     ContactUs,
     ContactUsVariables
   >(CONTACT_US, {
@@ -86,99 +86,85 @@ export default function ContactUsScene() {
                 </Description>
               </TitleContainer>
             )}
-
             <RowedView>
               <CardContainer title="Contact Us">
                 <Content onSubmit={handleSubmit(onSubmit)}>
-                  {data ? (
-                    <Text>
-                      Your message has been received. We will get back to you
-                      soon.
-                    </Text>
-                  ) : (
+                  <Alert
+                    visible={!!error?.message}
+                    text={error?.message || ''}
+                  />
+                  {!isAuthenticated && (
                     <>
-                      <Alert
-                        visible={!!error?.message}
-                        text={error?.message || ''}
-                      />
-                      {!isAuthenticated && (
-                        <>
-                          <TextInput
-                            name="email"
-                            ref={register({
-                              required: 'Email should not be empty',
-                              validate: (val) =>
-                                validateEmail(val) || 'Incorrect email format',
-                            })}
-                            label="Email Address"
-                            placeholder="Your Email Address"
-                            {...(errors?.email?.message && {
-                              errorMessage: errors.email.message,
-                            })}
-                            containerStyle={inputContainerStyle}
-                          />
-                          <RowedView>
-                            <View flex style={{ marginRight: 10 }}>
-                              <TextInput
-                                name="firstName"
-                                ref={register({
-                                  required: 'First name should not be empty',
-                                })}
-                                label="First Name"
-                                placeholder="Your First Name"
-                                {...(errors?.firstName?.message && {
-                                  errorMessage: errors.firstName.message,
-                                })}
-                                containerStyle={inputContainerStyle}
-                              />
-                            </View>
-                            <View flex style={{ marginLeft: 10 }}>
-                              <TextInput
-                                name="lastName"
-                                ref={register({
-                                  required: 'Last name should not be empty',
-                                })}
-                                label="Last Name"
-                                placeholder="Your Last Name"
-                                {...(errors?.lastName?.message && {
-                                  errorMessage: errors.lastName.message,
-                                })}
-                                containerStyle={inputContainerStyle}
-                              />
-                            </View>
-                          </RowedView>
-                          <TextInput
-                            name="company"
-                            ref={register({
-                              required: 'Company name should not be empty',
-                            })}
-                            label="Company"
-                            placeholder="Your Company"
-                            {...(errors?.company?.message && {
-                              errorMessage: errors.company.message,
-                            })}
-                            containerStyle={inputContainerStyle}
-                          />
-                        </>
-                      )}
-                      <TextArea
-                        label="Message"
-                        name="message"
+                      <TextInput
+                        name="email"
                         ref={register({
-                          required: 'Message should not be empty',
+                          required: 'Email should not be empty',
+                          validate: (val) =>
+                            validateEmail(val) || 'Incorrect email format',
                         })}
-                        {...(errors?.message?.message && {
-                          errorMessage: errors.message.message,
+                        label="Email Address"
+                        placeholder="Your Email Address"
+                        {...(errors?.email?.message && {
+                          errorMessage: errors.email.message,
                         })}
                         containerStyle={inputContainerStyle}
                       />
-                      <SubmitButton
-                        text="Submit"
-                        type="submit"
-                        loading={loading}
+                      <RowedView>
+                        <View flex style={{ marginRight: 10 }}>
+                          <TextInput
+                            name="firstName"
+                            ref={register({
+                              required: 'First name should not be empty',
+                            })}
+                            label="First Name"
+                            placeholder="Your First Name"
+                            {...(errors?.firstName?.message && {
+                              errorMessage: errors.firstName.message,
+                            })}
+                            containerStyle={inputContainerStyle}
+                          />
+                        </View>
+                        <View flex style={{ marginLeft: 10 }}>
+                          <TextInput
+                            name="lastName"
+                            ref={register({
+                              required: 'Last name should not be empty',
+                            })}
+                            label="Last Name"
+                            placeholder="Your Last Name"
+                            {...(errors?.lastName?.message && {
+                              errorMessage: errors.lastName.message,
+                            })}
+                            containerStyle={inputContainerStyle}
+                          />
+                        </View>
+                      </RowedView>
+                      <TextInput
+                        name="company"
+                        ref={register({
+                          required: 'Company name should not be empty',
+                        })}
+                        label="Company"
+                        placeholder="Your Company"
+                        {...(errors?.company?.message && {
+                          errorMessage: errors.company.message,
+                        })}
+                        containerStyle={inputContainerStyle}
                       />
                     </>
                   )}
+                  <TextArea
+                    label="Message"
+                    name="message"
+                    ref={register({
+                      required: 'Message should not be empty',
+                    })}
+                    {...(errors?.message?.message && {
+                      errorMessage: errors.message.message,
+                    })}
+                    containerStyle={inputContainerStyle}
+                  />
+                  <SubmitButton text="Submit" type="submit" loading={loading} />
                 </Content>
               </CardContainer>
               {isDesktop && !isAuthenticated && (

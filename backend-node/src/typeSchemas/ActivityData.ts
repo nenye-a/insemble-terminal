@@ -11,6 +11,9 @@ export let ActivityData = objectType({
     t.field('activityData', {
       type: 'ActivityTimes',
       resolve: async ({ id }) => {
+        /**
+         * This resolve the activityData JSON string into array of Object ActivityGraphData.
+         */
         let activityData = await prisma.activityData.findOne({
           where: { id },
         });

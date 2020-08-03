@@ -131,7 +131,7 @@ export default function TerminalHomeScene() {
         {loading ? (
           <LoadingIndicator />
         ) : error ? (
-          <ErrorComponent />
+          <ErrorComponent onRetry={refetchFunction} />
         ) : data?.userTerminals.length === 0 && searchTerminal !== '' ? (
           <NoDataText>Search not found.</NoDataText>
         ) : data?.dataCount === 0 ? (

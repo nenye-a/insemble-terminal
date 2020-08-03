@@ -36,7 +36,10 @@ export default function TutorialButton(props: Props) {
           style: { fontWeight: FONT_WEIGHT_HEAVY, fontSize: FONT_SIZE_NORMAL },
         }}
         icon={
-          <SvgQuestionMark style={{ color: THEME_COLOR, marginRight: 8 }} />
+          <SvgQuestionMark
+            style={{ color: THEME_COLOR, marginRight: 8 }}
+            key="question-mark"
+          />
         }
       />
     </View>

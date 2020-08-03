@@ -3,6 +3,7 @@ import re
 import ast
 import time
 import utils
+import numpy as np
 import matplotlib.pyplot as plt
 from decouple import config
 
@@ -66,9 +67,9 @@ def get_google_details(name, address, projection=None):
     return detailer.get_details(name, address, projection=projection)
 
 
-def get_many_google_details(places, projection=None):
+def get_many_google_details(places, projection=None, timeout=5):
     detailer = GoogleDetails('GOOGLE DETAILS')
-    return detailer.many_google_details(places, projection=projection)
+    return detailer.many_google_details(places, projection=projection, timeout=timeout)
 
 
 def get_company(name, projection=None):
@@ -271,6 +272,43 @@ class GeoCode(GenericScraper):
         return result
 
 
+def divide_region(center, viewport, ground_zoom):
+    lat, lng = center
+    sky_nw, sky_se = viewport
+
+    nearby_scraper = GoogleNearby('GOOGLE NEARBY')
+    geo_scraper = GeoCode('GOOGLE GEO')
+    nearby_request_url = nearby_scraper.build_request('', lat, lng, ground_zoom)
+
+    print("requesting {}".format(nearby_request_url))
+    try:
+        lat, lng, size_var = nearby_scraper.request(
+            nearby_request_url,
+            quality_proxy=True,
+            headers={"referer": "https://www.google.com/"},
+            timeout=5,
+            res_parser=geo_scraper.default_parser
+        )
+    except Exception:
+        return None
+    nw, se = get_viewport(lat, lng, size_var)
+    diameter = {"vertical": abs(nw[0] - se[0]), "horizontal": abs(nw[1] - se[1])}
+    print("nw {} se {}".format(nw, se))
+
+    sky_diameter = {"vertical": abs(sky_nw[0] - sky_se[0]),
+                    "horizontal": abs(sky_nw[1] - sky_se[1])}
+    print("sky_nw {} sky_se {}".format(sky_nw, sky_se))
+
+    print("assigning new coordinates".format())
+    coords = []
+    print(sky_nw[1], sky_se[1], sky_diameter['horizontal'] / diameter['horizontal'])
+    for v in np.linspace(sky_nw[0], sky_se[0], round(sky_diameter['vertical'] / diameter['vertical'])):
+        for h in np.linspace(sky_nw[1], sky_se[1], round(sky_diameter['horizontal'] / diameter['horizontal'])):
+            coords.append((v, h))
+
+    return coords
+
+
 class GoogleDetails(GenericScraper):
 
     BASE_URL = 'https://www.google.com/search?hl=en&q={}&sourceid=chrome&ie=UTF-8'
@@ -353,7 +391,7 @@ class GoogleDetails(GenericScraper):
             print("Error has occured in GoogleDetails: {} - request_url: {}".format(e, url))
             return None
 
-    def many_google_details(self, places, projection=None):
+    def many_google_details(self, places, projection=None, timeout=5):
         """
         Provided a list of objects containing a name and address,
         will return their result tagged with the name and address.
@@ -373,7 +411,7 @@ class GoogleDetails(GenericScraper):
         result = self.async_request(
             queries,
             quality_proxy=True,
-            timeout=5
+            timeout=timeout
         )
 
         projection_list = projection.strip().split(',') if projection else None
@@ -601,16 +639,19 @@ if __name__ == "__main__":
                  {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
 
     def get_google_details_test():
-        name = "Atlanta Breakfast Club"
-        address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        print(get_google_details(name, address))
-        print(get_google_details(name, address, 'address'))
-        print(get_google_details(name, address, 'address,name,rating,activity'))
-        name = "Spitz little tokyo"
-        address = "371 E 2nd st, los angeles"
-        print(get_google_details(name, address))
-        name = "Publix Super Market at Sugarloaf Crossing"
-        address = "4850 Sugarloaf Pkwy, Lawrenceville, GA 30044"
+        # name = "Atlanta Breakfast Club"
+        # address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
+        # print(get_google_details(name, address))
+        # print(get_google_details(name, address, 'address'))
+        # print(get_google_details(name, address, 'address,name,rating,activity'))
+        # name = "Spitz little tokyo"
+        # address = "371 E 2nd st, los angeles"
+        # print(get_google_details(name, address))
+        # name = "Publix Super Market at Sugarloaf Crossing"
+        # address = "4850 Sugarloaf Pkwy, Lawrenceville, GA 30044"
+        # print(get_google_details(name, address))
+        name = "7-Eleven"
+        address = "200 S Los Angeles St, Los Angeles, CA 90012"
         print(get_google_details(name, address))
 
     def get_nearby_test():

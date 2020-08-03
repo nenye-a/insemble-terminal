@@ -26,6 +26,9 @@ type OptionsContainerProps = {
 
 let defaultOptionExtractor = (item: unknown) => String(item);
 
+/**
+ * Scrolling menu with back and next button
+ */
 export default function ScrollMenu<T>(props: Props<T>) {
   let {
     selectedOption,
@@ -69,6 +72,7 @@ export default function ScrollMenu<T>(props: Props<T>) {
     }
   }, [selectedOptionIndex, isLastIndex, onSelectionChange]);
 
+  // calculating the total width from index 0 to selected option index
   let translatedWidth = allOptionsWidth
     .slice(0, selectedOptionIndex)
     .reduce((a, b) => a + b, 0);

@@ -40,7 +40,7 @@ export default function TerminalSection() {
             numOfFeed={6}
             description="Custom terminal to track news, performance, and location growth of Starbucks and related brands in Georgia"
             lastUpdate="June 6, 2020 5:54pm EDT"
-            isLandingPage={true}
+            isLandingPage={true} // To make card not pressable
             style={terminalCardStyle}
           />
           {isDesktop && (

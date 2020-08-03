@@ -24,10 +24,12 @@ export default function useSortableData<T extends Obj>(
         if (sortConfig) {
           let { key } = sortConfig;
           if (sortConfig.type === 'date') {
+            // Sort date
             return sortConfig.direction === Direction.ASCENDING
               ? a[key].localeCompare(b[key])
               : -a[key].localeCompare(b[key]);
           } else {
+            // Sort number
             return sortConfig.direction === Direction.ASCENDING
               ? a[key] - b[key]
               : b[key] - a[key];

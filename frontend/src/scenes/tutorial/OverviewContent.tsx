@@ -45,7 +45,7 @@ export default function OverviewContent() {
         You can search for both categories and businesses, as well as for
         addresses and locations (cities and counties)
       </Paragraph>
-      <img src={searchBox} />
+      <img src={searchBox} alt="search-box" />
       <Text style={{ paddingTop: 10, paddingBottom: 10 }}>
         Supported Data Searches
       </Text>
@@ -82,8 +82,8 @@ export default function OverviewContent() {
         containerStyle={{ paddingTop: 8, paddingBottom: 8 }}
       />
       <Text color={GRAY_TEXT} style={{ textAlign: 'right' }}>
-        * Please note that the data in this example is recent as of July, 7,
-        2019
+        * Please note that the data in this example is recent as of August 3,
+        2020
       </Text>
       <SubTitle style={{ paddingBottom: 26, paddingTop: 70 }}>
         Comparisons
@@ -96,7 +96,7 @@ export default function OverviewContent() {
         <SvgArrowPointerRight
           style={{
             position: 'absolute',
-            right: 90,
+            right: 120,
             color: THEME_COLOR,
             top: 20,
           }}
@@ -112,13 +112,14 @@ export default function OverviewContent() {
         data={[]}
         performanceType={PerformanceTableType.ADDRESS}
         disableHeader={true}
+        mobile={!isDesktop}
       />
       <SvgFourDotsArrow
         style={{ paddingTop: 30, alignSelf: 'center', color: SLIGHT_GRAY }}
       />
       <PerformanceResult
-        title="By Location"
-        performanceType={PerformanceTableType.ADDRESS}
+        title="Overall Performance"
+        performanceType={PerformanceTableType.OVERALL}
         demoType={DemoType.WITH_COMPARE}
         headerTitle="Address"
         containerStyle={{ paddingBottom: 50 }}

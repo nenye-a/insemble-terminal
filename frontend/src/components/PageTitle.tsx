@@ -28,6 +28,13 @@ type Props = {
   rightText?: string;
 };
 
+/**
+ *
+ * A white backgroud container with purple text. usually for showing page title.
+ * By default will show a generated page title.
+ * based on given reviewTag, businessTag, and locationTag props. e.g: BrandA Performance near 123 Street.
+ * Can also specify custom text, e.g on TerminalScene..
+ */
 export default function PageTitle(props: Props) {
   let {
     reviewTag,
@@ -97,6 +104,8 @@ export default function PageTitle(props: Props) {
           </Popover>
         </Row>
       )}
+      {/* Indicator to show that the result location scope is all US.
+          can show custom text which will be positioned on the right. */}
       {rightText ? (
         <PurpleText>{rightText}</PurpleText>
       ) : showLocation &&

@@ -25,7 +25,10 @@ export default function LoginScene() {
           <Text color={WHITE}> or </Text>
           <PurpleLink href="/contact-us">Contact us</PurpleLink>
         </NoAccountContainer>
-
+        <Text color={WHITE} style={{ marginTop: 8 }}>
+          Forgot your password?{' '}
+          <PurpleLink href="/forgot-password">Click here</PurpleLink>
+        </Text>
         {/* TODO: Forgot password scene */}
       </Container>
     </Background>
@@ -57,8 +60,6 @@ const FormContainer = styled(View)`
   padding: 24px;
 `;
 
-// TODO: change color to variable. currently if we put variable, the color is not passed
 const PurpleLink = styled(Link)`
-  color: #c9cbff;
   font-weight: ${FONT_WEIGHT_MEDIUM};
 `;

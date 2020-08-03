@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -75,9 +75,27 @@ export default function LatestNewsResult(props: Props) {
     data?.newsTable.table?.comparationTags,
     sortOrder,
   );
+  let csvData = useMemo(
+    () =>
+      // destructure the exported columns
+      coloredData.map(({ title, link, source, published }) => ({
+        title,
+        link,
+        source,
+        published,
+      })),
+    [coloredData],
+  );
+  let csvHeader = [
+    { label: 'Title', key: 'title' },
+    { label: 'Link', key: 'link' },
+    { label: 'Source', key: 'source' },
+    { label: 'Post Date', key: 'published' },
+  ];
   let noData =
     !data?.newsTable.table?.data || data.newsTable.table?.data.length === 0;
   let loading = newsLoading || data?.newsTable.polling;
+
   useEffect(() => {
     if (
       (data?.newsTable.table?.data || data?.newsTable.error || error) &&
@@ -87,18 +105,26 @@ export default function LatestNewsResult(props: Props) {
       stopPolling();
       if (data.newsTable.table) {
         let { compareData, comparationTags, id } = data.newsTable.table;
+        /**
+         * If compareData and compareTag sizes are not the same,
+         * it is possible that one of the compare data failed to fetch
+         */
         if (compareData.length !== comparationTags.length) {
+          // Filter function to find which compare data is missing
           let notIncludedFilterFn = (tag: ComparationTags) =>
             !compareData.map((item) => item.compareId).includes(tag.id);
+          // List of business/location which doesn't have compare data
           let notIncluded = comparationTags
             .filter(notIncludedFilterFn)
             .map(
               (item) => item.businessTag?.params || item.locationTag?.params,
             );
+          // List of compareId which doesn't have data
           let notIncludedTagId = comparationTags
             .filter(notIncludedFilterFn)
             .map((item) => item.id);
           if (notIncluded.length > 0) {
+            // Remove compareIds which doesn't have data from sortOrder list
             let newSortOrder = sortOrder.filter((item) => {
               return !notIncludedTagId.includes(item);
             });
@@ -108,6 +134,7 @@ export default function LatestNewsResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            // Fetch previous table if error
             if (prevTableId) {
               refetch({
                 tableId: prevTableId,
@@ -163,6 +190,8 @@ export default function LatestNewsResult(props: Props) {
           setSortOrder(newSortOrder)
         }
         readOnly={readOnly}
+        csvData={csvData}
+        csvHeader={csvHeader}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
@@ -173,6 +202,7 @@ export default function LatestNewsResult(props: Props) {
             text={formatErrorMessage(
               error?.message || data?.newsTable.error || '',
             )}
+            onRetry={refetch}
           />
         ) : (!loading &&
             data?.newsTable.table &&

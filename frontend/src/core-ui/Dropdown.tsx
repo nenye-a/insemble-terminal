@@ -32,6 +32,7 @@ type Props<T> = {
   optionExtractor?: (option: T) => string;
   placeholder?: string;
   disabled?: boolean;
+  setFocus?: (focus: boolean) => void;
   renderCustomList?: (item: T) => ReactNode;
 };
 
@@ -46,12 +47,14 @@ export default function Dropdown<T>(props: Props<T>) {
     placeholder,
     disabled,
     renderCustomList,
+    setFocus,
   } = props;
 
   let [inputItems, setInputItems] = useState<Array<T>>(options);
   let [inputValue, setInputValue] = useState(
     optionExtractor(selectedOption) || '',
   );
+  let [tabPressed, setTabPressed] = useState(false);
 
   let { isDesktop } = useViewport();
 
@@ -67,7 +70,7 @@ export default function Dropdown<T>(props: Props<T>) {
   } = useCombobox({
     items: inputItems,
     itemToString: optionExtractor,
-    onInputValueChange: ({ inputValue }) => {
+    onInputValueChange: ({ inputValue, selectedItem }) => {
       if (inputValue) {
         setInputItems(
           options.filter((item) =>
@@ -79,15 +82,37 @@ export default function Dropdown<T>(props: Props<T>) {
       } else {
         setInputItems(options);
       }
-      let foundObj = options.find(
-        (item) => optionExtractor(item) === inputValue,
-      );
-      onOptionSelected(foundObj || inputValue || null);
+
+      if (tabPressed) {
+        if (selectedItem) {
+          // pressing tab when dropdown is open
+          onOptionSelected(selectedItem);
+        } else {
+          // when user pressing tab, this function still be called
+          // with inputValue === '' and selectedItem as undefined,
+          // so we're ignoring the changes and set the `tabPressed` state
+          // back to false
+        }
+        setTabPressed(false);
+      } else {
+        if (selectedItem && inputValue === optionExtractor(selectedItem)) {
+          onOptionSelected(selectedItem);
+        } else {
+          onOptionSelected(inputValue || null);
+        }
+      }
     },
     onSelectedItemChange: () => {
       closeMenu();
     },
   });
+  useEffect(() => {
+    /**
+     * Set parent state focus to know if the dropdown opened or not.
+     */
+    setFocus && setFocus(isOpen);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   useEffect(() => {
     setInputValue(optionExtractor(selectedOption));
@@ -114,7 +139,10 @@ export default function Dropdown<T>(props: Props<T>) {
                 ((selectedOption as unknown) as object).hasOwnProperty('id')
               ) {
                 onOptionSelected(null);
+                setInputValue('');
                 setInputItems(options);
+              } else if (e.key === 'Tab') {
+                setTabPressed(true);
               }
             },
             placeholder,

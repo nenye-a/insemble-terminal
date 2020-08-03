@@ -12,12 +12,14 @@ import './App.css';
 
 function App() {
   let handleFirstTab = (e: KeyboardEvent) => {
+    // When user tabbing, will add class tab-pressed which gives outline
     if (e.keyCode === 9) {
       document.body.classList.add('tab-pressed');
     }
   };
 
   let handleMouseClick = () => {
+    // Hiding back the outline when switch back to mouse
     if (document.body.classList.contains('tab-pressed')) {
       document.body.classList.remove('tab-pressed');
     }
@@ -31,6 +33,7 @@ function App() {
   };
 
   useEffect(() => {
+    // Init google analytics
     ReactGA.initialize(process.env.REACT_APP_GA_ID || '');
 
     window.addEventListener('keydown', handleFirstTab);

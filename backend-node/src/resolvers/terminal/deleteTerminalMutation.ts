@@ -6,6 +6,9 @@ export let deleteTerminalResolver: FieldResolver<
   'Mutation',
   'deleteTerminal'
 > = async (_, { terminalId }, context: Context) => {
+  /**
+   * Endpoint for delete terminal.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -16,6 +19,11 @@ export let deleteTerminalResolver: FieldResolver<
     throw new Error('User not found!');
   }
 
+  /**
+   * Here we check the terminal that user select.
+   * The checks are: if exist? if terminal have user?
+   * if terminal user are the same who use this endpoint?
+   */
   let selectedTerminal = await context.prisma.terminal.findOne({
     where: {
       id: terminalId,
@@ -34,18 +42,28 @@ export let deleteTerminalResolver: FieldResolver<
   if (selectedTerminal.user.id !== user.id) {
     throw new Error('This is not your terminal.');
   }
+  /**
+   * If we terminal is deleted then the sharedTerminal must be deleted also.
+   */
   await context.prisma.sharedTerminal.deleteMany({
     where: {
       terminal: { id: terminalId },
     },
   });
 
+  /**
+   * Here we delete the terminal. We delete sharedTerminal first because relational
+   * issue, we can't delete something if it's still relate to other.
+   */
   await context.prisma.terminal.delete({
     where: {
       id: terminalId,
     },
   });
 
+  /**
+   * Then we return back the user terminals.
+   */
   let terminals = await context.prisma.terminal.findMany({
     where: {
       user: {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Popover from 'react-tiny-popover';
 import styled from 'styled-components';
+import { CSVLink } from 'react-csv';
 
 import {
   TouchableOpacity,
@@ -11,7 +12,7 @@ import {
 } from '../core-ui';
 import { DISABLED_TEXT_COLOR, THEME_COLOR } from '../constants/colors';
 import { ReviewTag, TableType } from '../generated/globalTypes';
-import { ComparationTagWithFill } from '../types/types';
+import { ComparationTagWithFill, CSVHeader } from '../types/types';
 import AddComparisonModal from '../scenes/results/AddComparisonModal';
 
 import SvgTripleDotsRow from './icons/triple-dots-row';
@@ -19,6 +20,7 @@ import SvgRoundAdd from './icons/round-add';
 import SvgPin from './icons/pin';
 import PinPopover from './PinPopover';
 import SvgClose from './icons/close';
+import SvgExportCsv from './icons/export-csv';
 
 type TripleDotsPopoverProps = {
   reviewTag?: ReviewTag;
@@ -35,12 +37,20 @@ type TripleDotsPopoverProps = {
   removePinFn: () => void;
   removePinLoading: boolean;
   canCompare?: boolean;
+  canExport?: boolean;
+  csvData?: Array<object>;
+  csvHeader?: Array<CSVHeader>;
+  filename?: string;
 };
 
 type Props = TripleDotsPopoverProps & {
   disabled?: boolean;
 };
 
+/**
+ * Menu selection for mobile view.
+ * Consists of compare, pin (add or remove depends on which scene user at) and export button.
+ */
 export default function TripleDotsButton(props: Props) {
   let { disabled, ...tripleDotsProps } = props;
   let [popoverVisible, setPopoverVisible] = useState(false);
@@ -87,6 +97,10 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
     removePinFn,
     removePinLoading,
     canCompare,
+    canExport,
+    csvData,
+    csvHeader,
+    filename,
   } = props;
   let [comparisonModalVisible, setComparisonModalVisible] = useState(false);
   let [pinModalVisible, setPinModalVisible] = useState(false);
@@ -131,6 +145,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
         </ButtonContainer>
       )}
       {isTerminalScene ? (
+        // show remove pinned table button if user is on terminal scene
         <ButtonContainer onPress={removePinFn} disabled={removePinLoading}>
           {removePinLoading ? (
             <LoadingIndicator />
@@ -142,6 +157,7 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
           )}
         </ButtonContainer>
       ) : (
+        // show add pinned table button
         <ButtonContainer
           onPress={() => {
             setPinModalVisible(true);
@@ -151,8 +167,23 @@ function TripleDotsPopover(props: TripleDotsPopoverProps) {
           <PurpleText>Terminals</PurpleText>
         </ButtonContainer>
       )}
-
-      {/* TODO: add export button */}
+      {canExport && csvData && csvData.length > 0 && (
+        <CSVLink
+          data={csvData}
+          headers={csvHeader}
+          filename={`${filename}.csv`}
+          style={{ textDecoration: 'none' }}
+        >
+          <ButtonContainer>
+            <SvgExportCsv
+              width={24}
+              height={24}
+              style={{ color: THEME_COLOR }}
+            />
+            <PurpleText>Export</PurpleText>
+          </ButtonContainer>
+        </CSVLink>
+      )}
     </Container>
   );
 }

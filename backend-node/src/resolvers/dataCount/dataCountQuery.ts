@@ -7,10 +7,20 @@ let dataCountResolver: FieldResolver<'Query', 'dataCount'> = async (
   args,
   context: Context,
 ) => {
+  /**
+   * Endpoint for fetch data count on spesific node for pagination.
+   */
   let { node } = args;
   let dataCount = 0;
   switch (node) {
+    /**
+     * Will count length of the search data by node and args.
+     */
     case 'TERMINALS':
+      /**
+       * This for terminals pagination so the paginate know how much data and
+       * determine how much page will it be.
+       */
       let terminals = await context.prisma.terminal.findMany({
         where: {
           user: {
@@ -19,6 +29,9 @@ let dataCountResolver: FieldResolver<'Query', 'dataCount'> = async (
         },
       });
       if (args.terminalSearch) {
+        /**
+         * If there's search will only show length of the searched item.
+         */
         terminals = terminals.filter(({ name }) =>
           name.toLowerCase().includes(args.terminalSearch.toLowerCase()),
         );

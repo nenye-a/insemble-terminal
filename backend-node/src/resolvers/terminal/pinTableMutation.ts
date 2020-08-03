@@ -7,6 +7,9 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
   { terminalId, tableId, tableType },
   context: Context,
 ) => {
+  /**
+   * Endpoint for pin the table into selected terminal. Require all input.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -17,7 +20,14 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
     throw new Error('User not found!');
   }
   let table;
+  /**
+   * First we check if the table exist first.
+   */
   switch (tableType) {
+    /**
+     * Since it on all table different on DB table so tableId will be searched on
+     * tableType
+     */
     case 'ACTIVITY':
       table = await context.prisma.activity.findOne({
         where: { id: tableId },
@@ -53,6 +63,12 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
     throw new Error('Table not found');
   }
 
+  /**
+   * After get the table,
+   * Here we check the terminal that user select.
+   * The checks are: if exist? if terminal have user?
+   * if terminal user are the same who use this endpoint?
+   */
   let selectedTerminal = await context.prisma.terminal.findOne({
     where: {
       id: terminalId,
@@ -71,6 +87,9 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
   if (selectedTerminal.user.id !== user.id) {
     throw new Error('This is not your terminal.');
   }
+  /**
+   * Here we check if feed already exist so there won't be 2 same table pinned.
+   */
   let isFeedExist = selectedTerminal.pinnedFeeds.some(
     ({ tableId: existTableId, tableType: existTableType }) =>
       existTableId === tableId && existTableType === tableType,
@@ -78,6 +97,10 @@ export let pinTableResolver: FieldResolver<'Mutation', 'pinTable'> = async (
   if (isFeedExist) {
     throw new Error('This table already on the terminal');
   }
+  /**
+   * If all passed then we create pinnedFeed with table ID and table type.
+   * And also linked it to selected terminal.
+   */
   await context.prisma.pinnedFeed.create({
     data: {
       tableId,

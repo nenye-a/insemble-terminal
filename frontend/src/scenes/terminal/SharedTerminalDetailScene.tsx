@@ -26,7 +26,7 @@ type Params = {
 export default function SharedTerminalDetailScene() {
   let params = useParams<Params>();
   let history = useHistory();
-  let { loading, data, error } = useQuery<
+  let { loading, data, error, refetch } = useQuery<
     GetSharedTerminal,
     GetSharedTerminalVariables
   >(GET_SHARED_TERMINAL, {
@@ -48,9 +48,9 @@ export default function SharedTerminalDetailScene() {
         {loading ? (
           <LoadingIndicator />
         ) : error ? (
-          <ErrorComponent />
+          <ErrorComponent onRetry={refetch} />
         ) : data?.sharedTerminal.pinnedFeeds.length === 0 ? (
-          <EmptyDataComponent text="No found for this terminal" />
+          <EmptyDataComponent text="No data found for this terminal" />
         ) : data?.sharedTerminal.pinnedFeeds &&
           data.sharedTerminal.pinnedFeeds.length > 0 ? (
           <TerminalDetailResult

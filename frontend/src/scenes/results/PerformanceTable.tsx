@@ -397,7 +397,7 @@ function TableRow(props: TableRowProps) {
 
           let newSearchTag = getPerformanceNewSearchTag(performanceType);
           if (Object.keys(newSearchTag).length > 0) {
-            let parenthesesRegex = /\([^\(]+\)$/g;
+            let parenthesesRegex = /\([^(]+\)$/g;
             let insideParenthesesTextRegex = /\(([^)]+)\)/;
             let nameWithoutParentheses = name.replace(parenthesesRegex, '');
 
@@ -467,6 +467,8 @@ function TableRow(props: TableRowProps) {
             onMouseLeave={() => {
               setInfoboxVisible(false);
             }}
+            // adding this padding 1 so the white border not hidden
+            style={{ paddingBottom: 1 }}
           >
             {tableRow}
           </View>

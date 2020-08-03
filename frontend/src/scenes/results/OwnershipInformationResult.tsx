@@ -58,9 +58,26 @@ export default function OwnershipInformationResult(props: Props) {
       demo: demoType,
     },
   });
-  let noData =
-    !data?.ownershipInfoTable.data ||
-    Object.keys(data?.ownershipInfoTable.data).length === 0;
+  let ownershipData = data?.ownershipInfoTable.data;
+  let noData = !ownershipData || Object.keys(ownershipData).length === 0;
+  let csvData = noData
+    ? []
+    : [
+        {
+          parentCompany: ownershipData?.parentCompany,
+          headquarters: ownershipData?.headquarters,
+          phone: ownershipData?.phone,
+          website: ownershipData?.website,
+          lastUpdate: ownershipData?.lastUpdate,
+        },
+      ];
+
+  let csvHeader = [
+    { label: 'Parent Company', key: 'parentCompany' },
+    { label: 'Headquarters', key: 'headquarters' },
+    { label: 'Phone', key: 'phone' },
+    { label: 'Website', key: 'website' },
+  ];
 
   let { isDesktop } = useViewport();
 
@@ -94,13 +111,18 @@ export default function OwnershipInformationResult(props: Props) {
         })}
         pinTableId={pinTableId}
         readOnly={readOnly}
+        csvData={csvData}
+        csvHeader={csvHeader}
       />
       {loading ? (
         <LoadingIndicator
           containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
         />
       ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+        <ErrorComponent
+          text={formatErrorMessage(error.message)}
+          onRetry={refetch}
+        />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (
