@@ -2,6 +2,7 @@ import { queryField, FieldResolver, stringArg } from 'nexus';
 
 import { Root, Context } from 'serverTypes';
 import { RefferedData } from 'dataTypes';
+// import { sendReferralNotificationEmail } from '../../helpers/sendEmail';
 
 let referredDataResolver: FieldResolver<'Query', 'referredData'> = async (
   _: Root,
@@ -28,6 +29,18 @@ let referredDataResolver: FieldResolver<'Query', 'referredData'> = async (
    * then send it to front end to fill the register form.
    */
   let referredData: RefferedData = JSON.parse(referralInvitation.referred);
+
+  // Non functioning code to send email to insemble to notify a successful referral
+
+  // let referrer = await context.prisma.user.findOne({
+  //   where: {
+  //     id: referralInvitation.referrer
+  //   }
+  // })
+  // sendReferralNotificationEmail(
+  //   { email: referredData.email, name: `${referredData.firstName} ${referredData.lastName}` },
+  //   { email: referrer.email, name: `${referrer.firstName} ${referrer.lastName}` }
+  // )
   return referredData;
 };
 
