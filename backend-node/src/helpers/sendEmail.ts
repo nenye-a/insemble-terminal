@@ -18,6 +18,9 @@ let feedback = fs.readFileSync('src/emailTemplates/feedback.html').toString();
 let referralEmail = fs
   .readFileSync('src/emailTemplates/referralEmail.html')
   .toString();
+let referralNotificationEmail = fs
+  .readFileSync('src/emailTemplates/referralNotificationEmail.html')
+  .toString();
 
 async function sendVerificationEmail(
   receiver: { email: string; name: string },
@@ -65,6 +68,28 @@ async function sendReferralEmail(
   await sgMail.send(msg);
 }
 
+// async function sendReferralNotificationEmail(
+//   referee: { email: string; name: string },
+//   referrer: { email: string; name: string },
+// ) {
+//   let htmlContent = ejs.render(referralNotificationEmail, {
+//     referrerName: referrer.name,
+//     referrerEmail: referrer.email,
+//     referreeName: referrer.name,
+//     referreeEmail: referrer.email,
+//   });
+
+//   let msg = {
+//     to: CONTACT_PERSON,
+//     from: 'Insemble Terminal <no-reply@insemble.co>',
+//     subject: `[Successful Refferal] ${referrer.name} - ${referee.name}`,
+//     text: `Successful Referral`,
+//     html: htmlContent,
+//   };
+//   await sgMail.send(msg);
+//   console.log('This is successful')
+// }
+
 async function sendForgotPasswordEmail(
   receiver: { email: string; name: string },
   message: string,
@@ -99,7 +124,7 @@ async function sendContactUsEmail(
     to: CONTACT_PERSON,
     from: 'Insemble Terminal <no-reply@insemble.co>',
     subject: `[Sales Lead] ${sender.name}`,
-    text: `${sender.email} made a contact with us.`,
+    text: `${sender.email} contacted us.`,
     html: htmlContent,
   };
   await sgMail.send(msg);
@@ -126,10 +151,13 @@ async function sendFeedbackEmail(
   await sgMail.send(msg);
 }
 
+
+
 export {
   sendVerificationEmail,
   sendForgotPasswordEmail,
   sendContactUsEmail,
   sendFeedbackEmail,
   sendReferralEmail,
+  // sendReferralNotificationEmail,
 };
