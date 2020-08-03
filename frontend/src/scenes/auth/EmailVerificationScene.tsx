@@ -46,7 +46,8 @@ export default function EmailVerificationScene() {
         <InsembleLogo color="purple" />
         <Description>
           We have sent an email with a verification link to you. Please follow
-          the instructions to complete your registration.
+          the instructions to complete your registration. If you do not see the
+          email, please check your spam or promotions folders.
         </Description>
       </ContentContainer>
     </Container>
