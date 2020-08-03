@@ -1,13 +1,19 @@
+import sys
+import os
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.extend([THIS_DIR, BASE_DIR])
+
 import utils
 
 
-def revise_activity():
+def revise_activity(query=None):
     """
     Takes the existing activity indicators and stores in places history as a
     revision.
     """
 
-    utils.DB_TERMINAL_PLACES.aggregate([
+    pipeline = [
         {'$project': {
             'activity_history_temp': {
                 'activity_volume': "$activity_volume",
@@ -23,7 +29,12 @@ def revise_activity():
             'activity_history_temp.local_category_volume_radius': 3,
         }},
         {'$merge': 'places_history'}
-    ])
+    ]
+
+    if query:
+        pipeline.insert(0, {'$match': query})
+
+    utils.DB_TERMINAL_PLACES.aggregate(pipeline)
 
     print("Successfully created the temporary history.")
 
@@ -181,3 +192,8 @@ def update_brand_volume():
         {"$merge": {"into": "places"}}
     ])
     update_db.drop()
+
+
+if __name__ == "__main__":
+
+    update_brand_volume()

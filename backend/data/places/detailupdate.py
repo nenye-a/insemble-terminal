@@ -245,7 +245,12 @@ def apply_county_tags():
 
 if __name__ == "__main__":
 
-    # setup()
-    google_detailer(wait=False)
+    # setup({"name": "Ross Dress for Less",
+    #        "$or": [
+    #            {"activity_volume": -1},
+    #            {"activity_volume": None}
+    #        ]}
+    #       )
+    # google_detailer(wait=False)
     # check_recency()
     # update_last_update()
