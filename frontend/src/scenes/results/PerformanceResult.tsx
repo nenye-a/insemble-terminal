@@ -120,15 +120,15 @@ export default function PerformanceResult(props: Props) {
     () =>
       coloredData.map(({ // destructure the exported columns
         name, customerVolumeIndex, localRetailIndex, localCategoryIndex, nationalIndex, avgRating, numReview, numLocation }) => ({
-        name,
-        customerVolumeIndex,
-        localRetailIndex,
-        localCategoryIndex,
-        nationalIndex,
-        avgRating,
-        numReview,
-        numLocation,
-      })),
+          name,
+          customerVolumeIndex: customerVolumeIndex ? customerVolumeIndex / 100 : null,
+          localRetailIndex: localRetailIndex ? localRetailIndex / 100 : null,
+          localCategoryIndex: localCategoryIndex ? localCategoryIndex / 100 : null,
+          nationalIndex: nationalIndex ? nationalIndex / 100 : null,
+          avgRating,
+          numReview,
+          numLocation,
+        })),
     [coloredData],
   );
 
@@ -265,56 +265,56 @@ export default function PerformanceResult(props: Props) {
             onRetry={refetch}
           />
         ) : (!loading &&
-            data?.performanceTable.table &&
-            data.performanceTable.table.data.length > 0) ||
+          data?.performanceTable.table &&
+          data.performanceTable.table.data.length > 0) ||
           prevData.length > 0 ||
           !!demoType ? (
-          performanceType ? (
-            viewMode === 'graph' ? (
-              <PerformanceChart
-                data={loading ? prevData : dataWithAsterisk}
-                graphMode={
-                  performanceType === PerformanceTableType.OVERALL && isDesktop
-                    ? 'merged'
-                    : 'split'
-                }
-                onViewModeChange={setViewMode}
-              />
-            ) : (
-              <PerformanceTable
-                data={loading ? prevData : dataWithAsterisk}
-                showNumLocation={showNumLocation}
-                headerTitle={headerTitle}
-                onPerformanceRowPress={(param) => {
-                  if (!readOnly) {
-                    onPerformanceRowPress && onPerformanceRowPress(param);
-                  } else {
-                    history.push('/contact-us');
-                  }
-                }}
-                performanceType={performanceType}
-                mobile={!isDesktop}
-                comparisonTags={comparisonTags}
-                onViewModeChange={setViewMode}
-                {...(data?.performanceTable.table?.businessTag && {
-                  businessTag: {
-                    params: data.performanceTable.table.businessTag.params,
-                    type: data.performanceTable.table.businessTag.type,
-                    id: data.performanceTable.table.businessTag.id,
-                  },
-                })}
-                {...(data?.performanceTable.table?.locationTag && {
-                  locationTag: {
-                    params: data.performanceTable.table.locationTag.params,
-                    type: data.performanceTable.table.locationTag.type,
-                  },
-                })}
-              />
-            )
-          ) : null
-        ) : noData && !loading ? (
-          <EmptyDataComponent />
-        ) : null}
+                performanceType ? (
+                  viewMode === 'graph' ? (
+                    <PerformanceChart
+                      data={loading ? prevData : dataWithAsterisk}
+                      graphMode={
+                        performanceType === PerformanceTableType.OVERALL && isDesktop
+                          ? 'merged'
+                          : 'split'
+                      }
+                      onViewModeChange={setViewMode}
+                    />
+                  ) : (
+                      <PerformanceTable
+                        data={loading ? prevData : dataWithAsterisk}
+                        showNumLocation={showNumLocation}
+                        headerTitle={headerTitle}
+                        onPerformanceRowPress={(param) => {
+                          if (!readOnly) {
+                            onPerformanceRowPress && onPerformanceRowPress(param);
+                          } else {
+                            history.push('/contact-us');
+                          }
+                        }}
+                        performanceType={performanceType}
+                        mobile={!isDesktop}
+                        comparisonTags={comparisonTags}
+                        onViewModeChange={setViewMode}
+                        {...(data?.performanceTable.table?.businessTag && {
+                          businessTag: {
+                            params: data.performanceTable.table.businessTag.params,
+                            type: data.performanceTable.table.businessTag.type,
+                            id: data.performanceTable.table.businessTag.id,
+                          },
+                        })}
+                        {...(data?.performanceTable.table?.locationTag && {
+                          locationTag: {
+                            params: data.performanceTable.table.locationTag.params,
+                            type: data.performanceTable.table.locationTag.type,
+                          },
+                        })}
+                      />
+                    )
+                ) : null
+              ) : noData && !loading ? (
+                <EmptyDataComponent />
+              ) : null}
       </View>
       {!readOnly && !demoType && (
         <FeedbackButton

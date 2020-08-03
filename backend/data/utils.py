@@ -526,8 +526,10 @@ def dictionary_diff(previous, new, replaced=True):
 
 def alpanumeric(string):
     """Strips string of non alphanumeric characters"""
+    words = string.split(' ')
     pattern = re.compile(r'[\W_]+')
-    return pattern.sub('', string)
+    words = [pattern.sub('', word) for word in words]
+    return ' '.join(words)
 
 
 def restart_program():

@@ -4,9 +4,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(BASE_DIR)
 
 import utils
-from postgres import PostConnect
-
-database = PostConnect()
 
 
 def insert_names():
@@ -20,15 +17,13 @@ def insert_names():
             "count": {
                 "$sum": 1
             },
-        }},
-        {"$match": {
-            "count": {"$gt": 5}
         }}
     ]))
 
-    print(places[:10])
-    place_names = [{"params": place['_id'], "type": "BUSINESS"} for place in places]
-    database.insert_many('BusinessTag', place_names)
+    place_names = [place['_id'] for place in places]
+    utils.DB_MISC.insert_one({
+        'name': 'all_business_names',
+        'business_names': place_names})
 
 
 def insert_categories():
@@ -43,24 +38,18 @@ def insert_categories():
                 "$sum": 1
             },
         }},
-        {"$match": {
-            "count": {"$gt": 5}
-        }}
     ]))
 
-    print(categories[:10])
-    categories = [{"params": category["_id"], "type": "CATEGORY"} for category in categories.index]
+    category_names = [category["_id"] for category in categories]
 
-    database.insert_many('BusinessTag', categories)
-
-
-def delete_categories():
-    print(database.delete('BusinessTag', {}))
+    utils.DB_MISC.insert_one({
+        'name': 'all_category_names',
+        'category_names': category_names})
 
 
 if __name__ == "__main__":
 
     # delete_categories()
-    insert_names()
-    # insert_categories()
+    # insert_names()
+    insert_categories()
     # database.list_tables(True)
