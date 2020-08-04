@@ -68,6 +68,8 @@ export default function ManageTerminalForm(props: Props) {
           name,
           description,
         },
+        awaitRefetchQueries: true,
+        refetchQueries: [{ query: GET_TERMINAL_LIST }],
       });
       refetchCurrentPage && refetchCurrentPage();
     } else if (mode === 'edit' && terminalId) {

@@ -6,7 +6,6 @@ from .serializers import (SearchSerializer, OptionalSearchSerializer, Performanc
                           OwnershipSerializer, BusinessSerializer)
 import datetime as dt
 import performancev2
-import utils
 import news
 import activity
 import contact

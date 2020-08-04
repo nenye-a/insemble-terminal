@@ -196,21 +196,6 @@ export default function PerformanceContent() {
           },
         }}
       />
-      {demonstrationText}
-      <BottomNavigation
-        leftButton={{
-          text: 'Overview',
-          onPress: () => {
-            onPageChange('overview');
-          },
-        }}
-        rightButton={{
-          text: 'Activity',
-          onPress: () => {
-            onPageChange('activity');
-          },
-        }}
-      />
     </View>
   );
 }
