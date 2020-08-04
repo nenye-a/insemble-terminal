@@ -41,6 +41,7 @@ export default function ResultsSection() {
     },
   };
 
+  // Make text move from top to bottom
   let textTransitions = useTransition([selectedTagIndex], (item) => item, {
     from: {
       marginTop: isDesktop ? -50 : -20,
@@ -52,6 +53,7 @@ export default function ResultsSection() {
     ...transitionConfig,
   });
 
+  // Make images move from top to bottom
   let transitions = useTransition([selectedTagIndex], (item) => item, {
     from: {
       opacity: 0,
@@ -65,6 +67,7 @@ export default function ResultsSection() {
     ...transitionConfig,
   });
 
+  // Fade in on enter and fade out on exit
   let opacityTransition = useTransition([selectedTagIndex], (item) => item, {
     from: {
       opacity: 0,

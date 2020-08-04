@@ -22,6 +22,7 @@ type Props = {
   tableId?: string;
   defaultTitle?: string;
   defaultContent?: string;
+  onManageFormSuccessful?: () => void;
 };
 
 export default function ManageNoteForm(props: Props) {
@@ -31,6 +32,7 @@ export default function ManageNoteForm(props: Props) {
     mode = 'add',
     defaultTitle,
     defaultContent,
+    onManageFormSuccessful,
   } = props;
   let { register, handleSubmit, errors, reset } = useForm();
   let alert = useAlert();
@@ -45,13 +47,23 @@ export default function ManageNoteForm(props: Props) {
     onCompleted: () => {
       reset();
       alert.show('Note successfully created');
+      onManageFormSuccessful && onManageFormSuccessful();
     },
   });
 
   let [editNote, { loading: editNoteLoading }] = useMutation<
     EditNote,
     EditNoteVariables
-  >(EDIT_NOTE);
+  >(EDIT_NOTE, {
+    onError: (e) => {
+      alert.show(e.message);
+    },
+    onCompleted: () => {
+      reset();
+      alert.show('Note successfully edited');
+      onManageFormSuccessful && onManageFormSuccessful();
+    },
+  });
 
   let onSubmit = (fieldValues: FieldValues) => {
     let { title = '', content = '' } = fieldValues;

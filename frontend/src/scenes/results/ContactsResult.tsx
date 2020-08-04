@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 
@@ -57,9 +57,28 @@ export default function ContactsResult(props: Props) {
     },
   });
 
-  let noData =
-    !data?.ownershipContactTable.data ||
-    data?.ownershipContactTable.data.length === 0;
+  let contactData = data?.ownershipContactTable.data || [];
+
+  let noData = !contactData || contactData.length === 0;
+
+  let csvData = useMemo(
+    () =>
+      // desctructure only the exported columns. omiting the __typaname, id, date
+      contactData.map(({ name, title, phone, email }) => ({
+        name,
+        title,
+        phone,
+        email,
+      })),
+    [contactData],
+  );
+
+  let csvHeader = [
+    { label: 'Name', key: 'name' },
+    { label: 'Title', key: 'title' },
+    { label: 'Phone', key: 'phone' },
+    { label: 'Email', key: 'email' },
+  ];
 
   return (
     <Container>
@@ -91,13 +110,18 @@ export default function ContactsResult(props: Props) {
         })}
         pinTableId={pinTableId}
         readOnly={readOnly}
+        csvData={csvData}
+        csvHeader={csvHeader}
       />
       {loading ? (
         <LoadingIndicator
           containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
         />
       ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+        <ErrorComponent
+          text={formatErrorMessage(error.message)}
+          onRetry={refetch}
+        />
       ) : noData ? (
         <EmptyDataComponent />
       ) : (

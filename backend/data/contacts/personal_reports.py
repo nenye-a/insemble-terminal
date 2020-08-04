@@ -77,6 +77,72 @@ def report_from_csv(csv_filename):
         print(generate_report(name, company, address, city, contact_type, in_parallel=True))
 
 
+def parse_brand_address_file(file):
+    df = pd.read_csv(file)
+    brands = df["Brand"]
+    if 'address' in df.columns:
+        addresses = df["address"]
+    else:
+        addresses = df["Shopping Center Address"] + ", " + df["City"] + ", " + df["State / Prov"]
+    return brands, addresses
+
+
+def batch_report(subject, company, file):
+    """
+    Generates batch report for a list of retailers
+    """
+
+    print(f"Generating {subject} study for {company}")
+
+    query_list = []
+    brands, addresses = parse_brand_address_file(file)
+    queries = batch_query_brands(brands, addresses, separate_by_brand=True)
+    if not queries:
+        return None
+
+    query_list.extend(queries)
+    print(f'Queries collected. Generating batch study for {company}')
+
+    report_name = f"{subject} Study for {company}"
+    report, terminal_id = helper.create_shared_report(
+        *query_list,
+        name=report_name,
+        description=("Generated batch study on {} for {}".format(subject, company)))
+
+    print(report, terminal_id)
+    return {
+        "report_link": report,
+        "report_title": report_name
+    } if report else None
+
+
+def batch_query_brands(brands, addresses, separate_by_brand=False):
+    query_list = []
+    brand_dict = {}
+    for i in range(len(brands)):
+        brand, address = brands[i], addresses[i]
+        if brand not in brand_dict:
+            brand_dict[brand] = []
+        brand_dict[brand].append({
+            'location_tag': {'type': 'ADDRESS', 'params': address},
+            'business_tag': {'type': 'BUSINESS', 'params': brand}  # no preprocess, watch out
+        })
+        print(f"Adding search for {brand} at {address}")
+
+    print("Appending to query list")
+    if separate_by_brand:
+        for brand in brand_dict:
+            query_list.append(
+                ("PERFORMANCE", {"searches": brand_dict[brand], "performance_type": "OVERALL"}))
+    else:
+        searches_combined = []
+        [searches_combined.extend(item) for item in list(brand_dict.values())]
+        query_list.append(
+            ("PERFORMANCE", {"searches": searches_combined, "performance_type": "OVERALL"}))
+
+    return query_list
+
+
 def generate_report(name, company, address, city, contact_type,
                     first_name=None, last_name=None, in_parallel=False):
     """
@@ -238,10 +304,10 @@ def process_retailer(company, user_location, database=utils.SYSTEM_MONGO):
                     "type": {"$ne": None}
                 }))
 
-    # if subsidaries weren't found, find well known retailer
-    # in their area to get activity and performance from
-    print("No subsidiaries found. Attempting to find "
-          "well known default retailer {} nearby".format(DEFAULT_BRAND))
+        # if subsidaries weren't found, find well known retailer
+        # in their area to get activity and performance from
+        print("No subsidiaries found. Attempting to find "
+              "well known default retailer {} nearby".format(DEFAULT_BRAND))
 
     if not matches:
         processed_default = preprocess.preprocess(DEFAULT_BRAND)
@@ -1100,12 +1166,14 @@ if __name__ == "__main__":
     # filename = THIS_DIR + '/files/icsc_emails_short_retailer.csv'
     # report_from_csv(filename)
 
-    print(generate_report(
-        name=None,
-        company="Volk Company",
-        address='10230 N 32nd St, Phoenix, AZ',
-        city='Phoenix, AZ',
-        contact_type='retail broker',
-        first_name='Terry',
-        last_name='Dahlstrom'
-    ))
+    batch_report('Terminals-All-Address-3', 'Kimco', THIS_DIR + '/files/kimco-all-address.csv')
+
+    # print(generate_report(
+    #     name=None,
+    #     company="Volk Company",
+    #     address='10230 N 32nd St, Phoenix, AZ',
+    #     city='Phoenix, AZ',
+    #     contact_type='retail broker',
+    #     first_name='Terry',
+    #     last_name='Dahlstrom'
+    # ))

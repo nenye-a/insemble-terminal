@@ -21,6 +21,7 @@ export default function EmailVerificationScene() {
     UserRegisterVerification,
     UserRegisterVerificationVariables
   >(USER_REGISTER_VERIFICATION, {
+    // Will keep polling every 3 seconds until it receive a confirmation that email has already verified
     pollInterval: 3000,
     variables: {
       verificationId: verificationId || '',
@@ -33,6 +34,7 @@ export default function EmailVerificationScene() {
     } = data;
     if (verified && auth) {
       let { token } = auth;
+      // Saving token to local storage
       login(token);
 
       return <Redirect to="/" />;
@@ -44,7 +46,8 @@ export default function EmailVerificationScene() {
         <InsembleLogo color="purple" />
         <Description>
           We have sent an email with a verification link to you. Please follow
-          the instructions to complete your registration.
+          the instructions to complete your registration. If you do not see the
+          email, please check your spam or promotions folders.
         </Description>
       </ContentContainer>
     </Container>

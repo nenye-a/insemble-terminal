@@ -26,7 +26,7 @@ import {
 
 export type ResultQuery = {
   reviewTag: ReviewTag | null;
-  type: string; // TODO: change to BE enum
+  type: string;
 };
 
 export type LocationTag = {
@@ -124,4 +124,9 @@ export type MapInfoboxPressParam = {
     businessName: string | null;
     address: string | null;
   };
+};
+
+export type CSVHeader = {
+  label: string;
+  key: string;
 };

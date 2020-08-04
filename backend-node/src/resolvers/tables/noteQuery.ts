@@ -7,6 +7,9 @@ let noteQueryResolver: FieldResolver<'Query', 'note'> = async (
   { noteId },
   context: Context,
 ) => {
+  /**
+   * Endpoint for geting note table only with noteId.
+   */
   let note = await context.prisma.note.findOne({
     where: {
       id: noteId,
@@ -14,6 +17,9 @@ let noteQueryResolver: FieldResolver<'Query', 'note'> = async (
     include: { user: true },
   });
 
+  /**
+   * Check if the id is valid or not.
+   */
   if (!note) {
     throw new Error('Invalid note id.');
   }

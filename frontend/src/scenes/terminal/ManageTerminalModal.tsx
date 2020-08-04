@@ -38,6 +38,7 @@ export default function ManageTerminalModal(props: Props) {
 
   useEffect(() => {
     if (mode === 'edit' && terminalId) {
+      // Get terminal name & description
       getTerminalBasicInfo({
         variables: {
           terminalId,
@@ -51,7 +52,7 @@ export default function ManageTerminalModal(props: Props) {
       {loading ? (
         <LoadingIndicator />
       ) : error ? (
-        <ErrorComponent text={error.message} />
+        <ErrorComponent text={error.message} onRetry={refetchCurrentPage} />
       ) : (
         <ManageTerminalForm
           refetchCurrentPage={refetchCurrentPage}
@@ -69,8 +70,9 @@ export default function ManageTerminalModal(props: Props) {
 }
 
 const Container = styled(Modal)`
-  width: 365px;
-  max-height: fit-content;
+  max-width: 365px;
+  width: 90%;
+  height: fit-content;
   padding: 20px 24px;
   border-radius: ${DEFAULT_BORDER_RADIUS};
 `;

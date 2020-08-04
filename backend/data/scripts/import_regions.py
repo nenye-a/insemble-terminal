@@ -7,6 +7,7 @@ sys.path.extend([THIS_DIR, BASE_DIR])
 import json
 import utils
 import mongo
+import google
 import pandas as pd
 
 states = pd.read_csv(THIS_DIR + '/files/Statefps.csv').set_index('fp')
@@ -40,7 +41,7 @@ def import_regions():
 
 
 def clean_name(name):
-    return name.split('-')[0] + ' Metropolitan Area'
+    return name.split('-')[0].replace('MSA', '').strip() + ' Metropolitan Area'
 
 
 def update_msa():
@@ -50,14 +51,23 @@ def update_msa():
     return my_csv
 
 
-def get_mas_viewports():
-    msa_df = update_msa().set_index('MSA')
-    msas = list(msa_df.index)
+def get_msas():
+    csv = pd.read_csv(THIS_DIR + '/files/ranked_msas.csv')
+    csv['Name'] = csv['Name'].apply(clean_name)
+    return csv
+
+
+def get_msa_viewports(skip=0):
+    msa_df = get_msas().set_index('Name')
+    msas = list(msa_df.index[skip:])
     details = google.get_many_lat_lng(msas, viewport=True)
 
     data = []
-    for detail in details:
-        lat, lng, (nw, se) = detail['data']
+    for detail in filter(None, details):
+        try:
+            lat, lng, (nw, se) = detail['data']
+        except Exception:
+            continue
         data.append({
             'msa': detail['meta'] + " center",
             'lat': lat,
@@ -73,15 +83,16 @@ def get_mas_viewports():
             'lat': se[0],
             'lng': se[1]
         })
-    pd.DataFrame(data).to_csv(THIS_DIR + '/files/MSAviewports2.csv')
+    pd.DataFrame(data).to_csv(THIS_DIR + '/files/temp_view_ports.csv')
 
 
-def upload_msas():
-    viewports = pd.read_csv(
-        THIS_DIR + '/files/CustomMSAviewports.csv').set_index('Metropolitan Area')
+def upload_msas(path, skip=0):
+    viewports = pd.read_csv(path).set_index('msa')
+    viewports['lat'] = viewports['lat'].apply(float)
+    viewports['lng'] = viewports['lng'].apply(float)
     points = []
     current_item = {'viewport': {}}
-    for point in viewports.index:
+    for point in viewports.index[skip:]:
         if 'center' in point:
             current_item['name'] = point.replace('center', '').strip()
             current_item['center'] = utils.to_geojson(
@@ -111,12 +122,26 @@ def upload_msas():
             ]
         }
         point["type"] = "msa"
-        utils.DB_REGIONS.update_one({"name": point["name"]}, {"$set": point})
+        point['rank'] = add_msa_rank_local(point['name'])
+        print(point['name'], point['rank'])
+        # try:
+        print(point)
+        utils.DB_REGIONS.insert_one(point)
+        # except Exception:
+        #     print(f'Failed to insert {point["name"]} points.')
+        # utils.DB_REGIONS.update_one({"name": point["name"]}, {"$set": point}, upsert=True)
 
-    # utils.DB_REGIONS.insert_many(points, ordered=False)
+        # utils.DB_REGIONS.insert_many(points, ordered=False)
 
 
-def add_msa_rank():
+def add_msa_rank_local(msa):
+    ranked_msas = pd.read_csv(THIS_DIR + '/files/ranked_msas.csv')
+    ranked_msas['Name'] = ranked_msas['Name'].apply(clean_name)
+    ranked_msas = ranked_msas.set_index('Name')
+    return int(ranked_msas.loc[msa, 'Rank'])
+
+
+def add_msa_rank_db():
 
     ranked_msas = pd.read_csv(THIS_DIR + '/files/ranked_msas.csv').set_index('Name')
     print(ranked_msas.head())
@@ -140,7 +165,7 @@ def import_city_box():
 
     """
 
-    LA = {
+    la = {
         'name': "Los Angeles, CA",
         'center': {
             'type': "Point",
@@ -170,7 +195,7 @@ def import_city_box():
         'searched': False
     }
 
-    # TODO: needs to upload to database.
+    return la
 
 
 def add_state_to_county():
@@ -191,3 +216,9 @@ def add_state_to_county():
             }
         }}
     ]).modified_count)
+
+
+if __name__ == "__main__":
+    # get_msa_viewports(skip=30)
+    # print(add_msa_rank_local('Cleveland Metropolitan Area'))
+    upload_msas(THIS_DIR + '/files/CustomMSAviewports31-50.csv')

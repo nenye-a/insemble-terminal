@@ -1,8 +1,13 @@
 import { mutationField, arg, FieldResolver, stringArg } from 'nexus';
+import axios from 'axios';
 
 import { Context } from 'serverTypes';
-import { deleteComparisonResolver } from './deleteComparisonMutation';
+import { PyPreprocessingResponse } from 'dataTypes';
 import { todayMinXHour } from '../../helpers/todayMinXHour';
+import { axiosParamsSerializer } from '../../helpers/axiosParamsCustomSerializer';
+import { API_URI } from '../../constants/constants';
+
+import { deleteComparisonResolver } from './deleteComparisonMutation';
 
 export let updateComparisonResolver: FieldResolver<
   'Mutation',
@@ -22,10 +27,17 @@ export let updateComparisonResolver: FieldResolver<
   context: Context,
   info,
 ) => {
+  /**
+   * Endpoint for update (add, delete, delete all) comparison in table.
+   */
   let selectedBusinessTag;
   let selectedLocationTag;
 
   if (businessTagId) {
+    /**
+     * Check if there is businessTagId or businessTag.
+     * businessTagId is existing businessTag and can be search by Id.
+     */
     selectedBusinessTag = await context.prisma.businessTag.findOne({
       where: { id: businessTagId },
     });
@@ -33,19 +45,54 @@ export let updateComparisonResolver: FieldResolver<
       throw new Error('Tag does not exist!');
     }
   } else if (businessTag) {
+    let preprocessBusinessName;
+    /**
+     * If it's not businessTagId, and if it's businessTag object its self.
+     * Preprocess the business name first.
+     */
+    try {
+      let { business_name: pyPreprocessName }: PyPreprocessingResponse = (
+        await axios.get(`${API_URI}/api/preprocess`, {
+          params: {
+            params: businessTag.params,
+            businessType: businessTag.type,
+          },
+          paramsSerializer: axiosParamsSerializer,
+        })
+      ).data;
+      preprocessBusinessName = pyPreprocessName;
+    } catch {
+      throw new Error('Something wrong when doing preprocessing.');
+    }
+    /**
+     * If word contain bad or banned word it will give back null.
+     */
+    if (!preprocessBusinessName) {
+      throw new Error(
+        'Search contains banned word. Please try different input.',
+      );
+    }
+    /**
+     * Check if it's already on our side.
+     */
     let businessTagsCheck = await context.prisma.businessTag.findMany({
       where: {
-        params: businessTag.params,
+        params: preprocessBusinessName,
         type: businessTag.type,
       },
     });
     if (businessTagsCheck.length) {
+      /**
+       * If already exist then use the first found.
+       */
       selectedBusinessTag = businessTagsCheck[0];
     } else {
-      // TODO: preprocess typo data before save
+      /**
+       * Else create new tag with preprocessed BusinessName.
+       */
       selectedBusinessTag = await context.prisma.businessTag.create({
         data: {
-          params: businessTag.params,
+          params: preprocessBusinessName,
           type: businessTag.type,
         },
       });
@@ -53,6 +100,9 @@ export let updateComparisonResolver: FieldResolver<
   }
 
   if (locationTag) {
+    /**
+     * Check if there is locationTag exist on our side.
+     */
     let locationTagsCheck = await context.prisma.locationTag.findMany({
       where: {
         params: locationTag.params,
@@ -60,8 +110,14 @@ export let updateComparisonResolver: FieldResolver<
       },
     });
     if (locationTagsCheck.length) {
+      /**
+       * If already exist then use the first found.
+       */
       selectedLocationTag = locationTagsCheck[0];
     } else {
+      /**
+       * Else create new tag.
+       */
       selectedLocationTag = await context.prisma.locationTag.create({
         data: {
           params: locationTag.params,
@@ -70,19 +126,22 @@ export let updateComparisonResolver: FieldResolver<
       });
     }
   }
+  /**
+   * Here we check if the combination of locationTag and businessTag exist in
+   * comparationTag.
+   */
   let comparationTags = await context.prisma.comparationTag.findMany({
     where: {
-      businessTag: selectedBusinessTag
-        ? { id: selectedBusinessTag.id }
-        : undefined,
-      locationTag: selectedLocationTag
-        ? { id: selectedLocationTag.id }
-        : undefined,
+      businessTag: selectedBusinessTag ? { id: selectedBusinessTag.id } : null,
+      locationTag: selectedLocationTag ? { id: selectedLocationTag.id } : null,
     },
     include: { businessTag: true, locationTag: true },
   });
   let comparationTag;
   if (!comparationTags.length) {
+    /**
+     * If it's doesn't exist then we create new comparationTags.
+     */
     comparationTag = await context.prisma.comparationTag.create({
       data: {
         businessTag: selectedBusinessTag
@@ -95,6 +154,9 @@ export let updateComparisonResolver: FieldResolver<
       include: { businessTag: true, locationTag: true },
     });
   } else {
+    /**
+     * Else use the first found.
+     */
     comparationTag = comparationTags[0];
   }
   let table;
@@ -103,11 +165,25 @@ export let updateComparisonResolver: FieldResolver<
   let newComparationIds: Array<string> = [];
   let tables;
   switch (reviewTag) {
+    /**
+     * Then we will check the table by reviewTag.
+     * By default it will action as ADD.
+     * The step are the same every reviewTag (1-13)
+     */
     case 'PERFORMANCE':
       if (actionType === 'DELETE') {
+        /**
+         * (1)
+         * If action type is DELETE then it have to be comparationTagId
+         * that want to be deleted.
+         */
         if (!comparationTagId) {
           throw new Error('Please select comparationTag you want to delete');
         }
+        /**
+         * (2)
+         * Then delete it using deleteComparisonResolver.
+         */
         let {
           comparationTags: promiseCompareTags,
           reviewTag: promiseReviewTag,
@@ -120,6 +196,12 @@ export let updateComparisonResolver: FieldResolver<
         );
         let newTableId = await promiseTableId;
         if (pinId) {
+          /**
+           * (3)
+           * If the changes is on the terminal pinnedFeed.
+           * Here we also update the pinnedFeed to be new table.
+           * This make if we change the comparison also change the feed.
+           */
           await context.prisma.pinnedFeed.update({
             where: { id: pinId },
             data: {
@@ -134,6 +216,10 @@ export let updateComparisonResolver: FieldResolver<
           tableId: promiseTableId,
         };
       }
+      /**
+       * (4)
+       * Here where we check the table.
+       */
       table = await context.prisma.performance.findOne({
         where: { id: tableId },
         select: {
@@ -156,6 +242,10 @@ export let updateComparisonResolver: FieldResolver<
         throw new Error('Selected table not found.');
       }
       if (actionType === 'DELETE_ALL') {
+        /**
+         * (5)
+         * If the action is DELETE_ALL then we search all the base table.
+         */
         let performance = await context.prisma.performance.findMany({
           where: {
             type: table.type,
@@ -178,10 +268,21 @@ export let updateComparisonResolver: FieldResolver<
             },
           },
         });
+        /**
+         * (6)
+         * Then filter out the table who have the comparationTags.
+         * The data will be at first found.
+         */
         performance = performance.filter(
           ({ comparationTags }) => comparationTags.length === 0,
         );
         if (pinId) {
+          /**
+           * (3)
+           * If the changes is on the terminal pinnedFeed.
+           * Here we also update the pinnedFeed to be new table.
+           * This make if we change the comparison also change the feed.
+           */
           await context.prisma.pinnedFeed.update({
             where: { id: pinId },
             data: {
@@ -195,6 +296,11 @@ export let updateComparisonResolver: FieldResolver<
           comparationTags: performance[0].comparationTags,
         };
       }
+      /**
+       * (7)
+       * Here we check if the comparation we add if it's same tag as the base table.
+       * Or already have same comparationTag in the table.
+       */
       if (
         table.businessTag?.id === comparationTag.businessTag?.id &&
         table.locationTag?.id === comparationTag.locationTag?.id
@@ -206,8 +312,20 @@ export let updateComparisonResolver: FieldResolver<
       ) {
         throw new Error('Cannot add with same comparation.');
       }
+      /**
+       * (8)
+       * Map the comparationTags into array of string ids so it's easy to manage.
+       */
       selectedComparationIds = table.comparationTags.map(({ id }) => id);
+      /**
+       * (9)
+       * We add the selectedComparationId into table selectedComparationIds.
+       */
       newComparationIds = [...selectedComparationIds, selectedComparationId];
+      /**
+       * (10)
+       * Search all table that have the compareTagId we want to add.
+       */
       tables = await context.prisma.performance.findMany({
         where: {
           comparationTags: {
@@ -233,6 +351,12 @@ export let updateComparisonResolver: FieldResolver<
           },
         },
       });
+      /**
+       * (11)
+       * Then fillter out the tables that have the comparation we want
+       * to remove with exactly comparationIds we filter before.
+       * (Must include all newComparationIds and same length)
+       */
       tables = tables.filter(({ comparationTags }) => {
         return (
           comparationTags.every(({ id }) => newComparationIds.includes(id)) &&
@@ -240,6 +364,10 @@ export let updateComparisonResolver: FieldResolver<
         );
       });
       if (!tables.length) {
+        /**
+         * (12)
+         * If the table doesn't exist then we create new one.
+         */
         let connectNewCompIds = newComparationIds.map((compId) => {
           return { id: compId };
         });
@@ -281,9 +409,19 @@ export let updateComparisonResolver: FieldResolver<
           },
         });
       } else {
+        /**
+         * (13)
+         * Else we put the tables with the first found(index 0).
+         */
         table = tables[0];
       }
       if (pinId) {
+        /**
+         * (3)
+         * If the changes is on the terminal pinnedFeed.
+         * Here we also update the pinnedFeed to be new table.
+         * This make if we change the comparison also change the feed.
+         */
         await context.prisma.pinnedFeed.update({
           where: { id: pinId },
           data: {
@@ -858,6 +996,11 @@ export let updateComparisonResolver: FieldResolver<
       };
     default:
   }
+  /**
+   * If there are no reviewTag on above (ex:OWNERSHIP_CONTACT)
+   * Then just return empty tags.
+   * NOTE: This for table who can compare.
+   */
   return {
     reviewTag,
     tableId: '',

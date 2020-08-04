@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useMutation, useLazyQuery } from '@apollo/react-hooks';
 import { useHistory, useParams } from 'react-router-dom';
+import { useAlert } from 'react-alert';
 
 import { View, Divider, LoadingIndicator } from '../../core-ui';
 import {
   HeaderNavigationBar,
   PageTitle,
   SearchPlaceholder,
-  // TutorialButton,
+  TutorialButton,
 } from '../../components';
 import { MUTED_TEXT_COLOR, BACKGROUND_COLOR } from '../../constants/colors';
 import { SEARCH, GET_SEARCH_TAG } from '../../graphql/queries/server/search';
@@ -64,14 +65,19 @@ type SearchTagWithIds = {
 export default function ResultsScene() {
   let history = useHistory<SearchState>();
   let params = useParams<Params>();
+  let alert = useAlert();
   let { searchId: searchIdParam } = params;
   let [
     submitSearch,
     { data: submitSearchData, loading: submitSearchLoading },
   ] = useMutation<Search, SearchVariables>(SEARCH, {
-    onError: () => {},
+    onError: (e) => {
+      alert.show(e.message);
+    },
     onCompleted: ({ search }) => {
       if (history.location.pathname === '/results') {
+        // Using replace, so if user navigating back,
+        // they won't found '/results' route with no id
         history.replace('/results/' + search.searchId, {
           search: history.location.state.search,
         });
@@ -197,6 +203,10 @@ export default function ResultsScene() {
 
   useEffect(() => {
     if (searchIdParam) {
+      /**
+       * Get search tag by id from route param.
+       * Used when user pressing back/next on the browser.
+       */
       getSearchTag({
         variables: {
           searchId: searchIdParam,
@@ -241,9 +251,14 @@ export default function ResultsScene() {
             locationTag={selectedSearchTagWithIds.locationTag}
           />
           <Container isDesktop={isDesktop}>
-            {/* {isDesktop && (
-              <TutorialButton style={{ position: 'absolute', right: 36 }} />
-            )} */}
+            <TutorialButton
+              style={
+                isDesktop
+                  ? { position: 'absolute', right: 36 }
+                  : { alignSelf: 'flex-end', paddingRight: 12 }
+              }
+            />
+
             {resultQueries.map(({ reviewTag, type }, idx) => {
               let key = `${reviewTag}-${type}-${idx}`;
               let props = {

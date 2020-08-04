@@ -19,6 +19,7 @@ type Props = ViewProps & {
 };
 
 export default function Alert(props: Props) {
+  // Show alert inside some container (not on top of the screen with absolute positioning)
   let { visible, text, onClose, ...otherProps } = props;
   let formattedText = formatGraphQLError(text);
   if (visible) {
@@ -41,6 +42,7 @@ export default function Alert(props: Props) {
   return null;
 }
 
+// Alert template when using useAlert() from react-alert
 export function AlertTemplate(props: AlertComponentPropsWithStyle) {
   let { message, close, ...otherProps } = props;
   let formattedMessage =

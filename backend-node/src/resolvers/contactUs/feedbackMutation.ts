@@ -11,6 +11,10 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
   { feedbackTitle, feedbackDetail, tableType, tableId, customFeed },
   context: Context,
 ) => {
+  /**
+   * Endpoint for creating feedback email and send to support@insemblegroup.com.
+   * customFeed is used for other than general and table feed.
+   */
   let user = await context.prisma.user.findOne({
     where: {
       id: context.userId,
@@ -20,11 +24,18 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
     throw new Error('User not found');
   }
 
+  /**
+   * By default the feed is General, and won't change if there's no tableType,
+   * tableId, and customFeed.
+   */
   let feed = customFeed ? customFeed : 'General';
   if (tableType && tableId) {
     let table;
     let type: undefined | AllTableType;
     switch (tableType) {
+      /**
+       * Check table by tableType to get params for creating feed string.
+       */
       case 'ACTIVITY':
         table = await context.prisma.activity.findOne({
           where: { id: tableId },
@@ -86,6 +97,10 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
     if (!table) {
       throw new Error('Table not found');
     }
+    /**
+     * This will generate feed string, for more information can be looked at:
+     * getFeedString.ts
+     */
     feed = getFeedString({
       tableType,
       type,
@@ -94,6 +109,9 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
     });
   }
   let name = `${user.firstName} ${user.lastName}`;
+  /**
+   * Here save it on our feedBack Database.
+   */
   await context.prisma.feedBack.create({
     data: {
       feed,
@@ -102,6 +120,10 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
       detail: feedbackDetail,
     },
   });
+  /**
+   * This where we send the message to CS in production.
+   * Or console the email if in dev.
+   */
   if (NODE_ENV === 'production') {
     sendFeedbackEmail(
       {
@@ -115,7 +137,7 @@ export let feedbackResolver: FieldResolver<'Mutation', 'feedback'> = async (
       },
     );
   } else {
-    // console the verification id so we could still test it on dev environment
+    // console the email so we know it from who on dev environment
     // eslint-disable-next-line no-console
     console.log('Email send from: ', user.email);
   }

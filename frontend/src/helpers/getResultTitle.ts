@@ -4,9 +4,13 @@ import { SearchParams } from '../types/types';
 import capitalize from './capitalize';
 
 export default function getResultTitle(searchTag: SearchParams) {
+  /**
+   * Format searchTag into a readable string.
+   * e.g BrandA News in LA
+   */
   let { reviewTag, businessTag, locationTag } = searchTag;
-  let formattedReview = reviewTag ? capitalize(reviewTag) : '';
-  let formattedBusiness = businessTag?.params ? businessTag?.params : '';
+  let formattedReview = reviewTag ? `${capitalize(reviewTag)} ` : '';
+  let formattedBusiness = businessTag?.params ? `${businessTag?.params} ` : '';
   let formattedLocation =
     locationTag?.type === LocationTagType.ADDRESS
       ? `near ${locationTag.params}`
@@ -15,6 +19,6 @@ export default function getResultTitle(searchTag: SearchParams) {
         locationTag?.type === LocationTagType.STATE
       ? `in ${locationTag?.params}`
       : '';
-  let formattedText = `${formattedBusiness} ${formattedReview} ${formattedLocation}`.trim();
+  let formattedText = `${formattedBusiness}${formattedReview}${formattedLocation}`.trim();
   return formattedText;
 }

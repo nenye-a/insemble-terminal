@@ -3,6 +3,15 @@ import { ComparationTag, HasCompareId } from '../types/types';
 
 import generateRandomColor from './generateRandomColor';
 
+/**
+ *
+ * @param data
+ * @param compareData
+ * @param comparationTags
+ * @param sortOrder : contains Array of compareTagId(string) as a rule to sort the compareData
+ * @param skipFirstColor : set this to true if want to start the first color from #EF5B5B. see COLORS on colors.ts
+ */
+
 export default function useColoredData<T, U>(
   data: Array<T> = [],
   compareData: Array<U & HasCompareId> = [],
@@ -10,6 +19,7 @@ export default function useColoredData<T, U>(
   sortOrder: Array<string>,
   skipFirstColor = false,
 ) {
+  // Fill will only be generated for compareData and comparationTags
   let comparationTagsWithFill = comparationTags
     .sort((a, b) => sortOrder.indexOf(a.id) - sortOrder.indexOf(b.id))
     .map((item, idx) => {

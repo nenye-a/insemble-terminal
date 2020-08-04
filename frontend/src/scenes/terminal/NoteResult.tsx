@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
+import { useParams } from 'react-router-dom';
 
 import { View, Text, Button, LoadingIndicator } from '../../core-ui';
 import { ErrorComponent } from '../../components';
@@ -20,10 +21,15 @@ type Props = {
   pinTableId?: string;
 };
 
+type Params = {
+  terminalId: string;
+};
+
 export default function NoteResult(props: Props) {
   let { readOnly, tableId, pinTableId } = props;
   let [isEditing, setIsEditing] = useState(false);
-  let { data, loading, error } = useQuery<GetNote, GetNoteVariables>(
+  let params = useParams<Params>();
+  let { data, loading, error, refetch } = useQuery<GetNote, GetNoteVariables>(
     GET_NOTE_DATA,
     {
       variables: {
@@ -32,9 +38,10 @@ export default function NoteResult(props: Props) {
     },
   );
 
-  let onClosePress = () => {
+  let closeEditMode = () => {
     setIsEditing(false);
   };
+
   return (
     <Container>
       <ResultTitle
@@ -44,14 +51,18 @@ export default function NoteResult(props: Props) {
         pinTableId={pinTableId}
         tableType={TableType.NOTE}
         canCompare={false}
-        {...(isEditing && { onClosePress })}
+        canExport={false}
+        {...(isEditing && { onClosePress: closeEditMode })}
       />
       {loading ? (
         <LoadingIndicator
           containerStyle={{ minHeight: 90, backgroundColor: WHITE }}
         />
       ) : error ? (
-        <ErrorComponent text={formatErrorMessage(error.message)} />
+        <ErrorComponent
+          text={formatErrorMessage(error.message)}
+          onRetry={refetch}
+        />
       ) : data ? (
         !isEditing ? (
           <NotesContainer>
@@ -76,6 +87,8 @@ export default function NoteResult(props: Props) {
               tableId={tableId}
               defaultTitle={data.note.title}
               defaultContent={data.note.content}
+              terminalId={params.terminalId}
+              onManageFormSuccessful={closeEditMode}
             />
           </NotesContainer>
         )

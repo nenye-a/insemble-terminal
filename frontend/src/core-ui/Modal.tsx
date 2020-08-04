@@ -37,6 +37,8 @@ export default function Modal({
   ...otherProps
 }: Props) {
   useEffect(() => {
+    // Handle so the scene under the modal
+    // cannot be scrolled when modal is open
     if (visible) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -53,6 +55,7 @@ export default function Modal({
       <Overlay
         style={overlayStyle}
         onClick={(e) => {
+          // Tap on outside modal content to dismiss
           e.stopPropagation();
           onClose && onClose();
         }}

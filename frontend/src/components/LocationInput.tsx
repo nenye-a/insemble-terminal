@@ -36,6 +36,7 @@ type Props = Omit<InputProps, 'onSubmit' | 'ref'> & {
   ref?: RefObject<HTMLInputElement> | null;
   onPlaceSelected?: (place: SelectedLocation) => void;
   containerStyle?: CSSProperties;
+  setFocus?: (focus: boolean) => void;
 };
 
 export default function LocationInput(props: Props) {
@@ -47,6 +48,7 @@ export default function LocationInput(props: Props) {
     containerStyle,
     disabled,
     defaultValue,
+    setFocus,
     ...otherProps
   } = props;
   let [inputValue, setInputValue] = useState('');
@@ -86,11 +88,18 @@ export default function LocationInput(props: Props) {
         selectedPlace.current = place;
         setInputValue(place?.formatted_address || '');
         submitHandler();
+        /**
+         * Set location input to unfocus after submit.
+         * But also check if there is place.formatted_address, if it's undefined
+         * focus will still on the location search bar.
+         */
+        place.formatted_address && setFocus && setFocus(false);
       });
       return () => {
         listener.remove();
       };
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [submitHandler, isLoading]);
 
   useEffect(() => {
@@ -105,6 +114,18 @@ export default function LocationInput(props: Props) {
       ref={inputRef}
       placeholder={placeholder}
       onSubmit={submitHandler}
+      onFocus={() => {
+        /**
+         * Set focus true if the cursor is in this input.
+         */
+        setFocus && setFocus(true);
+      }}
+      onBlur={() => {
+        /**
+         * Set focus false if the cursor is not in this input.
+         */
+        setFocus && setFocus(false);
+      }}
       label={label}
       containerStyle={{
         flex: 1,
@@ -135,8 +156,10 @@ export default function LocationInput(props: Props) {
         setInputValue(e.target.value);
       }}
       onKeyDown={(e) => {
+        // Handle if user press backspace/delete
         if (e.which === 8) {
           if (inputRef.current && selectedPlace.current) {
+            // Deleting the current input value if previously has already selected place
             inputRef.current.value = '';
           }
           onPlaceSelected && onPlaceSelected(null);

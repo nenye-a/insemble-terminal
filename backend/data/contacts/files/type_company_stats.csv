@@ -1,0 +1,17 @@
+,_id,count
+0,"['real estate services', 'owner/developer', 'retailer/tenant']",1
+1,['owner/developer'],773
+2,['hospitality industry'],6
+3,['tenant services'],2
+4,"['real estate services', 'retailer/tenant']",2
+5,"['retailer/tenant', 'owner/developer']",2
+6,"['tenant services', 'real estate services']",1
+7,"['owner/developer', 'property/shopping center management']",1
+8,['property/shopping center management'],41
+9,['real estate services'],469
+10,"['hospitality industry', 'retailer/tenant']",1
+11,"['real estate services', 'owner/developer']",5
+12,"['real estate services', 'tenant services']",1
+13,"['owner/developer', 'real estate services']",3
+14,['retailer/tenant'],1410
+15,"['property/shopping center management', 'owner/developer']",2

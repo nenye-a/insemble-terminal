@@ -7,6 +7,10 @@ let sharedTerminalResolver: FieldResolver<'Query', 'sharedTerminal'> = async (
   { sharedTerminalId },
   context: Context,
 ) => {
+  /**
+   * Endpoint for getting sharedTerminal data. Require sharedTerminalId.
+   * First we check if shared terminal exist or not.
+   */
   let sharedTerminal = await context.prisma.sharedTerminal.findOne({
     where: {
       id: sharedTerminalId,
@@ -18,12 +22,18 @@ let sharedTerminalResolver: FieldResolver<'Query', 'sharedTerminal'> = async (
   if (!sharedTerminal) {
     throw new Error('Shared terminal not found or expired.');
   }
+  /**
+   * Here if shared terminal expired, we also delete it from sharedTerminal.
+   */
   if (sharedTerminal.expireDate.getTime() < new Date().getTime()) {
     await context.prisma.sharedTerminal.delete({
       where: { id: sharedTerminal.id },
     });
     throw new Error('Shared terminal not found or expired.');
   }
+  /**
+   * And here we return the terminal of the sharedTerminal.
+   */
   return sharedTerminal.terminal;
 };
 

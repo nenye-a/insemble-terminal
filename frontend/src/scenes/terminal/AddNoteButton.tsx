@@ -16,17 +16,23 @@ export default function AddNoteButton() {
   let [isEditing, setIsEditing] = useState(false);
   let params = useParams<Params>();
 
+  let closeEditMode = () => {
+    setIsEditing(false);
+  };
+
   return isEditing ? (
     <View>
       <ResultTitle
         title="Note"
-        onClosePress={() => {
-          setIsEditing(false);
-        }}
+        onClosePress={closeEditMode}
         canCompare={false}
       />
       <NotesContainer>
-        <ManageNoteForm mode="add" terminalId={params.terminalId} />
+        <ManageNoteForm
+          mode="add"
+          terminalId={params.terminalId}
+          onManageFormSuccessful={closeEditMode}
+        />
       </NotesContainer>
     </View>
   ) : (

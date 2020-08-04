@@ -1,4 +1,7 @@
 export default function capitalize(sentence: string) {
+  /**
+   * This function is parsing the "CAPITALIZE_DATA" string into "Capitalize Data" string.
+   */
   let wordArr = sentence.split('_');
   let capitalizedText = '';
   for (let word of wordArr) {

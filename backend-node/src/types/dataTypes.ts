@@ -6,6 +6,10 @@ import {
   LocationTag,
 } from '@prisma/client';
 
+/**
+ * All Data types from python and self defined types
+ */
+
 export type PyPerformanceData = {
   name?: string;
   customerVolumeIndex?: number;

@@ -3,7 +3,7 @@ from rest_framework import status, generics, permissions, serializers
 from rest_framework.response import Response
 
 from .serializers import (SearchSerializer, OptionalSearchSerializer, PerformanceSerializer,
-                          OwnershipSerializer, PreProcessSerializer)
+                          OwnershipSerializer, BusinessSerializer)
 import datetime as dt
 import performancev2
 import utils
@@ -46,7 +46,7 @@ class PreProcessAPI(BasicAPI):
     Preprocess api path: api/preprocess
     """
 
-    serializer_class = PreProcessSerializer
+    serializer_class = BusinessSerializer
 
     def get(self, request, *args, **kwargs):
         """
@@ -67,10 +67,13 @@ class PreProcessAPI(BasicAPI):
         serializer.is_valid(raise_exception=True)
         params = serializer.validated_data
 
-        business_name = preprocess.preprocess(params['business'])
+        name = preprocess.preprocess(
+            params['params'],
+            params['businessType']
+        )
 
         return Response({
-            'business_name': business_name
+            'business_name': name
         })
 
 
@@ -237,6 +240,7 @@ class PerformanceAPI(BasicAPI):
             'data': data
         }
 
+        print(result)
         return Response(result, status=status.HTTP_200_OK)
 
 

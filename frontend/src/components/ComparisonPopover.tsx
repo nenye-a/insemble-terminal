@@ -1,4 +1,4 @@
-import React, { useEffect, useState, ComponentProps } from 'react';
+import React, { useEffect, useState, ComponentProps, useCallback } from 'react';
 import styled, { css } from 'styled-components';
 import { useMutation } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -12,6 +12,7 @@ import {
   LoadingIndicator,
   Button,
 } from '../core-ui';
+import { Popup } from '../components';
 import {
   DARK_TEXT_COLOR,
   THEME_COLOR,
@@ -19,6 +20,7 @@ import {
   COLORS,
   BLACK,
 } from '../constants/colors';
+import { FONT_WEIGHT_MEDIUM } from '../constants/theme';
 import {
   capitalize,
   generateRandomColor,
@@ -69,6 +71,7 @@ export default function ComparisonPopover(props: Props) {
   let alert = useAlert();
   let { isDesktop } = useViewport();
   let [tableId, setTableId] = useState('');
+  let [deleteAllPopupVisible, setDeleteAllPopupVisible] = useState(false);
   let [activeComparison, setActiveComparison] = useState<
     Array<ComparationTagWithFill>
   >(activeComparisonProp || []);
@@ -80,6 +83,10 @@ export default function ComparisonPopover(props: Props) {
       alert.show('Fail to update comparison. Please try again');
     },
     onCompleted: (data) => {
+      if (deleteAllPopupVisible) {
+        // Closing the popup on delete success
+        setDeleteAllPopupVisible(false);
+      }
       onUpdateComparisonCompleted(data);
     },
   });
@@ -95,6 +102,11 @@ export default function ComparisonPopover(props: Props) {
 
   let onUpdateComparisonCompleted = (updateData: UpdateComparison) => {
     let { tableId, comparationTags } = updateData.updateComparison;
+    /**
+     * Activity, map and performance starts the color from the second color
+     * because the first color (purple) has already used by the primary data (not compareData)
+     * as table row background, line color, or map pin color
+     */
     let usableColors =
       reviewTag === ReviewTag.ACTIVITY ||
       reviewTag === ReviewTag.MAP ||
@@ -138,6 +150,7 @@ export default function ComparisonPopover(props: Props) {
         fill: circleColor,
       };
     };
+    // callback to refetch the new result using the new tableId
     onTableIdChange && onTableIdChange(tableId);
     let newSortOrder: Array<string> = [];
     if (sortOrder && onSortOrderChange) {
@@ -150,11 +163,12 @@ export default function ComparisonPopover(props: Props) {
           return false;
         });
         if (newComparison.length === 1) {
+          // Adding new comparison on the last index
           newSortOrder = [...sortOrder, newComparison[0].id];
           onSortOrderChange(newSortOrder);
         }
       } else if (comparationTags.length < sortOrder.length) {
-        // remove comparison
+        // Remove comparison
         newSortOrder = sortOrder.filter((item) =>
           comparationTags.map((tag) => tag.id).includes(item),
         );
@@ -192,18 +206,82 @@ export default function ComparisonPopover(props: Props) {
     }
   };
 
-  let onDeleteAll = () => {
-    updateComparison({
-      variables: {
-        actionType: CompareActionType.DELETE_ALL,
-        tableId,
-        reviewTag,
-        pinId,
-      },
-      refetchQueries: refetchTerminalQueries,
-      awaitRefetchQueries: true,
-    });
-  };
+  let onDeleteAll = useCallback(() => {
+    if (terminalId) {
+      /**
+       * Handle if the user is in terminal scene.
+       * They need the terminalId to refetch the current terminal
+       * after the delete all comparison completed
+       */
+      updateComparison({
+        variables: {
+          actionType: CompareActionType.DELETE_ALL,
+          tableId,
+          reviewTag,
+          pinId,
+        },
+        refetchQueries: refetchTerminalQueries,
+        awaitRefetchQueries: true,
+      });
+    } else {
+      updateComparison({
+        variables: {
+          actionType: CompareActionType.DELETE_ALL,
+          tableId,
+          reviewTag,
+          pinId,
+        },
+      });
+    }
+  }, [
+    terminalId,
+    refetchTerminalQueries,
+    pinId,
+    reviewTag,
+    tableId,
+    updateComparison,
+  ]);
+
+  let onDelete = useCallback(
+    (compareId: string) => {
+      /**
+       * Handle if the user is in terminal scene.
+       * They need the terminalId to refetch the current terminal
+       * after the deleting comparison completed
+       */
+      if (terminalId) {
+        updateComparison({
+          variables: {
+            reviewTag,
+            comparationTagId: compareId,
+            tableId,
+            actionType: CompareActionType.DELETE,
+            pinId,
+          },
+          refetchQueries: refetchTerminalQueries,
+          awaitRefetchQueries: true,
+        });
+      } else {
+        updateComparison({
+          variables: {
+            reviewTag,
+            comparationTagId: compareId,
+            tableId,
+            actionType: CompareActionType.DELETE,
+            pinId,
+          },
+        });
+      }
+    },
+    [
+      pinId,
+      terminalId,
+      reviewTag,
+      tableId,
+      updateComparison,
+      refetchTerminalQueries,
+    ],
+  );
 
   useEffect(() => {
     if (!tableId) {
@@ -214,17 +292,33 @@ export default function ComparisonPopover(props: Props) {
 
   return (
     <Container isDesktop={isDesktop}>
+      <Popup
+        visible={deleteAllPopupVisible}
+        title="Remove All Comparisons"
+        bodyText="Do you want to remove all of your comparisons?"
+        buttons={[
+          { text: 'Yes', onPress: onDeleteAll },
+          {
+            text: 'No',
+            onPress: () => {
+              setDeleteAllPopupVisible(false);
+            },
+          },
+        ]}
+        loading={updateComparisonLoading}
+      />
       {activeComparison && activeComparison.length > 0 ? (
         <View>
           <TitleContainer>
             <Title isDesktop={isDesktop}>Active Comparison</Title>
-            {!isDesktop && (
-              <Button
-                text="Delete All"
-                mode="transparent"
-                onPress={onDeleteAll}
-              />
-            )}
+            <Button
+              text="Delete All"
+              mode="transparent"
+              onPress={() => {
+                setDeleteAllPopupVisible(true);
+              }}
+              style={{ paddingRight: isDesktop ? 38 : 9 }}
+            />
           </TitleContainer>
           <ScrollView isDesktop={isDesktop}>
             {activeComparison.map((comparison) => {
@@ -271,33 +365,9 @@ export default function ComparisonPopover(props: Props) {
                   )}
                   <CloseContainer
                     key={'del_' + comparison.id}
-                    onPress={() => {
-                      if (terminalId) {
-                        updateComparison({
-                          variables: {
-                            reviewTag,
-                            comparationTagId: comparison.id,
-                            tableId,
-                            actionType: CompareActionType.DELETE,
-                            pinId,
-                          },
-                          refetchQueries: refetchTerminalQueries,
-                          awaitRefetchQueries: true,
-                        });
-                      } else {
-                        updateComparison({
-                          variables: {
-                            reviewTag,
-                            comparationTagId: comparison.id,
-                            tableId,
-                            actionType: CompareActionType.DELETE,
-                            pinId,
-                          },
-                        });
-                      }
-                    }}
+                    onPress={() => onDelete(comparison.id)}
                   >
-                    <SvgRoundClose />
+                    <SvgRoundClose viewBox="0 0 20 20" width={20} height={20} />
                   </CloseContainer>
                 </Row>
               );
@@ -340,12 +410,9 @@ const Container = styled(Card)<ContainerProps>`
 
 const Title = styled(Text)<TextProps & WithViewport>`
   color: ${DARK_TEXT_COLOR};
+  font-weight: ${FONT_WEIGHT_MEDIUM};
   padding-bottom: 12px;
-  ${({ isDesktop }) =>
-    isDesktop &&
-    css`
-      padding: 0 34px;
-    `}
+  padding: ${({ isDesktop }) => (isDesktop ? '0 38px' : '0 4px')};
 `;
 
 const Row = styled(View)`
@@ -370,7 +437,7 @@ const ComparisonDivider = styled(Divider)`
   ${({ isDesktop }) =>
     isDesktop
       ? css`
-          margin: 28px 34px;
+          margin: 28px 38px;
         `
       : css`
           margin: 28px 8px;
@@ -391,7 +458,7 @@ const ScrollView = styled(View)<ViewProps & WithViewport>`
 `;
 
 const SearchbarContainer = styled(View)`
-  padding: 0 34px;
+  padding: 0 38px;
 `;
 
 const TitleContainer = styled(View)`

@@ -29,36 +29,37 @@ type Props = {
   readOnly?: boolean;
 };
 
-const POLL_INTERVAL = 5000;
-
 type State = {
-  openNewsId?: string;
-  background?: {
-    state?: {
-      openNewsId?: string;
-    };
-  };
+  // state that should be passed when navigating to results scene
   search?: SearchTag;
+
+  // state that should be passed when opening the news modal
   title?: string;
   source?: string;
   published?: string;
   link?: string;
+  background?: {
+    state?: State;
+  };
 };
 
 type Params = {
   openNewsId: string;
 };
+
+const POLL_INTERVAL = 5000;
+
 export default function NewsScene(props: Props) {
   let { readOnly } = props;
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
   let history = useHistory<State>();
   let { openNewsId } = useParams<Params>();
-
   let {
     data,
     loading: newsLoading,
     error,
+    refetch,
     startPolling,
     stopPolling,
   } = useQuery<GetOpenNewsData, GetOpenNewsDataVariables>(GET_OPEN_NEWS_DATA, {
@@ -69,7 +70,7 @@ export default function NewsScene(props: Props) {
     onCompleted: (data) => {
       if (data?.openNews.firstArticle) {
         let { title, source, published, link } = data.openNews.firstArticle;
-        history.push(`/news/${openNewsId}/news/main`, {
+        history.push(`/news/${openNewsId}/main`, {
           title,
           source,
           published,
@@ -143,6 +144,7 @@ export default function NewsScene(props: Props) {
               text={formatErrorMessage(
                 error?.message || data?.openNews.error || '',
               )}
+              onRetry={refetch}
             />
           ) : !loading &&
             data?.openNews.data &&
@@ -182,5 +184,4 @@ export default function NewsScene(props: Props) {
 const Container = styled(View)<ViewProps & WithViewport>`
   padding: ${({ isDesktop }) => (isDesktop ? `20px 15%` : `20px 0`)};
   background-color: ${BACKGROUND_COLOR};
-  min-height: 90vh;
 `;

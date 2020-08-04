@@ -13,6 +13,9 @@ export let OpenNews = objectType({
     t.field('firstArticle', {
       type: 'Article',
       resolve: async ({ id }) => {
+        /**
+         * This resolve the firstArticle JSON string into Object FirstArticle.
+         */
         let openNews = await prisma.openNews.findOne({
           where: { id },
         });
@@ -27,6 +30,9 @@ export let OpenNews = objectType({
       type: 'OpenNewsData',
       list: true,
       resolve: async ({ id }) => {
+        /**
+         * This resolve the openNews.data JSON string into array of Object OpenNewsData.
+         */
         let openNews = await prisma.openNews.findOne({
           where: { id },
         });

@@ -146,6 +146,15 @@ model UserRegisterVerification {
   tokenQuery String
 }
 
+model UserResetPasswordVerification {
+  id         String     @default(cuid()) @id
+  email      String
+  user       User
+  verified   Boolean    @default(false)
+  tokenEmail String
+  tokenQuery String
+}
+
 model UserEmailVerification {
   id         String  @default(cuid()) @id
   email      String

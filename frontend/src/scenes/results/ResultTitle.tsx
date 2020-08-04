@@ -4,6 +4,7 @@ import Popover from 'react-tiny-popover';
 import { useMutation } from '@apollo/react-hooks';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAlert } from 'react-alert';
+import { CSVLink } from 'react-csv';
 
 import {
   View,
@@ -25,19 +26,13 @@ import {
 } from '../../constants/theme';
 import { useAuth } from '../../context';
 import { getResultTitle, useViewport } from '../../helpers';
-import { ComparationTagWithFill } from '../../types/types';
+import { ComparationTagWithFill, CSVHeader } from '../../types/types';
 import {
   ReviewTag,
   LocationTagType,
-  CompareActionType,
   TableType,
   BusinessType,
 } from '../../generated/globalTypes';
-import { UPDATE_COMPARISON } from '../../graphql/queries/server/comparison';
-import {
-  UpdateComparison,
-  UpdateComparisonVariables,
-} from '../../generated/UpdateComparison';
 import {
   REMOVE_PINNED_TABLE,
   GET_TERMINAL,
@@ -48,12 +43,24 @@ import {
   RemovePinnedTableVariables,
 } from '../../generated/RemovePinnedTable';
 import SvgPin from '../../components/icons/pin';
-import SvgRoundClose from '../../components/icons/round-close';
 import SvgClose from '../../components/icons/close';
 import SvgRoundAdd from '../../components/icons/round-add';
+import SvgExportCsv from '../../components/icons/export-csv';
 import InfoboxPopover from '../../components/InfoboxPopover';
 import AddComparisonButton from '../../components/AddComparisonButton';
 import TripleDotsButton from '../../components/TripleDotsButton';
+import { MESSAGE } from '../../constants/message';
+
+/**
+ * title: result title
+ * noData?: whether result has data or not
+ * onTableIdChange?: callback executed to refetch result when getting new tableId
+ * canCompare?: whether result can be compared or not
+ * infoboxContent?: popover content which will be placed next to the result title
+ * sortOrder?: comparison tag sorting rule
+ * onSortOrderChange?: callback executed to reorder the sort rule
+ * zoomIcon?: determine which icon should be zoomed. Use for demo purpose
+ */
 
 type Props = {
   title: string;
@@ -77,6 +84,9 @@ type Props = {
   demo?: boolean;
   onClosePress?: () => void;
   zoomIcon?: 'pin' | 'compare';
+  canExport?: boolean;
+  csvData?: Array<object>;
+  csvHeader?: Array<CSVHeader>;
 };
 
 type Params = {
@@ -105,6 +115,9 @@ export default function ResultTitle(props: Props) {
     onClosePress,
     demo,
     zoomIcon,
+    csvData = [],
+    csvHeader,
+    canExport = true,
   } = props;
   let alert = useAlert();
   let isTerminalScene = location.pathname.includes('terminal');
@@ -113,27 +126,7 @@ export default function ResultTitle(props: Props) {
   let [infoPopoverOpen, setInfoPopoverOpen] = useState(false);
   let { isAuthenticated } = useAuth();
   let { isDesktop } = useViewport();
-  let refetchTerminalQueries = params.terminalId
-    ? [
-        {
-          query: GET_TERMINAL,
-          variables: {
-            terminalId: params.terminalId || '',
-          },
-          skip: params.terminalId,
-        },
-      ]
-    : [];
 
-  let [updateComparison, { loading }] = useMutation<
-    UpdateComparison,
-    UpdateComparisonVariables
-  >(UPDATE_COMPARISON, {
-    onError: () => {},
-    onCompleted: (data) => {
-      onTableIdChange && onTableIdChange(data.updateComparison.tableId);
-    },
-  });
   let [removePinnedTable, { loading: removePinnedTableLoading }] = useMutation<
     RemovePinnedTable,
     RemovePinnedTableVariables
@@ -180,11 +173,11 @@ export default function ResultTitle(props: Props) {
 
   let resultTitle = getResultTitle({ reviewTag, businessTag, locationTag });
   let showAuthAlert = () => {
-    alert.show('You need to sign in to access this feature');
+    alert.show(MESSAGE.LoginNeeded);
   };
 
   let showReadOnlyAlert = () => {
-    alert.show('This is a read-only page');
+    alert.show(MESSAGE.ReadOnly);
   };
 
   let removePin = () => {
@@ -208,7 +201,8 @@ export default function ResultTitle(props: Props) {
   };
   return (
     <Container
-      isDesktop={isDesktop}
+      // don't add padding horizontal if it's demo mode
+      isDesktop={isDesktop || demo}
       {...(zoomIcon && { style: { alignItems: 'baseline' } })}
     >
       <Row flex>
@@ -241,36 +235,9 @@ export default function ResultTitle(props: Props) {
         {...(zoomIcon && { style: { alignItems: 'flex-end' } })}
       >
         {isDesktop && formattedCompareText && !zoomIcon ? (
-          loading ? (
-            <LoadingIndicator />
-          ) : (
-            <>
-              <CompareText>{formattedCompareText}</CompareText>
-              {!readOnly && (
-                <Touchable
-                  disabled={demo}
-                  onPress={() => {
-                    if (reviewTag && tableId) {
-                      updateComparison({
-                        variables: {
-                          actionType: CompareActionType.DELETE_ALL,
-                          tableId,
-                          reviewTag,
-                          pinId: pinTableId,
-                        },
-                        awaitRefetchQueries: true,
-                        refetchQueries: refetchTerminalQueries,
-                      });
-                    }
-                  }}
-                >
-                  <SvgRoundClose />
-                </Touchable>
-              )}
-            </>
-          )
+          <CompareText>{formattedCompareText}</CompareText>
         ) : null}
-        {(isDesktop && !readOnly) || onClosePress ? (
+        {(isDesktop && !readOnly) || onClosePress || demo ? (
           <>
             {canCompare && reviewTag && tableId ? (
               <AddComparisonButton
@@ -298,6 +265,29 @@ export default function ResultTitle(props: Props) {
                 })}
               />
             ) : null}
+            {((canExport && csvData) || demo) && (
+              <CSVLink
+                data={csvData}
+                headers={csvHeader}
+                filename={`${resultTitle}.csv`}
+                style={{ cursor: noData || demo ? 'default' : 'pointer' }}
+                onClick={() => {
+                  if (demo || noData) {
+                    return false;
+                  }
+                }}
+              >
+                <Touchable disabled={noData || demo}>
+                  <SvgExportCsv
+                    {...((!!zoomIcon || noData) && {
+                      style: {
+                        color: DISABLED_TEXT_COLOR,
+                      },
+                    })}
+                  />
+                </Touchable>
+              </CSVLink>
+            )}
             {isTerminalScene && !demo ? (
               removePinnedTableLoading ? (
                 <LoadingIndicator />
@@ -311,6 +301,7 @@ export default function ResultTitle(props: Props) {
                     }
                   }}
                   disabled={noData || demo}
+                  style={{ marginLeft: 8 }}
                 >
                   <SvgClose {...(noData && { fill: DISABLED_TEXT_COLOR })} />
                 </Touchable>
@@ -372,6 +363,11 @@ export default function ResultTitle(props: Props) {
             removePinFn={removePin}
             removePinLoading={removePinnedTableLoading}
             canCompare={canCompare}
+            // csv props
+            canExport={canExport}
+            csvData={csvData}
+            csvHeader={csvHeader}
+            filename={resultTitle}
           />
         ) : null}
       </Row>

@@ -18,11 +18,17 @@ export let Tenant = objectType({
     t.field('license', {
       type: 'Boolean',
       resolve: async ({ id }) => {
+        /**
+         * This for checking license if it's exist or not.
+         */
         let user = await prisma.user.findOne({
           where: { id },
           include: { license: true },
         });
         if (user?.license || user?.role === 'ADMIN') {
+          /**
+           * This part is if the user ADMIN then they won't to need any license.
+           */
           return true;
         }
         return false;

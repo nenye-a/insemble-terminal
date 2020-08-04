@@ -1,4 +1,4 @@
-import React, { useEffect, useState, CSSProperties } from 'react';
+import React, { useEffect, useState, useMemo, CSSProperties } from 'react';
 import styled from 'styled-components';
 import { useQuery } from '@apollo/react-hooks';
 import { useAlert } from 'react-alert';
@@ -116,6 +116,37 @@ export default function PerformanceResult(props: Props) {
     hasAsterisk: !!datum.numNearby && datum.numNearby >= 3,
   }));
 
+  let csvData = useMemo(
+    () =>
+      coloredData.map(({ // destructure the exported columns
+        name, customerVolumeIndex, localRetailIndex, localCategoryIndex, nationalIndex, avgRating, numReview, numLocation }) => ({
+        name,
+        customerVolumeIndex: customerVolumeIndex
+          ? customerVolumeIndex / 100
+          : null,
+        localRetailIndex: localRetailIndex ? localRetailIndex / 100 : null,
+        localCategoryIndex: localCategoryIndex
+          ? localCategoryIndex / 100
+          : null,
+        nationalIndex: nationalIndex ? nationalIndex / 100 : null,
+        avgRating,
+        numReview,
+        numLocation,
+      })),
+    [coloredData],
+  );
+
+  let csvHeaders = [
+    { label: headerTitle || 'Company', key: 'name' },
+    { label: 'Volume IDX', key: 'customerVolumeIndex' },
+    { label: 'Retail IDX', key: 'localRetailIndex' },
+    { label: 'Category IDX', key: 'localCategoryIndex' },
+    { label: 'Brand IDX', key: 'nationalIndex' },
+    { label: 'Rating', key: 'avgRating' },
+    { label: '# Reviews', key: 'numReview' },
+    { label: '# Locations', key: 'numLocation' },
+  ];
+
   let noData =
     !data?.performanceTable.table?.data ||
     data.performanceTable.table?.data.length === 0;
@@ -132,18 +163,26 @@ export default function PerformanceResult(props: Props) {
       stopPolling();
       if (data.performanceTable.table) {
         let { compareData, comparationTags, id } = data.performanceTable.table;
+        /**
+         * If compareData and compareTag sizes are not the same,
+         * it is possible that one of the compare data failed to fetch
+         */
         if (compareData.length !== comparationTags.length) {
+          // Filter function to find which compare data is missing
           let notIncludedFilterFn = (tag: ComparationTags) =>
             !compareData.map((item) => item.compareId).includes(tag.id);
+          // List of business/location which doesn't have compare data
           let notIncluded = comparationTags
             .filter(notIncludedFilterFn)
             .map(
               (item) => item.businessTag?.params || item.locationTag?.params,
             );
+          // List of compareId which doesn't have data
           let notIncludedTagId = comparationTags
             .filter(notIncludedFilterFn)
             .map((item) => item.id);
           if (notIncluded.length > 0) {
+            // Remove compareIds which doesn't have data from sortOrder list
             let newSortOrder = sortOrder.filter((item) => {
               return !notIncludedTagId.includes(item);
             });
@@ -153,6 +192,7 @@ export default function PerformanceResult(props: Props) {
                 ', ',
               )}. Please check your search and try again`,
             );
+            // Fetch previous table if error
             if (prevTableId) {
               refetch({
                 tableId: prevTableId,
@@ -214,6 +254,8 @@ export default function PerformanceResult(props: Props) {
         onSortOrderChange={(newSortOrder: Array<string>) =>
           setSortOrder(newSortOrder)
         }
+        csvData={csvData}
+        csvHeader={csvHeaders}
       />
       <View>
         {loading && <LoadingIndicator mode="overlap" />}
@@ -224,6 +266,7 @@ export default function PerformanceResult(props: Props) {
             text={formatErrorMessage(
               error?.message || data?.performanceTable.error || '',
             )}
+            onRetry={refetch}
           />
         ) : (!loading &&
             data?.performanceTable.table &&

@@ -6,6 +6,9 @@ export let editTerminalResolver: FieldResolver<
   'Mutation',
   'editTerminal'
 > = async (_, { terminalId, name, description }, context: Context) => {
+  /**
+   * Endpoint for editing terminal. Require terminalId.
+   */
   if (!name && !description) {
     throw new Error('Please at least input one field.');
   }
@@ -19,6 +22,11 @@ export let editTerminalResolver: FieldResolver<
     throw new Error('User not found!');
   }
 
+  /**
+   * Here we check the terminal user select.
+   * The checks are: if exist? if terminal have user?
+   * if terminal user are the same who use this endpoint?
+   */
   let selectedTerminal = await context.prisma.terminal.findOne({
     where: {
       id: terminalId,
@@ -38,6 +46,9 @@ export let editTerminalResolver: FieldResolver<
     throw new Error('This is not your terminal.');
   }
 
+  /**
+   * If all check pass then we update the terminal with name and description input.
+   */
   selectedTerminal = await context.prisma.terminal.update({
     where: {
       id: selectedTerminal.id,

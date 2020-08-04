@@ -47,6 +47,7 @@ export default function AddComparisonButton(props: Props) {
   let { isAuthenticated } = useAuth();
   let alert = useAlert();
 
+  // Popover content
   let comparisonPopover = (
     <ComparisonPopover
       reviewTag={reviewTag}

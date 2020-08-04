@@ -25,8 +25,5 @@
     "trailingComma": "all",
     "arrowParens": "always"
   },
-  "private": true,
-  "dependencies": {
-    "react-ga": "^3.0.0"
-  }
+  "private": true
 }

@@ -12,6 +12,9 @@ export let MapData = objectType({
     t.field('coverageData', {
       type: 'CoverageBusiness',
       resolve: async ({ id }) => {
+        /**
+         * This resolve the coverageData JSON string into array of Object BusinessData.
+         */
         let mapData = await prisma.mapData.findOne({
           where: { id },
         });
