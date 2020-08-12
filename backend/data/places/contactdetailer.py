@@ -10,8 +10,8 @@ import utils
 import time
 
 TIME_ZONE_OFFSET = -dt.timedelta(hours=7)
-TEMP_DB = utils.SYSTEM_MONGO.get_collection("terminal.temp_places")
-# TEMP_DB.create_index([("last_update", 1)])
+CONTACT_TEMP_DB = utils.SYSTEM_MONGO.get_collection("terminal.contact_temp_places")
+CONTACT_PROSPECTS = utils.SYSTEM_MONGO.get_collection('terminal.payvance_airkitchen')
 
 
 def google_detailer(batch_size=100, wait=True, additional_query=None):
@@ -34,7 +34,7 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
             pipeline.append({'$match': query})
         pipeline.append({'$sample': size})
 
-        places = list(TEMP_DB.aggregate(pipeline))
+        places = list(CONTACT_TEMP_DB.aggregate(pipeline))
         id_list = [place['_id'] for place in places]
 
         if len(places) == 0:
@@ -80,7 +80,7 @@ def google_detailer(batch_size=100, wait=True, additional_query=None):
                   update_time=dt.datetime.now(tz=dt.timezone(TIME_ZONE_OFFSET))
               ))
 
-        TEMP_DB.delete_many({
+        CONTACT_TEMP_DB.delete_many({
             '_id': {"$in": id_list}
         })
 
@@ -94,8 +94,8 @@ def saved_update(query, update, place_version):
     update: mongodb update document.
     """
 
-    table = utils.DB_TERMINAL_PLACES
-    history = utils.DB_PLACES_HISTORY
+    table = CONTACT_PROSPECTS
+    history = utils.SYSTEM_MONGO.get_collection('terminal.pyvance_airkitchen_history')
     update_time = dt.datetime.utcnow()
 
     update['$set'] = dict(update.get('$set', {}),
@@ -164,11 +164,11 @@ def update_last_update():
 
 def setup(query={}):
 
-    pipeline = [{'$merge': "temp_places"}]
+    pipeline = [{'$merge': "contact_temp_places"}]
     if query:
         pipeline.insert(0, {'$match': query})
 
-    utils.DB_TERMINAL_PLACES.aggregate(pipeline)
+    CONTACT_PROSPECTS.aggregate(pipeline)
 
 
 def add_city_state(scope='all'):
@@ -245,12 +245,7 @@ def apply_county_tags():
 
 if __name__ == "__main__":
 
-    # setup({"name": "Ross Dress for Less",
-    #        "$or": [
-    #            {"activity_volume": -1},
-    #            {"activity_volume": None}
-    #        ]}
-    #       )
-    # google_detailer(wait=False)
+    # setup()
+    google_detailer(wait=False)
     # check_recency()
     # update_last_update()
