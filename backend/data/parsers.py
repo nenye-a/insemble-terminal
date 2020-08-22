@@ -83,14 +83,14 @@ def google_detail_parser(response):
     except Exception:
         num_reviews = None
 
-    PRICE_LOCATOR_RX = r'class="YhemCb"[\w\s\,\-\=\"]+>\$+'
+    PRICE_LOCATOR_RX = r'span>\$+'
     PRICE_RX = r'\$+'
     try:
         price = re.search(PRICE_RX, re.search(PRICE_LOCATOR_RX, stew).group()).group()
     except BaseException:
         price = None
 
-    TYPE_LOCATOR_RX = r'class="YhemCb">[\w\s\,\-]+<\/span>'
+    TYPE_LOCATOR_RX = r'class="YhemCb"><span>[\w\s\,\-]+<\/span>'
     TYPE_NARROW_RX = r'>[\w\s\,\-]+<'
     TYPE_RX = r'[\w\s\,\-]+'
     try:
@@ -135,9 +135,24 @@ def google_detail_parser(response):
                 re.search(OPERATIONS_RX, re.search(
                     OPERATIONS_NARROW_RX, located_rx).group()).group()[1:-1]
                 for located_rx in re.findall(OPERATIONS_LOCATOR_RX, stew)]
-            operations = {"dine_in": operations_options[0],
-                          "takeout": operations_options[1],
-                          "delivery": operations_options[2]}
+            if len(operations_options) == 3:
+                operations = {"dine_in": operations_options[0],
+                              "takeout": operations_options[1],
+                              "delivery": operations_options[2]}
+            elif len(operations_options) == 1 and "delivery" in operations_options[0].lower():
+                operations = {"dine_in": None,
+                              "takeout": None,
+                              "delivery": operations_options[0]}
+            elif len(operations_options) == 1 and "takeout" in operations_options[0].lower():
+                operations = {"dine_in": None,
+                              "takeout": operations_options[0],
+                              "delivery": None}
+            elif len(operations_options) == 1 and "dine" in operations_options[0].lower():
+                operations = {"dine_in": operations_options[0],
+                              "takeout": None,
+                              "delivery": None}
+            else:
+                operations = None
         except Exception:
             operations = None
 
