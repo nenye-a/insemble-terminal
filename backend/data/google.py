@@ -6,6 +6,7 @@ import utils
 import numpy as np
 import matplotlib.pyplot as plt
 from decouple import config
+from pprint import pprint
 
 from scrape.scraper import GenericScraper
 from parsers import google_detail_parser, google_news_parser, google_company_parser
@@ -639,20 +640,23 @@ if __name__ == "__main__":
                  {'name': "Muss & Turner's", 'address': '1675 Cumberland Pkwy SE Suite 309, Smyrna, GA 30080'}]
 
     def get_google_details_test():
-        # name = "Atlanta Breakfast Club"
-        # address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
-        # print(get_google_details(name, address))
+        ##
+        ## USE AS PREFLIGHT FOR GOOGLE SCRAPE
+        ##
+        name = "Atlanta Breakfast Club"
+        address = "249 Ivan Allen Jr Blvd NW, Atlanta, GA 30313, United States"
+        pprint(get_google_details(name, address))
         # print(get_google_details(name, address, 'address'))
         # print(get_google_details(name, address, 'address,name,rating,activity'))
-        # name = "Spitz little tokyo"
-        # address = "371 E 2nd st, los angeles"
-        # print(get_google_details(name, address))
-        # name = "Publix Super Market at Sugarloaf Crossing"
-        # address = "4850 Sugarloaf Pkwy, Lawrenceville, GA 30044"
-        # print(get_google_details(name, address))
+        name = "Spitz little tokyo"
+        address = "371 E 2nd st, los angeles"
+        pprint(get_google_details(name, address))
+        name = "Publix Super Market at Sugarloaf Crossing"
+        address = "4850 Sugarloaf Pkwy, Lawrenceville, GA 30044"
+        pprint(get_google_details(name, address))
         name = "7-Eleven"
         address = "200 S Los Angeles St, Los Angeles, CA 90012"
-        print(get_google_details(name, address))
+        pprint(get_google_details(name, address))
 
     def get_nearby_test():
         venue_type = 'restaurants'
