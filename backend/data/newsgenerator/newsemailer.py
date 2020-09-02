@@ -9,7 +9,7 @@ from emailer import send_email
 
 
 def email_report(to_email, header_text, linear_entries, grid_entries=None,
-                 custom_graph_url=None, statistics=[], update=False):
+                 custom_graph_url=None, statistics=[], update=None):
 
     # graph_url = trend_analyzer.generate_operating_graph()['plot_url']
     # graph_url = graph_url + '.png' if '.png' not in graph_url else graph_url  # add .png to links if not in the link
