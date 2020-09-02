@@ -346,9 +346,9 @@ def generate_email_html(header_html, entries_html, graph_html, stat_html, update
 
     update = str(update)
 
-    if update.lower() == 'Terminal':
+    if update.lower() == 'terminal':
         template = '/templates/base-update.html'
-    elif update.lower() == 'AirKitchen':
+    elif update.lower() == 'airkitchen':
         template = '/templates/base-airkitchen-update.html'
     else:
         template = '/templates/base.html'
