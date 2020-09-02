@@ -34,7 +34,8 @@ def linear_news_entry(title="", description="", photo="#", link="#", post_date="
     """
 
     # photo_styling = "width: 100%; max-width: 600px; height: auto; margin: auto; display: block;"
-    description = description[:127] + "..." if len(description) > 130 else description  # truncate long descriptions
+    # truncate long descriptions
+    description = description[:127] + "..." if len(description) > 130 else description
     doc, tag, text = Doc().tagtext()
 
     with tag('tr'):
@@ -94,7 +95,8 @@ def double_news_entry(titles=("", ""), descriptions=("", ""), links=("#", "#"), 
     old_descriptions = descriptions
     descriptions = []
     for description in old_descriptions:
-        description = description[:87] + "..." if len(description) > 90 else description  # truncate long descriptions
+        # truncate long descriptions
+        description = description[:87] + "..." if len(description) > 90 else description
         descriptions.append(description)
     descriptions = tuple(descriptions)
 
@@ -332,7 +334,8 @@ def generate_stat_html(list_ratios=None):
             is_percentage1=stat_list[0]['is_percentage'] if 'is_percentage' in stat_list[0] else True,
             ratio2=stat_list[1]['stat'] if len(stat_list) > 1 else None,
             ratio_text2=stat_list[1]['stat_text'] if len(stat_list) > 1 else None,
-            is_percentage2=stat_list[1]['is_percentage'] if len(stat_list) > 1 and 'is_percentage' in stat_list[1] else True
+            is_percentage2=stat_list[1]['is_percentage'] if len(
+                stat_list) > 1 and 'is_percentage' in stat_list[1] else True
         )
 
     return stat_html
@@ -341,7 +344,15 @@ def generate_stat_html(list_ratios=None):
 def generate_email_html(header_html, entries_html, graph_html, stat_html, update):
     """Provided requisite component emails, will return complete html, and store a generated file for debugging"""
 
-    template = '/templates/base-update.html' if update else '/templates/base.html'
+    update = str(update)
+
+    if update.lower() == 'Terminal':
+        template = '/templates/base-update.html'
+    elif update.lower() == 'AirKitchen':
+        template = '/templates/base-airkitchen-update.html'
+    else:
+        template = '/templates/base.html'
+
     with open(THIS_DIR + template, 'r') as base_html_file:
         base_html = ""
         for line in base_html_file:
@@ -357,7 +368,7 @@ def generate_email_html(header_html, entries_html, graph_html, stat_html, update
     return base_html
 
 
-def generate_email_report_html(header_text, linear_entries=None, grid_entries=None, graph_urls=None, stats=[], update=False):
+def generate_email_report_html(header_text, linear_entries=None, grid_entries=None, graph_urls=None, stats=[], update=None):
     """
     Provided details to build news email, will generate all the html required to send.
 

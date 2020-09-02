@@ -247,7 +247,7 @@ class NewsManager():
 
             print('Links for {} ({}) have been converted.'.format(city['name'], city['_id']))
 
-    def email(self, enforce_conversion=True, update=False):
+    def email(self, enforce_conversion=True, update=None):
         """
         Emails all the subscribed folks in the list with generated emails.
         """
@@ -300,7 +300,7 @@ class NewsManager():
 
             print("{}: News emailed to {}".format(self.name, email))
 
-    def email_async(self, enforce_conversion=True, update=False):
+    def email_async(self, enforce_conversion=True, update=None):
         """
         Emails all the subscribed folks in the list with generated emails.
         """
@@ -741,7 +741,7 @@ if __name__ == "__main__":
         'Official-8/19', national_news=False)
     # my_generator.generate()
     # my_generator.convert_links()
-    my_generator.email(update=False, enforce_conversion=False)
+    my_generator.email(enforce_conversion=False)
 
     # print(my_generator.collection.count_documents({
     #     'data_type': 'contact',
