@@ -38,6 +38,7 @@ update_activity()  # reflect activity updates
 update_brand_volume()  # udpate brand activity
 
 # In updatepipeline.py
-setup()  # only do this once (same as avoce bove)
+setup()  # only do this once (same as above)
 proximity_update('volume', wait=False)
+merge_update() # to reflect the update
 ```

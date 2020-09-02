@@ -195,5 +195,9 @@ def update_brand_volume():
 
 
 if __name__ == "__main__":
-
-    update_brand_volume()
+    revise_activity()
+    print("Completed Revising")
+    update_activity()  # reflect activity updates
+    print("Completed Update to Activity")
+    update_brand_volume()  # udpate brand activity
+    print("Completed Update to Brand Activity")
