@@ -738,7 +738,7 @@ def date_converter(o):
 if __name__ == "__main__":
 
     my_generator = NewsManager(
-        'Official-9/2', national_news=False)
+        'Official-9/9', national_news=False)
     # my_generator.generate()
     # my_generator.convert_links()
     # my_generator.email(enforce_conversion=False)
