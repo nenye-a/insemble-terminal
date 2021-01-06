@@ -20,7 +20,7 @@
   "dependencies": {
     "@prisma/client": "2.0.0-preview021",
     "@sendgrid/mail": "^6.5.3",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bcrypt": "^3.0.8",
     "dotenv": "^8.2.0",
     "ejs": "^3.0.1",
