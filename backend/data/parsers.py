@@ -83,14 +83,15 @@ def google_detail_parser(response):
     except Exception:
         num_reviews = None
 
-    PRICE_LOCATOR_RX = r'span>\$+'
+    PRICE_LOCATOR_RX = r'>\$+'
     PRICE_RX = r'\$+'
     try:
         price = re.search(PRICE_RX, re.search(PRICE_LOCATOR_RX, stew).group()).group()
     except BaseException:
         price = None
 
-    TYPE_LOCATOR_RX = r'class="YhemCb"><span>[\w\s\,\-]+<\/span>'
+    TYPE_LOCATOR_RX = r'class="YhemCb">[\w\s\,\-]+<\/span>'
+    # TYPE_LOCATOR_RX = r'class="YhemCb"><span>[\w\s\,\-]+<\/span>'
     TYPE_NARROW_RX = r'>[\w\s\,\-]+<'
     TYPE_RX = r'[\w\s\,\-]+'
     try:
@@ -172,9 +173,13 @@ def google_detail_parser(response):
     except Exception:
         hours = None
 
-    MENU_LOCATOR_RX = r'class="jSC49b">Menu:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    MENU_LOCATOR_RX = r'Menu(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/\@\\])|(\>)|(<\/b>)|(<a ))+'
     MENU_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
     MENU_RX = r'"[\'"]?([^\'" >]+)"'
+
+    # MENU_LOCATOR_RX = r'class="jSC49b">Menu:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    # MENU_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    # MENU_RX = r'"[\'"]?([^\'" >]+)"'
     try:
         menu_link = re.search(MENU_RX, re.search(MENU_NARROW_RX, re.search(
             MENU_LOCATOR_RX, stew).group()).group()).group()[1:-1]
@@ -195,13 +200,26 @@ def google_detail_parser(response):
         except Exception:
             phone = None
 
-    ORDERING_LOCATOR_RX = r'class="jSC49b">Order:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    ORDERING_LOCATOR_RX = r'<a class="xFAlBc" href=(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/])|(\>))+'
     ORDERING_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    ORDERING_URL_NARROW_RX = r'>\w+.\w+'
     ORDERING_RX = r'"[\'"]?([^\'" >]+)"'
+    ORDERING_URL_RX = r'\w+.\w+'
+
+    # ORDERING_LOCATOR_RX = r'class="jSC49b">Order:<\/span> <a class="fl" href="[\'"]?([^\'" >]+)"'
+    # ORDERING_NARROW_RX = r'href="[\'"]?([^\'" >]+)"'
+    # ORDERING_RX = r'"[\'"]?([^\'" >]+)"'
     try:
-        online_ordering_platforms = re.search(ORDERING_RX, re.search(ORDERING_NARROW_RX,
-                                                                     re.search(ORDERING_LOCATOR_RX,
-                                                                               stew).group()).group()).group()[1:-1]
+        ordering_locators = [x.group() for x in re.finditer(ORDERING_LOCATOR_RX, stew)]
+
+        online_ordering_platforms = {}
+        for locator in ordering_locators:
+            platform = re.search(ORDERING_URL_RX, re.search(ORDERING_URL_NARROW_RX, locator).group()).group()
+            platform_link = re.search(ORDERING_RX, re.search(ORDERING_NARROW_RX, locator).group()).group()[1:-1]
+            online_ordering_platforms[platform] = platform_link
+        # online_ordering_platforms = re.search(ORDERING_RX, re.search(ORDERING_NARROW_RX,
+        #                                                              re.search(ORDERING_LOCATOR_RX,
+        #                                                                        stew).group()).group()).group()[1:-1]
     except Exception:
         online_ordering_platforms = None
 
@@ -222,15 +240,25 @@ def google_detail_parser(response):
     except Exception:
         other_platform_ratings = None
 
-    SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
-    SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
-    SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    SELF_DESC_LOCATOR_RX = r'local:merchant_description(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/\@\\\’\ö\!])|(\>)|(<c-wiz)|(<div)|(<\/div)|(<span)|(<\/span)|(<svg)|(<\/svg)|(<path))+'
+    SELF_DESC_NARROW_RX = r'<div>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    SELF_DESC_RX = r'>[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+
+    # SELF_DESC_LOCATOR_RX = r'jsname="q871id"[\w\-\s\"\=\:]+>\s+<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    # SELF_DESC_NARROW_RX = r'<div>\s+"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
+    # SELF_DESC_RX = r'"[\w\-\s\"\=\:\&\;\,\.\+\\\(\)\'\!\’\*\@\#\$\%\|]+'
     try:
         self_description = re.search(SELF_DESC_RX, re.search(SELF_DESC_NARROW_RX,
                                                              re.search(SELF_DESC_LOCATOR_RX,
                                                                        stew).group()).group()).group()[1:-1]
     except Exception:
-        self_description = None
+        try:
+            SELF_DESC_LOCATOR_RX_2 = r'data-long-text=(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/\@\\\’\ö\!]))+'
+            SELF_DESC_NARROW_RX_2 = r'=(([\s\w\=\"\;\:\-\.\?\&\%\,\(\)\—\|\+\[\]\*\#\'\$\/\@\\\’\ö\!]))+data-expanded'
+            self_description = re.search(SELF_DESC_NARROW_RX_2, re.search(SELF_DESC_LOCATOR_RX_2, stew).group()).group()[2:-14]
+
+        except  Exception:
+            self_description = None
 
     try:
         # find the 18, 20, 22 or 24 hour activity distribution,depending on which is present
@@ -259,7 +287,7 @@ def google_detail_parser(response):
         "hours": hours,
         "menu_link": menu_link,
         "phone": phone,
-        "online_ordering_platforms": online_ordering_platforms,  # TODO: edit so it gets more than one
+        "online_ordering_platforms": online_ordering_platforms,
         "events": None,
         "other_platform_ratings": other_platform_ratings,
         "top_review_comments": None,  # TODO: get last 10 comments w/ timestamps
