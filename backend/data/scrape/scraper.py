@@ -50,6 +50,7 @@ class GenericScraper(object):
     def get_header(self, header=None):
         my_header = {
             # 'User-Agent': random.choice(self.user_agents)
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.128 Safari/537.36'
         }
         if header:
             my_header.update(my_header)
