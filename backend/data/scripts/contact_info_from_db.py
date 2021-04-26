@@ -78,6 +78,19 @@ if __name__ == "__main__":
         pd.DataFrame(export).to_csv(filepath)
         print("exported")
 
+    def run_contact_getter_from_csv(filepath, input_csv):
+        f = pd.read_csv(input_csv)
+        domain_dict = {}
+        print("creating domain dict")
+        [domain_dict.update({entry['name']: entry['website']}) for index, entry in f.iterrows() if
+         isinstance(entry['website'], str)]
+
+        print("getting emails for {} domains".format(len(domain_dict)))
+        export = export_contacts(get_contacts_by_domain(domain_dict))
+        print("exporting")
+        pd.DataFrame(export).to_csv(filepath)
+        print("exported")
+
     def test_get_contacts():
         # Ramonas Mexican Food, Gamestop, Daikokuya
         domain_dict = {"Ramona's": "ramonas.com", "Gamestop": "https://www.gamestop.com/store/us/ca/chino/4994/chino-spectrum-towne-center-gamestop?utm_source=gmblisting&utm_medium=organic", "Daikokuya":"https://www.daikoku-ten.com/"}
@@ -87,12 +100,17 @@ if __name__ == "__main__":
         domain_dict = {"Ramona's": "ramonas.com", "Gamestop": "https://www.gamestop.com/store/us/ca/chino/4994/chino-spectrum-towne-center-gamestop?utm_source=gmblisting&utm_medium=organic", "Daikokuya":"https://www.daikoku-ten.com/"}
         print(export_contacts(get_contacts_by_domain(domain_dict)))
 
-
+    ##### Run confirguration to get contacts from Database ######
     # {"google_details.closed_indicator":"Temporarily closed", "county":"Los Angeles County"}
-    filepath = '/Users/colin/Downloads/LA_active_restaurants.csv'  # edit
-    entries = utils.SYSTEM_MONGO.get_collection('terminal.places').find({
-        "google_details.closed_indicator": {"$ne": "Temporarily closed"},
-        "county": "Los Angeles County",
-        "type": {"$regex": "Restaurant"}
-    })  # edit
-    run_contact_getter(filepath, entries)
+    # filepath = '/Users/colin/Downloads/LA_active_restaurants.csv'  # edit
+    # entries = utils.SYSTEM_MONGO.get_collection('terminal.places').find({
+    #     "google_details.closed_indicator": {"$ne": "Temporarily closed"},
+    #     "county": "Los Angeles County",
+    #     "type": {"$regex": "Restaurant"}
+    # })  # edit
+    # run_contact_getter(filepath, entries)
+
+    ##### Run confirguration to get contacts from csv ######
+    filepath = '/Users/colin/Downloads/LA_sub3_temp_closed_restaurant_contacts.csv'  # edit
+    input_csv = '/Users/colin/Downloads/la_sub3_filtered_restaurants.csv'
+    run_contact_getter_from_csv(filepath, input_csv)
