@@ -60,7 +60,7 @@
     "@types/recharts": "^1.8.10",
     "@types/styled-components": "^5.1.0",
     "apollo": "^2.27.4",
-    "eslint": "^6.6.0",
+    "eslint": "^9.26.0",
     "eslint-config-kodefox": "^0.2.2",
     "prettier": "^2.0.5",
     "react-test-renderer": "^16.13.1",
